@@ -1,0 +1,505 @@
+openapi: 3.0.3
+info:
+  title: BakaFactory API
+  version: 0.1.0
+  description: Accounts, factory editing and server-authoritative 1 TPS production snapshots. All gameplay durations are whole seconds. Cookie authentication; mutations require an allowed Origin header. Clients animate visuals independently; simulation state is read-only.
+paths:
+  /api/v1/factories/{id}/buildings:
+    post:
+      operationId: placeBuilding
+      summary: Place a known non-fixed building on an empty owned tile
+      security: [{ cookieSession: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: "#/components/schemas/BuildingPlacement" }
+                - type: object
+                  required: [building_type]
+                  properties:
+                    building_type: { type: string }
+      responses:
+        "201":
+          description: Placed; committed factory snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+  /api/v1/factories/{id}/buildings/{buildingID}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+      - in: path
+        name: buildingID
+        required: true
+        schema: { type: string }
+    patch:
+      operationId: moveRotateBuilding
+      summary: Atomically move and rotate an owned non-fixed building
+      security: [{ cookieSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BuildingPlacement" }
+      responses:
+        "200":
+          description: Updated; committed factory snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+    delete:
+      operationId: deleteBuilding
+      summary: Remove an owned non-fixed building
+      security: [{ cookieSession: [] }]
+      responses:
+        "200":
+          description: Deleted; committed factory snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+  /api/v1/definitions:
+    get:
+      operationId: getDefinitions
+      summary: Read validated item, building and recipe definitions
+      security: [{ cookieSession: [] }]
+      responses:
+        "200":
+          description: Server definition catalog
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Catalog" }
+        default: { $ref: "#/components/responses/AuthError" }
+  /api/v1/factories:
+    get:
+      operationId: listFactories
+      summary: List factories owned by the current user
+      security: [{ cookieSession: [] }]
+      responses:
+        "200":
+          description: Factory summaries, at most one in stage 3
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [factories]
+                properties:
+                  factories:
+                    type: array
+                    items: { $ref: "#/components/schemas/Factory" }
+        default: { $ref: "#/components/responses/AuthError" }
+    post:
+      operationId: createFactory
+      summary: Create a 21 by 21 factory with a fixed center Bus
+      security: [{ cookieSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 32 }
+      responses:
+        "201":
+          description: Created factory with center Bus
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+  /api/v1/factories/{id}:
+    get:
+      operationId: getFactory
+      summary: Read an owned factory and its building instances
+      security: [{ cookieSession: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Persisted factory layout
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+  /api/v1/auth/register:
+    post:
+      operationId: register
+      summary: Register a username and start a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Credentials" }
+      responses:
+        "201":
+          description: Registered and logged in; session set through HttpOnly Cookie
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+        default:
+          $ref: "#/components/responses/AuthError"
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      summary: Log in and rotate the browser session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Credentials" }
+      responses:
+        "200":
+          description: Logged in; session set through HttpOnly Cookie
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+        default:
+          $ref: "#/components/responses/AuthError"
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      summary: Revoke this browser session and expire its cookie
+      responses:
+        "204":
+          description: Logged out (idempotent)
+        default:
+          $ref: "#/components/responses/AuthError"
+  /api/v1/me:
+    get:
+      operationId: currentUser
+      summary: Current authenticated profile
+      security: [{ cookieSession: [] }]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+        default:
+          $ref: "#/components/responses/AuthError"
+  /api/v1/me/profile:
+    patch:
+      operationId: updateProfile
+      summary: Save the authenticated user's display name
+      security: [{ cookieSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [display_name]
+              properties:
+                display_name: { type: string, minLength: 1, maxLength: 32 }
+      responses:
+        "200":
+          description: Saved profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserResponse" }
+        default:
+          $ref: "#/components/responses/AuthError"
+  /health:
+    get:
+      operationId: getHealth
+      summary: Server and database readiness
+      parameters:
+        - in: header
+          name: X-Request-ID
+          schema: { type: string, maxLength: 64, pattern: "^[a-zA-Z0-9_.-]+$" }
+      responses:
+        "200":
+          description: Server and migrated database ready
+          headers:
+            X-Request-ID: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+        "503":
+          description: Database unavailable
+          headers:
+            X-Request-ID: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+  /api/v1/health:
+    get:
+      operationId: getVersionedHealth
+      summary: Versioned alias for readiness
+      responses:
+        "200":
+          description: Server and migrated database ready
+          headers:
+            X-Request-ID: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+        "503":
+          description: Database unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: bakafactory_session
+      description: Production uses __Host-bakafactory_session with Secure; local/test use bakafactory_session.
+  responses:
+    AuthError:
+      description: 400 validation, 401 credentials/session, 403 origin, 405 method, 409 username conflict, 413 body limit, 415 media type, 429 rate limit, or 500 internal failure
+      headers:
+        X-Request-ID: { schema: { type: string } }
+        Retry-After: { schema: { type: string } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+  schemas:
+    BuildingPlacement:
+      type: object
+      required: [x, y, rotation]
+      properties:
+        x: { type: integer }
+        y: { type: integer }
+        rotation: { type: integer, enum: [0, 90, 180, 270] }
+    Factory:
+      type: object
+      required: [id, owner_id, name, width, height, created_at]
+      properties:
+        id: { type: string }
+        owner_id: { type: string }
+        name: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+        created_at: { type: string, format: date-time }
+        revision: { type: integer, format: int64, minimum: 0 }
+    BuildingInstance:
+      type: object
+      required: [id, factory_id, building_type, x, y, rotation, configuration]
+      properties:
+        id: { type: string }
+        factory_id: { type: string }
+        building_type: { type: string }
+        x: { type: integer }
+        y: { type: integer }
+        rotation: { type: integer, enum: [0, 90, 180, 270] }
+        configuration: { type: object, additionalProperties: true }
+    FactoryDetail:
+      allOf:
+        - { $ref: "#/components/schemas/Factory" }
+        - type: object
+          required: [buildings]
+          properties:
+            simulation: { $ref: "#/components/schemas/Simulation" }
+            buildings:
+              type: array
+              items: { $ref: "#/components/schemas/BuildingInstance" }
+    FactoryResponse:
+      type: object
+      required: [factory]
+      properties:
+        factory: { $ref: "#/components/schemas/FactoryDetail" }
+    Definition:
+      type: object
+      required: [id, name, code, icon, color, description]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        code: { type: string }
+        icon: { type: string }
+        color: { type: string }
+        description: { type: string }
+    BuildingDefinition:
+      allOf:
+        - { $ref: "#/components/schemas/Definition" }
+        - type: object
+          required: [category, fixed]
+          properties:
+            category: { type: string, enum: [machine, logistics] }
+            fixed: { type: boolean }
+            input_slots: { type: integer, enum: [4] }
+            output_slots: { type: integer, enum: [4] }
+            stack_limit: { type: integer, enum: [100] }
+            input_whitelist:
+              type: array
+              items: { type: string }
+    ItemStack:
+      type: object
+      required: [item, count]
+      properties:
+        item: { type: string }
+        count: { type: integer, format: int64, minimum: 1, maximum: 100 }
+    MachineState:
+      type: object
+      required: [input, output, progress, duration, cooldown, status]
+      properties:
+        input:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/ItemStack" }
+        output:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/ItemStack" }
+        progress: { type: integer, minimum: 0 }
+        duration: { type: integer, minimum: 0 }
+        cooldown: { type: integer, minimum: 0, maximum: 1 }
+        status: { type: string }
+        belt:
+          type: object
+          required: [id, item, progress]
+          properties:
+            id:
+              {
+                type: string,
+                description: Stable payload identity preserved across conveyors and ports,
+              }
+            item: { type: string }
+            progress: { type: integer, minimum: 0, maximum: 1 }
+    TransferEndpoint:
+      type: object
+      required: [id, building_type, x, y, rotation]
+      properties:
+        id: { type: string }
+        building_type: { type: string }
+        x: { type: integer }
+        y: { type: integer }
+        rotation: { type: integer, enum: [0, 90, 180, 270] }
+    ItemTransfer:
+      type: object
+      required: [id, payload_id, item, tick, source, target]
+      properties:
+        id: { type: string, description: Unique confirmed transfer event ID }
+        payload_id:
+          type: string
+          description: Same identity as the conveyor payload if present
+        item: { type: string }
+        tick: { type: integer, format: int64, minimum: 0 }
+        source: { $ref: "#/components/schemas/TransferEndpoint" }
+        target: { $ref: "#/components/schemas/TransferEndpoint" }
+        via: { $ref: "#/components/schemas/TransferEndpoint" }
+    Simulation:
+      type: object
+      required: [tick, tick_rate, buildings, warehouse]
+      properties:
+        tick: { type: integer, format: int64, minimum: 0 }
+        tick_rate: { type: integer, enum: [1] }
+        transfers:
+          type: array
+          description: Confirmed port and Bus transfers from the last three ticks. Cosmetic only; clients deduplicate and never replay on initial load.
+          items: { $ref: "#/components/schemas/ItemTransfer" }
+        buildings:
+          type: object
+          additionalProperties: { $ref: "#/components/schemas/MachineState" }
+        warehouse:
+          type: object
+          additionalProperties: { type: integer, format: int64, minimum: 0 }
+    RecipeDefinition:
+      type: object
+      required: [id, name, building_type, inputs, outputs, duration_ms]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        building_type: { type: string }
+        inputs:
+          {
+            type: object,
+            additionalProperties: { type: integer, format: int64 },
+          }
+        outputs:
+          {
+            type: object,
+            additionalProperties: { type: integer, format: int64 },
+          }
+        duration_ms:
+          { type: integer, format: int64, minimum: 1000, multipleOf: 1000 }
+    Catalog:
+      type: object
+      required: [version, items, buildings, recipes]
+      properties:
+        version: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Definition" }
+        buildings:
+          type: array
+          items: { $ref: "#/components/schemas/BuildingDefinition" }
+        recipes:
+          type: array
+          items: { $ref: "#/components/schemas/RecipeDefinition" }
+    Credentials:
+      type: object
+      additionalProperties: false
+      required: [username, password]
+      properties:
+        username:
+          {
+            type: string,
+            minLength: 3,
+            maxLength: 24,
+            pattern: "^[a-zA-Z0-9_]+$",
+          }
+        password:
+          {
+            type: string,
+            minLength: 8,
+            maxLength: 128,
+            format: password,
+            description: At most 128 UTF-8 bytes; not trimmed,
+          }
+    UserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, username, display_name, created_at, last_login_at]
+      properties:
+        id: { type: string }
+        username: { type: string }
+        display_name: { type: string }
+        created_at: { type: string, format: date-time }
+        last_login_at: { type: string, format: date-time }
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, version, environment, database]
+      properties:
+        status: { type: string, enum: [ok] }
+        version: { type: string }
+        environment: { type: string, enum: [local, test, production] }
+        database: { type: string, enum: [ok] }
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, request_id]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            request_id: { type: string }

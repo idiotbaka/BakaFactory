@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "iron_ore",
+      "name": "铁矿石",
+      "code": "ORE",
+      "icon": "ore",
+      "color": "#a7bcc8",
+      "description": "基础金属原料，可加工为铁板。"
+    },
+    {
+      "id": "iron_plate",
+      "name": "铁板",
+      "code": "FE",
+      "icon": "plate",
+      "color": "#b8ccd4",
+      "description": "经熔炼获得的基础工业材料。"
+    },
+    {
+      "id": "gear",
+      "name": "齿轮",
+      "code": "GEAR",
+      "icon": "gear",
+      "color": "#d6c39a",
+      "description": "机械装配使用的基础零件。"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "bus",
+      "name": "物流总线",
+      "code": "BUS",
+      "icon": "bus",
+      "color": "#c8ed9c",
+      "description": "中心固定物流总线，收到的物品自动存入玩家总仓库。",
+      "category": "logistics",
+      "fixed": true,
+      "input_slots": 4,
+      "output_slots": 4,
+      "stack_limit": 100,
+      "input_whitelist": ["iron_ore", "iron_plate", "gear"]
+    },
+    {
+      "id": "miner",
+      "name": "采矿机",
+      "code": "MIN",
+      "icon": "miner",
+      "color": "#d5bd7c",
+      "description": "每秒采集 1 个铁矿石，存入产物格；产物放满时暂停。",
+      "category": "machine",
+      "fixed": false,
+      "input_slots": 4,
+      "output_slots": 4,
+      "stack_limit": 100,
+      "input_whitelist": []
+    },
+    {
+      "id": "furnace",
+      "name": "熔炉",
+      "code": "FUR",
+      "icon": "furnace",
+      "color": "#df9c79",
+      "description": "仅接收铁矿石，每 4 秒消耗 1 个铁矿石，产出 1 个铁板。",
+      "category": "machine",
+      "fixed": false,
+      "input_slots": 4,
+      "output_slots": 4,
+      "stack_limit": 100,
+      "input_whitelist": ["iron_ore"]
+    },
+    {
+      "id": "assembler",
+      "name": "装配机",
+      "code": "ASM",
+      "icon": "assembler",
+      "color": "#9ebcdb",
+      "description": "仅接收铁板，每 8 秒消耗 1 个铁板，产出 1 个齿轮。",
+      "category": "machine",
+      "fixed": false,
+      "input_slots": 4,
+      "output_slots": 4,
+      "stack_limit": 100,
+      "input_whitelist": ["iron_plate"]
+    },
+    {
+      "id": "conveyor",
+      "name": "传送带",
+      "code": "BELT",
+      "icon": "conveyor",
+      "color": "#a8bfa9",
+      "description": "每格容纳 1 件物品，每秒向箭头方向前进一格；下游占用时阻塞。",
+      "category": "logistics",
+      "fixed": false,
+      "input_slots": 4,
+      "output_slots": 4,
+      "stack_limit": 100,
+      "input_whitelist": ["iron_ore", "iron_plate", "gear"]
+    },
+    {
+      "id": "item_output",
+      "color": "#e2bd79",
+      "name": "物品输出口",
+      "description": "从箭头后方机器的产物格或就绪传送带取出物品，每秒向前方目标转移 1 件。",
+      "stack_limit": 100,
+      "output_slots": 4,
+      "code": "OUT",
+      "icon": "item_output",
+      "category": "logistics",
+      "fixed": false,
+      "input_whitelist": [],
+      "input_slots": 4
+    },
+    {
+      "id": "item_input",
+      "color": "#83cdbd",
+      "name": "物品输入口",
+      "description": "从箭头后方取出物品，每秒输入前方机器、传送带或总线；遵守目标机器的输入白名单。",
+      "stack_limit": 100,
+      "output_slots": 4,
+      "code": "IN",
+      "icon": "item_input",
+      "category": "logistics",
+      "fixed": false,
+      "input_whitelist": [],
+      "input_slots": 4
+    }
+  ],
+  "recipes": [
+    {
+      "name": "铁矿采集",
+      "outputs": {
+        "iron_ore": 1
+      },
+      "id": "iron_mining",
+      "inputs": {},
+      "duration_ms": 1000,
+      "building_type": "miner"
+    },
+    {
+      "id": "iron_plate",
+      "name": "铁板熔炼",
+      "building_type": "furnace",
+      "inputs": {
+        "iron_ore": 1
+      },
+      "outputs": {
+        "iron_plate": 1
+      },
+      "duration_ms": 4000
+    },
+    {
+      "id": "gear",
+      "name": "齿轮装配",
+      "building_type": "assembler",
+      "inputs": {
+        "iron_plate": 1
+      },
+      "outputs": {
+        "gear": 1
+      },
+      "duration_ms": 8000
+    }
+  ]
+}

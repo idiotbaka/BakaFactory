@@ -1,0 +1,30 @@
+{
+  "name": "bakafactory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web"
+  ],
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write . && node scripts/go.mjs fmt ./...",
+    "setup": "npm install && node scripts/go.mjs mod download",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npm run dev --workspace @bakafactory/web",
+    "dev:server": "node scripts/go.mjs run ./cmd/server",
+    "generate:api": "npm run generate:api --workspace @bakafactory/web",
+    "migrate": "node scripts/go.mjs run ./cmd/migrate",
+    "lint": "npm run lint --workspace @bakafactory/web && node scripts/check-go-format.mjs && node scripts/go.mjs vet ./...",
+    "test": "npm run test --workspace @bakafactory/web && node scripts/go.mjs test ./...",
+    "build": "npm run build --workspace @bakafactory/web && node scripts/build-server.mjs",
+    "start": "node scripts/start.mjs",
+    "test:smoke": "node scripts/smoke.mjs",
+    "check": "npm run lint && npm test && npm run build && npm run test:smoke"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}
