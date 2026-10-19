@@ -35,7 +35,7 @@ export function WarehousePanel({
       <div>
         <span className="eyebrow">CARGO / 01</span>
         <strong>总仓库</strong>
-        <small>Bus 自动入库 · 拆除物品回收</small>
+        <small>工厂仓库自动入库 · 拆除物品回收</small>
       </div>
       <div className="warehouse-items">
         {catalog.items.map((item) => (
@@ -209,15 +209,15 @@ export function ProductionInspector({
         <>
           <p className="production-hint">
             箭头后方取出机器产物或就绪传送带物品，前方送入机器输入、传送带或
-            Bus。目标不接受时，物品留在来源。
+            工厂仓库。目标不接受时，物品留在来源。
           </p>
           {route}
         </>
       )}
       {definition.id === "bus" && (
         <p className="production-hint">
-          相邻传送带指向 Bus，或通过 OUT / IN 将物品送入
-          Bus，即自动计入上方总仓库。
+          相邻传送带指向工厂仓库，或通过 OUT / IN
+          将物品送入工厂仓库，即自动计入上方总仓库。
         </p>
       )}
     </div>

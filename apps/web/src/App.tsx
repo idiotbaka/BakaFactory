@@ -29,7 +29,7 @@ function FactoryMark() {
 }
 
 export default function App() {
-  const [player, setPlayer] = useState<User | null>(null);
+  const [player, setPlayer] = useState<User | null | undefined>(undefined);
   const [connection, setConnection] = useState<Connection>({
     kind: "checking",
   });
@@ -64,12 +64,13 @@ export default function App() {
     };
   }, [check]);
   const online = connection.kind === "online";
+  const gameShell = player !== null;
   const retry = () => {
     setConnection({ kind: "checking" });
     void check();
   };
   return (
-    <div className={`shell ${player ? "game-shell" : "landing-shell"}`}>
+    <div className={`shell ${gameShell ? "game-shell" : "landing-shell"}`}>
       <header className="site-header">
         <a href="/" className="brand" aria-label="BakaFactory 首页">
           <FactoryMark />
@@ -79,7 +80,7 @@ export default function App() {
           </span>
         </a>
         <span className="header-label">自动化永不眠 / IDLE AUTOMATION</span>
-        {player && (
+        {gameShell && (
           <span className="header-connection">
             <span className={`connection-dot ${connection.kind}`} />
             <span className="connection-label">
@@ -102,7 +103,7 @@ export default function App() {
       </header>
       <main>
         <div className="landing-content">
-          {!player && (
+          {!gameShell && (
             <section className="landing-hero" aria-label="霓虹工厂">
               <div className="eyebrow">
                 <span /> IDLE FACTORY / ONLINE WORLD
@@ -115,9 +116,9 @@ export default function App() {
                 让工厂，<em>接管黑夜。</em>
               </div>
               <p className="intro">
-                开采、熔炼、装配。接通你的第一条生产线，
+                欢迎入职 Baka 的不眠工厂，
                 <br />
-                让每一次归来，都有新的齿轮为你转动。
+                你需要 7×24 小时工作来开启你的生产产线。
               </p>
               <NeonScene />
               <div className="game-loop">
@@ -137,7 +138,7 @@ export default function App() {
           )}
           <AccountPanel onUserChange={setPlayer} />
         </div>
-        {!player && (
+        {!gameShell && (
           <section
             className={`status-card ${connection.kind}`}
             aria-label="游戏连接状态"
@@ -201,8 +202,8 @@ export default function App() {
       </main>
       <footer className="site-footer">
         <span>
-          BAKAFACTORY <span className="footer-dot">/</span>{" "}
-          一座工厂，一整个不眠之夜。
+          BAKAFACTORY <span className="footer-dot">/</span> Powered By idiotbaka
+          - 2026
         </span>
         <span>NO RUSH. JUST FLOW.</span>
       </footer>

@@ -69,13 +69,16 @@ describe("account UI", () => {
     expect(await screen.findByText("欢迎，新的厂长")).toBeInTheDocument();
     expect(updateProfile).toHaveBeenCalledWith("新的厂长");
     fireEvent.click(screen.getByRole("button", { name: "登出" }));
-    expect(await screen.findByText("欢迎回来，厂长。")).toBeInTheDocument();
+    expect(await screen.findByText("该继续工作了")).toBeInTheDocument();
     expect(logout).toHaveBeenCalledOnce();
   });
   it("restores a server profile on reload", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(user);
-    render(<AccountPanel />);
+    const onUserChange = vi.fn();
+    render(<AccountPanel onUserChange={onUserChange} />);
+    expect(onUserChange).toHaveBeenCalledWith(undefined);
     expect(await screen.findByText("欢迎，厂长")).toBeInTheDocument();
+    expect(onUserChange).toHaveBeenLastCalledWith(user);
     expect(screen.getByLabelText("昵称")).toHaveValue("厂长");
   });
   it("rejects password mismatch without sending credentials", async () => {

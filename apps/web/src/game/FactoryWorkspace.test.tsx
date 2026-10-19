@@ -130,7 +130,7 @@ describe("factory workspace", () => {
       "true",
     );
     expect(
-      screen.getByRole("button", { name: "物流总线 BUS (0,0)" }),
+      screen.getByRole("button", { name: "工厂仓库 WH (0,0)" }),
     ).toBeInTheDocument();
     expect(createFactory).not.toHaveBeenCalled();
   });
@@ -140,7 +140,7 @@ describe("factory workspace", () => {
     await screen.findByRole("heading", { name: "持久化工厂" });
     const palette = screen.getByRole("complementary", { name: "实体图鉴" });
     expect(
-      within(palette).queryByRole("button", { name: /物流总线/ }),
+      within(palette).queryByRole("button", { name: /工厂仓库/ }),
     ).not.toBeInTheDocument();
     const miner = within(palette).getByRole("button", { name: /^采矿机/ });
     fireEvent.click(miner);
@@ -155,7 +155,7 @@ describe("factory workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "物品" }));
     expect(screen.queryByText(/连续放置 采矿机/)).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "物流总线 BUS (0,0)" }),
+      screen.getByRole("button", { name: "工厂仓库 WH (0,0)" }),
     ).toBeInTheDocument();
   });
   it("creates a named factory and shows its persisted center Bus", async () => {
@@ -172,7 +172,7 @@ describe("factory workspace", () => {
     ).toBeInTheDocument();
     expect(createFactory).toHaveBeenCalledWith("持久化工厂");
     expect(
-      screen.getByRole("button", { name: "物流总线 BUS (0,0)" }),
+      screen.getByRole("button", { name: "工厂仓库 WH (0,0)" }),
     ).toBeInTheDocument();
     expect(screen.getByText("1 个建筑实例 / 441 格")).toBeInTheDocument();
     expect(screen.queryByLabelText("工厂名称")).not.toBeInTheDocument();
@@ -182,7 +182,7 @@ describe("factory workspace", () => {
     const view = render(
       <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
     );
-    await screen.findByRole("button", { name: "物流总线 BUS (0,0)" });
+    await screen.findByRole("button", { name: "工厂仓库 WH (0,0)" });
     expect(getFactory).toHaveBeenCalledWith("factory", expect.any(AbortSignal));
     expect(view.container.querySelectorAll(".map-tile")).toHaveLength(441);
     expect(view.container.querySelector(".map-tile")).toHaveAttribute(
@@ -213,7 +213,7 @@ describe("factory workspace", () => {
       within(inspector).getByRole("heading", { name: "齿轮" }),
     ).toBeInTheDocument();
     expect(within(inspector).getByText("齿轮装配")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "物流总线 BUS (0,0)" }));
+    fireEvent.click(screen.getByRole("button", { name: "工厂仓库 WH (0,0)" }));
     expect(within(inspector).getByText("中心固定")).toBeInTheDocument();
     expect(within(inspector).getByText("(0, 0)")).toBeInTheDocument();
   });

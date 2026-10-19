@@ -29,11 +29,11 @@
   "buildings": [
     {
       "id": "bus",
-      "name": "物流总线",
-      "code": "BUS",
+      "name": "工厂仓库",
+      "code": "WH",
       "icon": "bus",
       "color": "#c8ed9c",
-      "description": "中心固定物流总线，收到的物品自动存入玩家总仓库。",
+      "description": "位于工厂中心的固定仓库，接收传送带或物品端口送来的物品，自动计入玩家总仓库。",
       "category": "logistics",
       "fixed": true,
       "input_slots": 4,
@@ -115,7 +115,7 @@
       "id": "item_input",
       "color": "#83cdbd",
       "name": "物品输入口",
-      "description": "从箭头后方取出物品，每秒输入前方机器、传送带或总线；遵守目标机器的输入白名单。",
+      "description": "从箭头后方取出物品，每秒输入前方机器、传送带或工厂仓库；遵守目标机器的输入白名单。",
       "stack_limit": 100,
       "output_slots": 4,
       "code": "IN",

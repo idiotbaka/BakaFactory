@@ -264,7 +264,7 @@ describe("factory editor interactions", () => {
     expect(
       document.querySelector('.map-tile[data-x="0"][data-y="0"]'),
     ).toHaveClass("drop-invalid");
-    const bus = screen.getByLabelText("物流总线 BUS (0,0)");
+    const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
     fireEvent.contextMenu(bus, { ...point(0, 0), button: 2 });
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(screen.getByText(/连续放置 采矿机 · 90°/)).toBeInTheDocument();
@@ -412,7 +412,7 @@ describe("factory editor interactions", () => {
   });
   it("dismisses menus on outside interaction and Escape, and protects the center Bus", () => {
     render(<Harness />);
-    const bus = screen.getByLabelText("物流总线 BUS (0,0)");
+    const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
     fireEvent.contextMenu(bus, { button: 2 });
     expect(screen.getByRole("menuitem", { name: "删除" })).toBeDisabled();
     fireEvent.keyDown(window, { key: "Delete" });

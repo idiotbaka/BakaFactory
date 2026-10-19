@@ -16,7 +16,7 @@ func (a *API) factoryError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, domain.ErrBuildingNotFound):
 		a.fail(w, r, 404, "building_not_found", "建筑不存在或无法访问")
 	case errors.Is(err, domain.ErrBuildingFixed):
-		a.fail(w, r, 409, "building_fixed", "中心 Bus 固定，不能放置、移动、旋转或删除")
+		a.fail(w, r, 409, "building_fixed", "工厂仓库固定，不能放置、移动、旋转或删除")
 	case errors.Is(err, domain.ErrTileOccupied):
 		a.fail(w, r, 409, "tile_occupied", "目标格子已被占用")
 	default:

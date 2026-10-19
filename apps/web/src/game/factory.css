@@ -1,6 +1,7 @@
 /* Size the whole HUD independently of its contents, including the sidebars. */
 .game-shell {
   --workspace-width: max(90vw, 1200px);
+  --player-bar-height: 53px;
   width: var(--workspace-width);
   min-width: 1200px;
   max-width: none;
@@ -46,16 +47,21 @@
 .game-shell .account-heading {
   display: none;
 }
-.game-shell .account-card.is-member {
+.game-shell .account-card.is-member,
+.game-shell .account-card.is-session-loading {
   display: flex;
   flex: 1;
   min-height: 0;
   flex-direction: column;
   position: relative;
 }
+.game-shell .account-card.is-session-loading {
+  padding-top: var(--player-bar-height);
+}
 .game-shell .member-heading {
   padding: 9px 0;
-  min-height: 53px;
+  height: var(--player-bar-height);
+  min-height: var(--player-bar-height);
   flex-shrink: 0;
 }
 .game-shell .member-heading .quiet-button {
@@ -100,14 +106,17 @@
   padding: 3px 5px;
   font: 17px var(--mono);
 }
-.factory-workspace {
-  display: grid;
-  grid-template-rows: 100px minmax(0, 1fr) 52px;
+.factory-workspace,
+.factory-loading {
   width: 100%;
   height: calc(var(--workspace-width) * 9 / 16);
   aspect-ratio: 16 / 9;
   flex: none;
   min-height: 0;
+}
+.factory-workspace {
+  display: grid;
+  grid-template-rows: 100px minmax(0, 1fr) 52px;
   gap: 12px;
   position: relative;
 }
@@ -634,15 +643,13 @@
 }
 .factory-loading {
   display: flex;
-  flex: 1;
-  min-height: 300px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
   color: var(--muted);
   border: 1px solid var(--line);
-  margin: 12px 0;
+  margin: 0;
   font-size: 12px;
   background: var(--panel);
 }

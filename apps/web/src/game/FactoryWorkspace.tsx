@@ -432,7 +432,7 @@ export default function FactoryWorkspace({
                 <p>
                   为工厂命名，接入 21 × 21 的专属地块，
                   <br />
-                  从中心物流总线 Bus，开启你的自动化帝国。
+                  从中心的工厂仓库，开启你的自动化帝国。
                 </p>
                 <form onSubmit={(event) => void create(event)}>
                   <label htmlFor="factory-name">
@@ -571,7 +571,7 @@ export default function FactoryWorkspace({
                   ) : (
                     <p className="no-recipes">
                       {selection.id === "bus"
-                        ? "总线定义为物流边界，不执行加工配方。"
+                        ? "工厂仓库接收产线物品并计入总仓库，不执行加工配方。"
                         : "暂无关联加工配方。"}
                     </p>
                   )}
@@ -627,7 +627,7 @@ export default function FactoryWorkspace({
                 <p>
                   矿机 → OUT → 传送带 → IN → 熔炉
                   <br />
-                  再将铁板送往装配机，最后接入中心 Bus。
+                  再将铁板送往装配机，最后接入工厂仓库。
                 </p>
                 <dl>
                   <div>
@@ -660,8 +660,7 @@ export default function FactoryWorkspace({
                   </div>
                 </dl>
                 <p>
-                  物品送入 Bus
-                  即计入总仓库。服务器运行时，离开页面也会继续生产。
+                  物品送入工厂仓库即计入总仓库。服务器运行时，离开页面也会继续生产。
                 </p>
               </div>
             </HudPopover>

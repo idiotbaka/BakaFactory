@@ -22,7 +22,7 @@ function message(error: unknown): string {
 export default function AccountPanel({
   onUserChange,
 }: {
-  onUserChange?: (user: User | null) => void;
+  onUserChange?: (user: User | null | undefined) => void;
 }) {
   const [session, setSession] = useState<SessionState>({ kind: "loading" });
   const [mode, setMode] = useState<"login" | "register">("register");
@@ -40,7 +40,13 @@ export default function AccountPanel({
     return () => clearTimeout(timeout);
   }, [notice]);
   useEffect(() => {
-    onUserChange?.(session.kind === "member" ? session.user : null);
+    onUserChange?.(
+      session.kind === "loading"
+        ? undefined
+        : session.kind === "member"
+          ? session.user
+          : null,
+    );
   }, [session, onUserChange]);
   const sessionExpired = useCallback(() => {
     setSession({ kind: "guest" });
@@ -144,7 +150,7 @@ export default function AccountPanel({
   const member = session.kind === "member";
   return (
     <section
-      className={`account-card ${member ? "is-member" : "is-guest"}`}
+      className={`account-card ${member ? "is-member" : session.kind === "loading" ? "is-session-loading" : "is-guest"}`}
       aria-label="账号中心"
     >
       <div className="account-heading">
@@ -152,7 +158,10 @@ export default function AccountPanel({
         <span className="account-step">PLAYER ACCESS / 01</span>
       </div>
       {session.kind === "loading" ? (
-        <p role="status">正在确认登录状态…</p>
+        <div className="factory-loading" role="status">
+          <span className="eyebrow">WORKSHOP / CONNECTING</span>
+          <p>正在确认登录状态…</p>
+        </div>
       ) : session.kind === "unavailable" ? (
         <div>
           <p role="alert">{session.message}</p>
@@ -261,13 +270,11 @@ export default function AccountPanel({
             </button>
           </div>
           <h2 className="auth-title">
-            {mode === "register"
-              ? "为你的工厂，留一个位置。"
-              : "欢迎回来，厂长。"}
+            {mode === "register" ? "为你的工厂，留一个位置。" : "该继续工作了"}
           </h2>
           <p className="auth-description">
             {mode === "register"
-              ? "创建账号，保存属于你的每一点进展。"
+              ? "数据会保存至 Baka 的服务器中"
               : "接回你的生产线，让霓虹继续亮起。"}
           </p>
           <form onSubmit={(event) => void submit(event)} className="auth-form">

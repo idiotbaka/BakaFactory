@@ -44,7 +44,7 @@
 
 UI 不推进 tick 或修改物品数。显示服务器库存、生产 / 阻塞状态与总仓库；共享 RAF 独立绘制机器进度和带上物品。生产进度最多预演下一刻；传送带物品按稳定 id 保持跨格轨迹，阻塞后停住，不在未确认时跳到另一条带。每帧直接更新少量 transform / progress，不触发整张 React 棋盘重绘。无活跃动画时停止 RAF，后台标签页暂停，回到前台立即请求快照。详见 [animation.md](animation.md)。相邻同向带面连接仍按布局计算。OUT / IN 图标和其他非传送带图标一样可以旋转，方向规则以箭头为准。
 
-模拟 JSON 还保存最近 3 tick 的成功端口 / 入库转移记录，用于补画机器输出、经过端口和进入机器 / Bus 的动画，不参与库存计算。客户端 LogisticsVisualStore 将在带物品与已离带的短时图标按 payload_id 合并，保留同一个 React 节点及绘制位置；入料结束只清理图标。只播放新 tick 后尚未消费的事件（最多覆盖 2 tick），首次加载 / 后台恢复不补播历史；编辑使相关路线失效。共享帧时钟与原轮询频率均不变，未引入新存储表、网络请求或渲染引擎。
+模拟 JSON 还保存最近 3 tick 的成功端口 / 入库转移记录，用于补画机器输出、经过端口和进入机器 / 工厂仓库 的动画，不参与库存计算。客户端 LogisticsVisualStore 将在带物品与已离带的短时图标按 payload_id 合并，保留同一个 React 节点及绘制位置；入料结束只清理图标。只播放新 tick 后尚未消费的事件（最多覆盖 2 tick），首次加载 / 后台恢复不补播历史；编辑使相关路线失效。共享帧时钟与原轮询频率均不变，未引入新存储表、网络请求或渲染引擎。
 
 视觉层使用赛博朋克＋蒸汽波 HUD：App / GameArt 为入口与静态矢量场景，FactoryWorkspace 管理建造快捷键、资源 HUD、沉浸和节能偏好，HudPopover 用原生 details 实现键盘 / 外部关闭。实体皮肤与颜色只在客户端 entityTheme / SVG 定义，不改服务器 catalog 和存档。地图 / 类型查询缓存，静态图标、带面、进度条和物品图层 memo 化；共享 RAF 将持续 DOM 绘制限制为普通约 60、节能约 15 帧。只把节能偏好保存到本地浏览器，1 TPS、库存、物流和网络读取不变。布局与性能边界见 [visual-style.md](visual-style.md)。
 
@@ -52,8 +52,10 @@ UI 不推进 tick 或修改物品数。显示服务器库存、生产 / 阻塞�
 
 ## API 和安全
 
+登录恢复时 App 以 undefined 表示尚未确认、null 表示已确认游客、User 表示玩家。AccountPanel 报告这三个状态；未确认阶段先保留 game-shell，避免默认当游客导致首页闪现。登录确认、工厂加载与失败框共用 factory-workspace 的外框尺寸，登录确认以 53px 顶部占位对应玩家条。
+
 继续使用现有 API，无客户端库存写入接口。FactoryDetail 新增 simulation，Factory 新增 revision；建筑定义增加库存容量和输入白名单，配方时长更新。协议见 openapi.yaml，生成文件为 apps/web/src/api/schema.d.ts。
 
-所有工厂详情、定义和编辑接口需登录；owner 校验覆盖库存与仓库。写入继续校验 Origin、严格 JSON、整数坐标 / 角度、占用和固定 Bus。客户端不能提交 simulation、warehouse、revision 或 configuration。账号继续使用 Argon2id 与 HttpOnly Cookie。
+所有工厂详情、定义和编辑接口需登录；owner 校验覆盖库存与仓库。写入继续校验 Origin、严格 JSON、整数坐标 / 角度、占用和固定 工厂仓库。客户端不能提交 simulation、warehouse、revision 或 configuration。账号继续使用 Argon2id 与 HttpOnly Cookie。
 
 开发时 Vite 代理 API 到 Go；生产由 Go 托管构建后的 Web。当前无 WebSocket、离线结算、跨进程锁 / 多实例 tick 主节点，也无实时推送协议。多开标签页通过轮询读取相同服务器状态。

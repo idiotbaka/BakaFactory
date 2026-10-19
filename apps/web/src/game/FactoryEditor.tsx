@@ -676,7 +676,7 @@ export default function FactoryEditor(props: Props) {
               ? `连续放置 ${placementDefinition.name} · ${rotation}° · 左键建造 / 右键旋转 / Esc 退出`
               : selected
                 ? fixed
-                  ? "Bus 固定，无法编辑"
+                  ? "工厂仓库固定，无法编辑"
                   : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
                 : "点击图鉴连续建造 · 长按建筑移动 · 拖动空格平移"}
         </span>
@@ -768,7 +768,7 @@ export default function FactoryEditor(props: Props) {
           <div
             className="factory-grid"
             role="group"
-            aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定 Bus`}
+            aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定工厂仓库`}
           >
             <ConveyorItemsLayer factory={factory} catalog={catalog} />
             {Array.from(
@@ -898,7 +898,7 @@ export default function FactoryEditor(props: Props) {
               `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`)
             : pointer?.cell
               ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
-              : "■ 中心总线固定于 (0,0)"}
+              : "■ 工厂仓库固定于 (0,0)"}
         </span>
         <span>
           {factory.buildings.length} 个建筑实例 /{" "}
@@ -963,7 +963,7 @@ export default function FactoryEditor(props: Props) {
               </svg>
               <span>删除</span>
             </button>
-            {isFixed(menuBuilding) && <small>中心总线固定</small>}
+            {isFixed(menuBuilding) && <small>工厂仓库固定</small>}
           </div>,
           document.body,
         )}
