@@ -51,7 +51,7 @@ export default function AccountPanel({
   const sessionExpired = useCallback(() => {
     setSession({ kind: "guest" });
     setMode("login");
-    setError("登录已过期，请重新登录。");
+    setError("登录已过期或账号已在另一端登录。工厂已暂停，本机进度已保留。");
   }, []);
   useEffect(() => {
     let active = true;
@@ -274,7 +274,7 @@ export default function AccountPanel({
           </h2>
           <p className="auth-description">
             {mode === "register"
-              ? "数据会保存至 Baka 的服务器中"
+              ? "工厂保存在本机浏览器，可自动或手动备份到云端"
               : "接回你的生产线，让霓虹继续亮起。"}
           </p>
           <form onSubmit={(event) => void submit(event)} className="auth-form">

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/v1/factories/{id}/buildings": {
+    "/api/v1/game/heartbeat": {
         parameters: {
             query?: never;
             header?: never;
@@ -13,33 +13,32 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Place a known non-fixed building on an empty owned tile */
-        post: operations["placeBuilding"];
+        /** Validate the current login and bind this game to its session */
+        post: operations["gameHeartbeat"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/factories/{id}/buildings/{buildingID}": {
+    "/api/v1/game/save": {
         parameters: {
             query?: never;
-            header?: never;
-            path: {
-                id: string;
-                buildingID: string;
+            header: {
+                "X-Game-Session": string;
             };
+            path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
+        /** Download the sole backup of the authenticated account, or null */
+        get: operations["downloadSave"];
+        /** Replace the sole backup if base_version matches; 409 preserves current backup */
+        put: operations["uploadSave"];
         post?: never;
-        /** Remove an owned non-fixed building */
-        delete: operations["deleteBuilding"];
+        delete?: never;
         options?: never;
         head?: never;
-        /** Atomically move and rotate an owned non-fixed building */
-        patch: operations["moveRotateBuilding"];
+        patch?: never;
         trace?: never;
     };
     "/api/v1/definitions": {
@@ -51,41 +50,6 @@ export interface paths {
         };
         /** Read validated item, building and recipe definitions */
         get: operations["getDefinitions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/factories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List factories owned by the current user */
-        get: operations["listFactories"];
-        put?: never;
-        /** Create a 21 by 21 factory with a fixed center Bus */
-        post: operations["createFactory"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/factories/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read an owned factory and its building instances */
-        get: operations["getFactory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -217,6 +181,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        GameSave: {
+            /** @enum {integer} */
+            format_version: 1;
+            /** @enum {integer} */
+            rules_version: 1;
+            factory: components["schemas"]["FactoryDetail"];
+        };
+        CloudSave: {
+            version: number;
+            /** Format: date-time */
+            saved_at: string;
+            save: components["schemas"]["GameSave"];
+        };
+        CloudSaveResponse: {
+            backup: components["schemas"]["CloudSave"] | null;
+        };
         BuildingPlacement: {
             x: number;
             y: number;
@@ -402,82 +382,87 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    placeBuilding: {
+    gameHeartbeat: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BuildingPlacement"] & {
-                    building_type: string;
+                "application/json": {
+                    /** @description Empty only for the initial handshake; subsequent calls must send the returned identity. This identity is not a login credential. */
+                    session_id: string;
                 };
             };
         };
         responses: {
-            /** @description Placed; committed factory snapshot */
-            201: {
+            /** @description Online authorization for at most 30 seconds */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FactoryResponse"];
+                    "application/json": {
+                        user: components["schemas"]["User"];
+                        session_id: string;
+                        /** @enum {integer} */
+                        lease_seconds: 30;
+                    };
                 };
             };
             default: components["responses"]["AuthError"];
         };
     };
-    deleteBuilding: {
+    downloadSave: {
         parameters: {
             query?: never;
-            header?: never;
-            path: {
-                id: string;
-                buildingID: string;
+            header: {
+                "X-Game-Session": string;
             };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Deleted; committed factory snapshot */
+            /** @description Current backup; legacy server factories are never imported */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FactoryResponse"];
+                    "application/json": components["schemas"]["CloudSaveResponse"];
                 };
             };
             default: components["responses"]["AuthError"];
         };
     };
-    moveRotateBuilding: {
+    uploadSave: {
         parameters: {
             query?: never;
-            header?: never;
-            path: {
-                id: string;
-                buildingID: string;
+            header: {
+                "X-Game-Session": string;
             };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BuildingPlacement"];
+                "application/json": {
+                    base_version: number;
+                    save: components["schemas"]["GameSave"];
+                };
             };
         };
         responses: {
-            /** @description Updated; committed factory snapshot */
+            /** @description Backup committed, including the server version and timestamp */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FactoryResponse"];
+                    "application/json": components["schemas"]["CloudSaveResponse"];
                 };
             };
             default: components["responses"]["AuthError"];
@@ -499,79 +484,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Catalog"];
-                };
-            };
-            default: components["responses"]["AuthError"];
-        };
-    };
-    listFactories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Factory summaries, at most one in stage 3 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        factories: components["schemas"]["Factory"][];
-                    };
-                };
-            };
-            default: components["responses"]["AuthError"];
-        };
-    };
-    createFactory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    name: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Created factory with center Bus */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FactoryResponse"];
-                };
-            };
-            default: components["responses"]["AuthError"];
-        };
-    };
-    getFactory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Persisted factory layout */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FactoryResponse"];
                 };
             };
             default: components["responses"]["AuthError"];

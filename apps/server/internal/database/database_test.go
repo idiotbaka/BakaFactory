@@ -28,7 +28,7 @@ func TestMigrationFromEmptyAndIdempotent(t *testing.T) {
 		}
 	}
 	var count int
-	if err := db.QueryRow("SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 5 {
+	if err := db.QueryRow("SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 6 {
 		t.Fatalf("count=%d, err=%v", count, err)
 	}
 	var initialized string
@@ -128,7 +128,7 @@ func TestConcurrentMigrationStartup(t *testing.T) {
 		}
 	}
 	var count int
-	if err := first.QueryRow("SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 5 {
+	if err := first.QueryRow("SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 6 {
 		t.Fatalf("duplicate migrations: %d %v", count, err)
 	}
 }

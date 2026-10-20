@@ -10,6 +10,12 @@ export class AnimationClock {
   private stepMs = 1000;
   private frameInterval = 1000 / 60;
   private lastPaint = -Infinity;
+  private paused = false;
+  setPaused(paused: boolean) {
+    this.paused = paused;
+    if (paused) this.pause();
+    else this.wake();
+  }
   setPowerSaving(enabled: boolean) {
     this.frameInterval = 1000 / (enabled ? 15 : 60);
     this.lastPaint = -Infinity;
@@ -66,6 +72,7 @@ export class AnimationClock {
   private schedule() {
     if (
       this.handle !== null ||
+      this.paused ||
       this.key === null ||
       !this.listeners.size ||
       document.hidden ||
@@ -78,7 +85,7 @@ export class AnimationClock {
     });
   }
   private paint(now: number) {
-    if (document.hidden) {
+    if (document.hidden || this.paused) {
       this.pause();
       return;
     }

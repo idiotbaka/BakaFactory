@@ -14,11 +14,11 @@ import (
 )
 
 type AuthOptions struct {
-	Service   *application.AuthService
-	Secure    bool
-	TTL       time.Duration
-	Origins   []string
-	Factories *application.FactoryService
+	Service *application.AuthService
+	Secure  bool
+	TTL     time.Duration
+	Origins []string
+	Saves   *application.SaveService
 }
 
 func (a *API) cookieName() string {
@@ -57,12 +57,15 @@ func (a *API) originAllowed(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 func (a *API) readBody(w http.ResponseWriter, r *http.Request, target any) bool {
+	return a.readLimitedBody(w, r, target, 16*1024)
+}
+func (a *API) readLimitedBody(w http.ResponseWriter, r *http.Request, target any, limit int64) bool {
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || media != "application/json" {
 		a.fail(w, r, 415, "unsupported_media_type", "请使用 application/json")
 		return false
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, 16*1024)
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(target)
@@ -92,8 +95,8 @@ func (a *API) authError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, domain.ErrCredentials):
 		a.fail(w, r, 401, "invalid_credentials", "用户名或密码不正确")
 	case errors.Is(err, domain.ErrUnauthenticated):
-		a.setCookie(w, "", time.Time{})
-		a.fail(w, r, 401, "unauthenticated", "请先登录，或重新登录已过期的会话")
+		// A delayed response from a revoked session must not erase a newer cookie.
+		a.fail(w, r, 401, "unauthenticated", "登录已过期或账号已在另一端登录，请重新登录")
 	case errors.Is(err, domain.ErrAuthBusy):
 		w.Header().Set("Retry-After", "1")
 		a.fail(w, r, 429, "auth_busy", "服务繁忙，请稍后再试")

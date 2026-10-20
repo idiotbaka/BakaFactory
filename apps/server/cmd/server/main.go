@@ -48,19 +48,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	factoryRepository := repository.NewFactories(db)
-	factories := application.NewFactoryService(factoryRepository, definitions)
-	handler, err := httpapi.New(service, logger, c.WebDir, httpapi.AuthOptions{Service: auth, Secure: c.Environment == "production", TTL: c.SessionTTL, Origins: c.Origins, Factories: factories})
+	saves := application.NewSaveService(repository.NewSaves(db), auth, definitions)
+	handler, err := httpapi.New(service, logger, c.WebDir, httpapi.AuthOptions{Service: auth, Secure: c.Environment == "production", TTL: c.SessionTTL, Origins: c.Origins, Saves: saves})
 	if err != nil {
 		return err
 	}
-	simulationContext, stopSimulation := context.WithCancel(ctx)
-	simulationDone := make(chan struct{})
-	go func() {
-		defer close(simulationDone)
-		application.RunSimulation(simulationContext, factoryRepository, definitions, logger)
-	}()
-	defer func() { stopSimulation(); <-simulationDone }()
 	server := &http.Server{Addr: c.Address, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	result := make(chan error, 1)
 	go func() { result <- server.ListenAndServe() }()

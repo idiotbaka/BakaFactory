@@ -1,10 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import {
   ApiError,
-  createFactory,
-  getCatalog,
-  getFactory,
-  listFactories,
   type Catalog,
   type Definition,
   type FactoryDetail,
@@ -18,6 +14,8 @@ import { SimulationAnimationProvider } from "./SimulationAnimation";
 import { readPowerSaving, savePowerSaving } from "./displayPreferences";
 import { entityColor } from "./entityTheme";
 import HudPopover from "../HudPopover";
+import { useLocalGame } from "./local/useLocalGame";
+import { catalog as localCatalog } from "./local/state";
 
 type Workspace =
   | { kind: "loading" }
@@ -35,7 +33,13 @@ export default function FactoryWorkspace({
   user: User;
   onSessionExpired: () => void;
 }) {
-  const [workspace, setWorkspace] = useState<Workspace>({ kind: "loading" });
+  const game = useLocalGame(user, onSessionExpired);
+  const workspace: Workspace =
+    game.error && !game.ready
+      ? { kind: "failed", message: game.error }
+      : game.ready
+        ? { kind: "ready", catalog: localCatalog, factory: game.factory }
+        : { kind: "loading" };
   const [selection, setSelection] = useState<Selection>({
     kind: "building",
     id: "bus",
@@ -45,8 +49,7 @@ export default function FactoryWorkspace({
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [syncError, setSyncError] = useState("");
-  const [reload, setReload] = useState(0);
+  const syncError = game.message;
   const [tab, setTab] = useState<"building" | "item">("building");
   const [placementType, setPlacementType] = useState<string | null>(null);
   const [selectedInstanceID, setSelectedInstanceID] = useState<string | null>(
@@ -95,110 +98,20 @@ export default function FactoryWorkspace({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [activeFactoryID, paletteCatalog]);
-  useEffect(() => {
-    if (!activeFactoryID) return;
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout>;
-    let inFlight = false;
-    async function poll() {
-      if (inFlight || controller.signal.aborted) return;
-      inFlight = true;
-      try {
-        const snapshot = await getFactory(
-          activeFactoryID!,
-          AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
-        );
-        if (controller.signal.aborted) return;
-        setWorkspace((previous) =>
-          previous.kind === "ready" &&
-          previous.factory?.id === snapshot.id &&
-          (snapshot.revision ?? 0) >= (previous.factory.revision ?? 0)
-            ? { ...previous, factory: snapshot }
-            : previous,
-        );
-        setSyncError("");
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        if (error instanceof ApiError && error.status === 401) {
-          onSessionExpired();
-          return;
-        }
-        setSyncError("生产状态同步中断，正在重试；页面保留上次确认的数据。");
-      } finally {
-        inFlight = false;
-      }
-      if (!controller.signal.aborted)
-        timer = setTimeout(poll, document.hidden ? 3000 : 1000);
-    }
-    const visibility = () => {
-      if (!document.hidden) {
-        clearTimeout(timer);
-        void poll();
-      }
-    };
-    document.addEventListener("visibilitychange", visibility);
-    timer = setTimeout(poll, 1000);
-    return () => {
-      controller.abort();
-      clearTimeout(timer);
-      document.removeEventListener("visibilitychange", visibility);
-    };
-  }, [activeFactoryID, onSessionExpired]);
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(new Error("读取工厂超时，请重试")),
-      8000,
-    );
-    void Promise.all([
-      getCatalog(controller.signal),
-      listFactories(controller.signal),
-    ])
-      .then(async ([catalog, factories]) => {
-        const factory = factories.length
-          ? await getFactory(factories[0].id, controller.signal)
-          : null;
-        if (active && !controller.signal.aborted) {
-          setWorkspace({ kind: "ready", catalog, factory });
-          setSelectedInstanceID(
-            factory?.buildings.find((b) => b.building_type === "bus")?.id ??
-              null,
-          );
-        }
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        if (error instanceof ApiError && error.status === 401)
-          onSessionExpired();
-        else setWorkspace({ kind: "failed", message: errorMessage(error) });
-      })
-      .finally(() => clearTimeout(timeout));
-    return () => {
-      active = false;
-      controller.abort();
-      clearTimeout(timeout);
-    };
-  }, [reload, onSessionExpired]);
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || workspace.kind !== "ready") return;
     setBusy(true);
     setError("");
     try {
-      const factory = await createFactory(name);
-      setWorkspace({ ...workspace, factory });
+      const factory = await game.runtime!.create(name);
       setSelection({ kind: "building", id: "bus" });
       setSelectedInstanceID(
         factory.buildings.find((b) => b.building_type === "bus")?.id ?? null,
       );
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) onSessionExpired();
-      else if (error instanceof ApiError && error.status === 409) {
-        setError(error.message);
-        setWorkspace({ kind: "loading" });
-        setReload((value) => value + 1);
-      } else setError(errorMessage(error));
+      else setError(errorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -212,12 +125,6 @@ export default function FactoryWorkspace({
   }
   function applyFactory(snapshot: FactoryDetail, selectedID: string | null) {
     setError("");
-    setWorkspace((previous) =>
-      previous.kind === "ready" &&
-      (snapshot.revision ?? 0) >= (previous.factory?.revision ?? 0)
-        ? { ...previous, factory: snapshot }
-        : previous,
-    );
     // A response may arrive after the player has switched palette tools.
     // Keep the active tool and inspector independent of the saved instance.
     if (!placementType)
@@ -233,20 +140,14 @@ export default function FactoryWorkspace({
     return (
       <div className="factory-loading" role="status">
         <span className="eyebrow">WORKSHOP / LOADING</span>
-        <p>正在从服务器读取工厂…</p>
+        <p>正在读取本地存档并校验登录…</p>
       </div>
     );
   if (workspace.kind === "failed")
     return (
       <div className="factory-loading">
         <p role="alert">{workspace.message}</p>
-        <button
-          className="primary-button"
-          onClick={() => {
-            setWorkspace({ kind: "loading" });
-            setReload((value) => value + 1);
-          }}
-        >
+        <button className="primary-button" onClick={game.retry}>
           重新读取工厂
         </button>
       </div>
@@ -294,6 +195,7 @@ export default function FactoryWorkspace({
       factoryID={factory?.id}
       simulation={factory?.simulation}
       powerSaving={powerSaving}
+      paused={game.paused}
     >
       <section
         className={`factory-workspace ${immersive ? "is-immersive" : ""} ${powerSaving ? "is-eco" : ""}`}
@@ -308,7 +210,7 @@ export default function FactoryWorkspace({
             <div className="factory-toolbar-meta">
               <span className="mode-pill">
                 <i />
-                自动化生产
+                {game.paused ? "工厂暂停" : "本机生产"}
               </span>
               <span>
                 {factory ? `${factory.width} × ${factory.height}` : "21 × 21"}{" "}
@@ -328,6 +230,27 @@ export default function FactoryWorkspace({
         {syncError && (
           <p className="simulation-sync-error" role="status">
             {syncError}
+            {game.conflict && (
+              <>
+                <button
+                  disabled={!game.online || game.uploading}
+                  onClick={() =>
+                    void game.runtime?.chooseLocal().catch(editorError)
+                  }
+                >
+                  保留本机并覆盖云端
+                </button>
+                <button
+                  disabled={!game.online || game.uploading}
+                  onClick={() => {
+                    if (window.confirm("恢复云存档将替换本机进度，是否继续？"))
+                      void game.runtime?.restoreCloud().catch(editorError);
+                  }}
+                >
+                  恢复云存档
+                </button>
+              </>
+            )}
           </p>
         )}
         <div className="factory-layout">
@@ -449,7 +372,9 @@ export default function FactoryWorkspace({
                   </label>
                   <button
                     className="primary-button"
-                    disabled={busy || !name.trim()}
+                    disabled={
+                      busy || !name.trim() || !game.online || game.conflict
+                    }
                   >
                     {busy ? "正在创建…" : "创建第一座工厂"}
                     <span aria-hidden="true">↗</span>
@@ -460,6 +385,7 @@ export default function FactoryWorkspace({
             ) : (
               <FactoryEditor
                 factory={factory}
+                commands={game.runtime!.commands}
                 catalog={catalog}
                 placementType={placementType}
                 onExitPlacement={() => setPlacementType(null)}
@@ -596,6 +522,52 @@ export default function FactoryWorkspace({
             </span>
           </div>
           <div className="display-controls">
+            <HudPopover className="controls-guide save-controls" label="存档">
+              <div className="controls-guide-content">
+                <h3>本机存档与云备份</h3>
+                <p>
+                  本机：
+                  {game.localSavedAt
+                    ? new Date(game.localSavedAt).toLocaleTimeString()
+                    : "尚未保存"}
+                </p>
+                <p>
+                  云端：
+                  {game.cloudSavedAt
+                    ? new Date(game.cloudSavedAt).toLocaleString()
+                    : "尚未上传"}
+                  {game.dirty ? " · 有新进度" : ""}
+                </p>
+                <p>
+                  每 30
+                  分钟自动覆盖云备份；换设备只能恢复最近一次成功上传的进度。
+                </p>
+                <button
+                  disabled={
+                    !factory || !game.online || game.conflict || game.uploading
+                  }
+                  onClick={() => void game.runtime?.backup().catch(editorError)}
+                >
+                  {game.uploading ? "正在上传…" : "立即上传云存档"}
+                </button>
+                <button
+                  disabled={!game.online || game.uploading}
+                  onClick={() => {
+                    if (window.confirm("恢复云存档将替换本机进度，是否继续？"))
+                      void game.runtime?.restoreCloud().catch(editorError);
+                  }}
+                >
+                  恢复云存档
+                </button>
+                <button
+                  onClick={() =>
+                    void game.runtime?.retryStorage().catch(editorError)
+                  }
+                >
+                  重试本地保存
+                </button>
+              </div>
+            </HudPopover>
             <button
               aria-pressed={immersive}
               disabled={!factory}
@@ -660,7 +632,8 @@ export default function FactoryWorkspace({
                   </div>
                 </dl>
                 <p>
-                  物品送入工厂仓库即计入总仓库。服务器运行时，离开页面也会继续生产。
+                  物品送入工厂仓库即计入总仓库。本机每秒推进一刻，离开游戏或断网时暂停；每
+                  30 分钟自动备份到云端。
                 </p>
               </div>
             </HudPopover>

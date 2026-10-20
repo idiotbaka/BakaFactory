@@ -22,7 +22,7 @@ type API struct {
 	auth        *application.AuthService
 	authOptions AuthOptions
 	limits      *authLimiter
-	factories   *application.FactoryService
+	saves       *application.SaveService
 }
 type ErrorResponse struct {
 	Error ErrorBody `json:"error"`
@@ -43,9 +43,9 @@ func New(health *application.HealthService, logger *slog.Logger, webDir string, 
 		a.auth = options[0].Service
 		a.limits = newAuthLimiter()
 		a.authRoutes(mux)
-		if options[0].Factories != nil {
-			a.factories = options[0].Factories
-			a.factoryRoutes(mux)
+		if options[0].Saves != nil {
+			a.saves = options[0].Saves
+			a.saveRoutes(mux)
 		}
 	}
 	var static http.Handler

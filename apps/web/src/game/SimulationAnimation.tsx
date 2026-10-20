@@ -17,14 +17,17 @@ export function SimulationAnimationProvider({
   factoryID,
   simulation,
   powerSaving = false,
+  paused = false,
   children,
 }: {
   factoryID?: string;
   simulation?: Simulation;
   powerSaving?: boolean;
+  paused?: boolean;
   children: ReactNode;
 }) {
   const [clock] = useState(() => new AnimationClock());
+  useLayoutEffect(() => clock.setPaused(paused), [clock, paused]);
   useLayoutEffect(() => {
     clock.setPowerSaving(powerSaving);
   }, [clock, powerSaving]);

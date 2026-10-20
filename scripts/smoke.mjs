@@ -152,198 +152,137 @@ try {
   assert.equal(definitions.buildings.length, 7);
   assert.equal(definitions.items.length, 3);
   assert.equal(definitions.recipes.length, 3);
-  const initialFactories = await authRequest(
-    "/api/v1/factories",
-    "GET",
-    undefined,
-    cookie,
-  );
-  assert.deepEqual((await initialFactories.json()).factories, []);
-  const factoryResponse = await authRequest(
-    "/api/v1/factories",
-    "POST",
-    { name: "重启后的中文工厂" },
-    cookie,
-  );
-  assert.equal(factoryResponse.status, 201);
-  let factory = (await factoryResponse.json()).factory;
-  assert.equal(factory.width, 21);
-  assert.equal(factory.height, 21);
-  assert.equal(factory.owner_id, user.id);
-  assert.equal(factory.buildings.length, 1);
-  assert.equal(factory.buildings[0].building_type, "bus");
-  assert.equal(factory.buildings[0].x, 0);
-  assert.equal(factory.buildings[0].y, 0);
-  assert.equal(
-    (
-      await authRequest(
-        "/api/v1/factories",
-        "POST",
-        { name: "不应创建第二座" },
-        cookie,
-      )
-    ).status,
-    409,
-  );
-  const buildingsPath = `/api/v1/factories/${factory.id}/buildings`;
-  const editableTypes = definitions.buildings.filter((b) => !b.fixed);
-  for (let i = 0; i < 36; i++) {
-    const placed = await authRequest(
-      buildingsPath,
+  const heartbeat = async (currentCookie, expected = "") => {
+    const response = await authRequest(
+      "/api/v1/game/heartbeat",
       "POST",
-      {
-        building_type: editableTypes[i % editableTypes.length].id,
-        x: -6 + (i % 6),
-        y: 1 + Math.floor(i / 6),
-        rotation: (i % 4) * 90,
+      { session_id: expected },
+      currentCookie,
+    );
+    assert.equal(response.status, 200);
+    return (await response.json()).session_id;
+  };
+  let sessionID = await heartbeat(cookie);
+  const cloudRequest = (
+    method,
+    body,
+    currentCookie = cookie,
+    identity = sessionID,
+  ) =>
+    fetch(url + "/api/v1/game/save", {
+      method,
+      headers: {
+        Origin: url,
+        "Content-Type": "application/json",
+        Cookie: currentCookie,
+        "X-Game-Session": identity,
       },
-      cookie,
-    );
-    assert.equal(placed.status, 201);
-    factory = (await placed.json()).factory;
-  }
-  assert.equal(factory.buildings.length, 37);
-  const movable = factory.buildings.find((b) => b.building_type !== "bus");
-  const moved = await authRequest(
-    `${buildingsPath}/${movable.id}`,
-    "PATCH",
-    { x: -10, y: -10, rotation: 270 },
-    cookie,
-  );
-  assert.equal(moved.status, 200);
-  factory = (await moved.json()).factory;
-  assert.deepEqual(
-    { ...factory.buildings.find((b) => b.id === movable.id) },
-    { ...movable, x: -10, y: -10, rotation: 270 },
-  );
-  const removable = factory.buildings.find(
-    (b) => b.building_type !== "bus" && b.id !== movable.id,
-  );
-  const deleted = await authRequest(
-    `${buildingsPath}/${removable.id}`,
-    "DELETE",
-    undefined,
-    cookie,
-  );
-  assert.equal(deleted.status, 200);
-  factory = (await deleted.json()).factory;
-  assert.equal(factory.buildings.length, 36);
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  assert.deepEqual(await (await cloudRequest("GET")).json(), { backup: null });
+  const factory = {
+    id: "client-factory",
+    owner_id: user.id,
+    name: "本机上传的工厂",
+    width: 21,
+    height: 21,
+    created_at: new Date().toISOString(),
+    revision: 5,
+    buildings: [
+      {
+        id: "bus",
+        factory_id: "client-factory",
+        building_type: "bus",
+        x: 0,
+        y: 0,
+        rotation: 0,
+        configuration: {},
+      },
+    ],
+    simulation: {
+      tick: 5,
+      tick_rate: 1,
+      buildings: {
+        bus: {
+          input: [],
+          output: [],
+          progress: 0,
+          duration: 0,
+          cooldown: 0,
+          status: "warehouse",
+        },
+      },
+      warehouse: { iron_ore: 12 },
+      transfers: [],
+    },
+  };
+  const save = { format_version: 1, rules_version: 1, factory };
+  const uploaded = await cloudRequest("PUT", { base_version: 0, save });
+  assert.equal(uploaded.status, 200);
+  const backup = (await uploaded.json()).backup;
+  assert.equal(backup.version, 1);
+  assert.deepEqual(backup.save, save);
   assert.equal(
-    (
-      await authRequest(
-        buildingsPath,
-        "POST",
-        { building_type: "miner", x: 0, y: 0, rotation: 0 },
-        cookie,
-      )
-    ).status,
+    (await cloudRequest("PUT", { base_version: 0, save })).status,
     409,
   );
-  const busID = factory.buildings.find((b) => b.building_type === "bus").id;
   assert.equal(
-    (
-      await authRequest(
-        `${buildingsPath}/${busID}`,
-        "DELETE",
-        undefined,
-        cookie,
-      )
-    ).status,
-    409,
+    (await fetch(url + "/api/v1/factories", { headers: { Cookie: cookie } }))
+      .status,
+    404,
   );
-  // Build a full ore → plate → gear line on the otherwise empty center row.
-  const productionLine = [
-    "miner",
-    "item_output",
-    "conveyor",
-    "item_input",
-    "furnace",
-    "item_output",
-    "conveyor",
-    "item_input",
-    "assembler",
-    "item_output",
-  ];
-  for (const [i, kind] of productionLine.entries()) {
-    const placed = await authRequest(
-      buildingsPath,
-      "POST",
-      { building_type: kind, x: -10 + i, y: 0, rotation: 0 },
-      cookie,
-    );
-    assert.equal(placed.status, 201);
-    factory = (await placed.json()).factory;
-  }
-  const productionDeadline = Date.now() + 25000;
-  while (
-    (factory.simulation.warehouse.gear ?? 0) < 1 &&
-    Date.now() < productionDeadline
-  ) {
-    await delay(250);
-    const snapshot = await authRequest(
-      `/api/v1/factories/${factory.id}`,
-      "GET",
-      undefined,
-      cookie,
-    );
-    assert.equal(snapshot.status, 200);
-    factory = (await snapshot.json()).factory;
-  }
-  assert.ok(
-    factory.simulation.warehouse.gear >= 1,
-    "production chain did not deliver a gear within 25 seconds",
-  );
+  // The server only stores this checkpoint; wall-clock time never advances it.
+  await delay(1200);
+  assert.deepEqual((await (await cloudRequest("GET")).json()).backup, backup);
   await stop();
   await start();
-  assert.equal((await fetch(`${url}/health`)).status, 200);
-  const restored = await authRequest("/api/v1/me", "GET", undefined, cookie);
-  assert.equal(restored.status, 200);
-  assert.equal((await restored.json()).user.display_name, "重启后的中文厂长");
-  const restoredFactory = await authRequest(
-    `/api/v1/factories/${factory.id}`,
-    "GET",
-    undefined,
-    cookie,
+  assert.equal(
+    (await authRequest("/api/v1/me", "GET", undefined, cookie)).status,
+    200,
   );
-  assert.equal(restoredFactory.status, 200);
-  const restoredSnapshot = (await restoredFactory.json()).factory;
-  const layout = ({ simulation, revision, ...saved }) => saved;
-  assert.deepEqual(layout(restoredSnapshot), layout(factory));
-  assert.ok(restoredSnapshot.simulation.tick >= factory.simulation.tick);
-  for (const [item, count] of Object.entries(factory.simulation.warehouse)) {
-    assert.ok(
-      (restoredSnapshot.simulation.warehouse[item] ?? 0) >= count,
-      "warehouse contents lost on restart",
-    );
-  }
+  sessionID = await heartbeat(cookie, sessionID);
+  assert.deepEqual((await (await cloudRequest("GET")).json()).backup, backup);
+  const oldCookie = cookie,
+    oldSession = sessionID;
+  const loggedIn = await authRequest("/api/v1/auth/login", "POST", credentials);
+  assert.equal(loggedIn.status, 200);
+  cookie = loggedIn.headers.get("set-cookie").split(";")[0];
+  assert.equal(
+    (
+      await cloudRequest(
+        "PUT",
+        { base_version: 1, save },
+        oldCookie,
+        oldSession,
+      )
+    ).status,
+    401,
+  );
+  assert.equal(
+    (
+      await authRequest(
+        "/api/v1/game/heartbeat",
+        "POST",
+        { session_id: oldSession },
+        cookie,
+      )
+    ).status,
+    401,
+  );
+  sessionID = await heartbeat(cookie);
+  assert.deepEqual((await (await cloudRequest("GET")).json()).backup, backup);
+  assert.equal(
+    (await cloudRequest("PUT", { base_version: 1, save })).status,
+    200,
+  );
   assert.equal(
     (await authRequest("/api/v1/auth/logout", "POST", undefined, cookie))
       .status,
     204,
   );
-  assert.equal(
-    (await authRequest("/api/v1/me", "GET", undefined, cookie)).status,
-    401,
-  );
-  const loggedIn = await authRequest("/api/v1/auth/login", "POST", credentials);
-  assert.equal(loggedIn.status, 200);
-  assert.equal((await loggedIn.json()).user.display_name, "重启后的中文厂长");
-  cookie = loggedIn.headers.get("set-cookie").split(";")[0];
-  assert.equal(
-    (await authRequest("/api/v1/me", "GET", undefined, cookie)).status,
-    200,
-  );
-  const factoryList = await authRequest(
-    "/api/v1/factories",
-    "GET",
-    undefined,
-    cookie,
-  );
-  const summaries = (await factoryList.json()).factories;
-  assert.equal(summaries.length, 1);
-  assert.equal(summaries[0].id, factory.id);
+  assert.equal((await cloudRequest("GET")).status, 401);
   console.log(
-    "Smoke checks passed: building edits, complete ore/plate/gear production and logistics, Bus warehouse delivery, and persistence across restart and relogin.",
+    "Smoke checks passed: single-login revocation, sole cloud save, stale-write rejection, restart persistence and no server production. Client production is covered separately by web tests and browser acceptance.",
   );
 } finally {
   await stop();

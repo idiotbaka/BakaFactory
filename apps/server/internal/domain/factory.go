@@ -2,16 +2,9 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 )
-
-var ErrFactoryLimit = errors.New("factory limit reached")
-var ErrFactoryNotFound = errors.New("factory not found")
-var ErrBuildingNotFound = errors.New("building not found")
-var ErrBuildingFixed = errors.New("building is fixed")
-var ErrTileOccupied = errors.New("tile occupied")
 
 type BuildingPlacement struct {
 	X        int `json:"x"`

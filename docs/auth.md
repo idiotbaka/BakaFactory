@@ -1,4 +1,4 @@
-# 阶段 2：账号与基础数据同步
+# 账号、单点登录与在线校验
 
 ## 分层与存储
 
@@ -17,7 +17,7 @@
 
 Argon2id 使用 19 MiB、2 次迭代、1 lane，16 字节随机盐与 32 字节输出，保存完整 PHC 编码。参数依据 [OWASP Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)，实现使用 [Go 官方 Argon2 包](https://pkg.go.dev/golang.org/x/crypto/argon2)。校验使用常量时间比较，只解析当前受支持且有资源上界的参数，拒绝畸形 hash。不存在账号也进行同成本 dummy hash 校验，统一返回“用户名或密码不正确”。密码不会写日志、API 响应或浏览器存储。
 
-Session 是 32 字节随机 token，浏览器通过 HttpOnly Cookie 持有，数据库只保存其 SHA-256；这里 SHA-256 用于高熵随机 token，不用于用户密码。默认 168h 绝对过期，不滑动续期。注册 / 登录生成新 token 并撤销请求 Cookie 对应的旧 token，减少 Session fixation；其他浏览器自己的 Session 不被撤销。登出删除数据库记录和 Cookie，旧 token 即使被重新发送也无效。
+Session 是 32 字节随机 token，浏览器通过 HttpOnly Cookie 持有，数据库只保存其 SHA-256；这里 SHA-256 用于高熵随机 token，不用于用户密码。默认 168h 绝对过期，不滑动续期。注册 / 登录生成新 token 并撤销请求 Cookie 对应的旧 token，减少 Session fixation；同账号其他设备的 Session 在同一登录事务中全部撤销，只保留最新登录。登出删除数据库记录和 Cookie，旧 token 即使被重新发送也无效。
 
 Cookie：Path=/、无 Domain、HttpOnly、SameSite=Lax、Max-Age、Expires；production 再加 Secure，名称使用 `__Host-bakafactory_session`。local/test 名称为 `bakafactory_session`，兼容本机 HTTP。production 账号验收需要 HTTPS 反向代理。前端不使用 localStorage / sessionStorage 保存凭据。
 
@@ -29,7 +29,7 @@ Cookie：Path=/、无 Domain、HttpOnly、SameSite=Lax、Max-Age、Expires；pro
 - 每个 IP（实际 RemoteAddr）15 分钟内最多 20 次注册 / 登录请求，每个规范化用户名最多 10 次。成功和失败均计数；429 附带 Retry-After。不能通过伪造 X-Forwarded-For 绕过。限流状态带锁、定时惰性清理，最多 10000 个键。
 - 同时最多 2 个昂贵密码计算，超过返回 429，避免大量并发 Argon2 分配内存。
 
-Origin + JSON + SameSite 的设计参考 [OWASP CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)。未引入 OAuth、邮箱、MFA、权限后台、工厂或游戏模拟。
+Origin + JSON + SameSite 的设计参考 [OWASP CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)。未引入 OAuth、邮箱、MFA 或权限后台。工厂由客户端运行，服务端仅保存备份。
 
 ## 前端
 
@@ -42,3 +42,15 @@ API 类型来自 OpenAPI；协议修改后运行 `npm run generate:api`。注册
 完整检查为 `npm run check`。自动测试验证密码随机盐、错误密码、Session 轮换 / 撤销 / 过期、浏览器隔离、Profile 权限、来源与 body 校验、重复用户名和限流。真实 HTTP 冒烟从临时空库注册、保存中文昵称、重启服务后用原 Session 读取、登出后拒绝旧 Cookie、重新登录恢复昵称。production 冒烟显式携带 Cookie 来验证 HTTP 接口与 Secure 标志；浏览器通过 production Cookie 登录仍需 HTTPS。
 
 已知边界：限流为单进程内存状态，重启后重置；代理部署所有请求会共享代理 IP 的限制，公网发布前应按可信代理与用户规模完善限流。没有找回密码和撤销全部设备功能。多个已打开页面的资料不会自动推送，刷新或操作后再读取。SQLite 当前仍为单实例方案。
+
+## 游戏会话与云存档
+
+`006_client_saves.sql` 为每个用户增加单 Session 唯一索引，升级时同账号多个历史 Session 只保留最新一个，保留账号与旧工厂记录。
+
+游戏首次心跳用空 session_id 获取绑定标识；之后必须保持同一个标识。该标识为非凭据身份，不能替代 HttpOnly Cookie。服务器每次核对 Cookie、标识和 owner，防止共享 Cookie 的旧标签页借用新登录继续上传。
+
+前台运行需要在线许可，心跳约每 10 秒一次、超时 8 秒，Worker 许可最多 30 秒。断网暂停并自动重试，401 返回登录，本机数据保留。后台同样暂停，返回重新校验。HTTP 轮询有有限检测延迟，新登录即时撤销旧端上传权限；本地画面会在下次检测时退出。
+
+云备份 GET / PUT 要求 X-Game-Session；PUT 继续要求 Origin 和严格 JSON，正文上限 4 MiB。Session 和云版本在同一个写事务内再次检查。401 不下发清 Cookie，避免迟到的旧请求删除新登录 Cookie。登录 / 登出仍通过 Set-Cookie 管理凭据。
+
+游戏数据按账号 ID 保存在 IndexedDB；退出不删除本机存档，不自动上传最后进度。30 分钟自动备份或手动上传只覆盖唯一云存档。账号切换不共用运行状态，详见 [architecture.md](architecture.md)。

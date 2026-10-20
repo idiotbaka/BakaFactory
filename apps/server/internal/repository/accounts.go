@@ -39,7 +39,7 @@ func (r *Accounts) Create(ctx context.Context, account domain.Account, session d
 	return tx.Commit()
 }
 func storeSession(ctx context.Context, tx *sql.Tx, session domain.Session, oldHash string) error {
-	if _, err := tx.ExecContext(ctx, "DELETE FROM sessions WHERE token_hash = ? OR expires_at <= ?", oldHash, session.CreatedAt); err != nil {
+	if _, err := tx.ExecContext(ctx, "DELETE FROM sessions WHERE user_id = ? OR token_hash = ? OR expires_at <= ?", session.UserID, oldHash, session.CreatedAt); err != nil {
 		return err
 	}
 	_, err := tx.ExecContext(ctx, "INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)", session.TokenHash, session.UserID, session.CreatedAt, session.ExpiresAt)

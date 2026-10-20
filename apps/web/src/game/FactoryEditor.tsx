@@ -9,10 +9,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  deleteBuilding,
-  getFactory,
-  placeBuilding,
-  updateBuilding,
   type BuildingDefinition,
   type BuildingInstance,
   type BuildingPlacement,
@@ -20,6 +16,7 @@ import {
   type FactoryDetail,
 } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
+import type { EditorCommands } from "./local/runtime";
 import ConveyorVisual from "./ConveyorVisual";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import { entityColor } from "./entityTheme";
@@ -37,6 +34,7 @@ import {
 } from "./editorGeometry";
 
 type Props = {
+  commands: EditorCommands;
   factory: FactoryDetail;
   catalog: Catalog;
   selectedID: string | null;
@@ -296,7 +294,10 @@ export default function FactoryEditor(props: Props) {
       return;
     void commit(
       () =>
-        updateBuilding(f.id, p.instanceID!, { ...cell, rotation: p.rotation }),
+        latest.current.commands.updateBuilding(f.id, p.instanceID!, {
+          ...cell,
+          rotation: p.rotation,
+        }),
       () => p.instanceID!,
     );
   }
@@ -326,7 +327,7 @@ export default function FactoryEditor(props: Props) {
     if (!b || isFixed(b) || lock.current) return;
     void commit(
       () =>
-        updateBuilding(f.id, b.id, {
+        latest.current.commands.updateBuilding(f.id, b.id, {
           x: b.x,
           y: b.y,
           rotation: nextRotation(b.rotation),
@@ -339,7 +340,7 @@ export default function FactoryEditor(props: Props) {
       b = f.buildings.find((b) => b.id === id);
     if (!b || isFixed(b) || lock.current) return;
     void commit(
-      () => deleteBuilding(f.id, b.id),
+      () => latest.current.commands.deleteBuilding(f.id, b.id),
       () => null,
     );
   }
@@ -355,7 +356,10 @@ export default function FactoryEditor(props: Props) {
       const f = latest.current.factory;
       void commit(
         () =>
-          placeBuilding(f.id, placementDefinition.id, { ...cell, rotation }),
+          latest.current.commands.placeBuilding(f.id, placementDefinition.id, {
+            ...cell,
+            rotation,
+          }),
         (snapshot) =>
           snapshot.buildings.find((b) => b.x === cell.x && b.y === cell.y)
             ?.id ?? null,
@@ -384,7 +388,7 @@ export default function FactoryEditor(props: Props) {
   function reloadFactory() {
     const { factory: f, selectedID: id } = latest.current;
     void commit(
-      () => getFactory(f.id, AbortSignal.timeout(8000)),
+      () => latest.current.commands.getFactory(f.id, AbortSignal.timeout(8000)),
       (snapshot) => (snapshot.buildings.some((b) => b.id === id) ? id : null),
     );
   }
@@ -667,7 +671,7 @@ export default function FactoryEditor(props: Props) {
           onClick={reloadFactory}
           disabled={saving || Boolean(dragPreview)}
         >
-          刷新布局
+          重绘布局
         </button>
         <span>
           {dragPreview
@@ -911,7 +915,7 @@ export default function FactoryEditor(props: Props) {
               ? "连续放置 · Esc 退出"
               : dragPreview
                 ? "移动预览 · Esc 取消"
-                : "布局已保存"}
+                : "布局已保存在本机"}
         </span>
       </div>
       {preview &&

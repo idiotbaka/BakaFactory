@@ -97,75 +97,36 @@ export async function getCatalog(signal?: AbortSignal): Promise<Catalog> {
   if (!data) failure(response.status, error);
   return data;
 }
-export async function listFactories(signal?: AbortSignal): Promise<Factory[]> {
-  const { data, error, response } = await client.GET("/api/v1/factories", {
-    signal,
-  });
-  if (!data) failure(response.status, error);
-  return data.factories;
-}
-export async function getFactory(
-  id: string,
-  signal?: AbortSignal,
-): Promise<FactoryDetail> {
-  const { data, error, response } = await client.GET("/api/v1/factories/{id}", {
-    params: { path: { id } },
-    signal,
-  });
-  if (!data) failure(response.status, error);
-  return data.factory;
-}
-export async function createFactory(name: string): Promise<FactoryDetail> {
-  const { data, error, response } = await client.POST("/api/v1/factories", {
-    body: { name },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!data) failure(response.status, error);
-  return data.factory;
-}
-export async function placeBuilding(
-  factoryID: string,
-  building_type: string,
-  placement: BuildingPlacement,
-): Promise<FactoryDetail> {
+export async function gameHeartbeat(sessionID: string, signal?: AbortSignal) {
   const { data, error, response } = await client.POST(
-    "/api/v1/factories/{id}/buildings",
+    "/api/v1/game/heartbeat",
     {
-      params: { path: { id: factoryID } },
-      body: { building_type, ...placement },
-      signal: AbortSignal.timeout(10000),
+      body: { session_id: sessionID },
+      signal,
     },
   );
   if (!data) failure(response.status, error);
-  return data.factory;
+  return data;
 }
-export async function updateBuilding(
-  factoryID: string,
-  buildingID: string,
-  placement: BuildingPlacement,
-): Promise<FactoryDetail> {
-  const { data, error, response } = await client.PATCH(
-    "/api/v1/factories/{id}/buildings/{buildingID}",
-    {
-      params: { path: { id: factoryID, buildingID } },
-      body: placement,
-      signal: AbortSignal.timeout(10000),
-    },
-  );
+export async function downloadSave(sessionID: string, signal?: AbortSignal) {
+  const { data, error, response } = await client.GET("/api/v1/game/save", {
+    params: { header: { "X-Game-Session": sessionID } },
+    signal,
+  });
   if (!data) failure(response.status, error);
-  return data.factory;
+  return data.backup;
 }
-export async function deleteBuilding(
-  factoryID: string,
-  buildingID: string,
-): Promise<FactoryDetail> {
-  const { data, error, response } = await client.DELETE(
-    "/api/v1/factories/{id}/buildings/{buildingID}",
-    {
-      params: { path: { id: factoryID, buildingID } },
-      signal: AbortSignal.timeout(10000),
-    },
-  );
-  if (!data) failure(response.status, error);
-  return data.factory;
+export async function uploadSave(
+  sessionID: string,
+  baseVersion: number,
+  save: components["schemas"]["GameSave"],
+  signal?: AbortSignal,
+) {
+  const { data, error, response } = await client.PUT("/api/v1/game/save", {
+    params: { header: { "X-Game-Session": sessionID } },
+    body: { base_version: baseVersion, save },
+    signal,
+  });
+  if (!data || !data.backup) failure(response.status, error);
+  return data.backup;
 }

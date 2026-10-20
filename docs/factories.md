@@ -1,3 +1,5 @@
+> 本文为旧服务端工厂建模历史。当前使用客户端运行与 IndexedDB，旧工厂不导入；实现以 [architecture.md](architecture.md) 和 [simulation.md](simulation.md) 为准。
+
 本文件保留早期工厂模型的设计历史。当前已支持建筑编辑、生产、物流与仓库；请以 [simulation.md](simulation.md)、[architecture.md](architecture.md) 及代码为准。
 
 # 阶段 3：工厂、实体定义与游戏工作台

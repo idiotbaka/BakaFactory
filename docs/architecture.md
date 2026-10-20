@@ -1,61 +1,64 @@
 # 当前架构
 
-本文件描述当前已实现的结构，取代旧 README.md 的阶段路线。开发入口见 [index.md](index.md)，游戏规则见 [simulation.md](simulation.md)。
+本项目采用客户端权威运行：浏览器以 1 TPS 推进工厂，IndexedDB 是本机存档，Go / SQLite 提供账号、单点登录校验和每账号唯一云备份。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)。
 
-## 组件和调用链
+## 组件与调用链
 
-- apps/web：React / TypeScript / Vite；DOM/CSS 网格、SVG 建筑、视图变换、编辑器与生产面板。
-- apps/server/internal/httpapi：Cookie 认证、Origin、严格输入与 owner 隔离；返回已提交工厂快照。
-- application：账号与建筑用例；RunSimulation 使用 1000ms 单次计时器驱动所有工厂，每次处理结束后再等待下一秒，避免卡顿后排队追刻。
-- domain：工厂 / 定义、库存、整数 tick 模拟与物流规划；不读时钟、不访问数据库。
-- repository：SQLite 事务、工厂读写、模拟状态与玩家仓库原子保存。
-- database：纯 Go SQLite，单连接、外键、WAL、busy_timeout、嵌入式迁移与 checksum。
+- `apps/web/src/game/local/state.ts`：本地工厂创建、存档校验、编辑与拆除回收；读取唯一的 catalog JSON 定义源。
+- `simulation.ts`：无 DOM、网络、时钟和持久化依赖的确定性单刻转换 `step`，生产和物流的唯一实现。
+- `simulation.worker.ts`：独立 Worker 串行处理 tick 与编辑指令。主线程每秒收到本机快照，不发送网络生产快照。
+- `runtime.ts`：生命周期、同账号标签页独占锁、在线许可、Worker 指令、串行保存队列、云备份与冲突选择。
+- `storage.ts`：IndexedDB 完整存档事务。事务完成之后才显示保存成功；不使用 localStorage 保存游戏数据或凭据。
+- React / DOM / CSS / SVG：保留编辑器、HUD 和共享 RAF，普通 / 节能绘制约 60 / 15 FPS。
+- Go `httpapi → application → domain / repository`：认证、Origin / JSON 边界、结构校验与云存档事务。服务器没有生产循环和建筑编辑接口。
 
-`HTTP → application → repository → SQLite → 已提交快照`。
+运行链路：`编辑 / 1 秒计时 → Worker → 完整本机状态 → UI / IndexedDB`。
 
-`1000ms timer → repository.AdvanceAll → 读取布局与状态 → domain.Step → 原子保存状态 / 仓库 / revision`。
+备份链路：`本机一致快照 → Cookie + 绑定会话 → 唯一云存档事务 → 仅更新本地备份元数据`。上传期间的新 tick 或编辑不能被响应中的旧快照覆盖。
 
-## Tick 生命周期
+## 本机时钟与原子操作
 
-每个工厂单独事务推进一刻。先运行生产与带上进度，再规划物流；解决目标容量、白名单、来源数量与带上占用依赖，然后统一扣除来源、接收目标。按稳定 ID 排序并随 tick 轮换竞争优先级。已满的传送带可在同一 tick 让旧物品离开、新物品进入；同一物品不能跨过多格。
+1 tick = 1 秒，配方和物流仍以整数 tick 结算。一次只推进一刻，不按计时器延误累加追刻；唤醒间隔超过 2500ms 时跳过这次计算。关闭、后台、休眠、断网或在线许可失效均暂停，恢复后重新等待一秒，不产生离线收益。
 
-每次 tick 或布局编辑增加 factory revision。实例移动保留状态；删除将物品回收至玩家仓库，与删除 SQL 在同一事务。HTTP 读取也使用事务，返回布局、库存、仓库和 tick 的一致快照。单 SQLite 连接串行化模拟与编辑，避免用旧状态覆盖删除或复制物品。
+Worker 消息队列串行执行编辑和 tick。每次转换先创建独立的新状态，成功才替换当前状态；失败保留原状态。移动保留实例 ID、库存与进度，删除与回收属于同一次转换。revision 每次成功编辑 / tick 增加。
 
-某工厂状态非法时记录错误并暂停该工厂的本次 tick，不清空状态；继续处理其他工厂。服务退出会取消并等待模拟协程后关闭数据库。当前目标为本机 / 单实例小型工厂，不是分布式模拟器。
+IndexedDB 数据库为 `bakafactory-client-v1`，按不可变账号 ID 隔离。一个记录包含格式 / 规则版本、完整工厂（布局、配置、模拟、总仓库）、云版本、上次上传 revision 和保存时间。编辑后保存，每 5 tick 自动保存；切后台和正常卸载尽力保存。所有写入按提交顺序排队，最后一笔事务结束后才释放标签页锁。不能保证浏览器强制退出时执行最后保存。
 
-## 持久化
+本地读写失败或格式损坏不会静默清档。写失败暂停生产和编辑，玩家可重试保存；保留内存中的当前进度。申请浏览器持久存储属于尽力保护，不能抵消玩家主动清除网站数据。
 
-| 表                                       | 用途                                                                          |
-| ---------------------------------------- | ----------------------------------------------------------------------------- |
-| users / sessions                         | 账号与 Cookie Session                                                         |
-| factories                                | 布局边界、owner、名称、单调 revision                                          |
-| building_instances                       | 建筑 ID、类型、位置、旋转、独立 configuration                                 |
-| factory_simulations                      | 每座工厂的 tick、各实例的输入 / 产物、秒进度、秒冷却和带上物品 ID / 类型 JSON |
-| player_warehouses                        | 按玩家 owner_id 保存各物品累计数量                                            |
-| schema_migrations / application_metadata | 迁移历史、checksum、初始化元数据                                              |
+## 在线、会话与多标签页
 
-新增 005_one_second_ticks.sql 将已有 10 TPS 存档换算为整秒；保留前 4 个迁移的原始内容与 checksum。库存和仓库数量不变，未完成工作保守取整，冷却向上取整；为已有带上物品补充稳定 ID。既有布局及 configuration 原样保留；模拟状态按实例 ID 惰性初始化。仓库独立于机器状态保存，不能由客户端覆盖。所有测试数据库使用内存或临时目录。
+每次成功登录在同一事务内撤销该用户其他 Session，然后创建新 Session。账号仍用 Argon2id 和 HttpOnly Cookie。游戏首次通过 `POST /api/v1/game/heartbeat` 绑定会话标识，此标识不能用于登录；后续心跳和云存档请求必须保持绑定。这样同浏览器 Cookie 被另一次登录替换时，旧标签页不能借用新 Cookie 继续上传。
 
-每刻保存后才提交；正常重启保留至最后成功提交的 tick。浏览器关闭不影响服务器生产；停服期间不推进时间，重启不按现实经过时长追赶。运行期间卡顿时不会跳过计算而直接增加产量。
+心跳响应后约 10 秒再次请求，不携带工厂或库存。请求超时 8 秒，每次许可最多 30 秒且从发起请求时计时；Worker 独立检查许可到期，主线程卡住时也不会无限运行。收到 401 立即暂停并返回登录；网络失败暂停并重试。HTTP 轮询存在有限检测延迟，不承诺新登录时旧画面瞬间消失。旧会话的上传会被服务器即时拒绝。
 
-## 前端同步和显示
+同浏览器同账号用 Web Locks 独占运行；另一个标签页提示关闭原页面后重试。标签页锁要求支持 Web Locks 的浏览器及安全上下文。账号切换通过组件 owner key 隔离，不共用运行状态。
 
-同源 `/api/v1/factories/{id}` 读取完整快照，前台每次响应后间隔 1000ms，后台标签页为 3000ms；单次请求最多 8 秒，无重叠轮询，卸载取消。失败显示重试提示，401 返回登录。仅接受 revision 不低于当前的响应，避免较早 GET 覆盖新建造或较新生产状态。
+## 唯一云存档
 
-UI 不推进 tick 或修改物品数。显示服务器库存、生产 / 阻塞状态与总仓库；共享 RAF 独立绘制机器进度和带上物品。生产进度最多预演下一刻；传送带物品按稳定 id 保持跨格轨迹，阻塞后停住，不在未确认时跳到另一条带。每帧直接更新少量 transform / progress，不触发整张 React 棋盘重绘。无活跃动画时停止 RAF，后台标签页暂停，回到前台立即请求快照。详见 [animation.md](animation.md)。相邻同向带面连接仍按布局计算。OUT / IN 图标和其他非传送带图标一样可以旋转，方向规则以箭头为准。
+| 表                                                                       | 当前用途                                               |
+| ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| users / sessions                                                         | 账号与每账号一个有效登录会话                           |
+| cloud_saves                                                              | owner_id 主键；完整存档 JSON、服务端 version、saved_at |
+| schema_migrations / application_metadata                                 | 已发布迁移校验与初始化元数据                           |
+| factories / building_instances / factory_simulations / player_warehouses | 遗留表，仅保留原记录，不再读取为新游戏或推进           |
 
-模拟 JSON 还保存最近 3 tick 的成功端口 / 入库转移记录，用于补画机器输出、经过端口和进入机器 / 工厂仓库 的动画，不参与库存计算。客户端 LogisticsVisualStore 将在带物品与已离带的短时图标按 payload_id 合并，保留同一个 React 节点及绘制位置；入料结束只清理图标。只播放新 tick 后尚未消费的事件（最多覆盖 2 tick），首次加载 / 后台恢复不补播历史；编辑使相关路线失效。共享帧时钟与原轮询频率均不变，未引入新存储表、网络请求或渲染引擎。
+新增 `006_client_saves.sql`，不修改 001～005；已有多个会话只保留最新一个并增加唯一索引。保留账号和所有旧工厂原始记录，新架构不导入旧进度；首次没有新本地 / 云存档时从空工厂开始。
 
-视觉层使用赛博朋克＋蒸汽波 HUD：App / GameArt 为入口与静态矢量场景，FactoryWorkspace 管理建造快捷键、资源 HUD、沉浸和节能偏好，HudPopover 用原生 details 实现键盘 / 外部关闭。实体皮肤与颜色只在客户端 entityTheme / SVG 定义，不改服务器 catalog 和存档。地图 / 类型查询缓存，静态图标、带面、进度条和物品图层 memo 化；共享 RAF 将持续 DOM 绘制限制为普通约 60、节能约 15 帧。只把节能偏好保存到本地浏览器，1 TPS、库存、物流和网络读取不变。布局与性能边界见 [visual-style.md](visual-style.md)。
+云端每账号仅一份存档，自动 / 手动上传都覆盖这一行。每 30 分钟检查是否有新进度；失败后按一分钟间隔重试，心跳恢复不额外传送整厂数据。手动上传立即执行。本机定期生产不会让云数据自动变化。
 
-文字全局最小 12px，style.css 提供继承下限，Web lint 调用 check-ui-typography.mjs 检查 CSS 和 TSX 字面量字号。保留的地图坐标对小于 100% 的缩放进行字号补偿，低倍率隐藏非主要坐标及实体代号；移动物品以矢量图形展示。game-shell 定义 --workspace-width:max(90vw,1200px)，factory-workspace 宽度继承、高度显式为宽度的 9/16；三行 Grid 为 100px HUD、minmax(0,1fr) 主区和 52px 底栏，间距 12px。主区用 minmax(0,18fr/58fr/24fr) 固定三栏，图鉴与右侧检视使用 size containment 和内部滚动，中央地图吸收固定工具栏以外的剩余高度。错误提示浮层不参与尺寸计算；窄屏保持三栏、页面横向滚动。16:9 指整个工作台，内部地图适配中央区域。ConveyorVisual 移除 BELT 文本节点，带面、连接、箭头和物品轨迹不变。模型仍是 21×21 / 30px 单元，无存档或坐标协议变化。
+登录时优先有效本机存档，没有本机工厂存档（含仅有空占位记录）才自动恢复云备份。始终读取一次云存档核对其版本；已有本机记录而云版本不同则暂停并提供“保留本机并覆盖云端 / 恢复云存档”。恢复需要明确确认。上传携带 base_version，服务器不匹配返回 409，不按客户端时间或 tick 判新旧。首次没有任何云存档时 base_version=0。
 
-## API 和安全
+云上传的 Session、owner 和云版本在同一 SQLite 事务内检查，避免被撤销会话的在途写入。备份确认只改变云版本 / 上传 revision，不回写运行中的游戏状态。数值使用 JavaScript 安全整数范围，上限为 9007199254740991。服务端校验格式、大小（4 MiB）、定义、坐标、容量和版本；默认信任单人玩家提交的数量，不证明真实产量，也没有增长速率反作弊。
 
-登录恢复时 App 以 undefined 表示尚未确认、null 表示已确认游客、User 表示玩家。AccountPanel 报告这三个状态；未确认阶段先保留 game-shell，避免默认当游客导致首页闪现。登录确认、工厂加载与失败框共用 factory-workspace 的外框尺寸，登录确认以 53px 顶部占位对应玩家条。
+## API 与运行边界
 
-继续使用现有 API，无客户端库存写入接口。FactoryDetail 新增 simulation，Factory 新增 revision；建筑定义增加库存容量和输入白名单，配方时长更新。协议见 openapi.yaml，生成文件为 apps/web/src/api/schema.d.ts。
+- `POST /api/v1/game/heartbeat`：会话绑定、轻量在线校验。
+- `GET /api/v1/game/save`：本账号备份或 null。
+- `PUT /api/v1/game/save`：校验会话、结构和 base_version 后替换唯一备份。
+- `/api/v1/definitions`：登录后可读定义；浏览器运行直接打包同一 JSON，不逐 tick 请求定义。
+- 原 `/api/v1/factories...` 接口已移除，返回 404。
 
-所有工厂详情、定义和编辑接口需登录；owner 校验覆盖库存与仓库。写入继续校验 Origin、严格 JSON、整数坐标 / 角度、占用和固定 工厂仓库。客户端不能提交 simulation、warehouse、revision 或 configuration。账号继续使用 Argon2id 与 HttpOnly Cookie。
+API 源为 [openapi.yaml](openapi.yaml)，类型必须由 `npm run generate:api` 生成。写请求继续要求允许的 Origin 和严格 JSON，错误响应不清除 Cookie，避免旧请求的迟到错误擦掉新登录 Cookie。
 
-开发时 Vite 代理 API 到 Go；生产由 Go 托管构建后的 Web。当前无 WebSocket、离线结算、跨进程锁 / 多实例 tick 主节点，也无实时推送协议。多开标签页通过轮询读取相同服务器状态。
+仍为单实例 Go / SQLite 服务。玩家必须联网并校验账号；没有离线启动、PWA、WebSocket、跨设备库存合并、历史云存档槽位或离线补算。未来补算可分批调用纯 `step`，需要另做性能测量、时间上限和进度反馈。

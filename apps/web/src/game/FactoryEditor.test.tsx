@@ -18,20 +18,11 @@ import {
 } from "vitest";
 import FactoryEditor from "./FactoryEditor";
 import definitions from "../../../server/internal/catalog/definitions.json";
-import {
-  deleteBuilding,
-  getFactory,
-  placeBuilding,
-  updateBuilding,
-  type Catalog,
-  type FactoryDetail,
-} from "../api/client";
-vi.mock("../api/client", () => ({
-  deleteBuilding: vi.fn(),
-  getFactory: vi.fn(),
-  placeBuilding: vi.fn(),
-  updateBuilding: vi.fn(),
-}));
+import type { Catalog, FactoryDetail } from "../api/client";
+const deleteBuilding = vi.fn(),
+  getFactory = vi.fn(),
+  placeBuilding = vi.fn(),
+  updateBuilding = vi.fn();
 const catalog = definitions as unknown as Catalog;
 const original: FactoryDetail = {
   id: "editor-factory",
@@ -129,6 +120,7 @@ function Harness({
       </button>
       <input aria-label="备注" />
       <FactoryEditor
+        commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
         factory={factory}
         catalog={catalog}
         selectedID={selected}
@@ -494,7 +486,7 @@ describe("factory editor interactions", () => {
     expect(deleteBuilding).not.toHaveBeenCalled();
     expect(updateBuilding).not.toHaveBeenCalled();
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "刷新布局" }));
+      fireEvent.click(screen.getByRole("button", { name: "重绘布局" }));
     });
     expect(getFactory).toHaveBeenCalledWith(
       original.id,

@@ -1,73 +1,80 @@
 openapi: 3.0.3
 info:
   title: BakaFactory API
-  version: 0.1.0
-  description: Accounts, factory editing and server-authoritative 1 TPS production snapshots. All gameplay durations are whole seconds. Cookie authentication; mutations require an allowed Origin header. Clients animate visuals independently; simulation state is read-only.
+  version: 0.2.0
+  description: Client-authoritative 1 TPS simulation, single-login accounts and one cloud backup per account. Game state is stored in IndexedDB. Cookie authentication and allowed Origin required for mutations. Factory editing is local; legacy factory paths are retired.
 paths:
-  /api/v1/factories/{id}/buildings:
+  /api/v1/game/heartbeat:
     post:
-      operationId: placeBuilding
-      summary: Place a known non-fixed building on an empty owned tile
+      operationId: gameHeartbeat
+      summary: Validate the current login and bind this game to its session
       security: [{ cookieSession: [] }]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              allOf:
-                - { $ref: "#/components/schemas/BuildingPlacement" }
-                - type: object
-                  required: [building_type]
-                  properties:
-                    building_type: { type: string }
+              type: object
+              additionalProperties: false
+              required: [session_id]
+              properties:
+                session_id:
+                  {
+                    type: string,
+                    description: Empty only for the initial handshake; subsequent calls must send the returned identity. This identity is not a login credential.,
+                  }
       responses:
-        "201":
-          description: Placed; committed factory snapshot
+        "200":
+          description: Online authorization for at most 30 seconds
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/FactoryResponse" }
+              schema:
+                type: object
+                required: [user, session_id, lease_seconds]
+                properties:
+                  user: { $ref: "#/components/schemas/User" }
+                  session_id: { type: string }
+                  lease_seconds: { type: integer, enum: [30] }
         default: { $ref: "#/components/responses/AuthError" }
-  /api/v1/factories/{id}/buildings/{buildingID}:
+  /api/v1/game/save:
     parameters:
-      - in: path
-        name: id
+      - in: header
+        name: X-Game-Session
         required: true
         schema: { type: string }
-      - in: path
-        name: buildingID
-        required: true
-        schema: { type: string }
-    patch:
-      operationId: moveRotateBuilding
-      summary: Atomically move and rotate an owned non-fixed building
+    get:
+      operationId: downloadSave
+      summary: Download the sole backup of the authenticated account, or null
+      security: [{ cookieSession: [] }]
+      responses:
+        "200":
+          description: Current backup; legacy server factories are never imported
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CloudSaveResponse" }
+        default: { $ref: "#/components/responses/AuthError" }
+    put:
+      operationId: uploadSave
+      summary: Replace the sole backup if base_version matches; 409 preserves current backup
       security: [{ cookieSession: [] }]
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/BuildingPlacement" }
+            schema:
+              type: object
+              additionalProperties: false
+              required: [base_version, save]
+              properties:
+                base_version:
+                  { type: integer, minimum: 0, maximum: 9007199254740991 }
+                save: { $ref: "#/components/schemas/GameSave" }
       responses:
         "200":
-          description: Updated; committed factory snapshot
+          description: Backup committed, including the server version and timestamp
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/FactoryResponse" }
-        default: { $ref: "#/components/responses/AuthError" }
-    delete:
-      operationId: deleteBuilding
-      summary: Remove an owned non-fixed building
-      security: [{ cookieSession: [] }]
-      responses:
-        "200":
-          description: Deleted; committed factory snapshot
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/FactoryResponse" }
+              schema: { $ref: "#/components/schemas/CloudSaveResponse" }
         default: { $ref: "#/components/responses/AuthError" }
   /api/v1/definitions:
     get:
@@ -80,62 +87,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Catalog" }
-        default: { $ref: "#/components/responses/AuthError" }
-  /api/v1/factories:
-    get:
-      operationId: listFactories
-      summary: List factories owned by the current user
-      security: [{ cookieSession: [] }]
-      responses:
-        "200":
-          description: Factory summaries, at most one in stage 3
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [factories]
-                properties:
-                  factories:
-                    type: array
-                    items: { $ref: "#/components/schemas/Factory" }
-        default: { $ref: "#/components/responses/AuthError" }
-    post:
-      operationId: createFactory
-      summary: Create a 21 by 21 factory with a fixed center Bus
-      security: [{ cookieSession: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required: [name]
-              properties:
-                name: { type: string, minLength: 1, maxLength: 32 }
-      responses:
-        "201":
-          description: Created factory with center Bus
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/FactoryResponse" }
-        default: { $ref: "#/components/responses/AuthError" }
-  /api/v1/factories/{id}:
-    get:
-      operationId: getFactory
-      summary: Read an owned factory and its building instances
-      security: [{ cookieSession: [] }]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      responses:
-        "200":
-          description: Persisted factory layout
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/FactoryResponse" }
         default: { $ref: "#/components/responses/AuthError" }
   /api/v1/auth/register:
     post:
@@ -273,6 +224,29 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/ErrorResponse" }
   schemas:
+    GameSave:
+      type: object
+      additionalProperties: false
+      required: [format_version, rules_version, factory]
+      properties:
+        format_version: { type: integer, enum: [1] }
+        rules_version: { type: integer, enum: [1] }
+        factory: { $ref: "#/components/schemas/FactoryDetail" }
+    CloudSave:
+      type: object
+      required: [version, saved_at, save]
+      properties:
+        version: { type: integer, minimum: 1, maximum: 9007199254740991 }
+        saved_at: { type: string, format: date-time }
+        save: { $ref: "#/components/schemas/GameSave" }
+    CloudSaveResponse:
+      type: object
+      required: [backup]
+      properties:
+        backup:
+          allOf:
+            - { $ref: "#/components/schemas/CloudSave" }
+          nullable: true
     BuildingPlacement:
       type: object
       required: [x, y, rotation]

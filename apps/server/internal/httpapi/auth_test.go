@@ -41,8 +41,8 @@ func newAuthFixture(t *testing.T, secure bool) authFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	factories := application.NewFactoryService(repository.NewFactories(db), definitions)
-	h, err := New(application.NewHealthService(repository.NewHealth(db), "test", "test"), slog.New(slog.NewJSONHandler(io.Discard, nil)), "", AuthOptions{Service: service, Secure: secure, TTL: 7 * 24 * time.Hour, Origins: []string{testOrigin}, Factories: factories})
+	saves := application.NewSaveService(repository.NewSaves(db), service, definitions)
+	h, err := New(application.NewHealthService(repository.NewHealth(db), "test", "test"), slog.New(slog.NewJSONHandler(io.Discard, nil)), "", AuthOptions{Service: service, Secure: secure, TTL: 7 * 24 * time.Hour, Origins: []string{testOrigin}, Saves: saves})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,15 +153,15 @@ func TestSessionRotationIsolationAndExpiry(t *testing.T) {
 	otherUser := userFrom(t, other, 201)
 	c := other.Result().Cookies()[0]
 	userFrom(t, f.request("PATCH", "/api/v1/me/profile", `{"display_name":"第二位厂长"}`, c), 200)
-	if userFrom(t, f.request("GET", "/api/v1/me", "", a2), 200).DisplayName != "first_user" || firstUser.ID == otherUser.ID {
+	if userFrom(t, f.request("GET", "/api/v1/me", "", b), 200).DisplayName != "first_user" || firstUser.ID == otherUser.ID {
 		t.Fatal("profile changed another account")
 	}
-	if f.request("PATCH", "/api/v1/me/profile", `{"display_name":"hacked","user_id":"other"}`, a2).Code != 400 {
+	if f.request("PATCH", "/api/v1/me/profile", `{"display_name":"hacked","user_id":"other"}`, b).Code != 400 {
 		t.Fatal("accepted foreign user ID")
 	}
 	f.request("POST", "/api/v1/auth/logout", "", b)
-	if f.request("GET", "/api/v1/me", "", b).Code != 401 || f.request("GET", "/api/v1/me", "", a2).Code != 200 {
-		t.Fatal("logout affected another browser")
+	if f.request("GET", "/api/v1/me", "", b).Code != 401 || f.request("GET", "/api/v1/me", "", a2).Code != 401 {
+		t.Fatal("revoked sessions must stay revoked")
 	}
 	if _, err := f.db.Exec("UPDATE sessions SET expires_at=?", time.Now().Unix()); err != nil {
 		t.Fatal(err)

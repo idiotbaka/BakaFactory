@@ -897,6 +897,25 @@
   text-align: right;
   color: var(--muted);
 }
+.save-controls .controls-guide-content {
+  display: grid;
+  gap: 10px;
+  max-height: min(480px, 70svh);
+  overflow: auto;
+}
+.save-controls .controls-guide-content h3,
+.save-controls .controls-guide-content p {
+  margin: 0;
+}
+.save-controls .controls-guide-content button {
+  width: 100%;
+  padding: 8px 10px;
+}
+.simulation-sync-error > button {
+  margin: 8px 8px 0 0;
+  padding: 6px 10px;
+  font-size: 12px;
+}
 .factory-workspace.is-immersive .factory-layout {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "map";
