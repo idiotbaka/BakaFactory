@@ -36,6 +36,102 @@ const install = (f: LocalFactory, type: string) => {
 };
 
 describe("recycling gameplay", () => {
+  it("reserves a batch queue once, completes one batch at a time, restores it and refunds only unfinished inputs", () => {
+    let f = start();
+    const r = recipeDefinitions.get("r1001")!,
+      trash = itemID("垃圾包"),
+      before = structuredClone(f);
+    f.simulation.warehouse[trash] = 36;
+    f = act(f, { type: "workshop", recipe: r.id, batches: 3 });
+    expect(f.simulation.warehouse[trash]).toBe(0);
+    expect(before.simulation.industry?.workshop).toBeUndefined();
+    expect(f.simulation.industry!.workshop).toMatchObject({
+      remaining: 3,
+      total: 3,
+    });
+    f = advance(f, r.duration_ms / 1000 + 3);
+    expect(f.simulation.industry!.workshop).toMatchObject({
+      remaining: 2,
+      total: 3,
+      progress: 3,
+    });
+    for (const [id, n] of Object.entries(r.outputs))
+      expect(f.simulation.warehouse[id]).toBe(n);
+    f = validateSave(toSave(f), user.id);
+    f = act(f, { type: "cancel_workshop" });
+    expect(f.simulation.warehouse[trash]).toBe(24);
+    expect(f.simulation.industry!.workshop).toBeUndefined();
+    for (const [id, n] of Object.entries(r.outputs))
+      expect(f.simulation.warehouse[id]).toBe(n);
+    expect(
+      act(f, { type: "cancel_workshop" }).simulation.warehouse[trash],
+    ).toBe(24);
+  });
+  it("rejects noninteger, excessive and unaffordable batch counts atomically, and finishes exactly 100 paid batches", () => {
+    const f = start(),
+      trash = itemID("垃圾包"),
+      r = recipeDefinitions.get("r1001")!;
+    f.simulation.warehouse[trash] = 1200;
+    const old = structuredClone(f);
+    for (const batches of [0, -1, 1.5, 101, NaN, Infinity]) {
+      expect(() =>
+        act(f, { type: "workshop", recipe: r.id, batches }),
+      ).toThrow();
+      expect(f).toEqual(old);
+    }
+    const scarce = structuredClone(f);
+    scarce.simulation.warehouse[trash] = 13;
+    expect(() =>
+      act(scarce, { type: "workshop", recipe: r.id, batches: 2 }),
+    ).toThrow("原料不足");
+    expect(scarce.simulation.warehouse[trash]).toBe(13);
+    const done = advance(
+      act(f, { type: "workshop", recipe: r.id, batches: 100 }),
+      (r.duration_ms / 1000) * 100,
+    );
+    expect(done.simulation.industry!.workshop).toBeUndefined();
+    expect(done.simulation.warehouse[trash]).toBe(0);
+    for (const [id, n] of Object.entries(r.outputs))
+      expect(done.simulation.warehouse[id]).toBe(100 * n);
+  });
+  it("keeps remaining batches through output backpressure and accepts legacy single-batch saves", () => {
+    let f = start();
+    const r = recipeDefinitions.get("r1001")!,
+      trash = itemID("垃圾包"),
+      product = Object.keys(r.outputs)[0];
+    f.simulation.warehouse[trash] = 24;
+    f = act(f, { type: "workshop", recipe: r.id, batches: 2 });
+    f.simulation.warehouse[product] = Number.MAX_SAFE_INTEGER;
+    const stopped = advance(f, 3);
+    expect(stopped.simulation.industry!.workshop).toEqual(
+      f.simulation.industry!.workshop,
+    );
+    expect(stopped.simulation.industry!.crafted[product]).toBeUndefined();
+    f.simulation.warehouse[product] = 0;
+    const oldFactory = start();
+    oldFactory.simulation.warehouse[trash] = 12;
+    const legacy = toSave(act(oldFactory, { type: "workshop", recipe: r.id }));
+    delete legacy.factory.simulation!.industry!.workshop!.remaining;
+    delete legacy.factory.simulation!.industry!.workshop!.total;
+    expect(
+      advance(validateSave(legacy, user.id), r.duration_ms / 1000).simulation
+        .industry!.workshop,
+    ).toBeUndefined();
+    for (const fields of [
+      { remaining: 0, total: 2 },
+      { remaining: 3, total: 2 },
+      { remaining: 1, total: 101 },
+      { remaining: 1 },
+      { remaining: null, total: 2 },
+    ]) {
+      const invalid = toSave(structuredClone(f));
+      const job = invalid.factory.simulation!.industry!.workshop!;
+      delete job.remaining;
+      delete job.total;
+      Object.assign(job, fields);
+      expect(() => validateSave(invalid, user.id)).toThrow();
+    }
+  });
   it("bootstraps from zero, reserves one batch and preserves all nine sorting products across reload", () => {
     let f = start();
     for (let n = 0; n < 12; n++) f = act(f, { type: "scavenge" });

@@ -5,6 +5,7 @@ import FactoryWorkspace from "./FactoryWorkspace";
 import { useLocalGame } from "./local/useLocalGame";
 import { createLocalFactory, type LocalFactory } from "./local/state";
 import type { GameRuntime } from "./local/runtime";
+import { catalog, itemID } from "./local/catalog";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
   id: "owner",
@@ -29,12 +30,20 @@ afterEach(() => {
 });
 function prepare(
   existing = true,
-  options: { error?: string; conflict?: boolean; online?: boolean } = {},
+  options: {
+    error?: string;
+    conflict?: boolean;
+    online?: boolean;
+    setup?: (f: LocalFactory) => void;
+  } = {},
 ) {
   vi.mocked(useLocalGame).mockImplementation(function useMockGame() {
-    const [factory, setFactory] = useState<LocalFactory | null>(() =>
-      existing ? createLocalFactory(user, "本机工厂") : null,
-    );
+    const [factory, setFactory] = useState<LocalFactory | null>(() => {
+      if (!existing) return null;
+      const f = createLocalFactory(user, "本机工厂");
+      options.setup?.(f);
+      return f;
+    });
     const runtime = {
       commands,
       backup,
@@ -67,6 +76,80 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("separates logistics tools and keeps their placement selection", () => {
+    prepare();
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+      screen.getByRole("complementary", { name: "实体图鉴" }),
+    );
+    expect(
+      palette.queryByRole("button", { name: /^手摇传送带/ }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(palette.getByRole("button", { name: "物流" }));
+    expect(
+      palette.queryByRole("button", { name: /^手工工作台/ }),
+    ).not.toBeInTheDocument();
+    const belt = palette.getByRole("button", { name: /^手摇传送带/ });
+    fireEvent.click(belt);
+    expect(belt).toHaveAttribute("aria-pressed", "true");
+    fireEvent.keyDown(window, { key: "1" });
+    expect(palette.getByRole("button", { name: "建筑" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      palette.getByRole("button", { name: /^手工工作台/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+  it("dims never-obtained items while preserving order, inspection and previously spent discoveries", () => {
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.discovered_items = [itemID("基础铁板")];
+      },
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+      screen.getByRole("complementary", { name: "实体图鉴" }),
+    );
+    fireEvent.click(palette.getByRole("button", { name: "物品" }));
+    const entries = palette
+      .getAllByRole("button")
+      .filter((b) => b.classList.contains("catalog-entry"));
+    expect(entries.map((b) => b.querySelector("strong")!.textContent)).toEqual(
+      catalog.items.filter((i) => !i.legacy).map((i) => i.name),
+    );
+    const seen = palette.getByRole("button", { name: /^基础铁板/ }),
+      unknown = palette.getByRole("button", { name: /^垃圾包/ });
+    expect(seen).not.toHaveClass("is-undiscovered");
+    expect(unknown).toHaveClass("is-undiscovered");
+    fireEvent.click(unknown);
+    expect(unknown).toHaveAttribute("aria-pressed", "true");
+    expect(unknown).toHaveClass("is-undiscovered");
+  });
+  it("removes the header warehouse summary and retains searchable quantities in the central warehouse", () => {
+    const items = catalog.items.filter((i) => !i.legacy).slice(0, 7);
+    prepare(true, {
+      setup: (f) => {
+        for (const i of items) f.simulation.warehouse[i.id] = 42;
+      },
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    expect(
+      screen.queryByText("当前厂区仓库", { exact: true }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "仓库" }));
+    expect(
+      within(screen.getByRole("region", { name: "当前厂区库存" })).getAllByRole(
+        "article",
+      ),
+    ).toHaveLength(7);
+    fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
+      target: { value: items[0].name },
+    });
+    const stock = within(screen.getByRole("region", { name: "当前厂区库存" }));
+    expect(stock.getAllByRole("article")).toHaveLength(1);
+    expect(stock.getByText("42 u")).toBeInTheDocument();
+  });
   it("preserves build shortcuts, form typing and immersion", async () => {
     prepare();
     render(

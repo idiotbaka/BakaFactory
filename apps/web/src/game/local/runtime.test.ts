@@ -24,6 +24,7 @@ import {
 } from "./world";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
+import { worldFrame } from "./worldFrame";
 vi.mock("./storage", () => ({ readLocal: vi.fn(), writeLocal: vi.fn() }));
 vi.mock("../../api/client", () => ({
   ApiError: class ApiError extends Error {
@@ -83,13 +84,12 @@ class FakeWorker {
   }
   tick() {
     if (this.enabled && this.factory) {
+      const before = this.factory;
       this.factory = stepWorld(this.factory);
       this.onmessage?.({
         data: {
-          kind: "state",
-          factory: structuredClone(projectFactory(this.factory)),
-          root: structuredClone(this.factory),
-          districts: districtSummary(this.factory),
+          kind: "delta",
+          frame: structuredClone(worldFrame(before, this.factory)),
         },
       });
     }
@@ -155,6 +155,107 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("derives workshop backpressure from the headquarters warehouse while viewing an empty child", async () => {
+    let root = createWorld(user, "批量背压");
+    root.simulation.warehouse[itemID("垃圾包")] = 24;
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "workshop", recipe: "r1001", batches: 2 },
+    });
+    root.simulation.warehouse[itemID("铁质碎片")] = Number.MAX_SAFE_INTEGER;
+    root = actWorld(root, {
+      type: "select_district",
+      id: root.districts![0].id,
+    });
+    saved = {
+      owner: user.id,
+      version: 1,
+      save: toSave(root),
+      cloudVersion: 0,
+      cloudSavedAt: null,
+      uploadedRevision: null,
+      savedAt: "now",
+    };
+    await game.start();
+    FakeWorker.instances[0].tick();
+    expect(view.workshopBlocked).toBe(true);
+    expect(view.factory!.id).toBe(root.active_district_id);
+    expect(view.factory!.simulation.warehouse).toEqual({});
+    expect(view.factory!.simulation.industry!.workshop).toMatchObject({
+      remaining: 2,
+      total: 2,
+      progress: 0,
+    });
+    vi.mocked(uploadSave).mockImplementation(async (_session, base, save) => ({
+      version: base + 1,
+      saved_at: "now",
+      save,
+    }));
+    await game.backup();
+    expect(
+      vi.mocked(uploadSave).mock.calls[0][2].factory.simulation!.industry!
+        .workshop,
+    ).toMatchObject({ remaining: 2, total: 2, progress: 0 });
+  });
+  it("coalesces slow automatic saves to the latest complete world instead of queueing every checkpoint", async () => {
+    await game.start();
+    await game.create("保存背压");
+    vi.mocked(writeLocal).mockClear();
+    let release: (() => void) | undefined;
+    vi.mocked(writeLocal).mockImplementationOnce(
+      (record) =>
+        new Promise<void>((resolve) => {
+          release = () => {
+            saved = structuredClone(record);
+            resolve();
+          };
+        }),
+    );
+    try {
+      for (let n = 0; n < 50; n++) FakeWorker.instances[0].tick();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(writeLocal).toHaveBeenCalledOnce();
+      release?.();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(writeLocal).toHaveBeenCalledTimes(2);
+      expect(saved?.save?.factory.simulation?.tick).toBe(50);
+    } finally {
+      release?.();
+      await vi.advanceTimersByTimeAsync(0);
+    }
+  });
+  it("backs up a complete reconstructed world before the five-tick autosave and pauses on a missing frame", async () => {
+    await game.start();
+    await game.create("增量世界");
+    const worker = FakeWorker.instances[0];
+    worker.tick();
+    vi.mocked(uploadSave).mockImplementation(async (_session, base, save) => ({
+      version: base + 1,
+      saved_at: "now",
+      save,
+    }));
+    await game.backup();
+    expect(
+      vi.mocked(uploadSave).mock.calls[0][2].factory.simulation!.tick,
+    ).toBe(1);
+    expect(
+      vi.mocked(uploadSave).mock.calls[0][2].factory.districts,
+    ).toHaveLength(5);
+    const previous = structuredClone(worker.factory!),
+      after = stepWorld(previous),
+      frame = worldFrame(previous, after),
+      savedBefore = structuredClone(saved);
+    worker.onmessage?.({
+      data: {
+        kind: "delta",
+        frame: { ...frame, base_revision: frame.base_revision + 1 },
+      },
+    });
+    expect(view.paused).toBe(true);
+    expect(view.message).toContain("快照序列");
+    expect(view.factory!.simulation.tick).toBe(1);
+    expect(saved).toEqual(savedBefore);
+  });
   it("keeps a real construction checkpoint and read-only route through offline permission loss", async () => {
     let root = createWorld(user, "施工恢复");
     root.simulation.industry!.stage = 6;

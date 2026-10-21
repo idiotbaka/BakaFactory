@@ -24,10 +24,16 @@ export function step(current: LocalFactory, workshop = true): LocalFactory {
     current.revision >= Number.MAX_SAFE_INTEGER
   )
     throw new Error("游戏时间已达到上限");
+  const { industry, ...local } = current.simulation;
   const f: LocalFactory = {
     ...current,
     revision: current.revision + 1,
-    simulation: structuredClone(current.simulation),
+    simulation: {
+      ...structuredClone(local),
+      ...(industry
+        ? { industry: workshop ? structuredClone(industry) : industry }
+        : {}),
+    },
   };
   const s = f.simulation;
   s.tick++;

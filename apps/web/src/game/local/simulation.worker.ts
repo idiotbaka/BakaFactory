@@ -9,6 +9,9 @@ import {
   stepWorld,
 } from "./world";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
+import { worldFrame } from "./worldFrame";
+import { Observations } from "./observations";
+const observations = new Observations();
 
 let factory: LocalFactory | null = null;
 let enabled = false,
@@ -23,6 +26,7 @@ const sendState = (request?: number) =>
     root: factory!,
     districts: districtSummary(factory!),
     request,
+    observation: observations.snapshot(),
   });
 function schedule() {
   clearTimeout(timer);
@@ -37,8 +41,14 @@ function schedule() {
     // Suspension, sleep and slow devices never generate accumulated ticks.
     if (now - lastWake <= 2500) {
       try {
-        factory = stepWorld(factory!);
-        sendState();
+        const before = factory!;
+        factory = stepWorld(before);
+        observations.record(before, factory);
+        send({
+          kind: "delta",
+          frame: worldFrame(before, factory),
+          observation: observations.snapshot(),
+        });
       } catch (error) {
         enabled = false;
         send({
@@ -56,6 +66,7 @@ self.onmessage = (event: MessageEvent<WorkerCommand>) => {
     if (command.kind === "init") {
       factory = command.factory ? initializeWorld(command.factory) : null;
       enabled = false;
+      observations.clear();
       clearTimeout(timer);
       if (factory) sendState();
       return;
@@ -69,8 +80,10 @@ self.onmessage = (event: MessageEvent<WorkerCommand>) => {
       else if (!wasEnabled) schedule();
       return;
     }
-    if (command.kind === "replace") factory = initializeWorld(command.factory);
-    else {
+    if (command.kind === "replace") {
+      factory = initializeWorld(command.factory);
+      observations.clear();
+    } else {
       if (!enabled || performance.now() >= expires)
         throw new Error("工厂已暂停，请先恢复在线连接");
       if (command.kind === "create") {

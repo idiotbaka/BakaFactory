@@ -524,6 +524,8 @@ export interface components {
             milestone_item: string;
         };
         IndustryState: {
+            /** @description 曾获得的物品编号，仅用于图鉴显示；缺省时从制造记录和现有实物补记。 */
+            discovered_items?: string[];
             work_receipts?: components["schemas"]["WorkReceipt"][];
             stage: number;
             milestones: string[];
@@ -533,6 +535,9 @@ export interface components {
             workshop?: {
                 recipe_id: string;
                 progress: number;
+                /** @description 尚未完成的批次，包含正在加工的一批；与 total 同时存在，旧存档缺省为一批。 */
+                remaining?: number;
+                total?: number;
             };
         };
         Credentials: {

@@ -287,73 +287,6 @@
   width: 28px;
   height: 28px;
 }
-.warehouse-panel {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-  color: var(--muted);
-}
-.warehouse-panel > div:first-child {
-  display: grid;
-  gap: 5px;
-  flex-shrink: 0;
-}
-.warehouse-panel .eyebrow {
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-.warehouse-panel > div:first-child > strong {
-  font-size: 12px;
-  color: #cecce1;
-  font-weight: 600;
-}
-.warehouse-panel > div:first-child > small {
-  display: none;
-}
-.warehouse-items {
-  display: flex;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-}
-.warehouse-item {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  column-gap: 8px;
-  row-gap: 3px;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
-  border: 1px solid #3b3551;
-  background: #0b1020;
-  position: relative;
-}
-.warehouse-item::before {
-  content: "";
-  position: absolute;
-  left: -1px;
-  top: 9px;
-  bottom: 9px;
-  width: 2px;
-  background: var(--entity-color, var(--purple));
-}
-.warehouse-item .definition-icon {
-  grid-row: span 2;
-}
-.warehouse-item > span:not(.definition-icon) {
-  color: var(--dim);
-  font-size: 12px;
-  white-space: normal;
-}
-.warehouse-item > strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: #e4e3f9;
-  font: 650 18px/1.2 var(--mono);
-  font-variant-numeric: tabular-nums;
-}
 .simulation-clock {
   color: var(--dim);
   font: 12px var(--mono);
@@ -620,16 +553,6 @@
   background: #080d18;
 }
 @media (max-width: 1280px) {
-  .warehouse-panel {
-    gap: 10px;
-  }
-  .warehouse-item {
-    column-gap: 5px;
-    padding: 7px 8px;
-  }
-  .warehouse-item > strong {
-    font-size: 16px;
-  }
   .camera-controls small {
     display: none;
   }

@@ -5,9 +5,7 @@ import type {
   FactoryDetail,
   MachineState,
 } from "../api/client";
-import type { CSSProperties } from "react";
 import DefinitionIcon from "./DefinitionIcon";
-import { entityColor } from "./entityTheme";
 import { DetailedProgress } from "./SimulationAnimation";
 import type { IndustryAction } from "./local/industry";
 import {
@@ -60,48 +58,6 @@ export const machineStatuses: Record<string, string> = {
   flow_closed: "流路已关闭",
   no_connection: "下游尚未连接",
 };
-export function WarehousePanel({
-  factory,
-  catalog,
-}: {
-  factory: FactoryDetail;
-  catalog: Catalog;
-}) {
-  const simulation = factory.simulation;
-  return (
-    <section className="warehouse-panel" aria-label="玩家总仓库">
-      <div>
-        <span className="eyebrow">CARGO / 01</span>
-        <strong>当前厂区仓库</strong>
-        <small>总仓库按厂区分仓 · 自动入库 / 拆除回收</small>
-      </div>
-      <div className="warehouse-items">
-        {catalog.items
-          .filter((item) => (simulation?.warehouse[item.id] ?? 0) > 0)
-          .slice(0, 3)
-          .map((item) => (
-            <div
-              className="warehouse-item"
-              key={item.id}
-              title={item.name}
-              style={{ "--entity-color": entityColor(item) } as CSSProperties}
-            >
-              <DefinitionIcon definition={item} compact />
-              <span>{item.name}</span>
-              <strong>
-                {(simulation?.warehouse[item.id] ?? 0).toLocaleString()}
-              </strong>
-            </div>
-          ))}
-      </div>
-      <small className="simulation-clock">
-        {simulation
-          ? `Tick ${simulation.tick.toLocaleString()} · ${simulation.tick_rate} TPS`
-          : "等待生产状态…"}
-      </small>
-    </section>
-  );
-}
 function Slots({
   title,
   values,

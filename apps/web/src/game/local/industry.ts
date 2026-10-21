@@ -13,6 +13,8 @@ import { applyTransportAction, type TransportAction } from "./transportActions";
 import { applyUtilityAction, type UtilityAction } from "./utilityActions";
 import { recipeAvailable } from "./production";
 import { applyFluidAction, type FluidAction } from "./fluidActions";
+import { discoverItems } from "./discovery";
+import { workshopBatchLimit, workshopOutputFits } from "./workshop";
 export { recipeAvailable, canProcess } from "./production";
 
 export type IndustryState = components["schemas"]["IndustryState"];
@@ -20,11 +22,13 @@ export const initialIndustry = (): IndustryState => ({
   stage: 1,
   milestones: [],
   crafted: {},
+  discovered_items: [],
 });
 export const stageOf = (f: LocalFactory) => f.simulation.industry?.stage ?? 1;
 export function recordCraft(f: LocalFactory, outputs: Record<string, number>) {
   const p = (f.simulation.industry ??= initialIndustry());
   store(p.crafted, outputs);
+  discoverItems(f, Object.keys(outputs));
   for (const s of catalog.stages ?? []) {
     if (p.crafted[s.milestone_item] && !p.milestones.includes(s.milestone_item))
       p.milestones.push(s.milestone_item);
@@ -40,7 +44,7 @@ export type IndustryAction =
   | UtilityAction
   | TransportAction
   | { type: "scavenge" }
-  | { type: "workshop"; recipe: string }
+  | { type: "workshop"; recipe: string; batches?: number }
   | { type: "cancel_workshop" }
   | { type: "recipe"; id: string; recipe: string }
   | { type: "feed"; id: string; item: string; count: number }
@@ -55,6 +59,7 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
     warehouse = f.simulation.warehouse;
   if (action.type === "scavenge") {
     store(warehouse, { [catalog.root_item!]: 1 });
+    discoverItems(f, [catalog.root_item!]);
     return;
   }
   if (action.type === "workshop") {
@@ -66,16 +71,35 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
       !recipeAvailable(f, r.id)
     )
       throw new Error("工作室尚不能加工该配方");
+    const batches = action.batches === undefined ? 1 : action.batches;
+    if (!Number.isSafeInteger(batches) || batches < 1 || batches > 100)
+      throw new Error("加工批数需为 1～100 的整数");
+    if (batches > workshopBatchLimit(r, warehouse))
+      throw new Error("原料不足，批数不能超过当前可加工数");
     store(
       warehouse,
-      Object.fromEntries(Object.entries(r.inputs).map(([id, n]) => [id, -n])),
+      Object.fromEntries(
+        Object.entries(r.inputs).map(([id, n]) => [id, -n * batches]),
+      ),
     );
-    p.workshop = { recipe_id: r.id, progress: 0 };
+    p.workshop = {
+      recipe_id: r.id,
+      progress: 0,
+      remaining: batches,
+      total: batches,
+    };
     return;
   }
   if (action.type === "cancel_workshop") {
     if (!p.workshop) return;
-    store(warehouse, recipeDefinitions.get(p.workshop.recipe_id)!.inputs);
+    store(
+      warehouse,
+      Object.fromEntries(
+        Object.entries(recipeDefinitions.get(p.workshop.recipe_id)!.inputs).map(
+          ([id, n]) => [id, n * (p.workshop!.remaining ?? 1)],
+        ),
+      ),
+    );
     delete p.workshop;
     return;
   }
@@ -160,18 +184,14 @@ export function stepWorkshop(f: LocalFactory) {
   const r = recipeDefinitions.get(job.recipe_id)!;
   const duration = r.duration_ms / 1000;
   // Output overflow is backpressure; do not lose a reserved batch on a tick.
-  if (
-    Object.entries(r.outputs).some(
-      ([id, n]) =>
-        !Number.isSafeInteger((f.simulation.warehouse[id] ?? 0) + n) ||
-        !Number.isSafeInteger((p.crafted[id] ?? 0) + n),
-    )
-  )
-    return;
+  if (!workshopOutputFits(p, f.simulation.warehouse)) return;
   job.progress++;
   if (job.progress >= duration) {
     store(f.simulation.warehouse, r.outputs);
     recordCraft(f, r.outputs);
-    delete p.workshop;
+    if ((job.remaining ?? 1) > 1) {
+      job.remaining = (job.remaining ?? 1) - 1;
+      job.progress = 0;
+    } else delete p.workshop;
   }
 }

@@ -18,6 +18,9 @@ import { readLocal, writeLocal, type LocalRecord } from "./storage";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import type { IndustryAction } from "./industry";
 import { previewRobotRoute } from "./robotNavigation";
+import { applyWorldFrame } from "./worldFrame";
+import { workshopOutputFits } from "./workshop";
+import type { Observation } from "./observations";
 import {
   districtSummary,
   projectFactory,
@@ -40,6 +43,8 @@ export type EditorCommands = {
   getFactory: (factory: string, signal?: AbortSignal) => Promise<FactoryDetail>;
 };
 export type GameView = {
+  workshopBlocked?: boolean;
+  observation?: Observation;
   ready: boolean;
   factory: LocalFactory | null;
   districts?: DistrictSummary[];
@@ -88,6 +93,8 @@ export class GameRuntime {
   private worker?: Worker;
   private releaseLock?: () => void;
   private writeTail: Promise<void> = Promise.resolve();
+  private autoSaving = false;
+  private autoRequested = false;
   private requestID = 0;
   private pending = new Map<
     number,
@@ -226,6 +233,12 @@ export class GameRuntime {
       } satisfies WorkerCommand);
       this.publish({
         ready: true,
+        workshopBlocked: factory
+          ? !workshopOutputFits(
+              factory.simulation.industry,
+              factory.simulation.warehouse,
+            )
+          : false,
         factory: factory ? projectFactory(factory) : null,
         districts: factory ? districtSummary(factory) : [],
         conflict,
@@ -280,6 +293,27 @@ export class GameRuntime {
   }
   private workerEvent(event: WorkerEvent) {
     if (this.disposed) return;
+    if (event.kind === "delta") {
+      try {
+        if (!this.record.save) throw new Error("本地完整快照尚未就绪");
+        const root = applyWorldFrame(
+          this.record.save.factory as LocalFactory,
+          event.frame,
+        );
+        this.workerEvent({
+          kind: "state",
+          factory: projectFactory(root),
+          root,
+          districts: districtSummary(root),
+          observation: event.observation,
+        });
+      } catch (error) {
+        this.fail(
+          error instanceof Error ? error : new Error("本地快照合并失败"),
+        );
+      }
+      return;
+    }
     const request =
       event.request === undefined ? undefined : this.pending.get(event.request);
     if (event.request !== undefined) this.pending.delete(event.request);
@@ -291,8 +325,13 @@ export class GameRuntime {
     if (request?.cloud) this.adoptCloud(request.cloud);
     this.record.save = toSave(event.root ?? event.factory);
     this.publish({
+      workshopBlocked: !workshopOutputFits(
+        this.record.save.factory.simulation!.industry,
+        this.record.save.factory.simulation!.warehouse,
+      ),
       factory: event.factory,
       districts: event.districts,
+      observation: event.observation,
       dirty: event.factory.revision !== this.record.uploadedRevision,
     });
     if (request)
@@ -300,8 +339,23 @@ export class GameRuntime {
         () => request.resolve(event.factory),
         (error) => request.reject(error),
       );
-    else if (event.factory.simulation.tick % 5 === 0)
-      void this.persist().catch(() => {});
+    else if (event.factory.simulation.tick % 5 === 0) this.persistAutomatic();
+  }
+  private persistAutomatic() {
+    if (this.autoSaving) {
+      this.autoRequested = true;
+      return;
+    }
+    this.autoSaving = true;
+    void this.persist()
+      .catch(() => {})
+      .finally(() => {
+        this.autoSaving = false;
+        const again = this.autoRequested;
+        this.autoRequested = false;
+        if (again && !this.disposed && !this.storageFailed)
+          this.persistAutomatic();
+      });
   }
   private command(
     command: RequestCommand,

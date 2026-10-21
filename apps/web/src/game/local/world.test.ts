@@ -40,6 +40,31 @@ describe("one worker world with independent districts", () => {
     expect(new Set(allDistricts(root).map((f) => f.id)).size).toBe(6);
     expect(districtSummary(root).filter((f) => f.headquarters)).toHaveLength(1);
   });
+  it("advances a paid batch queue once per world tick while another district is selected", () => {
+    let root = createWorld(user, "批量世界");
+    const garbage = itemID("垃圾包"),
+      iron = itemID("铁质碎片");
+    root.simulation.warehouse[garbage] = 24;
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "workshop", recipe: "r1001", batches: 2 },
+    });
+    root = actWorld(root, {
+      type: "select_district",
+      id: root.districts![0].id,
+    });
+    for (let i = 0; i < 10; i++) root = stepWorld(root);
+    expect(root.simulation.industry!.workshop).toMatchObject({
+      total: 2,
+      remaining: 1,
+      progress: 0,
+    });
+    expect(root.simulation.warehouse[iron]).toBe(3);
+    expect(root.districts!.every((d) => d.simulation.tick === 10)).toBe(true);
+    for (let i = 0; i < 10; i++) root = stepWorld(root);
+    expect(root.simulation.industry!.workshop).toBeUndefined();
+    expect(root.simulation.warehouse[iron]).toBe(6);
+  });
   it("advances all districts once, a single manual queue once, and aggregates genuine craft milestones", () => {
     let root = createWorld(user, "回收场");
     const garbage = itemID("垃圾包"),

@@ -97,10 +97,23 @@ func (v *MachineState) UnmarshalJSON(data []byte) error {
 }
 func (v *IndustryState) UnmarshalJSON(data []byte) error {
 	type plain IndustryState
-	if err := rejectNullWork(data, "work_receipts"); err != nil {
+	if err := rejectNullWork(data, "work_receipts", "discovered_items"); err != nil {
 		return err
 	}
 	return decodeRobotObject(data, (*plain)(v))
+}
+func (v *WorkshopJob) UnmarshalJSON(data []byte) error {
+	type plain WorkshopJob
+	if err := rejectNullWork(data, "remaining", "total"); err != nil {
+		return err
+	}
+	return decodeRobotObject(data, (*plain)(v), "recipe_id", "progress")
+}
+func validWorkshopCounts(v *WorkshopJob) bool {
+	if v.Remaining == nil && v.Total == nil {
+		return true
+	}
+	return v.Remaining != nil && v.Total != nil && *v.Remaining >= 1 && *v.Remaining <= *v.Total && *v.Total <= 100
 }
 func validWorkIncident(i *WorkIncident, tick int64) bool {
 	return i == nil || (i.Kind == "no_input" || i.Kind == "no_energy" || i.Kind == "output_full" || i.Kind == "fluid_full") && i.SinceTick >= 0 && i.SinceTick <= tick

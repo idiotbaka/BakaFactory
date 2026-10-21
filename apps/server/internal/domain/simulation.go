@@ -92,15 +92,18 @@ type PowerNetwork struct {
 	StoredKJ    int    `json:"stored_kj"`
 }
 type WorkshopJob struct {
-	RecipeID string `json:"recipe_id"`
-	Progress int    `json:"progress"`
+	RecipeID  string `json:"recipe_id"`
+	Progress  int    `json:"progress"`
+	Remaining *int   `json:"remaining,omitempty"`
+	Total     *int   `json:"total,omitempty"`
 }
 type IndustryState struct {
-	WorkReceipts []WorkReceipt    `json:"work_receipts,omitempty"`
-	Stage        int              `json:"stage"`
-	Milestones   []string         `json:"milestones"`
-	Crafted      map[string]int64 `json:"crafted"`
-	Workshop     *WorkshopJob     `json:"workshop,omitempty"`
+	DiscoveredItems []string         `json:"discovered_items,omitempty"`
+	WorkReceipts    []WorkReceipt    `json:"work_receipts,omitempty"`
+	Stage           int              `json:"stage"`
+	Milestones      []string         `json:"milestones"`
+	Crafted         map[string]int64 `json:"crafted"`
+	Workshop        *WorkshopJob     `json:"workshop,omitempty"`
 }
 
 func (s Simulation) Validate(c Catalog) error {
@@ -178,6 +181,13 @@ func (s Simulation) Validate(c Catalog) error {
 		}
 	}
 	if p := s.Industry; p != nil {
+		discovered := map[string]bool{}
+		for _, id := range p.DiscoveredItems {
+			if !items[id] || discovered[id] {
+				return fmt.Errorf("invalid discovered item")
+			}
+			discovered[id] = true
+		}
 		if !validWorkReceipts(p.WorkReceipts, s.Tick, c) {
 			return fmt.Errorf("invalid work receipts")
 		}
@@ -208,6 +218,9 @@ func (s Simulation) Validate(c Catalog) error {
 			}
 		}
 		if p.Workshop != nil {
+			if !validWorkshopCounts(p.Workshop) {
+				return fmt.Errorf("invalid workshop batches")
+			}
 			valid := false
 			for _, r := range c.Recipes {
 				for _, machine := range c.StartingMachines {

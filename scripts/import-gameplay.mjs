@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
+import { auditClosure } from "./gameplay-closure.mjs";
 
 // The supplied design JSON is the import source. Do not copy recipe formulas
 // from the prose/CSV: IDs remain stable if display names or ordering change.
@@ -81,6 +82,19 @@ recipes.push({
   description: "网页适配：P2 蒸汽启动管道，原案高效配方继续保留。",
   power_kw: 0,
   gate: item("机械启动套件"),
+  conditions: [],
+});
+recipes.push({
+  id: "web_cable_start",
+  name: "启动绝缘线缆",
+  building_type: "m08",
+  tier: 4,
+  duration_ms: 15000,
+  inputs: convert({ 粗铜丝: 5, 绝缘胶: 2 }),
+  outputs: convert({ 绝缘线缆: 2 }),
+  description: "网页适配：手工制造首批电网导线，通电后改用原案高效配方。",
+  power_kw: 0,
+  gate: item(d.stages[2].milestone_item.split(":")[0]),
   conditions: [],
 });
 const energy = (mode) =>
@@ -431,6 +445,11 @@ while (changed) {
   }
 }
 const unreachable = recipes.filter((r) => !reached.has(r.id));
+const closure = auditClosure(base);
+if (closure.unreachable.length || closure.milestones.some((s) => !s.reached))
+  throw new Error(
+    `Energy/work closure blocked: ${JSON.stringify(closure.unreachable)}`,
+  );
 const lines = [
   "# v0.9 数据导入审计",
   "",
@@ -441,11 +460,19 @@ const lines = [
   `- 基础分拣有 9 种产物，通用机器缓存提升至 12 格；终局最大输入 5 种。`,
   `- 不考虑能源和真实作业条件的材料/机器/阶段闭包到达 P${stage}；${reached.size}/${recipes.length} 配方可达。`,
   `- 未达配方：${unreachable.map((r) => r.id).join("、") || "无"}。`,
+  `- F1 含阶段门槛、燃料 / 导线 / 蒸汽启动 / 工作液、兼容补能站与可积累真实凭据的静态闭包：P${closure.stage}，${closure.reached.length} 配方，六阶段成果 ${closure.milestones.filter((s) => s.reached).length}/6。`,
+  `- 启动证据：${closure.witnesses
+    .filter((w) => w.capability)
+    .map((w) => `P${w.stage} ${w.capability}`)
+    .join("；")}。`,
+  "- 凭据能力表示可布置真实取送、运行后持续异常 / 实际备件清理并逐次积累；不赠送库存 / 历史。多燃料机并网、管线连通、邻格通路、仓储腾空与有限批次数量须玩家实际搭建，本报告不证明吞吐、布局、资源数量或长局通过。",
   "",
   "## 扩展与偏差",
   "",
   "网页适配增加 web_pipe_early：P2 手工装配台使用粗铜丝 3、粗密封圈 2、基础铁板 1，12 秒制造 4 管道，解除蒸汽启动依赖 P3 液压管道的前置环；原有 R3045 保留。流体管道物品与设施最低阶段改为 P2，来源去向包含新增配方。液压带复用原案已有道具与配方，没有新增同名替代品。",
   "",
+  "F1 新增 web_cable_start：P4 M08 在首次制造电气化建设包后，用粗铜丝 5、绝缘胶 2，15 秒手工制造 2 绝缘线缆，解除原 R4008 / R4009 与电网互相依赖。原案高效配方保留，不赠送线缆或电量。闭包涵盖真实燃料、蒸汽 / 工作液、兼容补能站与可积累作业条件；仅证明存在启动路线，不证明数量、布局、吞吐或已游玩通过。",
+  "F2 只读诊断区分名义速率与最近 60 个运行 tick 的确认制造 / 物流；永久智能机器人里程碑及已制造许可证反馈主目标 / 沙盒目标。F3 增量传输未变布局与安静分厂，主线程仍保存完整世界；行业进度单次克隆、世界端点和需求 / 来源承诺索引，慢自动保存合并。独立合成测量可配置规模 / 种子，尚未执行，不宣称百厂性能达标。",
   "M21 的 R3012 作为冷混配，不计网络功率，配方仍真实消耗液体燃料添加剂；R3013 增压原案未给功率，适配明确为 20 kW，由动力站自身燃料驱动。液压站需注入至少 1 u 真实工作液，闭环介质最多 10 u，拆除返还；不赠送可刷取的启动介质。M20 可消耗高压蒸汽，每 u 释放 100 kJ；M09/M21/M28 按实际出功计费。储能充电效率 88%，不用互充或同刻充放制造电量。",
   "",
   "安装用 item 字段显式关联设备道具；原始发电机、分流器和站点没有加工配方，按设施角色运行，不伪造空输入生产配方。新增轴、线缆、管道、箱/罐、储能等设施复用原案可制作物品；没有免费发放高阶设备。",
@@ -459,7 +486,7 @@ const lines = [
   "E2c 不制造随机故障：实际运行后缺料、真实缺能、产物积压、流体满容持续至少 5 tick 后可现场巡检，一次异常只记一次巡检凭据。维护机器人从归属站手动装载真实维修备件箱，按规格工时清走一载重固体积压、消耗一箱并实际携货返仓；同一异常可继续清理但不重复记维护凭据。取消 / 恢复 / 端点消失不奖励，未用备件实际返站后退回。摄像头从真实组件安装，随有效作业生成视觉凭据，卸下 / 召回返还组件。训练配方原材料 / 工时 / 能耗不变，每批完成时消费 40 / 20 / 30 次原案匹配凭据，机器人须仍部署并启用；凭据按机器人 / 类别最多 10000 次、总计最多 1500 行，跨厂共享，召回清除该实体未用凭据。静态材料闭包不代表已执行这些真实作业或长局验收。",
   "E2d1 智能机器人可按显式权限自动派配方补料 / 巡检 / 维护，默认关闭；实际走既有库存 / 路径 / 能源规则。5 tick 评估周期、共享 2000 次候选 / 来源访问预算、最多 20 条有限日志。需求与来源库存扣除现有任务承诺，现场同类任务排他，失败提案回滚；不免费调拨或生成凭据，不调用外部 AI。性能实测仍待后续阶段。",
   "E2d2 显式单格蓝图每智能机器人同时一张，可多机并行；在归属站补满并装载 1 个实际成品设备，不重复扣制造原料。格位预留、路径与返程储能验证、现场 10 tick 每 tick 1 kJ 后安装，跨区复用 WH 与 8 tick 付费行程，可选已解锁配方。垃圾源头只起始厂顶部且计入在建限额，旧测试 / 固定设备不可施工。取消或能量中止释放格位，cargo 沿实际路径返归属 WH 再回站；不瞬移退款、不赠训练凭据。多格批量模板 / 自动整厂排程不在本阶段。",
-  "E2d3 / E2e 地图与列表统一选取、当前单路段只读预览、确认过境落点 / 跨厂定位、必需授权锁定、暂停 / 返程说明及真实归属站召回反馈。复用实际寻路，区分占格等待、静态无路与有限储能超限，不通过图形 / 筛选 / 查看路线结算资源、改 revision 或生成凭据。仍未实测百厂性能，F 接续前置闭包、终局诊断与快照 / 索引。",
+  "E2d3 / E2e 地图与列表统一选取、当前单路段只读预览、确认过境落点 / 跨厂定位、必需授权锁定、暂停 / 返程说明及真实归属站召回反馈。复用实际寻路，区分占格等待、静态无路与有限储能超限，不通过图形 / 筛选 / 查看路线结算资源、改 revision 或生成凭据。F 已补前置闭包、终局诊断与快照 / 索引；百厂性能仍未实测。",
   "",
 ];
 if (unreachable.length)

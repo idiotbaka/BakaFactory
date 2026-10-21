@@ -1,15 +1,24 @@
 import { useState, type ReactNode } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { IndustryAction } from "./local/industry";
-import { DetailedProgress } from "./SimulationAnimation";
+import { workshopBatchLimit } from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
+import DiagnosticsPanel from "./DiagnosticsPanel";
+import type { Observation } from "./local/observations";
+import type { LocalFactory } from "./local/state";
 import type { DistrictSummary, WorldAction } from "./local/world";
 
 export type IndustryView =
-  "factory" | "workshop" | "warehouse" | "power" | "world" | "robots";
+  | "factory"
+  | "workshop"
+  | "warehouse"
+  | "power"
+  | "world"
+  | "robots"
+  | "diagnostics";
 export default function IndustryViews({
   factory,
   catalog,
@@ -23,6 +32,8 @@ export default function IndustryViews({
   selectedRobotID,
   onSelectRobot,
   onLocateRobot,
+  observation,
+  onLocateBuilding,
 }: {
   factory: FactoryDetail;
   catalog: Catalog;
@@ -36,8 +47,11 @@ export default function IndustryViews({
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
   onLocateRobot?: React.ComponentProps<typeof RobotPanel>["onLocateRobot"];
+  observation?: Observation;
+  onLocateBuilding?: (id: string) => void;
 }) {
   const [query, setQuery] = useState("");
+  const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
   const s = factory.simulation,
     p = s?.industry,
     job = p?.workshop;
@@ -72,6 +86,7 @@ export default function IndustryViews({
             ["power", "能源"],
             ["world", "厂区"],
             ["robots", "机器人"],
+            ["diagnostics", "诊断"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -93,24 +108,29 @@ export default function IndustryViews({
         <div className="industry-content">
           <div className="industry-heading">
             <h3>
-              {view === "workshop"
-                ? "拾荒工作室"
-                : view === "robots"
-                  ? "机器人调度"
-                  : view === "world"
-                    ? "厂区管理"
-                    : view === "power"
-                      ? "能量网络"
-                      : "物料仓库"}
+              {view === "diagnostics"
+                ? "闭环诊断"
+                : view === "workshop"
+                  ? "拾荒工作室"
+                  : view === "robots"
+                    ? "机器人调度"
+                    : view === "world"
+                      ? "厂区管理"
+                      : view === "power"
+                        ? "能量网络"
+                        : "物料仓库"}
             </h3>
-            {view !== "power" && view !== "world" && view !== "robots" && (
-              <input
-                aria-label="搜索工作室或仓库"
-                placeholder="搜索名称或编号"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            )}
+            {view !== "power" &&
+              view !== "world" &&
+              view !== "robots" &&
+              view !== "diagnostics" && (
+                <input
+                  aria-label="搜索工作室或仓库"
+                  placeholder="搜索名称或编号"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              )}
           </div>
           <p className="industry-goal">
             {stage?.goal}
@@ -118,7 +138,13 @@ export default function IndustryViews({
             阶段成果：{stage && name(stage.milestone_item)}
             。首次制造后永久解锁下一阶段。
           </p>
-          {view === "robots" && world ? (
+          {view === "diagnostics" ? (
+            <DiagnosticsPanel
+              factory={factory as LocalFactory}
+              observation={observation}
+              onLocate={onLocateBuilding}
+            />
+          ) : view === "robots" && world ? (
             <RobotPanel
               factory={factory}
               catalog={catalog}
@@ -162,59 +188,93 @@ export default function IndustryViews({
               </div>
               {job && active && (
                 <div className="workshop-active" role="status">
-                  <DetailedProgress
-                    name={active.name}
-                    machine={{
-                      input: [],
-                      output: [],
-                      progress: job.progress,
-                      duration: active.duration_ms / 1000,
-                      cooldown: 0,
-                      status: "working",
-                    }}
-                  />
+                  <p>
+                    {active.name} · 尚余 {job.remaining ?? 1}{" "}
+                    批，当前进度见顶部横栏。
+                  </p>
                   <button
                     disabled={disabled}
                     onClick={() => act({ type: "cancel_workshop" })}
                   >
-                    取消并返还预留原料
+                    取消队列并返还未完成原料
                   </button>
                 </div>
               )}
               <div className="workshop-recipes">
-                {recipes.map((r) => (
-                  <article className="recipe-card" key={r.id}>
-                    <div className="recipe-name">
-                      {r.name}
-                      <span>{r.duration_ms / 1000}s</span>
-                    </div>
-                    <p>
-                      {r.id.toUpperCase()} ·{" "}
-                      {
-                        catalog.buildings.find((b) => b.id === r.building_type)
-                          ?.name
-                      }
-                    </p>
-                    <p>{ingredients(r.inputs, true)}</p>
-                    <p>↓ {ingredients(r.outputs)}</p>
-                    <button
-                      disabled={
-                        disabled ||
-                        !!job ||
-                        Object.entries(r.inputs).some(
-                          ([id, n]) => (s?.warehouse[id] ?? 0) < n,
-                        )
-                      }
-                      onClick={() => act({ type: "workshop", recipe: r.id })}
-                    >
-                      加工一批
-                    </button>
-                  </article>
-                ))}
+                {recipes.map((r) => {
+                  const maximum = workshopBatchLimit(r, s?.warehouse ?? {}),
+                    raw = batchCounts[r.id] ?? "1",
+                    batches = Number(raw),
+                    valid =
+                      raw.trim() !== "" &&
+                      Number.isSafeInteger(batches) &&
+                      batches >= 1 &&
+                      batches <= maximum;
+                  return (
+                    <article className="recipe-card" key={r.id}>
+                      <div className="recipe-name">
+                        {r.name}
+                        <span>{r.duration_ms / 1000}s</span>
+                      </div>
+                      <p>
+                        {r.id.toUpperCase()} ·{" "}
+                        {
+                          catalog.buildings.find(
+                            (b) => b.id === r.building_type,
+                          )?.name
+                        }
+                      </p>
+                      <p>每批原料：{ingredients(r.inputs, true)}</p>
+                      <p>每批产物：{ingredients(r.outputs)}</p>
+                      <form
+                        className="workshop-batch"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (!disabled && !job && valid)
+                            act({ type: "workshop", recipe: r.id, batches });
+                        }}
+                      >
+                        <label>
+                          加工批数
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={maximum}
+                            step={1}
+                            required
+                            aria-label={`${r.name}加工批数`}
+                            aria-invalid={!valid && maximum > 0}
+                            value={raw}
+                            disabled={disabled || !!job || maximum < 1}
+                            onChange={(event) =>
+                              setBatchCounts((previous) => ({
+                                ...previous,
+                                [r.id]: event.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          disabled={disabled || !!job || !valid}
+                        >
+                          批量加工
+                        </button>
+                      </form>
+                      <p>当前可加工 {maximum} 批 · 单次最多 100 批</p>
+                      {!valid && maximum > 0 && !job && (
+                        <p className="batch-validation">
+                          请输入 1～{maximum} 的整数批数。
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             </>
           ) : (
-            <div className="industry-warehouse">
+            <section className="industry-warehouse" aria-label="当前厂区库存">
               {catalog.items
                 .filter(
                   (i) =>
@@ -233,7 +293,7 @@ export default function IndustryViews({
               {!Object.values(s?.warehouse ?? {}).some((n) => n > 0) && (
                 <p>仓库为空，前往工作室拾取第一包垃圾。</p>
               )}
-            </div>
+            </section>
           )}
         </div>
       )}

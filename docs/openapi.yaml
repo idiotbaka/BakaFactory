@@ -746,6 +746,11 @@ components:
       type: object
       required: [stage, milestones, crafted]
       properties:
+        discovered_items:
+          type: array
+          uniqueItems: true
+          description: 曾获得的物品编号，仅用于图鉴显示；缺省时从制造记录和现有实物补记。
+          items: { type: string }
         work_receipts:
           type: array
           maxItems: 1500
@@ -765,6 +770,12 @@ components:
           properties:
             recipe_id: { type: string }
             progress: { type: integer, minimum: 0 }
+            remaining:
+              type: integer
+              minimum: 1
+              maximum: 100
+              description: 尚未完成的批次，包含正在加工的一批；与 total 同时存在，旧存档缺省为一批。
+            total: { type: integer, minimum: 1, maximum: 100 }
     Credentials:
       type: object
       additionalProperties: false

@@ -149,6 +149,24 @@ export function dispatchRobots(root: LocalFactory) {
         priority: powerPriority(b),
       })),
     );
+  const demand = new Map<string, number>(),
+    pledges = new Map<string, number>();
+  const key = (factory: string, building: string, item: string) =>
+    JSON.stringify([factory, building, item]);
+  const reserve = (bot: Robot) => {
+    const t = bot.task;
+    if (!t) return;
+    const target = key(t.target.factory_id, t.target.building_id, t.item);
+    demand.set(target, (demand.get(target) ?? 0) + t.count - t.delivered);
+    if (t.phase === "pickup") {
+      const source = key(t.source.factory_id, t.source.building_id, t.item);
+      pledges.set(
+        source,
+        (pledges.get(source) ?? 0) + t.count - (bot.cargo?.count ?? 0),
+      );
+    }
+  };
+  robots.forEach(reserve);
   // Rotate peers before the stable priority sort. UUIDs and saved tick make
   // selection reproducible across save/reload; there is no wall clock or AI.
   candidates.sort((a, b) => compare(a.f.id, b.f.id) || compare(a.b.id, b.b.id));
@@ -197,16 +215,7 @@ export function dispatchRobots(root: LocalFactory) {
         recipe = selectedRecipe(b);
       if (cfg.refill && recipe)
         for (const [item, n] of Object.entries(recipe.inputs)) {
-          const reserved = robots.reduce(
-              (sum, bot) =>
-                sum +
-                (bot.task?.target.factory_id === f.id &&
-                bot.task.target.building_id === b.id &&
-                bot.task.item === item
-                  ? bot.task.count - bot.task.delivered
-                  : 0),
-              0,
-            ),
+          const reserved = demand.get(key(f.id, b.id, item)) ?? 0,
             missing = n - count(m.input, item) - reserved;
           if (missing <= 0) continue;
           for (const source of factories) {
@@ -223,17 +232,7 @@ export function dispatchRobots(root: LocalFactory) {
               })
             )
               continue;
-            const pledged = robots.reduce(
-                (sum, bot) =>
-                  sum +
-                  (bot.task?.source.factory_id === source.id &&
-                  bot.task.source.building_id === bus.id &&
-                  bot.task.item === item &&
-                  bot.task.phase === "pickup"
-                    ? bot.task.count - (bot.cargo?.count ?? 0)
-                    : 0),
-                0,
-              ),
+            const pledged = pledges.get(key(source.id, bus.id, item)) ?? 0,
               available = (source.simulation.warehouse[item] ?? 0) - pledged;
             const amount = Math.min(missing, 32, available);
             if (
@@ -260,6 +259,7 @@ export function dispatchRobots(root: LocalFactory) {
                 }),
               )
             ) {
+              reserve(r);
               log(
                 root,
                 r,

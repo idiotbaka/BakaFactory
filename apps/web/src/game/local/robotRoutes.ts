@@ -5,10 +5,37 @@ import type { BuildingInstance } from "../../api/client";
 export type Robot = components["schemas"]["RobotState"];
 export type Endpoint = components["schemas"]["RobotEndpoint"];
 export type Point = { factory_id: string; x: number; y: number };
-export const worldFactories = (root: LocalFactory) => [
-  root,
-  ...(root.districts ?? []),
-];
+const indexes = new WeakMap<
+  LocalFactory,
+  {
+    districts: LocalFactory["districts"];
+    factories: LocalFactory[];
+    byID: Map<string, LocalFactory>;
+    buildings: Map<string, BuildingInstance>;
+  }
+>();
+function worldIndex(root: LocalFactory) {
+  let index = indexes.get(root);
+  if (!index || index.districts !== root.districts) {
+    const factories = [root, ...(root.districts ?? [])];
+    index = {
+      districts: root.districts,
+      factories,
+      byID: new Map(factories.map((f) => [f.id, f])),
+      buildings: new Map(
+        factories.flatMap((f) =>
+          f.buildings.map((b) => [JSON.stringify([f.id, b.id]), b] as const),
+        ),
+      ),
+    };
+    indexes.set(root, index);
+  }
+  return index;
+}
+export const invalidateWorldIndex = (root: LocalFactory) =>
+  indexes.delete(root);
+export const worldFactories = (root: LocalFactory) =>
+  worldIndex(root).factories;
 export function plannedBuildings(
   root: LocalFactory,
   factoryID: string,
@@ -50,9 +77,7 @@ export const adjacentCells = (p: { x: number; y: number }) =>
   ].map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy }));
 export const cellKey = (p: Point) => `${p.factory_id}:${p.x},${p.y}`;
 export const endpointBuilding = (root: LocalFactory, e: Endpoint) =>
-  worldFactories(root)
-    .find((f) => f.id === e.factory_id)
-    ?.buildings.find((b) => b.id === e.building_id);
+  worldIndex(root).buildings.get(JSON.stringify([e.factory_id, e.building_id]));
 export const homeEndpoint = (r: Robot): Endpoint => ({
   factory_id: r.home_factory_id,
   building_id: r.home_station,
@@ -132,8 +157,8 @@ export function journey(
   dock?: (p: { x: number; y: number }) => boolean,
   site?: { x: number; y: number },
 ): Journey | undefined {
-  const sourceRaw = worldFactories(root).find((f) => f.id === from.factory_id),
-    destRaw = worldFactories(root).find((f) => f.id === target.factory_id),
+  const sourceRaw = worldIndex(root).byID.get(from.factory_id),
+    destRaw = worldIndex(root).byID.get(target.factory_id),
     building = site ?? endpointBuilding(root, target);
   const source = sourceRaw && plannedLayout(root, sourceRaw),
     dest = destRaw && plannedLayout(root, destRaw);

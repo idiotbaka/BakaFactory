@@ -17,6 +17,8 @@
     "dev:server": "node scripts/go.mjs run ./cmd/server",
     "generate:api": "npm run generate:api --workspace @bakafactory/web",
     "import:gameplay": "node scripts/import-gameplay.mjs",
+    "benchmark:build": "node scripts/build-benchmark.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
     "migrate": "node scripts/go.mjs run ./cmd/migrate",
     "lint": "npm run lint --workspace @bakafactory/web && node scripts/check-go-format.mjs && node scripts/go.mjs vet ./...",
     "test": "npm run test --workspace @bakafactory/web && node scripts/go.mjs test ./...",

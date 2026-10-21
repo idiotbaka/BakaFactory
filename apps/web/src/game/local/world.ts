@@ -85,6 +85,54 @@ export function stepWorld(current: LocalFactory): LocalFactory {
   const root = step(current);
   const districts: LocalFactory[] = [];
   for (const child of current.districts ?? []) {
+    const bus = child.buildings[0],
+      m = bus && child.simulation.buildings[bus.id];
+    if (
+      child.buildings.length === 1 &&
+      bus.building_type === "bus" &&
+      bus.configuration.enabled !== false &&
+      m &&
+      m.status === "warehouse" &&
+      !child.simulation.transfers?.length &&
+      child.simulation.networks?.length === 0 &&
+      m.powered === false &&
+      m.supplied_kw === 0 &&
+      m.generated_kw === 0 &&
+      m.power_demand_kw === 0 &&
+      m.network_id === undefined &&
+      Object.keys(m).every((k) =>
+        [
+          "input",
+          "output",
+          "progress",
+          "duration",
+          "cooldown",
+          "status",
+          "powered",
+          "supplied_kw",
+          "generated_kw",
+          "network_id",
+          "power_demand_kw",
+        ].includes(k),
+      ) &&
+      !m.input.length &&
+      !m.output.length &&
+      !m.progress &&
+      !m.cooldown
+    ) {
+      if (child.revision >= Number.MAX_SAFE_INTEGER)
+        throw new Error("存档版本已达到上限");
+      districts.push({
+        ...child,
+        revision: child.revision + 1,
+        simulation: {
+          ...child.simulation,
+          warehouse: { ...child.simulation.warehouse },
+          tick: root.simulation.tick,
+        },
+      });
+      continue;
+    }
     const next = step(
       {
         ...child,

@@ -29,6 +29,8 @@ import { validWorkReceipts } from "./workLedger";
 import { validIncident } from "./incidents";
 import { newMachine } from "./machine";
 import { validatePlacement } from "./placement";
+import { validDiscoveries, restoreDiscoveries } from "./discovery";
+import { validWorkshopCounts } from "./workshop";
 export { newMachine } from "./machine";
 
 export { catalog } from "./catalog";
@@ -313,6 +315,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   for (const [item, count] of Object.entries(sim.warehouse))
     if (!items.has(item) || !integer(count)) return fail();
   const p = sim.industry;
+  const needsDiscovery = !object(p) || p.discovered_items === undefined;
   if (p !== undefined) {
     if (
       !object(p) ||
@@ -329,6 +332,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
     for (const [id, n] of Object.entries(p.crafted))
       if (!items.has(id) || !integer(n)) return fail();
     if (!validWorkReceipts(p.work_receipts, sim.tick as number)) return fail();
+    if (!validDiscoveries(p.discovered_items)) return fail();
     let expectedStage = 1;
     while (
       expectedStage < 6 &&
@@ -337,7 +341,15 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       expectedStage++;
     if (p.stage !== expectedStage) return fail();
     if (p.workshop !== undefined) {
-      if (!object(p.workshop)) return fail();
+      if (
+        !object(p.workshop) ||
+        !validWorkshopCounts(p.workshop) ||
+        Object.keys(p.workshop).some(
+          (key) =>
+            !["recipe_id", "progress", "remaining", "total"].includes(key),
+        )
+      )
+        return fail();
       const r =
         typeof p.workshop.recipe_id === "string" &&
         recipeDefinitions.get(p.workshop.recipe_id);
@@ -414,6 +426,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
     factory.active_district_id = f.active_district_id;
   } else if (f.active_district_id !== undefined) return fail();
   if (!validRobotWorld(factory)) return fail();
+  if (needsDiscovery) restoreDiscoveries(factory);
   return factory;
 }
 

@@ -392,7 +392,7 @@
       "kind": "solid_or_module",
       "tier": 1,
       "source_recipes": ["r1007"],
-      "used_by": ["r1021", "r1036", "web_pipe_early"]
+      "used_by": ["r1021", "r1036", "web_pipe_early", "web_cable_start"]
     },
     {
       "id": "i0019",
@@ -2185,7 +2185,7 @@
       "kind": "solid_or_module",
       "tier": 3,
       "source_recipes": ["r3023"],
-      "used_by": ["r4007", "r4010"]
+      "used_by": ["r4007", "r4010", "web_cable_start"]
     },
     {
       "id": "i0152",
@@ -2701,7 +2701,7 @@
       "description": "绝缘线缆 · 工艺物品",
       "kind": "solid_or_module",
       "tier": 4,
-      "source_recipes": ["r4009"],
+      "source_recipes": ["r4009", "web_cable_start"],
       "used_by": ["r4011"]
     },
     {
@@ -5006,7 +5006,8 @@
         "i0075",
         "i0091",
         "i0093",
-        "i0090"
+        "i0090",
+        "i0151"
       ]
     },
     {
@@ -11225,6 +11226,19 @@
       "description": "网页适配：P2 蒸汽启动管道，原案高效配方继续保留。",
       "power_kw": 0,
       "gate": "i0060",
+      "conditions": []
+    },
+    {
+      "id": "web_cable_start",
+      "name": "启动绝缘线缆",
+      "building_type": "m08",
+      "tier": 4,
+      "duration_ms": 15000,
+      "inputs": { "i0018": 5, "i0151": 2 },
+      "outputs": { "i0192": 2 },
+      "description": "网页适配：手工制造首批电网导线，通电后改用原案高效配方。",
+      "power_kw": 0,
+      "gate": "i0174",
       "conditions": []
     }
   ]

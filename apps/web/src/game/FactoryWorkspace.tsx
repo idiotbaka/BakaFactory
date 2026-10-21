@@ -9,7 +9,9 @@ import {
 } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
 import FactoryEditor from "./FactoryEditor";
-import { ProductionInspector, WarehousePanel } from "./ProductionPanel";
+import { ProductionInspector } from "./ProductionPanel";
+import { isLogisticsBuilding } from "./catalogPresentation";
+import WorkshopHud from "./WorkshopHud";
 import { SimulationAnimationProvider } from "./SimulationAnimation";
 import { readPowerSaving, savePowerSaving } from "./displayPreferences";
 import { entityColor } from "./entityTheme";
@@ -56,7 +58,7 @@ export default function FactoryWorkspace({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const syncError = game.message;
-  const [tab, setTab] = useState<"building" | "item">("building");
+  const [tab, setTab] = useState<"building" | "logistics" | "item">("building");
   const [placementType, setPlacementType] = useState<string | null>(null);
   const [selectedInstanceID, setSelectedInstanceID] = useState<string | null>(
     null,
@@ -107,7 +109,7 @@ export default function FactoryWorkspace({
       )[Number(event.key) - 1];
       if (!definition) return;
       event.preventDefault();
-      setTab("building");
+      setTab(isLogisticsBuilding(definition) ? "logistics" : "building");
       setSelection({ kind: "building", id: definition.id });
       setSelectedInstanceID(null);
       setSelectedRobotID(null);
@@ -141,7 +143,14 @@ export default function FactoryWorkspace({
     setSelectedInstanceID(instance?.id ?? null);
     if (instance) {
       setSelection({ kind: "building", id: instance.building_type });
-      setTab("building");
+      const definition = paletteCatalog?.buildings.find(
+        (d) => d.id === instance.building_type,
+      );
+      setTab(
+        definition && isLogisticsBuilding(definition)
+          ? "logistics"
+          : "building",
+      );
     }
   }
   function applyFactory(snapshot: FactoryDetail, selectedID: string | null) {
@@ -223,9 +232,16 @@ export default function FactoryWorkspace({
     (d) => !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
   );
   const definitions = (
-    tab === "building" ? placeable : catalog.items.filter((i) => !i.legacy)
+    tab === "item"
+      ? catalog.items.filter((i) => !i.legacy)
+      : placeable.filter(
+          (d) => isLogisticsBuilding(d) === (tab === "logistics"),
+        )
   ).filter((d) =>
     `${d.name}${d.code}`.toLowerCase().includes(catalogQuery.toLowerCase()),
+  );
+  const discoveredItems = new Set(
+    factory?.simulation?.industry?.discovered_items ?? [],
   );
   const definition: Definition | undefined = (
     selection.kind === "building" ? catalog.buildings : catalog.items
@@ -296,9 +312,20 @@ export default function FactoryWorkspace({
                 ).length ?? 0}{" "}
                 台生产中
               </span>
+              {factory?.simulation && (
+                <span className="simulation-clock">
+                  Tick {factory.simulation.tick.toLocaleString()} ·{" "}
+                  {factory.simulation.tick_rate} TPS
+                </span>
+              )}
             </div>
           </div>
-          {factory && <WarehousePanel factory={factory} catalog={catalog} />}
+          <WorkshopHud
+            factory={factory}
+            catalog={catalog}
+            paused={game.paused}
+            blocked={game.workshopBlocked}
+          />
         </div>
         {syncError && (
           <p className="simulation-sync-error" role="status">
@@ -351,12 +378,28 @@ export default function FactoryWorkspace({
                 建筑
               </button>
               <button
+                aria-pressed={tab === "logistics"}
+                onClick={() => {
+                  setTab("logistics");
+                  setSelectedRobotID(null);
+                  setPlacementType(null);
+                  setSelectedInstanceID(null);
+                  const first = placeable.find(isLogisticsBuilding);
+                  if (first) setSelection({ kind: "building", id: first.id });
+                }}
+              >
+                物流
+              </button>
+              <button
                 aria-pressed={tab === "item"}
                 onClick={() => {
                   setTab("item");
                   setSelectedRobotID(null);
                   setPlacementType(null);
-                  setSelection({ kind: "item", id: catalog.items[0].id });
+                  setSelection({
+                    kind: "item",
+                    id: catalog.items.find((i) => !i.legacy)!.id,
+                  });
                   setSelectedInstanceID(null);
                 }}
               >
@@ -371,57 +414,80 @@ export default function FactoryWorkspace({
               onChange={(e) => setCatalogQuery(e.target.value)}
             />
             <div className="catalog-list">
-              {definitions.map((d, index) => (
-                <button
-                  key={d.id}
-                  className="catalog-entry"
-                  style={{ "--entity-color": entityColor(d) } as CSSProperties}
-                  aria-keyshortcuts={
-                    tab === "building" && index < 6 && !catalogQuery
-                      ? String(index + 1)
-                      : undefined
-                  }
-                  draggable={false}
-                  onDragStart={(event) => event.preventDefault()}
-                  aria-pressed={
-                    tab === "building"
-                      ? placementType === d.id
-                      : selection.kind === tab && selection.id === d.id
-                  }
-                  onClick={() => {
-                    setSelection({ kind: tab, id: d.id });
-                    setSelectedRobotID(null);
-                    setSelectedInstanceID(null);
-                    setPlacementType(
-                      tab === "building" && factory
+              {definitions.map((d) => {
+                const shortcut =
+                  tab !== "item" && !catalogQuery
+                    ? placeable.findIndex((b) => b.id === d.id) + 1
+                    : 0;
+                const unknown = tab === "item" && !discoveredItems.has(d.id);
+                return (
+                  <button
+                    key={d.id}
+                    className={`catalog-entry${unknown ? " is-undiscovered" : ""}`}
+                    title={
+                      tab === "item"
+                        ? unknown
+                          ? "尚未获得，可查看物品资料"
+                          : "曾经获得"
+                        : undefined
+                    }
+                    style={
+                      {
+                        "--entity-color": unknown ? "#9699aa" : entityColor(d),
+                      } as CSSProperties
+                    }
+                    aria-keyshortcuts={
+                      shortcut > 0 && shortcut <= 6
+                        ? String(shortcut)
+                        : undefined
+                    }
+                    draggable={false}
+                    onDragStart={(event) => event.preventDefault()}
+                    aria-pressed={
+                      tab !== "item"
                         ? placementType === d.id
-                          ? null
-                          : d.id
-                        : null,
-                    );
-                  }}
-                >
-                  <DefinitionIcon definition={d} />
-                  <span>
-                    <strong>{d.name}</strong>
-                    <small>
-                      {d.code} /{" "}
-                      {tab === "building"
-                        ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
-                        : "RESOURCE"}
-                    </small>
-                  </span>
-                  <span className="entry-arrow" aria-hidden="true">
-                    {placementType === d.id ? (
-                      "◆"
-                    ) : tab === "building" && index < 6 && !catalogQuery ? (
-                      <kbd>{index + 1}</kbd>
-                    ) : (
-                      "↗"
-                    )}
-                  </span>
-                </button>
-              ))}
+                        : selection.kind === tab && selection.id === d.id
+                    }
+                    onClick={() => {
+                      setSelection({
+                        kind: tab === "item" ? "item" : "building",
+                        id: d.id,
+                      });
+                      setSelectedRobotID(null);
+                      setSelectedInstanceID(null);
+                      setPlacementType(
+                        tab !== "item" && factory
+                          ? placementType === d.id
+                            ? null
+                            : d.id
+                          : null,
+                      );
+                    }}
+                  >
+                    <DefinitionIcon definition={d} />
+                    <span>
+                      <strong>{d.name}</strong>
+                      <small>
+                        {d.code} /{" "}
+                        {tab !== "item"
+                          ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
+                          : unknown
+                            ? "尚未获得"
+                            : "已获得"}
+                      </small>
+                    </span>
+                    <span className="entry-arrow" aria-hidden="true">
+                      {placementType === d.id ? (
+                        "◆"
+                      ) : shortcut > 0 && shortcut <= 6 ? (
+                        <kbd>{shortcut}</kbd>
+                      ) : (
+                        "↗"
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <p className="catalog-footnote">
               <span>QUICK BUILD / 连续建造</span>
@@ -480,6 +546,20 @@ export default function FactoryWorkspace({
                 districts={game.districts}
                 world={world}
                 disabled={game.paused}
+                observation={game.observation}
+                onLocateBuilding={(id) => {
+                  const b = factory.buildings.find((b) => b.id === id);
+                  if (!b) return;
+                  selectInstance(b);
+                  setPlacementType(null);
+                  setIndustryView("factory");
+                  setRobotFocus((previous) => ({
+                    factory_id: factory.id,
+                    x: b.x,
+                    y: b.y,
+                    sequence: (previous?.sequence ?? 0) + 1,
+                  }));
+                }}
                 view={industryView}
                 onViewChange={setIndustryView}
                 selectedRobotID={selectedRobotID}

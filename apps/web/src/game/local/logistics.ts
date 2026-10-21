@@ -4,6 +4,7 @@ import type {
   MachineState,
 } from "../../api/client";
 import type { LocalFactory } from "./state";
+import { discoverItems } from "./discovery";
 import {
   buildingDefinitions,
   beltCapacity,
@@ -100,6 +101,7 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
       m.status = "working";
       if (m.progress >= 10) {
         m.output = output;
+        discoverItems(f, [catalog.root_item!]);
         m.progress = 0;
       }
     }

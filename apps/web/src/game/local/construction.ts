@@ -12,6 +12,7 @@ import {
   journey,
   returnCost,
   routeEditsSafe,
+  invalidateWorldIndex,
   type Robot,
   type Point,
 } from "./robotRoutes";
@@ -223,6 +224,7 @@ export function finishConstruction(root: LocalFactory, r: Robot): boolean {
     },
   ];
   f.simulation.buildings[c.id] = newMachine();
+  invalidateWorldIndex(root);
   constructionLog(
     root,
     r,
