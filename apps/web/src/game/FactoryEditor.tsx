@@ -17,10 +17,13 @@ import {
 } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
 import type { EditorCommands } from "./local/runtime";
+import type { RobotRoute } from "./local/robotNavigation";
 import ConveyorVisual from "./ConveyorVisual";
+import FluidVisual from "./FluidVisual";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import { entityColor } from "./entityTheme";
 import { MachineProgress } from "./SimulationAnimation";
+import { isBelt, isPort, isFluidNode } from "./local/catalog";
 import {
   cellAtPoint,
   centeredCamera,
@@ -34,6 +37,10 @@ import {
 } from "./editorGeometry";
 
 type Props = {
+  selectedRobotID?: string | null;
+  onSelectRobot?: (id: string) => void;
+  robotRoute?: RobotRoute;
+  robotFocus?: RobotFocus;
   commands: EditorCommands;
   factory: FactoryDetail;
   catalog: Catalog;
@@ -43,6 +50,12 @@ type Props = {
   onSelect: (building: BuildingInstance | null) => void;
   onChange: (factory: FactoryDetail, selectedID: string | null) => void;
   onError: (error: unknown) => void;
+};
+export type RobotFocus = {
+  factory_id: string;
+  x: number;
+  y: number;
+  sequence: number;
 };
 type Pointer = { clientX: number; clientY: number; cell: Cell | null };
 type Preview = Pointer & {
@@ -278,7 +291,7 @@ export default function FactoryEditor(props: Props) {
     }
     p.cell = hit(clientX, clientY);
     const f = latest.current.factory,
-      issue = placementIssue(f, p.cell, p.instanceID);
+      issue = placementIssue(f, p.cell, p.instanceID, p.definition.id);
     cancel();
     if (issue) {
       latest.current.onError(new Error(issue));
@@ -348,7 +361,12 @@ export default function FactoryEditor(props: Props) {
     if (consumeClick() || lock.current) return;
     setMenu(null);
     if (placementDefinition) {
-      const issue = placementIssue(latest.current.factory, cell);
+      const issue = placementIssue(
+        latest.current.factory,
+        cell,
+        undefined,
+        placementDefinition.id,
+      );
       if (issue) {
         props.onError(new Error(issue));
         return;
@@ -365,6 +383,22 @@ export default function FactoryEditor(props: Props) {
             ?.id ?? null,
       );
     } else {
+      const robot = latest.current.factory.robots?.find(
+        (r) =>
+          (!r.transit &&
+            r.factory_id === factory.id &&
+            r.x === cell.x &&
+            r.y === cell.y) ||
+          (!r.returning &&
+            r.construction?.factory_id === factory.id &&
+            r.construction.x === cell.x &&
+            r.construction.y === cell.y),
+      );
+      if (robot && props.onSelectRobot) {
+        props.onSelectRobot(robot.id);
+        setCellSelection(null);
+        return;
+      }
       props.onSelect(instance ?? null);
       setCellSelection(instance ? null : cell);
     }
@@ -612,13 +646,34 @@ export default function FactoryEditor(props: Props) {
       window.removeEventListener("keydown", key);
     };
   }, [factory.id]);
+  useLayoutEffect(() => {
+    const focus = props.robotFocus,
+      area = viewport.current;
+    if (!focus || !area || focus.factory_id !== factory.id) return;
+    const rect = area.getBoundingClientRect(),
+      zoom = cameraRef.current.zoom;
+    moveCamera({
+      zoom,
+      x:
+        rect.width / 2 -
+        (GRID_INSET + (focus.x + factory.width / 2) * TILE_SIZE) * zoom,
+      y:
+        rect.height / 2 -
+        (GRID_INSET + (factory.height / 2 - focus.y) * TILE_SIZE) * zoom,
+    });
+  }, [props.robotFocus, factory.id, factory.width, factory.height]);
   useEffect(() => {
     if (menu)
       menuRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
   }, [menu]);
 
   const issue = preview
-    ? placementIssue(factory, preview.cell, preview.instanceID)
+    ? placementIssue(
+        factory,
+        preview.cell,
+        preview.instanceID,
+        preview.definition.id,
+      )
     : null;
   const buildings = useMemo(
     () => new Map(factory.buildings.map((b) => [`${b.x},${b.y}`, b])),
@@ -628,7 +683,30 @@ export default function FactoryEditor(props: Props) {
     () => new Map(catalog.buildings.map((d) => [d.id, d])),
     [catalog.buildings],
   );
+  const robots = useMemo(
+    () =>
+      new Map(
+        (factory.robots ?? [])
+          .filter((r) => !r.transit && r.factory_id === factory.id)
+          .map((r) => [`${r.x},${r.y}`, r]),
+      ),
+    [factory.robots, factory.id],
+  );
   const menuBuilding = factory.buildings.find((b) => b.id === menu?.id);
+  const blueprints = useMemo(
+    () =>
+      new Map(
+        (factory.robots ?? [])
+          .filter(
+            (r) => !r.returning && r.construction?.factory_id === factory.id,
+          )
+          .map((r) => [
+            `${r.construction!.x},${r.construction!.y}`,
+            r.construction!,
+          ]),
+      ),
+    [factory.robots, factory.id],
+  );
   return (
     <>
       <div className="editor-controls" aria-label="建筑编辑工具">
@@ -775,6 +853,27 @@ export default function FactoryEditor(props: Props) {
             aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定工厂仓库`}
           >
             <ConveyorItemsLayer factory={factory} catalog={catalog} />
+            {props.robotRoute?.factory_id === factory.id &&
+              props.robotRoute.points.length > 1 && (
+                <svg
+                  className="robot-route-layer"
+                  viewBox="0 0 630 630"
+                  aria-label="机器人当前路段预览"
+                >
+                  <polyline
+                    points={props.robotRoute.points
+                      .map(
+                        (p) =>
+                          `${(p.x + 10.5) * TILE_SIZE},${(10.5 - p.y) * TILE_SIZE}`,
+                      )
+                      .join(" ")}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray="5 4"
+                  />
+                </svg>
+              )}
             {Array.from(
               { length: factory.width * factory.height },
               (_, index) => {
@@ -793,17 +892,76 @@ export default function FactoryEditor(props: Props) {
                 return (
                   <div
                     key={`${x},${y}`}
-                    className={`map-tile ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
-                    title={`(${x}, ${y})${d ? ` · ${d.name}` : ""}`}
+                    className={`map-tile ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
+                    title={`(${x}, ${y})${y === Math.floor(factory.height / 2) ? " · 垃圾堆" : ""}${d ? ` · ${d.name}` : ""}`}
                     data-x={x}
                     data-y={y}
                   >
+                    {blueprints.has(`${x},${y}`) && (
+                      <span
+                        className="blueprint-marker"
+                        role="img"
+                        aria-label={`在建蓝图 ${buildingDefinitions.get(blueprints.get(`${x},${y}`)!.building_type)?.name} (${x},${y})`}
+                        title={`在建蓝图 · ${buildingDefinitions.get(blueprints.get(`${x},${y}`)!.building_type)?.name}`}
+                      >
+                        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                          <path
+                            d="M4 4H28V28H4Z"
+                            stroke="currentColor"
+                            strokeDasharray="4 3"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M10 22L22 10M16 9L23 16M9 16L16 23"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                    {robots.has(`${x},${y}`) &&
+                      props.onSelectRobot &&
+                      !placementDefinition && (
+                        <button
+                          type="button"
+                          className={`robot-marker ${robots.get(`${x},${y}`)!.id === props.selectedRobotID ? "selected-robot" : ""}`}
+                          title="选择机器人"
+                          aria-label={`选择机器人 ${robots.get(`${x},${y}`)!.id} (${x},${y})`}
+                          aria-pressed={
+                            robots.get(`${x},${y}`)!.id ===
+                            props.selectedRobotID
+                          }
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!consumeClick())
+                              props.onSelectRobot?.(
+                                robots.get(`${x},${y}`)!.id,
+                              );
+                          }}
+                        >
+                          <svg
+                            viewBox="0 0 32 32"
+                            fill="none"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M8 9H24V24H8ZM16 9V4M12 15H13M19 15H20M12 20H20M5 13V21M27 13V21M11 24V28M21 24V28"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            />
+                            <circle cx="16" cy="4" r="2" fill="currentColor" />
+                          </svg>
+                        </button>
+                      )}
                     {instance && d ? (
                       <button
                         className={
-                          instance.building_type === "conveyor"
+                          isBelt(instance.building_type)
                             ? "conveyor-building"
-                            : undefined
+                            : isFluidNode(instance.building_type)
+                              ? "fluid-building"
+                              : undefined
                         }
                         aria-label={`${d.name} ${d.code} (${x},${y})`}
                         aria-pressed={highlight}
@@ -815,7 +973,7 @@ export default function FactoryEditor(props: Props) {
                           { "--entity-color": entityColor(d) } as CSSProperties
                         }
                       >
-                        {instance.building_type === "conveyor" ? (
+                        {isBelt(instance.building_type) ? (
                           <ConveyorVisual
                             definition={d}
                             x={x}
@@ -824,6 +982,12 @@ export default function FactoryEditor(props: Props) {
                             buildings={buildings}
                             instanceID={instance.id}
                           />
+                        ) : isFluidNode(instance.building_type) ? (
+                          <FluidVisual
+                            definition={d}
+                            rotation={instance.rotation}
+                            machine={runtime}
+                          />
                         ) : (
                           <DefinitionIcon
                             definition={d}
@@ -831,32 +995,31 @@ export default function FactoryEditor(props: Props) {
                             rotation={instance.rotation}
                           />
                         )}
-                        {instance.building_type !== "conveyor" && (
-                          <span
-                            className="direction-indicator"
-                            style={{
-                              transform: `rotate(${instance.rotation}deg)`,
-                            }}
-                            aria-hidden="true"
-                          >
-                            {instance.building_type === "item_output" ||
-                            instance.building_type === "item_input"
-                              ? "→"
-                              : "↑"}
-                          </span>
-                        )}
-                        {d.category === "machine" && runtime && (
-                          <>
+                        {!isBelt(instance.building_type) &&
+                          !isFluidNode(instance.building_type) && (
                             <span
-                              className={`tile-machine-status status-${runtime.status}`}
+                              className="direction-indicator"
+                              style={{
+                                transform: `rotate(${instance.rotation}deg)`,
+                              }}
                               aria-hidden="true"
-                            />
-                            <MachineProgress
-                              key={instance.id}
-                              machine={runtime}
-                            />
-                          </>
-                        )}
+                            >
+                              {isPort(instance.building_type) ? "→" : "↑"}
+                            </span>
+                          )}
+                        {(d.category === "machine" || d.role === "source") &&
+                          runtime && (
+                            <>
+                              <span
+                                className={`tile-machine-status status-${runtime.status}`}
+                                aria-hidden="true"
+                              />
+                              <MachineProgress
+                                key={instance.id}
+                                machine={runtime}
+                              />
+                            </>
+                          )}
                       </button>
                     ) : (
                       <button
@@ -870,7 +1033,7 @@ export default function FactoryEditor(props: Props) {
                     )}
                     {target && preview && (
                       <span className="tile-preview" aria-hidden="true">
-                        {preview.definition.id === "conveyor" ? (
+                        {isBelt(preview.definition.id) ? (
                           <ConveyorVisual
                             definition={preview.definition}
                             x={x}
@@ -878,6 +1041,11 @@ export default function FactoryEditor(props: Props) {
                             rotation={preview.rotation}
                             buildings={buildings}
                             instanceID={preview.instanceID}
+                          />
+                        ) : isFluidNode(preview.definition.id) ? (
+                          <FluidVisual
+                            definition={preview.definition}
+                            rotation={preview.rotation}
                           />
                         ) : (
                           <DefinitionIcon

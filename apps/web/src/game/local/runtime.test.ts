@@ -9,13 +9,21 @@ import { GameRuntime, type GameView } from "./runtime";
 import { readLocal, writeLocal, type LocalRecord } from "./storage";
 import {
   createLocalFactory,
-  editFactory,
   toSave,
   type CloudSave,
   type LocalFactory,
 } from "./state";
-import { step } from "./simulation";
+import {
+  actWorld,
+  createWorld,
+  districtSummary,
+  editWorld,
+  initializeWorld,
+  projectFactory,
+  stepWorld,
+} from "./world";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
+import { catalog, buildingDefinitions, itemID } from "./catalog";
 vi.mock("./storage", () => ({ readLocal: vi.fn(), writeLocal: vi.fn() }));
 vi.mock("../../api/client", () => ({
   ApiError: class ApiError extends Error {
@@ -47,18 +55,27 @@ class FakeWorker {
     FakeWorker.instances.push(this);
   }
   postMessage(command: WorkerCommand) {
-    if (command.kind === "init") this.factory = command.factory;
+    if (command.kind === "init")
+      this.factory = command.factory ? initializeWorld(command.factory) : null;
     else if (command.kind === "permit") this.enabled = command.enabled;
     else {
       if (command.kind === "create")
-        this.factory = createLocalFactory(command.user, command.name);
+        this.factory = createWorld(command.user, command.name);
       else if (command.kind === "edit")
-        this.factory = editFactory(this.factory!, command.edit);
-      else this.factory = command.factory;
+        this.factory = editWorld(
+          this.factory!,
+          command.edit,
+          command.factoryID,
+        );
+      else if (command.kind === "world")
+        this.factory = actWorld(this.factory!, command.action);
+      else this.factory = initializeWorld(command.factory);
       this.onmessage?.({
         data: {
           kind: "state",
-          factory: structuredClone(this.factory!),
+          factory: structuredClone(projectFactory(this.factory!)),
+          root: structuredClone(this.factory!),
+          districts: districtSummary(this.factory!),
           request: command.request,
         },
       });
@@ -66,9 +83,14 @@ class FakeWorker {
   }
   tick() {
     if (this.enabled && this.factory) {
-      this.factory = step(this.factory);
+      this.factory = stepWorld(this.factory);
       this.onmessage?.({
-        data: { kind: "state", factory: structuredClone(this.factory) },
+        data: {
+          kind: "state",
+          factory: structuredClone(projectFactory(this.factory)),
+          root: structuredClone(this.factory),
+          districts: districtSummary(this.factory),
+        },
       });
     }
   }
@@ -133,6 +155,78 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("keeps a real construction checkpoint and read-only route through offline permission loss", async () => {
+    let root = createWorld(user, "施工恢复");
+    root.simulation.industry!.stage = 6;
+    root.simulation.industry!.milestones = catalog
+      .stages!.slice(0, 5)
+      .map((s) => s.milestone_item);
+    root.simulation.warehouse[
+      buildingDefinitions.get("charge_station")!.item!
+    ] = 1;
+    root = editWorld(root, {
+      kind: "place",
+      id: "station",
+      building_type: "charge_station",
+      placement: { x: 4, y: 0, rotation: 0 },
+    });
+    root.simulation.warehouse[itemID("智能机器人")] = 1;
+    root = actWorld(root, {
+      type: "robot_deploy",
+      id: "builder",
+      item: itemID("智能机器人"),
+      station: "station",
+      factory_id: root.id,
+    });
+    root.robots![0].energy_kj = 30000;
+    root.simulation.warehouse[buildingDefinitions.get("m03")!.item!] = 1;
+    root = actWorld(root, {
+      type: "robot_construct",
+      id: "builder",
+      blueprint: {
+        id: "site",
+        factory_id: root.id,
+        building_type: "m03",
+        x: 6,
+        y: 2,
+        rotation: 0,
+      },
+    });
+    saved = {
+      owner: user.id,
+      version: 1,
+      save: toSave(root),
+      cloudVersion: 0,
+      cloudSavedAt: null,
+      uploadedRevision: null,
+      savedAt: "now",
+    };
+    await game.start();
+    const before = structuredClone(saved);
+    expect(game.robotRoute("builder")?.target?.building_id).toBe("site");
+    expect(saved).toEqual(before);
+    vi.mocked(gameHeartbeat).mockRejectedValue(new Error("offline"));
+    await vi.advanceTimersByTimeAsync(10000);
+    const worker = FakeWorker.instances[0];
+    worker.tick();
+    expect(view.paused).toBe(true);
+    expect(worker.factory!.robots).toEqual(root.robots);
+    expect(game.robotRoute("builder")?.status).toBe("ready");
+    await expect(
+      game.world({ type: "robot_return", id: "builder" }),
+    ).rejects.toThrow("暂停");
+    vi.mocked(gameHeartbeat).mockResolvedValue({
+      user,
+      session_id: "session-1",
+      lease_seconds: 30,
+    });
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(worker.factory!.simulation.tick).toBe(root.simulation.tick);
+    worker.tick();
+    expect(worker.factory!.simulation.tick).toBe(root.simulation.tick + 1);
+    expect(worker.factory!.robots![0].cargo).toEqual(root.robots![0].cargo);
+    expect(worker.factory!.buildings.some((b) => b.id === "site")).toBe(false);
+  });
   it("restores a newer cloud checkpoint over an empty local placeholder", async () => {
     saved = {
       owner: user.id,
@@ -330,5 +424,34 @@ describe("local persistence and cloud lifecycle", () => {
     await vi.advanceTimersByTimeAsync(60000);
     expect(uploadSave).toHaveBeenCalledTimes(3);
     expect(view.dirty).toBe(false);
+  });
+  it("keeps the entire world when editing and backing up a non-headquarters viewport", async () => {
+    await game.start();
+    const headquarters = await game.create("世界存档");
+    expect(view.districts).toHaveLength(6);
+    const child = view.districts!.find((f) => !f.headquarters)!;
+    await game.world({ type: "select_district", id: child.id });
+    await game.commands.placeBuilding(child.id, "miner", {
+      x: 1,
+      y: 1,
+      rotation: 0,
+    });
+    expect(view.factory?.id).toBe(child.id);
+    expect(saved?.save?.factory.id).toBe(headquarters.id);
+    expect(
+      saved?.save?.factory.districts?.find((f) => f.id === child.id)?.buildings,
+    ).toHaveLength(2);
+    vi.mocked(uploadSave).mockImplementation(async (_session, base, save) => ({
+      version: base + 1,
+      saved_at: "now",
+      save,
+    }));
+    await game.backup();
+    const uploaded = vi.mocked(uploadSave).mock.calls[0][2];
+    expect(uploaded.factory.id).toBe(headquarters.id);
+    expect(uploaded.factory.active_district_id).toBe(child.id);
+    expect(uploaded.factory.districts).toHaveLength(5);
+    expect(uploaded.factory.buildings).toHaveLength(1);
+    expect(view.factory?.id).toBe(child.id);
   });
 });

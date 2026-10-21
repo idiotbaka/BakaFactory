@@ -7,6 +7,7 @@ import type {
 } from "../api/client";
 import type { Point } from "./animationMath";
 import { TILE_SIZE } from "./editorGeometry";
+import { isBelt, beltTicks } from "./local/catalog";
 
 export type VisualItem = {
   id: string;
@@ -15,6 +16,7 @@ export type VisualItem = {
   tick: number;
   transfer?: ItemTransfer;
   belt?: {
+    moving: boolean;
     building: BuildingInstance;
     payload: NonNullable<MachineState["belt"]>;
   };
@@ -62,17 +64,23 @@ export function transferPath(
   const via = event.via && tileCenter(event.via, width, height);
   const next = via ?? target;
   const distance = Math.hypot(next.x - source.x, next.y - source.y) || 1;
-  const exit =
-    event.source.building_type === "conveyor"
-      ? beltEnds(event.source, width, height).goal
-      : {
-          x: source.x + ((next.x - source.x) / distance) * 12,
-          y: source.y + ((next.y - source.y) / distance) * 12,
-        };
+  const exit = isBelt(event.source.building_type)
+    ? beltEnds(event.source, width, height).goal
+    : {
+        x: source.x + ((next.x - source.x) / distance) * 12,
+        y: source.y + ((next.y - source.y) / distance) * 12,
+      };
   const points = [start ?? exit];
   if (via) points.push(via);
-  if (event.target.building_type === "conveyor") {
-    points.push(target, beltEnds(event.target, width, height).goal);
+  if (isBelt(event.target.building_type)) {
+    const ends = beltEnds(event.target, width, height),
+      fraction = 1 / beltTicks(event.target.building_type);
+    const goal = {
+      x: ends.entry.x + (ends.goal.x - ends.entry.x) * fraction,
+      y: ends.entry.y + (ends.goal.y - ends.entry.y) * fraction,
+    };
+    if (fraction >= 0.5) points.push(target);
+    points.push(goal);
   } else {
     const previous = via ?? source;
     const length =
@@ -134,6 +142,28 @@ export class LogisticsVisualStore {
     const tick = factory.simulation?.tick ?? 0;
     const oldTick = this.factory.simulation?.tick ?? 0;
     const buildings = new Map(factory.buildings.map((b) => [b.id, b]));
+    const oldBuildings = new Map(this.factory.buildings.map((b) => [b.id, b]));
+    const changed = new Set(
+      factory.buildings
+        .filter(
+          (b) =>
+            JSON.stringify(b.configuration) !==
+            JSON.stringify(oldBuildings.get(b.id)?.configuration),
+        )
+        .map((b) => b.id),
+    );
+    for (const collection of [this.incoming, this.outgoing]) {
+      for (const [id, event] of collection) {
+        if (
+          changed.has(event.source.id) ||
+          changed.has(event.target.id) ||
+          (event.via && changed.has(event.via.id))
+        ) {
+          collection.delete(id);
+          this.versions.set(id, (this.versions.get(id) ?? 0) + 1);
+        }
+      }
+    }
     // Cancel a flight onto a belt without removing that belt's real payload.
     // Only this item's track resets; unrelated animations keep moving.
     for (const [id, event] of this.incoming) {
@@ -158,10 +188,9 @@ export class LogisticsVisualStore {
       // receipts in that small window, never initial / background history.
       for (const event of factory.simulation?.transfers ?? []) {
         if (event.tick <= oldTick || event.tick > tick) continue;
-        const collection =
-          event.target.building_type === "conveyor"
-            ? this.incoming
-            : this.outgoing;
+        const collection = isBelt(event.target.building_type)
+          ? this.incoming
+          : this.outgoing;
         collection.set(event.payload_id, event);
       }
     }
@@ -192,14 +221,20 @@ export class LogisticsVisualStore {
     const items = new Map<string, VisualItem>();
     for (const building of this.factory.buildings) {
       const payload = this.factory.simulation?.buildings[building.id]?.belt;
-      if (building.building_type !== "conveyor" || !payload) continue;
+      if (!isBelt(building.building_type) || !payload) continue;
       const transfer = this.incoming.get(payload.id);
       items.set(payload.id, {
         id: payload.id,
         item: payload.item,
         epoch: `${this.epoch}:${this.versions.get(payload.id) ?? 0}`,
         tick: this.factory.simulation!.tick,
-        belt: { building, payload },
+        belt: {
+          building,
+          payload,
+          moving:
+            this.factory.simulation!.buildings[building.id].status ===
+            "transporting",
+        },
         transfer: transfer?.target.id === building.id ? transfer : undefined,
       });
     }

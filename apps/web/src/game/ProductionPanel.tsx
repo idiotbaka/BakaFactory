@@ -9,6 +9,22 @@ import type { CSSProperties } from "react";
 import DefinitionIcon from "./DefinitionIcon";
 import { entityColor } from "./entityTheme";
 import { DetailedProgress } from "./SimulationAnimation";
+import type { IndustryAction } from "./local/industry";
+import {
+  selectedRecipe,
+  isBelt,
+  isPort,
+  isChest,
+  isFluidNode,
+  beltTicks,
+  beltCapacity,
+} from "./local/catalog";
+import { fuelValues } from "./local/fuel";
+import LogisticsInspector from "./LogisticsInspector";
+import { isSolidTransport } from "./local/transportConfig";
+import { UtilityInspector } from "./PowerPanel";
+import { isPowerFacility } from "./local/power";
+import FluidInspector from "./FluidInspector";
 
 export const machineStatuses: Record<string, string> = {
   idle: "待机",
@@ -21,6 +37,28 @@ export const machineStatuses: Record<string, string> = {
   rejected: "目标白名单拒绝",
   transferring: "传输中",
   warehouse: "接收至总仓库",
+  no_recipe: "请选择配方",
+  locked: "阶段尚未解锁",
+  no_energy: "缺少动力",
+  condition_required: "等待真实作业记录",
+  storage: "缓存存储",
+  disabled: "已暂停",
+  generating: "正在供能",
+  charging: "正在充电",
+  discharging: "正在放电",
+  charged: "储能已满",
+  connected: "网络已连接",
+  no_network: "尚未接网",
+  no_medium: "缺少启动工作液",
+  no_fuel: "等待燃料",
+  refueling: "正在为机器人补能",
+  flowing: "流体输送中",
+  fluid_full: "容器已满",
+  fluid_stored: "流体已存储",
+  dry: "等待流体",
+  mixed: "禁止混液",
+  flow_closed: "流路已关闭",
+  no_connection: "下游尚未连接",
 };
 export function WarehousePanel({
   factory,
@@ -34,24 +72,27 @@ export function WarehousePanel({
     <section className="warehouse-panel" aria-label="玩家总仓库">
       <div>
         <span className="eyebrow">CARGO / 01</span>
-        <strong>总仓库</strong>
-        <small>工厂仓库自动入库 · 拆除物品回收</small>
+        <strong>当前厂区仓库</strong>
+        <small>总仓库按厂区分仓 · 自动入库 / 拆除回收</small>
       </div>
       <div className="warehouse-items">
-        {catalog.items.map((item) => (
-          <div
-            className="warehouse-item"
-            key={item.id}
-            title={item.name}
-            style={{ "--entity-color": entityColor(item) } as CSSProperties}
-          >
-            <DefinitionIcon definition={item} compact />
-            <span>{item.name}</span>
-            <strong>
-              {(simulation?.warehouse[item.id] ?? 0).toLocaleString()}
-            </strong>
-          </div>
-        ))}
+        {catalog.items
+          .filter((item) => (simulation?.warehouse[item.id] ?? 0) > 0)
+          .slice(0, 3)
+          .map((item) => (
+            <div
+              className="warehouse-item"
+              key={item.id}
+              title={item.name}
+              style={{ "--entity-color": entityColor(item) } as CSSProperties}
+            >
+              <DefinitionIcon definition={item} compact />
+              <span>{item.name}</span>
+              <strong>
+                {(simulation?.warehouse[item.id] ?? 0).toLocaleString()}
+              </strong>
+            </div>
+          ))}
       </div>
       <small className="simulation-clock">
         {simulation
@@ -65,19 +106,21 @@ function Slots({
   title,
   values,
   catalog,
+  slots,
 }: {
   title: string;
   values: MachineState["input"];
   catalog: Catalog;
+  slots: number;
 }) {
   return (
     <section className="inventory-section">
       <h4>
         {title}
-        <small>4 格 · 每格 100</small>
+        <small>{slots} 格 · 每格 100</small>
       </h4>
       <div className="inventory-slots">
-        {Array.from({ length: 4 }, (_, i) => {
+        {Array.from({ length: slots }, (_, i) => {
           const stack = values[i],
             item = stack && catalog.items.find((d) => d.id === stack.item);
           return (
@@ -107,17 +150,24 @@ export function ProductionInspector({
   catalog,
   definition,
   instance,
+  act,
+  disabled = false,
 }: {
   factory: FactoryDetail;
   catalog: Catalog;
   definition: BuildingDefinition;
   instance?: BuildingInstance;
+  act?: (action: IndustryAction) => void;
+  disabled?: boolean;
 }) {
   const machine = instance && factory.simulation?.buildings[instance.id];
-  const port =
-    definition.id === "item_input" || definition.id === "item_output";
-  const isMachine = definition.category === "machine";
-  const recipe = catalog.recipes.find((r) => r.building_type === definition.id);
+  const port = isPort(definition.id);
+  const isMachine =
+    definition.category === "machine" &&
+    catalog.recipes.some((r) => r.building_type === definition.id);
+  const recipe = instance
+    ? selectedRecipe(instance)
+    : catalog.recipes.find((r) => r.building_type === definition.id);
   const duration =
     machine?.duration || (recipe ? recipe.duration_ms / 1000 : 0);
   let route;
@@ -137,7 +187,7 @@ export function ProductionInspector({
     route = (
       <div className="port-route">
         <span>来源：{neighbor(-1)}</span>
-        <span>↓ 每秒最多 1 件</span>
+        <span>↓ 每批最多 {definition.batch_size ?? 1} 件</span>
         <span>目标：{neighbor(1)}</span>
       </div>
     );
@@ -150,6 +200,80 @@ export function ProductionInspector({
           {machineStatuses[machine?.status ?? "idle"] ?? "等待同步"}
         </div>
       )}
+      {instance && act && isSolidTransport(definition.id) && (
+        <LogisticsInspector
+          key={instance.id}
+          factory={factory}
+          catalog={catalog}
+          definition={definition}
+          instance={instance}
+          act={act}
+          disabled={disabled}
+        />
+      )}
+      {machine && isChest(definition.id) && (
+        <Slots
+          title="箱子缓存"
+          values={machine.output}
+          catalog={catalog}
+          slots={definition.output_slots ?? 8}
+        />
+      )}
+      {instance && act && isFluidNode(definition.id) && (
+        <FluidInspector
+          key={instance.id}
+          factory={factory}
+          catalog={catalog}
+          definition={definition}
+          instance={instance}
+          act={act}
+          disabled={disabled}
+        />
+      )}
+      {instance &&
+        act &&
+        (definition.category === "machine" ||
+          isPowerFacility(definition.id) ||
+          definition.energy) && (
+          <UtilityInspector
+            factory={factory}
+            definition={definition}
+            instance={instance}
+            act={act}
+            disabled={disabled}
+          />
+        )}
+      {machine && definition.role === "source" && (
+        <>
+          <DetailedProgress machine={machine} name="垃圾提取" />
+          <Slots
+            title="待运垃圾"
+            values={machine.output}
+            catalog={catalog}
+            slots={1}
+          />
+        </>
+      )}
+      {instance &&
+        machine &&
+        act &&
+        Object.keys(fuelValues(definition)).length > 0 && (
+          <div className="machine-actions">
+            <strong>燃料 · 未用能量 {machine.energy_kj ?? 0} kJ</strong>
+            {Object.keys(fuelValues(definition)).map((id) => (
+              <button
+                key={id}
+                disabled={disabled || !(factory.simulation?.warehouse[id] ?? 0)}
+                onClick={() =>
+                  act({ type: "fuel", id: instance.id, item: id, count: 1 })
+                }
+              >
+                添加 1 {catalog.items.find((i) => i.id === id)?.name}（缓存{" "}
+                {machine.fuel?.find((s) => s.item === id)?.count ?? 0}）
+              </button>
+            ))}
+          </div>
+        )}
       {isMachine && (
         <>
           <div className="input-whitelist">
@@ -168,13 +292,95 @@ export function ProductionInspector({
           </div>
           {machine && (
             <>
-              <Slots title="输入" values={machine.input} catalog={catalog} />
+              {act && instance && (
+                <div className="machine-actions">
+                  <label>
+                    生产配方
+                    <select
+                      aria-label="生产配方"
+                      disabled={disabled}
+                      value={
+                        typeof instance.configuration.recipe_id === "string"
+                          ? instance.configuration.recipe_id
+                          : ""
+                      }
+                      onChange={(e) =>
+                        act({
+                          type: "recipe",
+                          id: instance.id,
+                          recipe: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="" disabled>
+                        选择配方
+                      </option>
+                      {catalog.recipes
+                        .filter((r) => r.building_type === definition.id)
+                        .map((r) => (
+                          <option
+                            key={r.id}
+                            value={r.id}
+                            disabled={
+                              (r.tier ?? 1) >
+                              (factory.simulation?.industry?.stage ?? 1)
+                            }
+                          >
+                            {r.id.toUpperCase()} · {r.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <button
+                    disabled={disabled || !recipe}
+                    onClick={() => act({ type: "feed_batch", id: instance.id })}
+                  >
+                    从仓库补足一批原料
+                  </button>
+                  <button
+                    disabled={disabled || !machine.output.length}
+                    onClick={() => act({ type: "collect", id: instance.id })}
+                  >
+                    收取全部产物
+                  </button>
+                  <button
+                    disabled={disabled || !machine.input.length}
+                    onClick={() =>
+                      act({ type: "collect_input", id: instance.id })
+                    }
+                  >
+                    取回输入（重置进度）
+                  </button>
+                </div>
+              )}
+              <Slots
+                title="输入"
+                values={machine.input}
+                catalog={catalog}
+                slots={definition.input_slots ?? 4}
+              />
+              {!!recipe?.conditions?.length && (
+                <p className="production-hint">
+                  每批完成时消费真实作业凭据：
+                  {recipe.id === "r5048"
+                    ? "40 次匹配搬运"
+                    : recipe.id === "r5049"
+                      ? "20 次巡检／维护"
+                      : "30 次安装摄像头的有效作业"}
+                  ；机器人须仍部署并启用。存量见“机器人 → 真实作业”。
+                </p>
+              )}
               <DetailedProgress
                 key={instance?.id}
                 machine={{ ...machine, duration }}
                 name={recipe?.name ?? "生产进度"}
               />
-              <Slots title="产物" values={machine.output} catalog={catalog} />
+              <Slots
+                title="产物"
+                values={machine.output}
+                catalog={catalog}
+                slots={definition.output_slots ?? 4}
+              />
             </>
           )}
           {!instance && (
@@ -184,9 +390,10 @@ export function ProductionInspector({
           )}
         </>
       )}
-      {definition.id === "conveyor" && (
+      {isBelt(definition.id) && (
         <p className="production-hint">
-          容量 1 件 · 每秒 1 格
+          容量 {beltCapacity(definition.id)} 件 · 每 {beltTicks(definition.id)}{" "}
+          秒 1 格
           {machine?.belt ? (
             <>
               <br />
@@ -195,7 +402,10 @@ export function ProductionInspector({
                 catalog.items.find((item) => item.id === machine.belt?.item)
                   ?.name
               }{" "}
-              · {machine.belt.progress >= 1 ? "等待下游接收" : "格内运输中"}
+              · {machine.belt.count ?? 1} 件 ·{" "}
+              {machine.belt.progress >= beltTicks(definition.id)
+                ? "等待下游接收"
+                : "格内运输中"}
             </>
           ) : (
             <>

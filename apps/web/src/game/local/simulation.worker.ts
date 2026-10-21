@@ -1,5 +1,13 @@
-import { createLocalFactory, editFactory, type LocalFactory } from "./state";
-import { step } from "./simulation";
+import { type LocalFactory } from "./state";
+import {
+  actWorld,
+  createWorld,
+  districtSummary,
+  editWorld,
+  initializeWorld,
+  projectFactory,
+  stepWorld,
+} from "./world";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 
 let factory: LocalFactory | null = null;
@@ -8,6 +16,14 @@ let enabled = false,
   lastWake = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 const send = (event: WorkerEvent) => postMessage(event);
+const sendState = (request?: number) =>
+  send({
+    kind: "state",
+    factory: projectFactory(factory!),
+    root: factory!,
+    districts: districtSummary(factory!),
+    request,
+  });
 function schedule() {
   clearTimeout(timer);
   if (!enabled || !factory) return;
@@ -21,8 +37,8 @@ function schedule() {
     // Suspension, sleep and slow devices never generate accumulated ticks.
     if (now - lastWake <= 2500) {
       try {
-        factory = step(factory!);
-        send({ kind: "state", factory });
+        factory = stepWorld(factory!);
+        sendState();
       } catch (error) {
         enabled = false;
         send({
@@ -38,9 +54,10 @@ self.onmessage = (event: MessageEvent<WorkerCommand>) => {
   const command = event.data;
   try {
     if (command.kind === "init") {
-      factory = command.factory;
+      factory = command.factory ? initializeWorld(command.factory) : null;
       enabled = false;
       clearTimeout(timer);
+      if (factory) sendState();
       return;
     }
     if (command.kind === "permit") {
@@ -52,20 +69,23 @@ self.onmessage = (event: MessageEvent<WorkerCommand>) => {
       else if (!wasEnabled) schedule();
       return;
     }
-    if (command.kind === "replace") factory = command.factory;
+    if (command.kind === "replace") factory = initializeWorld(command.factory);
     else {
       if (!enabled || performance.now() >= expires)
         throw new Error("工厂已暂停，请先恢复在线连接");
       if (command.kind === "create") {
         if (factory) throw new Error("当前账号已有本地工厂");
-        factory = createLocalFactory(command.user, command.name);
+        factory = createWorld(command.user, command.name);
         schedule();
       } else {
         if (!factory) throw new Error("请先创建工厂");
-        factory = editFactory(factory, command.edit);
+        factory =
+          command.kind === "world"
+            ? actWorld(factory, command.action)
+            : editWorld(factory, command.edit, command.factoryID);
       }
     }
-    send({ kind: "state", factory: factory!, request: command.request });
+    sendState(command.request);
   } catch (error) {
     send({
       kind: "error",

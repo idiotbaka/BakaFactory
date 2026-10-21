@@ -120,6 +120,290 @@
   gap: 12px;
   position: relative;
 }
+.industry-tabs {
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  flex: none;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.industry-tabs > span {
+  white-space: nowrap;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.industry-tabs button,
+.industry-content button,
+.machine-actions button {
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  background: #151c2e;
+  color: var(--text);
+  font-size: 12px;
+}
+.industry-tabs button {
+  flex: none;
+}
+.robot-panel,
+.robot-inspector,
+.robot-panel fieldset,
+.robot-panel label,
+.robot-list {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.robot-inspector code {
+  overflow-wrap: anywhere;
+}
+.robot-panel fieldset {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+}
+.robot-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.robot-list button {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+.robot-list button[aria-pressed="true"] {
+  border-color: var(--cyan);
+}
+.robot-zones {
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  overflow: auto;
+}
+.robot-zones label {
+  display: flex;
+  align-items: center;
+}
+.robot-zones input {
+  width: auto;
+}
+.industry-tabs button[aria-pressed="true"] {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.industry-editor {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.industry-editor[hidden] {
+  display: none;
+}
+.industry-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+.industry-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.industry-heading h3 {
+  font-size: 18px;
+  margin: 0;
+}
+.industry-heading input {
+  width: 48%;
+  min-width: 0;
+}
+.industry-goal {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.scavenge-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #10242d;
+}
+.scavenge-box > div {
+  flex: 1;
+}
+.scavenge-box p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+.scavenge-box button {
+  flex: none;
+}
+.workshop-active {
+  padding: 12px;
+  border: 1px solid var(--cyan);
+  margin: 12px 0;
+}
+.workshop-recipes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.workshop-recipes .recipe-card {
+  margin: 0;
+}
+.workshop-recipes p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.industry-warehouse {
+  display: grid;
+  gap: 8px;
+}
+.industry-warehouse article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+.industry-warehouse article > span:last-child {
+  margin-left: auto;
+}
+.catalog-search {
+  width: calc(100% - 24px);
+  margin: 8px 12px;
+  flex: none;
+  min-height: 36px;
+}
+.machine-actions {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.machine-actions select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.machine-actions label {
+  font-size: 12px;
+}
+.logistics-settings {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0;
+  font-size: 12px;
+}
+.logistics-settings h4 {
+  margin: 0;
+  font-size: 12px;
+}
+.logistics-settings p {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.logistics-settings label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+.logistics-settings fieldset {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+}
+.logistics-settings legend {
+  padding: 0 4px;
+  font-size: 12px;
+}
+.logistics-settings select,
+.logistics-settings input {
+  min-width: 0;
+  width: 100%;
+  font-size: 12px;
+}
+.logistics-settings button {
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: #151c2e;
+  padding: 7px 9px;
+  font-size: 12px;
+}
+.power-overview {
+  display: grid;
+  gap: 12px;
+  font-size: 12px;
+}
+.power-overview p {
+  line-height: 1.8;
+  color: var(--muted);
+}
+.power-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.power-summary > span {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.power-summary strong {
+  font-size: 16px;
+  color: var(--cyan);
+}
+.power-network-card {
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #101a27;
+}
+.power-network-card h4 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+.power-network-card h4 span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.power-network-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.power-network-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.power-network-card dd {
+  margin: 0;
+  color: var(--cyan);
+}
+.utility-settings progress {
+  width: 100%;
+  accent-color: var(--cyan);
+}
 .hud-strip {
   grid-row: 1;
   display: grid;
@@ -971,4 +1255,26 @@
   .game-shell .brand small {
     letter-spacing: 1px;
   }
+}
+.world-panel,
+.world-districts {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.world-panel label {
+  display: grid;
+  gap: 6px;
+}
+.world-districts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.world-districts button {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.world-districts button[aria-pressed="true"] {
+  border-color: var(--cyan);
 }

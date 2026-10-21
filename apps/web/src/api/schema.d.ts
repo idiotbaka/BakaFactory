@@ -185,7 +185,7 @@ export interface components {
             /** @enum {integer} */
             format_version: 1;
             /** @enum {integer} */
-            rules_version: 1;
+            rules_version: 1 | 2;
             factory: components["schemas"]["FactoryDetail"];
         };
         CloudSave: {
@@ -228,6 +228,12 @@ export interface components {
         };
         FactoryDetail: components["schemas"]["Factory"] & {
             simulation?: components["schemas"]["Simulation"];
+            /** @description 仅主厂保存的已部署机器人；界面投影可读取全局列表 */
+            robots?: components["schemas"]["RobotState"][];
+            /** @description 仅主厂区保存的当前显示厂区 ID */
+            active_district_id?: string;
+            /** @description 仅主厂区保存的分厂；禁止嵌套分厂，分厂 industry 缺省并共用主厂进度 */
+            districts?: components["schemas"]["FactoryDetail"][];
             buildings: components["schemas"]["BuildingInstance"][];
         };
         FactoryResponse: {
@@ -245,12 +251,25 @@ export interface components {
             /** @enum {string} */
             category: "machine" | "logistics";
             fixed: boolean;
-            /** @enum {integer} */
-            input_slots?: 4;
-            /** @enum {integer} */
-            output_slots?: 4;
+            input_slots?: number;
+            output_slots?: number;
             /** @enum {integer} */
             stack_limit?: 100;
+            tier?: number;
+            item?: string;
+            work_mode?: string;
+            energy?: string;
+            power_kw?: number;
+            capacity_kj?: number;
+            station_capacity_kj?: number;
+            station_transfer_kw?: number;
+            transfer_kw?: number;
+            fluid_capacity?: number;
+            fluid_rate?: number;
+            role?: string;
+            belt_ticks?: number;
+            batch_size?: number;
+            legacy?: boolean;
             input_whitelist?: string[];
         };
         ItemStack: {
@@ -259,17 +278,36 @@ export interface components {
             count: number;
         };
         MachineState: {
+            batches_completed?: number;
+            incident?: components["schemas"]["WorkIncident"];
+            energy_kj?: number;
+            station_energy_kj?: number;
+            work_energy_kj?: number;
+            powered?: boolean;
+            generated_kw?: number;
+            power_demand_kw?: number;
+            network_id?: string;
+            charge_kj?: number;
+            charge_remainder?: number;
+            medium?: number;
+            fluid?: components["schemas"]["FluidVolume"];
+            flow_in?: number;
+            flow_out?: number;
+            fluid_cursor?: number;
+            fuel?: components["schemas"]["ItemStack"][];
             input: components["schemas"]["ItemStack"][];
             output: components["schemas"]["ItemStack"][];
             progress: number;
             duration: number;
             cooldown: number;
+            supplied_kw?: number;
             status: string;
             belt?: {
                 /** @description Stable payload identity preserved across conveyors and ports */
                 id: string;
                 item: string;
                 progress: number;
+                count?: number;
             };
         };
         TransferEndpoint: {
@@ -286,6 +324,7 @@ export interface components {
             /** @description Same identity as the conveyor payload if present */
             payload_id: string;
             item: string;
+            count?: number;
             /** Format: int64 */
             tick: number;
             source: components["schemas"]["TransferEndpoint"];
@@ -297,6 +336,8 @@ export interface components {
             tick: number;
             /** @enum {integer} */
             tick_rate: 1;
+            industry?: components["schemas"]["IndustryState"];
+            networks?: components["schemas"]["PowerNetwork"][];
             /** @description Confirmed port and Bus transfers from the last three ticks. Cosmetic only; clients deduplicate and never replay on initial load. */
             transfers?: components["schemas"]["ItemTransfer"][];
             buildings: {
@@ -310,6 +351,12 @@ export interface components {
             id: string;
             name: string;
             building_type: string;
+            tier?: number;
+            description?: string;
+            power_kw?: number;
+            gate?: string;
+            legacy?: boolean;
+            conditions?: components["schemas"]["RecipeCondition"][];
             inputs: {
                 [key: string]: number;
             };
@@ -320,10 +367,173 @@ export interface components {
             duration_ms: number;
         };
         Catalog: {
+            robots?: components["schemas"]["RobotDefinition"][];
             version: number;
-            items: components["schemas"]["Definition"][];
+            root_item?: string;
+            starting_machines?: string[];
+            stages?: components["schemas"]["StageDefinition"][];
+            items: components["schemas"]["ItemDefinition"][];
             buildings: components["schemas"]["BuildingDefinition"][];
             recipes: components["schemas"]["RecipeDefinition"][];
+        };
+        ItemDefinition: components["schemas"]["Definition"] & {
+            kind?: string;
+            tier?: number;
+            legacy?: boolean;
+            source_recipes?: string[];
+            used_by?: string[];
+        };
+        RobotDefinition: {
+            item: string;
+            name: string;
+            tier: number;
+            /** @enum {string} */
+            energy: "shaft" | "hydraulic" | "electric";
+            capacity: number;
+            energy_capacity_kj: number;
+            action_ticks: number;
+            cross_district: boolean;
+            /** @enum {string} */
+            role: "carrier" | "inspector" | "repair" | "smart";
+            description: string;
+        };
+        RobotState: {
+            id: string;
+            item: string;
+            home_factory_id: string;
+            home_station: string;
+            factory_id: string;
+            x: number;
+            y: number;
+            energy_kj: number;
+            charge_remainder?: number;
+            enabled: boolean;
+            allowed_zones: string[];
+            priority: number;
+            cooldown: number;
+            work_progress?: number;
+            completed_tasks?: number;
+            camera?: boolean;
+            service?: components["schemas"]["RobotService"];
+            construction?: components["schemas"]["RobotConstruction"];
+            autonomy?: components["schemas"]["RobotAutonomy"];
+            behavior_log?: components["schemas"]["RobotBehavior"][];
+            /** @enum {string} */
+            returning?: "cancelled" | "energy" | "complete" | "invalid_target";
+            cargo?: components["schemas"]["ItemStack"];
+            task?: components["schemas"]["RobotTask"];
+            transit?: components["schemas"]["RobotTransit"];
+            status: string;
+        };
+        RobotConstruction: {
+            id: string;
+            factory_id: string;
+            building_type: string;
+            x: number;
+            y: number;
+            /** @enum {integer} */
+            rotation: 0 | 90 | 180 | 270;
+            recipe_id?: string;
+        };
+        RobotEndpoint: {
+            factory_id: string;
+            building_id: string;
+        };
+        WorkIncident: {
+            /** @enum {string} */
+            kind: "no_input" | "no_energy" | "output_full" | "fluid_full";
+            since_tick: number;
+            inspected: boolean;
+            maintained: boolean;
+        };
+        RobotAutonomy: {
+            enabled: boolean;
+            refill: boolean;
+            inspect: boolean;
+            maintain: boolean;
+            next_tick: number;
+        };
+        RobotBehavior: {
+            tick: number;
+            /** @enum {string} */
+            kind: "configured" | "refill" | "inspect" | "maintain" | "waiting" | "construct" | "built";
+            detail: string;
+        };
+        RobotService: {
+            /** @enum {string} */
+            kind: "inspect" | "maintain";
+            target: components["schemas"]["RobotEndpoint"];
+            since_tick: number;
+            parts: number;
+        };
+        WorkReceipt: {
+            /** @enum {string} */
+            kind: "freight" | "inspection" | "visual";
+            robot_id: string;
+            robot_item: string;
+            count: number;
+            last_tick: number;
+        };
+        RobotTask: {
+            id: string;
+            source: components["schemas"]["RobotEndpoint"];
+            target: components["schemas"]["RobotEndpoint"];
+            item: string;
+            count: number;
+            /** @enum {string} */
+            channel: "auto" | "input" | "fuel";
+            repeat: boolean;
+            /** @enum {string} */
+            phase: "pickup" | "deliver";
+            delivered: number;
+        };
+        RobotTransit: {
+            to_factory_id: string;
+            x: number;
+            y: number;
+            remaining_ticks: number;
+        };
+        PowerNetwork: {
+            id: string;
+            /** @enum {string} */
+            kind: "shaft" | "hydraulic" | "electric";
+            producers: number;
+            consumers: number;
+            capacity_kw: number;
+            demand_kw: number;
+            supplied_kw: number;
+            loss_kw: number;
+            charge_kw: number;
+            discharge_kw: number;
+            stored_kj: number;
+        };
+        FluidVolume: {
+            item: string;
+            count: number;
+        };
+        RecipeCondition: {
+            type: string;
+            roles?: string[];
+            tasks_since_last_claim?: number;
+            min_verified_task_events?: number;
+        };
+        StageDefinition: {
+            tier: number;
+            name: string;
+            goal: string;
+            milestone_item: string;
+        };
+        IndustryState: {
+            work_receipts?: components["schemas"]["WorkReceipt"][];
+            stage: number;
+            milestones: string[];
+            crafted: {
+                [key: string]: number;
+            };
+            workshop?: {
+                recipe_id: string;
+                progress: number;
+            };
         };
         Credentials: {
             username: string;

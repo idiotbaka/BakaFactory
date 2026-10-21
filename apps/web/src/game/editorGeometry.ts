@@ -60,8 +60,37 @@ export function placementIssue(
   factory: FactoryDetail,
   cell: Cell | null,
   excludeID?: string,
+  buildingType?: string,
 ): string | null {
   if (!cell) return "请拖入工厂地图";
+  if (
+    factory.robots?.some(
+      (r) =>
+        !r.returning &&
+        r.construction?.factory_id === factory.id &&
+        r.construction.x === cell.x &&
+        r.construction.y === cell.y,
+    )
+  )
+    return "该格已预留施工蓝图";
+  if (
+    factory.robots?.some(
+      (r) =>
+        (!r.transit &&
+          r.factory_id === factory.id &&
+          r.x === cell.x &&
+          r.y === cell.y) ||
+        (r.transit?.to_factory_id === factory.id &&
+          r.transit.x === cell.x &&
+          r.transit.y === cell.y),
+    )
+  )
+    return "该格有机器人停靠";
+  if (
+    buildingType === "waste_port" &&
+    cell.y !== Math.floor(factory.height / 2)
+  )
+    return "垃圾提取口必须安装在顶部垃圾堆";
   if (
     Math.abs(cell.x) > Math.floor(factory.width / 2) ||
     Math.abs(cell.y) > Math.floor(factory.height / 2)

@@ -230,7 +230,7 @@ components:
       required: [format_version, rules_version, factory]
       properties:
         format_version: { type: integer, enum: [1] }
-        rules_version: { type: integer, enum: [1] }
+        rules_version: { type: integer, enum: [1, 2] }
         factory: { $ref: "#/components/schemas/FactoryDetail" }
     CloudSave:
       type: object
@@ -283,6 +283,18 @@ components:
           required: [buildings]
           properties:
             simulation: { $ref: "#/components/schemas/Simulation" }
+            robots:
+              type: array
+              maxItems: 500
+              description: "仅主厂保存的已部署机器人；界面投影可读取全局列表"
+              items: { $ref: "#/components/schemas/RobotState" }
+            active_district_id:
+              { type: string, description: "仅主厂区保存的当前显示厂区 ID" }
+            districts:
+              type: array
+              maxItems: 99
+              description: "仅主厂区保存的分厂；禁止嵌套分厂，分厂 industry 缺省并共用主厂进度"
+              items: { $ref: "#/components/schemas/FactoryDetail" }
             buildings:
               type: array
               items: { $ref: "#/components/schemas/BuildingInstance" }
@@ -309,9 +321,24 @@ components:
           properties:
             category: { type: string, enum: [machine, logistics] }
             fixed: { type: boolean }
-            input_slots: { type: integer, enum: [4] }
-            output_slots: { type: integer, enum: [4] }
+            input_slots: { type: integer, minimum: 1, maximum: 12 }
+            output_slots: { type: integer, minimum: 1, maximum: 12 }
             stack_limit: { type: integer, enum: [100] }
+            tier: { type: integer, minimum: 1, maximum: 6 }
+            item: { type: string }
+            work_mode: { type: string }
+            energy: { type: string }
+            power_kw: { type: integer, minimum: 0 }
+            capacity_kj: { type: integer, minimum: 0, maximum: 30000 }
+            station_capacity_kj: { type: integer, minimum: 0, maximum: 30000 }
+            station_transfer_kw: { type: integer, minimum: 0, maximum: 100 }
+            transfer_kw: { type: integer, minimum: 0, maximum: 1000 }
+            fluid_capacity: { type: integer, minimum: 0, maximum: 500 }
+            fluid_rate: { type: integer, minimum: 0, maximum: 20 }
+            role: { type: string }
+            belt_ticks: { type: integer, minimum: 1 }
+            batch_size: { type: integer, minimum: 1, maximum: 6 }
+            legacy: { type: boolean }
             input_whitelist:
               type: array
               items: { type: string }
@@ -325,17 +352,39 @@ components:
       type: object
       required: [input, output, progress, duration, cooldown, status]
       properties:
+        batches_completed:
+          { type: integer, minimum: 0, maximum: 9007199254740991 }
+        incident: { $ref: "#/components/schemas/WorkIncident" }
+        energy_kj: { type: integer, minimum: 0, maximum: 16000 }
+        station_energy_kj: { type: integer, minimum: 0, maximum: 30000 }
+        work_energy_kj: { type: integer, minimum: 0, maximum: 1000 }
+        powered: { type: boolean }
+        generated_kw: { type: integer, minimum: 0, maximum: 1000 }
+        power_demand_kw: { type: integer, minimum: 0, maximum: 1000 }
+        network_id: { type: string, maxLength: 160 }
+        charge_kj: { type: integer, minimum: 0, maximum: 30000 }
+        charge_remainder: { type: integer, minimum: 0, maximum: 99 }
+        medium: { type: integer, minimum: 0, maximum: 10 }
+        fluid: { $ref: "#/components/schemas/FluidVolume" }
+        flow_in: { type: integer, minimum: 0, maximum: 80 }
+        flow_out: { type: integer, minimum: 0, maximum: 80 }
+        fluid_cursor: { type: integer, minimum: 0, maximum: 29 }
+        fuel:
+          type: array
+          maxItems: 3
+          items: { $ref: "#/components/schemas/ItemStack" }
         input:
           type: array
-          maxItems: 4
+          maxItems: 12
           items: { $ref: "#/components/schemas/ItemStack" }
         output:
           type: array
-          maxItems: 4
+          maxItems: 12
           items: { $ref: "#/components/schemas/ItemStack" }
         progress: { type: integer, minimum: 0 }
         duration: { type: integer, minimum: 0 }
-        cooldown: { type: integer, minimum: 0, maximum: 1 }
+        cooldown: { type: integer, minimum: 0, maximum: 60 }
+        supplied_kw: { type: integer, minimum: 0, maximum: 1000 }
         status: { type: string }
         belt:
           type: object
@@ -347,7 +396,8 @@ components:
                 description: Stable payload identity preserved across conveyors and ports,
               }
             item: { type: string }
-            progress: { type: integer, minimum: 0, maximum: 1 }
+            progress: { type: integer, minimum: 0, maximum: 3 }
+            count: { type: integer, minimum: 1, maximum: 6 }
     TransferEndpoint:
       type: object
       required: [id, building_type, x, y, rotation]
@@ -366,6 +416,7 @@ components:
           type: string
           description: Same identity as the conveyor payload if present
         item: { type: string }
+        count: { type: integer, minimum: 1, maximum: 6 }
         tick: { type: integer, format: int64, minimum: 0 }
         source: { $ref: "#/components/schemas/TransferEndpoint" }
         target: { $ref: "#/components/schemas/TransferEndpoint" }
@@ -376,6 +427,10 @@ components:
       properties:
         tick: { type: integer, format: int64, minimum: 0 }
         tick_rate: { type: integer, enum: [1] }
+        industry: { $ref: "#/components/schemas/IndustryState" }
+        networks:
+          type: array
+          items: { $ref: "#/components/schemas/PowerNetwork" }
         transfers:
           type: array
           description: Confirmed port and Bus transfers from the last three ticks. Cosmetic only; clients deduplicate and never replay on initial load.
@@ -393,6 +448,14 @@ components:
         id: { type: string }
         name: { type: string }
         building_type: { type: string }
+        tier: { type: integer, minimum: 1, maximum: 6 }
+        description: { type: string }
+        power_kw: { type: integer, minimum: 0 }
+        gate: { type: string }
+        legacy: { type: boolean }
+        conditions:
+          type: array
+          items: { $ref: "#/components/schemas/RecipeCondition" }
         inputs:
           {
             type: object,
@@ -409,16 +472,299 @@ components:
       type: object
       required: [version, items, buildings, recipes]
       properties:
+        robots:
+          type: array
+          items: { $ref: "#/components/schemas/RobotDefinition" }
         version: { type: integer }
+        root_item: { type: string }
+        starting_machines:
+          type: array
+          items: { type: string }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/StageDefinition" }
         items:
           type: array
-          items: { $ref: "#/components/schemas/Definition" }
+          items: { $ref: "#/components/schemas/ItemDefinition" }
         buildings:
           type: array
           items: { $ref: "#/components/schemas/BuildingDefinition" }
         recipes:
           type: array
           items: { $ref: "#/components/schemas/RecipeDefinition" }
+    ItemDefinition:
+      allOf:
+        - { $ref: "#/components/schemas/Definition" }
+        - type: object
+          properties:
+            kind: { type: string }
+            tier: { type: integer, minimum: 1, maximum: 6 }
+            legacy: { type: boolean }
+            source_recipes:
+              type: array
+              items: { type: string }
+            used_by:
+              type: array
+              items: { type: string }
+    RobotDefinition:
+      type: object
+      required:
+        [
+          item,
+          name,
+          tier,
+          energy,
+          capacity,
+          energy_capacity_kj,
+          action_ticks,
+          cross_district,
+          role,
+          description,
+        ]
+      properties:
+        item: { type: string }
+        name: { type: string }
+        tier: { type: integer, minimum: 1, maximum: 6 }
+        energy: { type: string, enum: [shaft, hydraulic, electric] }
+        capacity: { type: integer, minimum: 0, maximum: 32 }
+        energy_capacity_kj: { type: integer, minimum: 1, maximum: 30000 }
+        action_ticks: { type: integer, minimum: 1, maximum: 60 }
+        cross_district: { type: boolean }
+        role: { type: string, enum: [carrier, inspector, repair, smart] }
+        description: { type: string }
+    RobotState:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          item,
+          home_factory_id,
+          home_station,
+          factory_id,
+          x,
+          y,
+          energy_kj,
+          enabled,
+          allowed_zones,
+          priority,
+          cooldown,
+          status,
+        ]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 128 }
+        item: { type: string }
+        home_factory_id: { type: string }
+        home_station: { type: string }
+        factory_id: { type: string }
+        x: { type: integer, minimum: -10, maximum: 10 }
+        y: { type: integer, minimum: -10, maximum: 10 }
+        energy_kj: { type: integer, minimum: 0, maximum: 30000 }
+        charge_remainder: { type: integer, minimum: 0, maximum: 99 }
+        enabled: { type: boolean }
+        allowed_zones:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string }
+        priority: { type: integer, minimum: 1, maximum: 6 }
+        cooldown: { type: integer, minimum: 0, maximum: 60 }
+        work_progress: { type: integer, minimum: 0, maximum: 60 }
+        completed_tasks:
+          { type: integer, minimum: 0, maximum: 9007199254740991 }
+        camera: { type: boolean }
+        service: { $ref: "#/components/schemas/RobotService" }
+        construction: { $ref: "#/components/schemas/RobotConstruction" }
+        autonomy: { $ref: "#/components/schemas/RobotAutonomy" }
+        behavior_log:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/RobotBehavior" }
+        returning:
+          { type: string, enum: [cancelled, energy, complete, invalid_target] }
+        cargo: { $ref: "#/components/schemas/ItemStack" }
+        task: { $ref: "#/components/schemas/RobotTask" }
+        transit: { $ref: "#/components/schemas/RobotTransit" }
+        status: { type: string, maxLength: 64 }
+    RobotConstruction:
+      type: object
+      additionalProperties: false
+      required: [id, factory_id, building_type, x, y, rotation]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 128 }
+        factory_id: { type: string }
+        building_type: { type: string }
+        x: { type: integer, minimum: -10, maximum: 10 }
+        y: { type: integer, minimum: -10, maximum: 10 }
+        rotation: { type: integer, enum: [0, 90, 180, 270] }
+        recipe_id: { type: string }
+    RobotEndpoint:
+      type: object
+      additionalProperties: false
+      required: [factory_id, building_id]
+      properties:
+        factory_id: { type: string }
+        building_id: { type: string }
+    WorkIncident:
+      type: object
+      additionalProperties: false
+      required: [kind, since_tick, inspected, maintained]
+      properties:
+        kind:
+          { type: string, enum: [no_input, no_energy, output_full, fluid_full] }
+        since_tick: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        inspected: { type: boolean }
+        maintained: { type: boolean }
+    RobotAutonomy:
+      type: object
+      additionalProperties: false
+      required: [enabled, refill, inspect, maintain, next_tick]
+      properties:
+        enabled: { type: boolean }
+        refill: { type: boolean }
+        inspect: { type: boolean }
+        maintain: { type: boolean }
+        next_tick: { type: integer, minimum: 0, maximum: 9007199254740991 }
+    RobotBehavior:
+      type: object
+      additionalProperties: false
+      required: [tick, kind, detail]
+      properties:
+        tick: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        kind:
+          {
+            type: string,
+            enum:
+              [
+                configured,
+                refill,
+                inspect,
+                maintain,
+                waiting,
+                construct,
+                built,
+              ],
+          }
+        detail: { type: string, minLength: 1, maxLength: 128 }
+    RobotService:
+      type: object
+      additionalProperties: false
+      required: [kind, target, since_tick, parts]
+      properties:
+        kind: { type: string, enum: [inspect, maintain] }
+        target: { $ref: "#/components/schemas/RobotEndpoint" }
+        since_tick: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        parts: { type: integer, minimum: 0, maximum: 1 }
+    WorkReceipt:
+      type: object
+      additionalProperties: false
+      required: [kind, robot_id, robot_item, count, last_tick]
+      properties:
+        kind: { type: string, enum: [freight, inspection, visual] }
+        robot_id: { type: string, minLength: 1, maxLength: 128 }
+        robot_item: { type: string }
+        count: { type: integer, minimum: 1, maximum: 10000 }
+        last_tick: { type: integer, minimum: 0, maximum: 9007199254740991 }
+    RobotTask:
+      type: object
+      additionalProperties: false
+      required:
+        [id, source, target, item, count, channel, repeat, phase, delivered]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 128 }
+        source: { $ref: "#/components/schemas/RobotEndpoint" }
+        target: { $ref: "#/components/schemas/RobotEndpoint" }
+        item: { type: string }
+        count: { type: integer, minimum: 1, maximum: 32 }
+        channel: { type: string, enum: [auto, input, fuel] }
+        repeat: { type: boolean }
+        phase: { type: string, enum: [pickup, deliver] }
+        delivered: { type: integer, minimum: 0, maximum: 32 }
+    RobotTransit:
+      type: object
+      additionalProperties: false
+      required: [to_factory_id, x, y, remaining_ticks]
+      properties:
+        to_factory_id: { type: string }
+        x: { type: integer, minimum: -1, maximum: 1 }
+        y: { type: integer, minimum: -1, maximum: 1 }
+        remaining_ticks: { type: integer, minimum: 0, maximum: 8 }
+    PowerNetwork:
+      type: object
+      required:
+        [
+          id,
+          kind,
+          producers,
+          consumers,
+          capacity_kw,
+          demand_kw,
+          supplied_kw,
+          loss_kw,
+          charge_kw,
+          discharge_kw,
+          stored_kj,
+        ]
+      properties:
+        id: { type: string, maxLength: 160 }
+        kind: { type: string, enum: [shaft, hydraulic, electric] }
+        producers: { type: integer, minimum: 0, maximum: 441 }
+        consumers: { type: integer, minimum: 0, maximum: 441 }
+        capacity_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        demand_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        supplied_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        loss_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        charge_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        discharge_kw: { type: integer, minimum: 0, maximum: 1000000000 }
+        stored_kj: { type: integer, minimum: 0, maximum: 1000000000 }
+    FluidVolume:
+      type: object
+      required: [item, count]
+      properties:
+        item: { type: string }
+        count: { type: integer, minimum: 1, maximum: 500 }
+    RecipeCondition:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+        roles:
+          type: array
+          items: { type: string }
+        tasks_since_last_claim: { type: integer, minimum: 1 }
+        min_verified_task_events: { type: integer, minimum: 1 }
+    StageDefinition:
+      type: object
+      required: [tier, name, goal, milestone_item]
+      properties:
+        tier: { type: integer, minimum: 1, maximum: 6 }
+        name: { type: string }
+        goal: { type: string }
+        milestone_item: { type: string }
+    IndustryState:
+      type: object
+      required: [stage, milestones, crafted]
+      properties:
+        work_receipts:
+          type: array
+          maxItems: 1500
+          items: { $ref: "#/components/schemas/WorkReceipt" }
+        stage: { type: integer, minimum: 1, maximum: 6 }
+        milestones:
+          type: array
+          maxItems: 6
+          items: { type: string }
+        crafted:
+          type: object
+          additionalProperties:
+            { type: integer, minimum: 0, maximum: 9007199254740991 }
+        workshop:
+          type: object
+          required: [recipe_id, progress]
+          properties:
+            recipe_id: { type: string }
+            progress: { type: integer, minimum: 0 }
     Credentials:
       type: object
       additionalProperties: false

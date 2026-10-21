@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"bakafactory/server/internal/catalog"
 	"bakafactory/server/internal/domain"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,205 @@ import (
 	"strings"
 	"testing"
 )
+
+func TestIndustrialSaveRoundTripAndBounds(t *testing.T) {
+	f := newAuthFixture(t, false)
+	w := f.request("POST", "/api/v1/auth/register", credentials("recycling_save", "correct-password"), nil)
+	user := userFrom(t, w, 201)
+	cookie := w.Result().Cookies()[0]
+	session := heartbeatID(t, f, cookie)
+	c, err := catalog.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	item := func(name string) string {
+		for _, i := range c.Items {
+			if i.Name == name {
+				return i.ID
+			}
+		}
+		t.Fatalf("missing item %s", name)
+		return ""
+	}
+	save := sampleSave(user.ID)
+	save.RulesVersion = 2
+	save.Factory.Simulation.Industry = &domain.IndustryState{Stage: 4, Milestones: []string{c.Stages[0].MilestoneItem, c.Stages[1].MilestoneItem, c.Stages[2].MilestoneItem}, Crafted: map[string]int64{}, Workshop: &domain.WorkshopJob{RecipeID: "r1001", Progress: 3}}
+	for _, kind := range []string{"m02", "m05"} {
+		x := len(save.Factory.Buildings)
+		config := `{ "recipe_id": "r1001" }`
+		if kind == "m05" {
+			config = `{ "recipe_id": "r1017" }`
+		}
+		save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: kind, FactoryID: save.Factory.ID, BuildingType: kind, X: x, Configuration: json.RawMessage(config)})
+		save.Factory.Simulation.Buildings[kind] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle"}
+	}
+	for _, r := range c.Recipes {
+		if r.ID == "r1001" {
+			for id, n := range r.Outputs {
+				save.Factory.Simulation.Buildings["m02"].Output = append(save.Factory.Simulation.Buildings["m02"].Output, domain.Stack{Item: id, Count: n})
+			}
+		}
+	}
+	save.Factory.Simulation.Buildings["m05"].Fuel = domain.Inventory{{Item: item("干燥生物质"), Count: 2}}
+	save.Factory.Simulation.Buildings["m05"].EnergyKJ = 100
+	one, three := 1, 3
+	for i, kind := range []string{"hand_belt", "electric_belt"} {
+		count := &one
+		progress := 2
+		power := 0
+		if kind == "electric_belt" {
+			count = &three
+			progress = 1
+			power = 2
+		}
+		save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: kind, FactoryID: save.Factory.ID, BuildingType: kind, X: i + 3, Configuration: json.RawMessage(`{"enabled":true,"filter":"","interval":3}`)})
+		save.Factory.Simulation.Buildings[kind] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "transporting", SuppliedKW: power, Belt: &domain.BeltItem{ID: kind + "-batch", Item: item("铁质碎片"), Count: count, Progress: progress}}
+	}
+	busConfig, _ := json.Marshal(map[string]any{"face_0": map[string]any{"mode": "output", "filter": item("垃圾包")}})
+	save.Factory.Buildings[0].Configuration = busConfig
+	save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: "battery", FactoryID: save.Factory.ID, BuildingType: "battery", X: 5, Configuration: json.RawMessage(`{"priority":1,"power_side":180,"battery_mode":"auto","reserve_kj":44}`)}, domain.BuildingInstance{ID: "hyd", FactoryID: save.Factory.ID, BuildingType: "m21", X: 6, Configuration: json.RawMessage(`{}`)})
+	save.Factory.Simulation.Buildings["battery"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "charging", ChargeKJ: 88, ChargeRemainder: 12, SuppliedKW: 100, NetworkID: "electric:test"}
+	save.Factory.Simulation.Buildings["hyd"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle", Medium: 1, Fuel: domain.Inventory{{Item: item("液体燃料"), Count: 1}}}
+	save.Factory.Simulation.Buildings["electric_belt"].WorkEnergyKJ = 1
+	save.Factory.Simulation.Networks = []domain.PowerNetwork{{ID: "electric:test", Kind: "electric", StoredKJ: 88, ChargeKW: 100}}
+	save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: "tank", FactoryID: save.Factory.ID, BuildingType: "tank", X: 7, Configuration: json.RawMessage(`{"fluid_rate":4,"fluid_target":"input","fluid_limit":100}`)}, domain.BuildingInstance{ID: "valve", FactoryID: save.Factory.ID, BuildingType: "valve", X: 8, Configuration: json.RawMessage(`{"split_weights":[1,3,0]}`)})
+	save.Factory.Simulation.Buildings["tank"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "fluid_full", Fluid: &domain.FluidVolume{Item: item("净化水"), Count: 500}, FlowIn: 4}
+	save.Factory.Simulation.Buildings["valve"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "flowing", Fluid: &domain.FluidVolume{Item: item("净化水"), Count: 4}, FluidCursor: 3, FlowOut: 4}
+	child := sampleSave(user.ID).Factory
+	child.ID = "smelter"
+	child.Name = "冶炼场"
+	child.Buildings[0].FactoryID = child.ID
+	child.Simulation.Warehouse = map[string]int64{item("净化水"): 500}
+	child.Buildings = append(child.Buildings, domain.BuildingInstance{ID: "station", FactoryID: child.ID, BuildingType: "charge_station", X: 2, Configuration: json.RawMessage(`{}`)})
+	child.Simulation.Buildings["station"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, StationEnergyKJ: 123, Status: "storage"}
+	save.Factory.Districts = []domain.FactoryDetail{child}
+	save.Factory.ActiveDistrictID = child.ID
+	save.Factory.Robots = []domain.RobotState{{ID: "robot", Item: item("电动物流机器人"), HomeFactoryID: child.ID, HomeStation: "station", FactoryID: child.ID, X: 3, EnergyKJ: 88, ChargeRemainder: 12, Enabled: true, AllowedZones: []string{save.Factory.ID, child.ID}, Priority: 2, Status: "charging"}}
+	save.Factory.Robots[0].Task = &domain.RobotTask{ID: "delivery", Source: domain.RobotEndpoint{FactoryID: save.Factory.ID, BuildingID: save.Factory.Buildings[0].ID}, Target: domain.RobotEndpoint{FactoryID: child.ID, BuildingID: child.Buildings[0].ID}, Item: item("基础铁板"), Count: 4, Channel: "auto", Repeat: true, Phase: "deliver", Delivered: 1}
+	save.Factory.Robots[0].Cargo = &domain.Stack{Item: item("基础铁板"), Count: 3}
+	save.Factory.Robots[0].WorkProgress = 3
+	save.Factory.Robots[0].CompletedTasks = 7
+	save.Factory.Simulation.Industry.WorkReceipts = []domain.WorkReceipt{{Kind: "freight", RobotID: "robot", RobotItem: item("电动物流机器人"), Count: 40, LastTick: save.Factory.Simulation.Tick}}
+	save.Factory.Simulation.Buildings["m02"].BatchesCompleted = 3
+	save.Factory.Simulation.Buildings["m02"].Incident = &domain.WorkIncident{Kind: "no_input", SinceTick: save.Factory.Simulation.Tick, Inspected: true}
+	w = f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie)
+	if w.Code != 200 {
+		t.Fatalf("industrial upload: %d %s", w.Code, w.Body)
+	}
+	w = f.cloudRequest("GET", session, "", cookie)
+	var response struct {
+		Backup domain.CloudSave `json:"backup"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(response.Backup.Save.Factory.Simulation, save.Factory.Simulation) {
+		t.Fatal("industrial state was changed by cloud persistence")
+	}
+	if !reflect.DeepEqual(response.Backup.Save.Factory.Districts, save.Factory.Districts) || response.Backup.Save.Factory.ActiveDistrictID != child.ID {
+		t.Fatal("districts did not round trip")
+	}
+	if !reflect.DeepEqual(response.Backup.Save.Factory.Robots, save.Factory.Robots) {
+		t.Fatal("robot body, energy or permissions changed in persistence")
+	}
+	for _, name := range []string{"stage", "recipe", "fuel", "capacity", "batch", "belt_duration", "filter", "rate", "null_enabled", "charge", "medium", "priority", "power_side", "power_kind", "fluid_capacity", "fluid_zero", "fluid_solid", "fluid_rate", "fluid_target", "fluid_weights", "fluid_null", "fluid_flow", "fluid_cursor", "district_owner", "district_nested", "district_tick", "district_id", "district_active", "district_industry", "robot_item", "robot_energy", "robot_remainder", "robot_full_remainder", "robot_zone", "robot_home", "robot_cell", "robot_duplicate_cell", "child_robots", "station_capacity", "station_on_machine"} {
+		t.Run(name, func(t *testing.T) {
+			raw, _ := json.Marshal(save)
+			var invalid domain.GameSave
+			if err := json.Unmarshal(raw, &invalid); err != nil {
+				t.Fatal(err)
+			}
+			switch name {
+			case "stage":
+				invalid.Factory.Simulation.Industry.Stage = 6
+			case "recipe":
+				invalid.Factory.Buildings[1].Configuration = json.RawMessage(`{"recipe_id":"r1017"}`)
+			case "fuel":
+				invalid.Factory.Simulation.Buildings["m05"].Fuel[0].Item = item("废电池")
+			case "capacity":
+				invalid.Factory.Simulation.Buildings["m02"].Output[0].Count = 101
+			case "batch":
+				zero := 0
+				invalid.Factory.Simulation.Buildings["electric_belt"].Belt.Count = &zero
+			case "belt_duration":
+				invalid.Factory.Simulation.Buildings["hand_belt"].Belt.Progress = 4
+			case "filter":
+				invalid.Factory.Buildings[0].Configuration = json.RawMessage(`{"face_0":{"mode":"output","filter":"unknown"}}`)
+			case "rate":
+				invalid.Factory.Buildings[3].Configuration = json.RawMessage(`{"interval":0}`)
+			case "null_enabled":
+				invalid.Factory.Buildings[3].Configuration = json.RawMessage(`{"enabled":null}`)
+			case "charge":
+				invalid.Factory.Simulation.Buildings["battery"].ChargeKJ = 15001
+			case "medium":
+				invalid.Factory.Simulation.Buildings["hyd"].Medium = 11
+			case "priority":
+				invalid.Factory.Buildings[5].Configuration = json.RawMessage(`{"priority":0}`)
+			case "power_side":
+				invalid.Factory.Buildings[5].Configuration = json.RawMessage(`{"power_side":45}`)
+			case "power_kind":
+				invalid.Factory.Simulation.Networks[0].Kind = "invented"
+			case "fluid_capacity":
+				invalid.Factory.Simulation.Buildings["tank"].Fluid.Count = 501
+			case "fluid_zero":
+				invalid.Factory.Simulation.Buildings["tank"].Fluid.Count = 0
+			case "fluid_solid":
+				invalid.Factory.Simulation.Buildings["tank"].Fluid.Item = item("垃圾包")
+			case "fluid_rate":
+				invalid.Factory.Buildings[7].Configuration = json.RawMessage(`{"fluid_rate":5}`)
+			case "fluid_target":
+				invalid.Factory.Buildings[7].Configuration = json.RawMessage(`{"fluid_target":"output"}`)
+			case "fluid_weights":
+				invalid.Factory.Buildings[8].Configuration = json.RawMessage(`{"split_weights":[1,3,11]}`)
+			case "fluid_null":
+				invalid.Factory.Buildings[7].Configuration = json.RawMessage(`{"fluid_rate":null}`)
+			case "fluid_flow":
+				invalid.Factory.Simulation.Buildings["tank"].FlowIn = 81
+			case "fluid_cursor":
+				invalid.Factory.Simulation.Buildings["tank"].FluidCursor = 1
+			case "district_owner":
+				invalid.Factory.Districts[0].OwnerID = "other"
+			case "district_nested":
+				invalid.Factory.Districts[0].Districts = []domain.FactoryDetail{{}}
+			case "district_tick":
+				invalid.Factory.Districts[0].Simulation.Tick++
+			case "district_id":
+				invalid.Factory.Districts[0].ID = invalid.Factory.ID
+			case "district_active":
+				invalid.Factory.ActiveDistrictID = "missing"
+			case "district_industry":
+				invalid.Factory.Districts[0].Simulation.Industry = invalid.Factory.Simulation.Industry
+			case "robot_item":
+				invalid.Factory.Robots[0].Item = item("垃圾包")
+			case "robot_energy":
+				invalid.Factory.Robots[0].EnergyKJ = 15001
+			case "robot_remainder":
+				invalid.Factory.Robots[0].ChargeRemainder = 100
+			case "robot_full_remainder":
+				invalid.Factory.Robots[0].EnergyKJ = 15000
+			case "robot_zone":
+				invalid.Factory.Robots[0].AllowedZones = []string{"other"}
+			case "robot_home":
+				invalid.Factory.Robots[0].HomeStation = "missing"
+			case "robot_cell":
+				invalid.Factory.Robots[0].X = 0
+			case "robot_duplicate_cell":
+				another := invalid.Factory.Robots[0]
+				another.ID = "second"
+				invalid.Factory.Robots = append(invalid.Factory.Robots, another)
+			case "child_robots":
+				invalid.Factory.Districts[0].Robots = invalid.Factory.Robots
+			case "station_capacity":
+				invalid.Factory.Districts[0].Simulation.Buildings["station"].StationEnergyKJ = 30001
+			case "station_on_machine":
+				invalid.Factory.Simulation.Buildings["m02"].StationEnergyKJ = 1
+			}
+			if w := f.cloudRequest("PUT", session, uploadBody(t, 1, invalid), cookie); w.Code != 400 {
+				t.Fatalf("invalid %s accepted: %d %s", name, w.Code, w.Body)
+			}
+		})
+	}
+}
 
 func (f authFixture) cloudRequest(method, session, body string, cookie *http.Cookie) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, "/api/v1/game/save", strings.NewReader(body))
@@ -41,6 +241,64 @@ func sampleSave(owner string) domain.GameSave {
 	f := domain.FactoryDetail{Factory: domain.Factory{ID: "client-factory", OwnerID: owner, Name: "本机工厂", Width: 21, Height: 21, CreatedAt: "2026-10-20T00:00:00Z", Revision: 7}, Buildings: []domain.BuildingInstance{{ID: "bus", FactoryID: "client-factory", BuildingType: "bus", Configuration: json.RawMessage(`{}`)}}}
 	f.Simulation = domain.Simulation{Tick: 7, TickRate: 1, Buildings: map[string]*domain.MachineState{"bus": {Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "warehouse"}}, Warehouse: map[string]int64{"iron_ore": 5}, Transfers: []domain.ItemTransfer{}}
 	return domain.GameSave{FormatVersion: 1, RulesVersion: 1, Factory: f}
+}
+func TestConstructionCloudSaveRoundTripAndStrictShape(t *testing.T) {
+	f := newAuthFixture(t, false)
+	registered := f.request("POST", "/api/v1/auth/register", credentials("construction_save", "correct-password"), nil)
+	user := userFrom(t, registered, 201)
+	cookie := registered.Result().Cookies()[0]
+	session := heartbeatID(t, f, cookie)
+	c, err := catalog.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	save := sampleSave(user.ID)
+	save.RulesVersion = 2
+	save.Factory.Simulation.Industry = &domain.IndustryState{Stage: 6, Milestones: []string{}, Crafted: map[string]int64{}}
+	for _, stage := range c.Stages[:5] {
+		save.Factory.Simulation.Industry.Milestones = append(save.Factory.Simulation.Industry.Milestones, stage.MilestoneItem)
+	}
+	var smart, device string
+	for _, r := range c.Robots {
+		if r.Role == "smart" {
+			smart = r.Item
+		}
+	}
+	for _, b := range c.Buildings {
+		if b.ID == "m03" {
+			device = b.Item
+		}
+	}
+	save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: "station", FactoryID: save.Factory.ID, BuildingType: "charge_station", X: 4, Configuration: json.RawMessage(`{}`)})
+	save.Factory.Simulation.Buildings["station"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle"}
+	recipe := "r1007"
+	save.Factory.Robots = []domain.RobotState{{ID: "builder", Item: smart, HomeFactoryID: save.Factory.ID, HomeStation: "station", FactoryID: save.Factory.ID, X: 5, EnergyKJ: 29990, Enabled: true, AllowedZones: []string{save.Factory.ID}, Priority: 3, Status: "constructing", WorkProgress: 7, Cargo: &domain.Stack{Item: device, Count: 1}, Construction: &domain.RobotConstruction{ID: "site", FactoryID: save.Factory.ID, BuildingType: "m03", X: 6, Y: 2, Rotation: 90, RecipeID: &recipe}, BehaviorLog: []domain.RobotBehavior{{Tick: 7, Kind: "construct", Detail: "实际蓝图"}}}}
+	w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie)
+	if w.Code != 200 {
+		t.Fatalf("construction upload %d %s", w.Code, w.Body)
+	}
+	var response struct {
+		Backup domain.CloudSave `json:"backup"`
+	}
+	w = f.cloudRequest("GET", session, "", cookie)
+	if err = json.Unmarshal(w.Body.Bytes(), &response); err != nil || !reflect.DeepEqual(response.Backup.Save, save) {
+		t.Fatal("construction cloud round trip", err)
+	}
+	body := uploadBody(t, 1, save)
+	for _, bad := range []string{strings.Replace(body, `"construction":{`, `"construction":{"free_devices":1,`, 1), strings.Replace(body, `"rotation":90,"recipe_id"`, `"rotation":45,"recipe_id"`, 1), strings.Replace(body, `"recipe_id":"r1007"`, `"recipe_id":null`, 1)} {
+		if bad == body {
+			t.Fatal("invalid fixture was not changed")
+		}
+		if w = f.cloudRequest("PUT", session, bad, cookie); w.Code != 400 {
+			t.Fatalf("invalid construction accepted %d %s", w.Code, w.Body)
+		}
+	}
+	save.Factory.Robots[0].Returning = "cancelled"
+	save.Factory.Robots[0].Cargo = nil
+	save.Factory.Robots[0].WorkProgress = 0
+	if w = f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 200 {
+		t.Fatalf("refunded construction return rejected %s", w.Body)
+	}
 }
 func uploadBody(t *testing.T, base int, save domain.GameSave) string {
 	t.Helper()

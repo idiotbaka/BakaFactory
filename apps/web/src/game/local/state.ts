@@ -1,40 +1,49 @@
-import definitions from "../../../../server/internal/catalog/definitions.json";
 import type {
   BuildingInstance,
   BuildingPlacement,
-  Catalog,
   FactoryDetail,
-  MachineState,
   Simulation,
   User,
 } from "../../api/client";
 import type { components } from "../../api/schema";
+import { catalog, buildingDefinitions, recipeDefinitions } from "./catalog";
+import {
+  applyIndustry,
+  initialIndustry,
+  type IndustryAction,
+} from "./industry";
+import { store } from "./inventory";
+import { fuelValues } from "./fuel";
+import {
+  beltCapacity,
+  beltTicks,
+  isBelt,
+  isFluid,
+  itemID,
+  isFluidNode,
+} from "./catalog";
+import { acceptsFluid } from "./fluidConfig";
+import { validTransportConfig } from "./transportConfig";
+import { validRobotWorld } from "./robots";
+import { validWorkReceipts } from "./workLedger";
+import { validIncident } from "./incidents";
+import { newMachine } from "./machine";
+import { validatePlacement } from "./placement";
+export { newMachine } from "./machine";
 
-export const catalog = definitions as unknown as Catalog;
-export type LocalFactory = FactoryDetail & {
+export { catalog } from "./catalog";
+export type LocalFactory = Omit<
+  FactoryDetail,
+  "districts" | "active_district_id"
+> & {
   revision: number;
   simulation: Simulation;
+  districts?: LocalFactory[];
+  active_district_id?: string;
 };
 export type GameSave = components["schemas"]["GameSave"];
 export type CloudSave = components["schemas"]["CloudSave"];
-export const newMachine = (): MachineState => ({
-  input: [],
-  output: [],
-  progress: 0,
-  duration: 0,
-  cooldown: 0,
-  status: "idle",
-});
-export const isPort = (kind: string) =>
-  kind === "item_output" || kind === "item_input";
-export const direction = (rotation: number): [number, number] =>
-  rotation === 90
-    ? [0, -1]
-    : rotation === 180
-      ? [-1, 0]
-      : rotation === 270
-        ? [0, 1]
-        : [1, 0];
+export { direction, isPort } from "./catalog";
 export function createLocalFactory(user: User, name: string): LocalFactory {
   name = name.trim();
   if (!name || [...name].length > 32 || /\p{Cc}/u.test(name))
@@ -64,12 +73,13 @@ export function createLocalFactory(user: User, name: string): LocalFactory {
       buildings: { [bus.id]: newMachine() },
       warehouse: {},
       transfers: [],
+      industry: initialIndustry(),
     },
   };
 }
 export const toSave = (factory: LocalFactory): GameSave => ({
   format_version: 1,
-  rules_version: 1,
+  rules_version: 2,
   factory,
 });
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -94,7 +104,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   if (
     !object(value) ||
     value.format_version !== 1 ||
-    value.rules_version !== 1 ||
+    ![1, 2].includes(value.rules_version as number) ||
     !object(value.factory)
   )
     return fail();
@@ -161,12 +171,69 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       !object(m) ||
       !integer(m.progress, 100000) ||
       !integer(m.duration, 100000) ||
-      !integer(m.cooldown, 1) ||
+      !integer(m.cooldown, 60) ||
       typeof m.status !== "string"
     )
       return fail();
-    for (const inv of [m.input, m.output]) {
-      if (!Array.isArray(inv) || inv.length > 4) return fail();
+    const definition = buildingDefinitions.get(b.building_type)!;
+    if (
+      (m.batches_completed !== undefined && !integer(m.batches_completed)) ||
+      !validIncident(m.incident, sim.tick as number)
+    )
+      return fail();
+    for (const [field, max] of [
+      ["work_energy_kj", 1000],
+      ["station_energy_kj", definition.station_capacity_kj ?? 0],
+      ["generated_kw", 1000],
+      ["power_demand_kw", 1000],
+      ["charge_kj", definition.capacity_kj ?? 0],
+      ["charge_remainder", 99],
+      ["medium", 10],
+      ["flow_in", 80],
+      ["flow_out", 80],
+      ["fluid_cursor", 29],
+    ] as const) {
+      if (m[field] !== undefined && !integer(m[field], max)) return fail();
+    }
+    if (
+      (m.powered !== undefined && typeof m.powered !== "boolean") ||
+      (m.network_id !== undefined &&
+        (typeof m.network_id !== "string" || m.network_id.length > 160)) ||
+      ((m.medium as number) > 0 && b.building_type !== "m21") ||
+      ((m.charge_remainder as number) > 0 && definition.role !== "battery")
+    )
+      return fail();
+    if (
+      !validTransportConfig(b as unknown as BuildingInstance) ||
+      (m.supplied_kw !== undefined && !integer(m.supplied_kw, 1000))
+    )
+      return fail();
+    const validFuels = fuelValues(definition);
+    if ((m.fluid_cursor as number) > 0 && definition.role !== "valve")
+      return fail();
+    if (m.fluid !== undefined) {
+      const fluid = m.fluid;
+      if (
+        !isFluidNode(b.building_type) ||
+        !object(fluid) ||
+        typeof fluid.item !== "string" ||
+        !acceptsFluid(b.building_type, fluid.item) ||
+        !integer(fluid.count, definition.fluid_capacity) ||
+        fluid.count === 0
+      )
+        return fail();
+    }
+    if ((m.energy_kj as number) > 0 && !Object.keys(validFuels).length)
+      return fail();
+    if (m.energy_kj !== undefined && !integer(m.energy_kj, 16000))
+      return fail();
+    if (m.fuel !== undefined && !Array.isArray(m.fuel)) return fail();
+    for (const [inv, slots] of [
+      [m.input, definition.input_slots],
+      [m.output, definition.output_slots],
+      [m.fuel ?? [], 3],
+    ] as const) {
+      if (!Array.isArray(inv) || inv.length > (slots ?? 4)) return fail();
       const seen = new Set<string>();
       for (const stack of inv) {
         if (
@@ -179,18 +246,29 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
         )
           return fail();
         seen.add(stack.item);
+        if (inv === m.fuel && !validFuels[stack.item]) return fail();
       }
+    }
+    if (b.configuration.recipe_id !== undefined) {
+      const r =
+        typeof b.configuration.recipe_id === "string" &&
+        recipeDefinitions.get(b.configuration.recipe_id);
+      if (!r || r.building_type !== b.building_type) return fail();
     }
     if (m.belt !== undefined) {
       const belt = m.belt;
       if (
-        b.building_type !== "conveyor" ||
+        !isBelt(b.building_type) ||
         !object(belt) ||
         !identifier(belt.id) ||
         payloads.has(belt.id) ||
         typeof belt.item !== "string" ||
         !items.has(belt.item) ||
-        !integer(belt.progress, 1)
+        isFluid(belt.item) ||
+        !integer(belt.progress, beltTicks(b.building_type)) ||
+        (belt.count !== undefined &&
+          (!integer(belt.count, beltCapacity(b.building_type)) ||
+            belt.count === 0))
       )
         return fail();
       payloads.add(belt.id);
@@ -198,11 +276,144 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   }
   if (buses !== 1 || Object.keys(sim.buildings).length !== ids.size)
     return fail();
+  if (sim.networks !== undefined) {
+    if (!Array.isArray(sim.networks) || sim.networks.length > 3 * ids.size)
+      return fail();
+    for (const n of sim.networks) {
+      if (
+        !object(n) ||
+        typeof n.id !== "string" ||
+        !n.id ||
+        n.id.length > 160 ||
+        !["shaft", "hydraulic", "electric"].includes(n.kind as string)
+      )
+        return fail();
+      for (const field of [
+        "producers",
+        "consumers",
+        "capacity_kw",
+        "demand_kw",
+        "supplied_kw",
+        "loss_kw",
+        "charge_kw",
+        "discharge_kw",
+        "stored_kj",
+      ])
+        if (
+          !integer(
+            n[field],
+            field === "producers" || field === "consumers"
+              ? ids.size
+              : 1000000000,
+          )
+        )
+          return fail();
+    }
+  }
   for (const [item, count] of Object.entries(sim.warehouse))
     if (!items.has(item) || !integer(count)) return fail();
+  const p = sim.industry;
+  if (p !== undefined) {
+    if (
+      !object(p) ||
+      !integer(p.stage, 6) ||
+      p.stage < 1 ||
+      !Array.isArray(p.milestones) ||
+      p.milestones.length > 6 ||
+      new Set(p.milestones).size !== p.milestones.length ||
+      !object(p.crafted)
+    )
+      return fail();
+    for (const id of p.milestones)
+      if (!catalog.stages?.some((s) => s.milestone_item === id)) return fail();
+    for (const [id, n] of Object.entries(p.crafted))
+      if (!items.has(id) || !integer(n)) return fail();
+    if (!validWorkReceipts(p.work_receipts, sim.tick as number)) return fail();
+    let expectedStage = 1;
+    while (
+      expectedStage < 6 &&
+      p.milestones.includes(catalog.stages![expectedStage - 1].milestone_item)
+    )
+      expectedStage++;
+    if (p.stage !== expectedStage) return fail();
+    if (p.workshop !== undefined) {
+      if (!object(p.workshop)) return fail();
+      const r =
+        typeof p.workshop.recipe_id === "string" &&
+        recipeDefinitions.get(p.workshop.recipe_id);
+      if (
+        !r ||
+        !catalog.starting_machines?.includes(r.building_type) ||
+        (r.tier ?? 1) > p.stage ||
+        !integer(p.workshop.progress, r.duration_ms / 1000 - 1)
+      )
+        return fail();
+    }
+  } else if (value.rules_version === 2) return fail();
   // Transfer receipts are transient visuals, not persistent gameplay inputs.
   const factory = structuredClone(f) as LocalFactory;
   factory.simulation.transfers = [];
+  factory.simulation.industry ??= initialIndustry();
+  const sources = factory.buildings.filter(
+    (b) => buildingDefinitions.get(b.building_type)?.role === "source",
+  );
+  if (
+    sources.some((b) => b.y !== 10) ||
+    sources.length > [1, 2, 4, 8, 12, 16][factory.simulation.industry.stage - 1]
+  )
+    return fail();
+  if (f.districts !== undefined) {
+    if (!Array.isArray(f.districts) || f.districts.length > 99) return fail();
+    const districtIDs = new Set([factory.id]);
+    factory.districts = f.districts.map((value) => {
+      if (
+        !object(value) ||
+        value.districts !== undefined ||
+        value.active_district_id !== undefined ||
+        value.robots !== undefined ||
+        !object(value.simulation) ||
+        value.simulation.industry !== undefined ||
+        value.simulation.tick !== sim.tick
+      )
+        return fail();
+      const child = validateSave(
+        {
+          format_version: 1,
+          rules_version: 2,
+          factory: {
+            ...value,
+            simulation: {
+              ...value.simulation,
+              industry: factory.simulation.industry,
+            },
+          },
+        },
+        owner,
+      );
+      if (
+        districtIDs.has(child.id) ||
+        child.buildings.some(
+          (b) => buildingDefinitions.get(b.building_type)?.role === "source",
+        )
+      )
+        return fail();
+      districtIDs.add(child.id);
+      delete child.simulation.industry;
+      return child;
+    });
+    const limit = [6, 12, 24, 40, 70, 100][
+      factory.simulation.industry.stage - 1
+    ];
+    // A legacy single factory remains valid; new games start with six.
+    if (
+      factory.districts.length + 1 > limit ||
+      typeof f.active_district_id !== "string" ||
+      !districtIDs.has(f.active_district_id)
+    )
+      return fail();
+    factory.active_district_id = f.active_district_id;
+  } else if (f.active_district_id !== undefined) return fail();
+  if (!validRobotWorld(factory)) return fail();
   return factory;
 }
 
@@ -214,12 +425,18 @@ export type Edit =
       id: string;
     }
   | { kind: "move"; id: string; placement: BuildingPlacement }
-  | { kind: "delete"; id: string };
+  | { kind: "delete"; id: string }
+  | { kind: "industry"; action: IndustryAction };
 
 export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
   const f = structuredClone(current);
   if (f.revision >= Number.MAX_SAFE_INTEGER)
     throw new Error("存档版本已达到上限");
+  if (edit.kind === "industry") {
+    applyIndustry(f, edit.action);
+    f.revision++;
+    return f;
+  }
   if (edit.kind === "place" || edit.kind === "move") {
     const p = edit.placement;
     if (
@@ -241,9 +458,8 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
       throw new Error("目标格子已被占用");
   }
   if (edit.kind === "place") {
-    const d = catalog.buildings.find((b) => b.id === edit.building_type);
-    if (!d || d.fixed || f.buildings.some((b) => b.id === edit.id))
-      throw new Error("无法建造该模组");
+    const d = validatePlacement(f, edit.building_type, edit.id, edit.placement);
+    if (d.item) store(f.simulation.warehouse, { [d.item]: -1 });
     f.buildings.push({
       id: edit.id,
       factory_id: f.id,
@@ -257,19 +473,33 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
     if (!b) throw new Error("建筑不存在");
     if (catalog.buildings.find((d) => d.id === b.building_type)?.fixed)
       throw new Error("工厂仓库固定，不能移动、旋转或删除");
-    if (edit.kind === "move") Object.assign(b, edit.placement);
-    else {
+    if (edit.kind === "move") {
+      if (
+        buildingDefinitions.get(b.building_type)?.role === "source" &&
+        edit.placement.y !== 10
+      )
+        throw new Error("垃圾提取口必须保持在地图顶部垃圾堆");
+      Object.assign(b, edit.placement);
+    } else {
       const m = f.simulation.buildings[b.id];
       const stacks = [
         ...m.input,
         ...m.output,
-        ...(m.belt ? [{ item: m.belt.item, count: 1 }] : []),
+        ...(m.fuel ?? []),
+        ...(m.fluid ? [m.fluid] : []),
+        ...((m.medium ?? 0) > 0
+          ? [{ item: itemID("液压工作液"), count: m.medium! }]
+          : []),
+        ...(m.belt ? [{ item: m.belt.item, count: m.belt.count ?? 1 }] : []),
       ];
       for (const stack of stacks) {
         const count = (f.simulation.warehouse[stack.item] ?? 0) + stack.count;
         if (!Number.isSafeInteger(count)) throw new Error("仓库数量超出上限");
         f.simulation.warehouse[stack.item] = count;
       }
+      const definition = buildingDefinitions.get(b.building_type)!;
+      if (definition.item)
+        store(f.simulation.warehouse, { [definition.item]: 1 });
       f.buildings = f.buildings.filter((item) => item.id !== b.id);
       delete f.simulation.buildings[b.id];
     }

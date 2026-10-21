@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   ApiError,
   type Catalog,
@@ -16,6 +16,12 @@ import { entityColor } from "./entityTheme";
 import HudPopover from "../HudPopover";
 import { useLocalGame } from "./local/useLocalGame";
 import { catalog as localCatalog } from "./local/state";
+import IndustryViews, { type IndustryView } from "./IndustryViews";
+import RobotInspector from "./RobotInspector";
+import type { Robot } from "./local/robotRoutes";
+import type { RobotFocus } from "./FactoryEditor";
+import type { IndustryAction } from "./local/industry";
+import type { WorldAction } from "./local/world";
 
 type Workspace =
   | { kind: "loading" }
@@ -57,10 +63,22 @@ export default function FactoryWorkspace({
   );
   const [powerSaving, setPowerSaving] = useState(readPowerSaving);
   const [immersive, setImmersive] = useState(false);
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [industryView, setIndustryView] = useState<IndustryView>("factory");
+  const [selectedRobotID, setSelectedRobotID] = useState<string | null>(null);
+  const [robotFocus, setRobotFocus] = useState<RobotFocus>();
+  const robotRoute = useMemo(
+    () =>
+      selectedRobotID && game.factory
+        ? game.runtime?.robotRoute?.(selectedRobotID)
+        : undefined,
+    [selectedRobotID, game.factory, game.runtime],
+  );
   const paletteCatalog =
     workspace.kind === "ready" ? workspace.catalog : undefined;
   const activeFactoryID =
     workspace.kind === "ready" ? workspace.factory?.id : undefined;
+  const stage = game.factory?.simulation.industry?.stage ?? 1;
   useEffect(() => savePowerSaving(powerSaving), [powerSaving]);
   useEffect(() => {
     if (!activeFactoryID || !paletteCatalog) return;
@@ -84,20 +102,22 @@ export default function FactoryWorkspace({
       }
       if (!/^[1-6]$/.test(event.key)) return;
       const definition = paletteCatalog.buildings.filter(
-        (d) => !d.fixed && d.id !== "bus",
+        (d) =>
+          !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
       )[Number(event.key) - 1];
       if (!definition) return;
       event.preventDefault();
       setTab("building");
       setSelection({ kind: "building", id: definition.id });
       setSelectedInstanceID(null);
+      setSelectedRobotID(null);
       setPlacementType((previous) =>
         previous === definition.id ? null : definition.id,
       );
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [activeFactoryID, paletteCatalog]);
+  }, [activeFactoryID, paletteCatalog, stage]);
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || workspace.kind !== "ready") return;
@@ -117,6 +137,7 @@ export default function FactoryWorkspace({
     }
   }
   function selectInstance(instance: BuildingInstance | null) {
+    setSelectedRobotID(null);
     setSelectedInstanceID(instance?.id ?? null);
     if (instance) {
       setSelection({ kind: "building", id: instance.building_type });
@@ -136,6 +157,51 @@ export default function FactoryWorkspace({
     if (error instanceof ApiError && error.status === 401) onSessionExpired();
     else setError(errorMessage(error));
   }
+  function act(action: IndustryAction) {
+    setError("");
+    void game.runtime?.act(action).catch(editorError);
+  }
+  function world(action: WorldAction) {
+    setError("");
+    void game.runtime
+      ?.world(action)
+      .then(() => {
+        setSelectedInstanceID(null);
+        setPlacementType(null);
+      })
+      .catch(editorError);
+  }
+  function selectRobot(id: string) {
+    setSelectedRobotID(id);
+    setSelectedInstanceID(null);
+    setPlacementType(null);
+  }
+  async function locateRobot(robot: Robot) {
+    selectRobot(robot.id);
+    const point = robot.transit
+      ? {
+          factory_id: robot.transit.to_factory_id,
+          x: robot.transit.x,
+          y: robot.transit.y,
+        }
+      : robot;
+    try {
+      if (point.factory_id !== game.factory?.id)
+        await game.runtime!.world({
+          type: "select_district",
+          id: point.factory_id,
+        });
+      setIndustryView("factory");
+      setRobotFocus((previous) => ({
+        factory_id: point.factory_id,
+        x: point.x,
+        y: point.y,
+        sequence: (previous?.sequence ?? 0) + 1,
+      }));
+    } catch (error) {
+      editorError(error);
+    }
+  }
   if (workspace.kind === "loading")
     return (
       <div className="factory-loading" role="status">
@@ -153,8 +219,14 @@ export default function FactoryWorkspace({
       </div>
     );
   const { catalog, factory } = workspace;
-  const placeable = catalog.buildings.filter((d) => !d.fixed && d.id !== "bus");
-  const definitions = tab === "building" ? placeable : catalog.items;
+  const placeable = catalog.buildings.filter(
+    (d) => !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
+  );
+  const definitions = (
+    tab === "building" ? placeable : catalog.items.filter((i) => !i.legacy)
+  ).filter((d) =>
+    `${d.name}${d.code}`.toLowerCase().includes(catalogQuery.toLowerCase()),
+  );
   const definition: Definition | undefined = (
     selection.kind === "building" ? catalog.buildings : catalog.items
   ).find((d) => d.id === selection.id);
@@ -173,6 +245,7 @@ export default function FactoryWorkspace({
       b.id === selectedInstanceID &&
       b.building_type === selection.id,
   );
+  const selectedRobot = factory?.robots?.find((r) => r.id === selectedRobotID);
   const lookupItem = (id: string) =>
     catalog.items.find((item) => item.id === id);
   const ingredients = (values: Record<string, number>) => (
@@ -266,6 +339,7 @@ export default function FactoryWorkspace({
                 aria-pressed={tab === "building"}
                 onClick={() => {
                   setTab("building");
+                  setSelectedRobotID(null);
                   setPlacementType(null);
                   setSelection({ kind: "building", id: "bus" });
                   setSelectedInstanceID(
@@ -280,6 +354,7 @@ export default function FactoryWorkspace({
                 aria-pressed={tab === "item"}
                 onClick={() => {
                   setTab("item");
+                  setSelectedRobotID(null);
                   setPlacementType(null);
                   setSelection({ kind: "item", id: catalog.items[0].id });
                   setSelectedInstanceID(null);
@@ -288,6 +363,13 @@ export default function FactoryWorkspace({
                 物品
               </button>
             </div>
+            <input
+              className="catalog-search"
+              aria-label="搜索图鉴"
+              placeholder="搜索名称 / 编号"
+              value={catalogQuery}
+              onChange={(e) => setCatalogQuery(e.target.value)}
+            />
             <div className="catalog-list">
               {definitions.map((d, index) => (
                 <button
@@ -295,7 +377,9 @@ export default function FactoryWorkspace({
                   className="catalog-entry"
                   style={{ "--entity-color": entityColor(d) } as CSSProperties}
                   aria-keyshortcuts={
-                    tab === "building" ? String(index + 1) : undefined
+                    tab === "building" && index < 6 && !catalogQuery
+                      ? String(index + 1)
+                      : undefined
                   }
                   draggable={false}
                   onDragStart={(event) => event.preventDefault()}
@@ -306,6 +390,7 @@ export default function FactoryWorkspace({
                   }
                   onClick={() => {
                     setSelection({ kind: tab, id: d.id });
+                    setSelectedRobotID(null);
                     setSelectedInstanceID(null);
                     setPlacementType(
                       tab === "building" && factory
@@ -320,13 +405,16 @@ export default function FactoryWorkspace({
                   <span>
                     <strong>{d.name}</strong>
                     <small>
-                      {d.code} / {tab === "building" ? "BUILD" : "RESOURCE"}
+                      {d.code} /{" "}
+                      {tab === "building"
+                        ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
+                        : "RESOURCE"}
                     </small>
                   </span>
                   <span className="entry-arrow" aria-hidden="true">
                     {placementType === d.id ? (
                       "◆"
-                    ) : tab === "building" ? (
+                    ) : tab === "building" && index < 6 && !catalogQuery ? (
                       <kbd>{index + 1}</kbd>
                     ) : (
                       "↗"
@@ -380,20 +468,41 @@ export default function FactoryWorkspace({
                     <span aria-hidden="true">↗</span>
                   </button>
                 </form>
-                <span className="create-note">每个账号当前可拥有 1 座工厂</span>
+                <span className="create-note">
+                  初始 6 个独立厂区，随阶段最多扩建至 100 个
+                </span>
               </div>
             ) : (
-              <FactoryEditor
+              <IndustryViews
                 factory={factory}
-                commands={game.runtime!.commands}
                 catalog={catalog}
-                placementType={placementType}
-                onExitPlacement={() => setPlacementType(null)}
-                selectedID={selectedInstanceID}
-                onSelect={selectInstance}
-                onChange={applyFactory}
-                onError={editorError}
-              />
+                act={act}
+                districts={game.districts}
+                world={world}
+                disabled={game.paused}
+                view={industryView}
+                onViewChange={setIndustryView}
+                selectedRobotID={selectedRobotID}
+                onSelectRobot={selectRobot}
+                onLocateRobot={(r) => void locateRobot(r)}
+              >
+                <FactoryEditor
+                  key={factory.id}
+                  factory={factory}
+                  commands={game.runtime!.commands}
+                  catalog={catalog}
+                  placementType={placementType}
+                  onExitPlacement={() => setPlacementType(null)}
+                  selectedID={selectedInstanceID}
+                  onSelect={selectInstance}
+                  onChange={applyFactory}
+                  onError={editorError}
+                  selectedRobotID={selectedRobotID}
+                  onSelectRobot={selectRobot}
+                  robotRoute={robotRoute}
+                  robotFocus={robotFocus}
+                />
+              </IndustryViews>
             )}
             {error && (
               <p className="form-error" role="alert">
@@ -406,108 +515,129 @@ export default function FactoryWorkspace({
               <div>
                 <small>INSPECTOR</small>模组检视
               </div>
-              <span>{selection.kind === "building" ? "BUILDING" : "ITEM"}</span>
+              <span>
+                {selectedRobot
+                  ? "ROBOT"
+                  : selection.kind === "building"
+                    ? "BUILDING"
+                    : "ITEM"}
+              </span>
             </div>
-            {definition && (
-              <>
-                <div className="inspector-hero">
-                  <DefinitionIcon definition={definition} />
-                  <div>
-                    <h3>{definition.name}</h3>
-                    <code>{definition.id}</code>
-                  </div>
-                </div>
-                <p className="definition-description">
-                  {definition.description}
-                </p>
-                <dl className="definition-properties">
-                  <div>
-                    <dt>模组代号</dt>
-                    <dd>{definition.code}</dd>
-                  </div>
-                  <div>
-                    <dt>实体类型</dt>
-                    <dd>
-                      {selection.kind === "item"
-                        ? "物品"
-                        : buildingDefinition?.category === "machine"
-                          ? "机器"
-                          : "物流方块"}
-                    </dd>
-                  </div>
-                  {buildingDefinition && (
+            {selectedRobot && factory ? (
+              <RobotInspector
+                robot={selectedRobot}
+                factory={factory}
+                districts={game.districts ?? []}
+                route={robotRoute}
+                paused={game.paused}
+                act={world}
+                onLocate={() => void locateRobot(selectedRobot)}
+                onManage={() => setIndustryView("robots")}
+              />
+            ) : (
+              definition && (
+                <>
+                  <div className="inspector-hero">
+                    <DefinitionIcon definition={definition} />
                     <div>
-                      <dt>位置规则</dt>
+                      <h3>{definition.name}</h3>
+                      <code>{definition.id}</code>
+                    </div>
+                  </div>
+                  <p className="definition-description">
+                    {definition.description}
+                  </p>
+                  <dl className="definition-properties">
+                    <div>
+                      <dt>模组代号</dt>
+                      <dd>{definition.code}</dd>
+                    </div>
+                    <div>
+                      <dt>实体类型</dt>
                       <dd>
-                        {buildingDefinition.fixed
-                          ? "中心固定"
-                          : "可连续放置 / 移动"}
+                        {selection.kind === "item"
+                          ? "物品"
+                          : buildingDefinition?.category === "machine"
+                            ? "机器"
+                            : "物流方块"}
                       </dd>
                     </div>
-                  )}
-                  {selectedInstance && (
-                    <>
+                    {buildingDefinition && (
                       <div>
-                        <dt>当前坐标</dt>
+                        <dt>位置规则</dt>
                         <dd>
-                          ({selectedInstance.x}, {selectedInstance.y})
+                          {buildingDefinition.fixed
+                            ? "中心固定"
+                            : "可连续放置 / 移动"}
                         </dd>
                       </div>
-                      <div>
-                        <dt>旋转角度</dt>
-                        <dd>{selectedInstance.rotation}°</dd>
-                      </div>
-                    </>
-                  )}
-                </dl>
-                {factory && buildingDefinition && (
-                  <ProductionInspector
-                    factory={factory}
-                    catalog={catalog}
-                    definition={buildingDefinition}
-                    instance={selectedInstance}
-                  />
-                )}
-                <div className="recipe-section">
-                  <h4>
-                    关联配方{" "}
-                    <span>{recipes.length.toString().padStart(2, "0")}</span>
-                  </h4>
-                  {recipes.length ? (
-                    recipes.map((recipe) => (
-                      <div className="recipe-card" key={recipe.id}>
-                        <div className="recipe-name">
-                          {recipe.name}
-                          <span>{recipe.duration_ms / 1000}s</span>
+                    )}
+                    {selectedInstance && (
+                      <>
+                        <div>
+                          <dt>当前坐标</dt>
+                          <dd>
+                            ({selectedInstance.x}, {selectedInstance.y})
+                          </dd>
                         </div>
-                        {ingredients(recipe.inputs)}
-                        <div className="recipe-arrow">↓</div>
-                        {ingredients(recipe.outputs)}
-                        <p>
-                          由{" "}
-                          {
-                            catalog.buildings.find(
-                              (d) => d.id === recipe.building_type,
-                            )?.name
-                          }{" "}
-                          加工
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-recipes">
-                      {selection.id === "bus"
-                        ? "工厂仓库接收产线物品并计入总仓库，不执行加工配方。"
-                        : "暂无关联加工配方。"}
-                    </p>
+                        <div>
+                          <dt>旋转角度</dt>
+                          <dd>{selectedInstance.rotation}°</dd>
+                        </div>
+                      </>
+                    )}
+                  </dl>
+                  {factory && buildingDefinition && (
+                    <ProductionInspector
+                      factory={factory}
+                      catalog={catalog}
+                      definition={buildingDefinition}
+                      instance={selectedInstance}
+                      act={act}
+                      disabled={game.paused}
+                    />
                   )}
-                </div>
-                <p className="inspector-note">
-                  接通产线，让工厂自行运转。
-                  <br />
-                  OUT / IN 箭头后方取料，前方送料。
-                </p>
-              </>
+                  <div className="recipe-section">
+                    <h4>
+                      关联配方{" "}
+                      <span>{recipes.length.toString().padStart(2, "0")}</span>
+                    </h4>
+                    {recipes.length ? (
+                      recipes.map((recipe) => (
+                        <div className="recipe-card" key={recipe.id}>
+                          <div className="recipe-name">
+                            {recipe.name}
+                            <span>{recipe.duration_ms / 1000}s</span>
+                          </div>
+                          {ingredients(recipe.inputs)}
+                          <div className="recipe-arrow">↓</div>
+                          {ingredients(recipe.outputs)}
+                          <p>
+                            由{" "}
+                            {
+                              catalog.buildings.find(
+                                (d) => d.id === recipe.building_type,
+                              )?.name
+                            }{" "}
+                            加工
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="no-recipes">
+                        {selection.id === "bus"
+                          ? "工厂仓库接收产线物品并计入总仓库，不执行加工配方。"
+                          : "暂无关联加工配方。"}
+                      </p>
+                    )}
+                  </div>
+                  <p className="inspector-note">
+                    接通产线，让工厂自行运转。
+                    <br />
+                    OUT / IN 箭头后方取料，前方送料。
+                  </p>
+                </>
+              )
             )}
           </aside>
         </div>
@@ -597,9 +727,9 @@ export default function FactoryWorkspace({
                 <span className="eyebrow">FIELD MANUAL</span>
                 <h3>接通你的第一条产线</h3>
                 <p>
-                  矿机 → OUT → 传送带 → IN → 熔炉
+                  工作室拾取垃圾 → 基础分拣 → 手工制作设备
                   <br />
-                  再将铁板送往装配机，最后接入工厂仓库。
+                  设备安装后选择配方，投料并收取产物；制造物流设施后逐步自动化。
                 </p>
                 <dl>
                   <div>

@@ -51,6 +51,6 @@ API 类型来自 OpenAPI；协议修改后运行 `npm run generate:api`。注册
 
 前台运行需要在线许可，心跳约每 10 秒一次、超时 8 秒，Worker 许可最多 30 秒。断网暂停并自动重试，401 返回登录，本机数据保留。后台同样暂停，返回重新校验。HTTP 轮询有有限检测延迟，新登录即时撤销旧端上传权限；本地画面会在下次检测时退出。
 
-云备份 GET / PUT 要求 X-Game-Session；PUT 继续要求 Origin 和严格 JSON，正文上限 4 MiB。Session 和云版本在同一个写事务内再次检查。401 不下发清 Cookie，避免迟到的旧请求删除新登录 Cookie。登录 / 登出仍通过 Set-Cookie 管理凭据。
+云备份 GET / PUT 要求 X-Game-Session；PUT 继续要求 Origin 和严格 JSON，正文上限 64 MiB，以容纳多厂区唯一世界备份。Session 和云版本在同一个写事务内再次检查。401 不下发清 Cookie，避免迟到的旧请求删除新登录 Cookie。登录 / 登出仍通过 Set-Cookie 管理凭据。
 
 游戏数据按账号 ID 保存在 IndexedDB；退出不删除本机存档，不自动上传最后进度。30 分钟自动备份或手动上传只覆盖唯一云存档。账号切换不共用运行状态，详见 [architecture.md](architecture.md)。

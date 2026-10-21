@@ -16,6 +16,14 @@ import {
 } from "./state";
 import { readLocal, writeLocal, type LocalRecord } from "./storage";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
+import type { IndustryAction } from "./industry";
+import { previewRobotRoute } from "./robotNavigation";
+import {
+  districtSummary,
+  projectFactory,
+  type DistrictSummary,
+  type WorldAction,
+} from "./world";
 
 export type EditorCommands = {
   placeBuilding: (
@@ -34,6 +42,7 @@ export type EditorCommands = {
 export type GameView = {
   ready: boolean;
   factory: LocalFactory | null;
+  districts?: DistrictSummary[];
   error: string;
   message: string;
   online: boolean;
@@ -47,6 +56,7 @@ export type GameView = {
 type RequestCommand =
   | Omit<Extract<WorkerCommand, { kind: "create" }>, "request">
   | Omit<Extract<WorkerCommand, { kind: "edit" }>, "request">
+  | Omit<Extract<WorkerCommand, { kind: "world" }>, "request">
   | Omit<Extract<WorkerCommand, { kind: "replace" }>, "request">;
 const messageOf = (error: unknown) =>
   error instanceof Error ? error.message : "操作失败，请重试";
@@ -216,7 +226,8 @@ export class GameRuntime {
       } satisfies WorkerCommand);
       this.publish({
         ready: true,
-        factory,
+        factory: factory ? projectFactory(factory) : null,
+        districts: factory ? districtSummary(factory) : [],
         conflict,
         error: "",
         localSavedAt: local?.savedAt ?? null,
@@ -278,9 +289,10 @@ export class GameRuntime {
       return;
     }
     if (request?.cloud) this.adoptCloud(request.cloud);
-    this.record.save = toSave(event.factory);
+    this.record.save = toSave(event.root ?? event.factory);
     this.publish({
       factory: event.factory,
+      districts: event.districts,
       dirty: event.factory.revision !== this.record.uploadedRevision,
     });
     if (request)
@@ -307,6 +319,18 @@ export class GameRuntime {
       this.worker!.postMessage({ ...command, request } satisfies WorkerCommand);
     });
   }
+  readonly act = (action: IndustryAction) =>
+    this.command({
+      kind: "edit",
+      factoryID: this.view.factory?.id,
+      edit: { kind: "industry", action },
+    });
+  readonly world = (action: WorldAction) =>
+    this.command({ kind: "world", action });
+  readonly robotRoute = (id: string) =>
+    this.record.save
+      ? previewRobotRoute(this.record.save.factory as LocalFactory, id)
+      : undefined;
   private persist(): Promise<void> {
     const record = structuredClone({
       ...this.record,
@@ -432,7 +456,7 @@ export class GameRuntime {
     if (!this.allowed() || !this.view.factory)
       throw new Error("请恢复在线连接并处理存档提示后再上传");
     this.publish({ uploading: true });
-    const save = structuredClone(toSave(this.view.factory));
+    const save = structuredClone(this.record.save!);
     try {
       await this.persist();
       const cloud = await uploadSave(
@@ -538,9 +562,10 @@ export class GameRuntime {
   create = (name: string) =>
     this.command({ kind: "create", user: this.user, name });
   readonly commands: EditorCommands = {
-    placeBuilding: (_factory, type, placement) =>
+    placeBuilding: (factoryID, type, placement) =>
       this.command({
         kind: "edit",
+        factoryID,
         edit: {
           kind: "place",
           building_type: type,
@@ -548,10 +573,14 @@ export class GameRuntime {
           id: crypto.randomUUID(),
         },
       }),
-    updateBuilding: (_factory, id, placement) =>
-      this.command({ kind: "edit", edit: { kind: "move", id, placement } }),
-    deleteBuilding: (_factory, id) =>
-      this.command({ kind: "edit", edit: { kind: "delete", id } }),
+    updateBuilding: (factoryID, id, placement) =>
+      this.command({
+        kind: "edit",
+        factoryID,
+        edit: { kind: "move", id, placement },
+      }),
+    deleteBuilding: (factoryID, id) =>
+      this.command({ kind: "edit", factoryID, edit: { kind: "delete", id } }),
     getFactory: async () => {
       if (!this.view.factory) throw new Error("请先创建工厂");
       return structuredClone(this.view.factory);

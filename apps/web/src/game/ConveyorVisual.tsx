@@ -1,5 +1,6 @@
 import { memo, type CSSProperties } from "react";
 import { entityColor } from "./entityTheme";
+import { isBelt } from "./local/catalog";
 import type {
   BuildingDefinition,
   BuildingInstance,
@@ -35,7 +36,8 @@ function ConveyorVisual({
       `${x + direction.x * offset},${y + direction.y * offset}`,
     );
     return (
-      neighbor?.building_type === "conveyor" &&
+      !!neighbor &&
+      isBelt(neighbor.building_type) &&
       neighbor.rotation === rotation &&
       neighbor.id !== instanceID
     );

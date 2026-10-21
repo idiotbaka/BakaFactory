@@ -76,7 +76,7 @@ describe("local factory workspace", () => {
       </>,
     );
     const palette = screen.getByRole("complementary", { name: "实体图鉴" });
-    const miner = within(palette).getByRole("button", { name: /^采矿机/ });
+    const miner = within(palette).getByRole("button", { name: /^手工工作台/ });
     fireEvent.keyDown(screen.getByLabelText("备注"), { key: "1" });
     expect(miner).toHaveAttribute("aria-pressed", "false");
     fireEvent.keyDown(window, { key: "1", ctrlKey: true });

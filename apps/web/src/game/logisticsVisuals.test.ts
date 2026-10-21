@@ -103,6 +103,41 @@ function snapshot(
 }
 
 describe("confirmed logistics visuals", () => {
+  it("cancels old receipts after filter edits without deleting the real payload", () => {
+    const store = new LogisticsVisualStore(snapshot(0));
+    store.accept(snapshot(0), 0, true);
+    const next = snapshot(1, "ore-1", [event(1)]);
+    store.accept(next, 1000, true);
+    const epoch = store.getSnapshot()[0].epoch;
+    const edited = structuredClone(next);
+    edited.buildings.find((b) => b.id === "out")!.configuration.filter =
+      "iron_plate";
+    edited.simulation!.transfers = [];
+    store.accept(edited, 1100, true);
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].transfer).toBeUndefined();
+    expect(store.getSnapshot()[0].epoch).not.toBe(epoch);
+    expect(edited.simulation?.buildings.belt.belt?.id).toBe("ore-1");
+  });
+  it("ends a slow-belt incoming flight at one third of the cell and represents a batch with one icon", () => {
+    const receipt = event(1);
+    receipt.target = { ...receipt.target, building_type: "hand_belt" };
+    receipt.count = 1;
+    const path = transferPath(receipt, 21, 21),
+      ends = beltEnds(receipt.target, 21, 21);
+    expect(path.at(-1)).toEqual({
+      x: ends.entry.x + (ends.goal.x - ends.entry.x) / 3,
+      y: ends.entry.y,
+    });
+    const next = snapshot(1, "batch");
+    next.buildings.find((b) => b.id === "belt")!.building_type =
+      "electric_belt";
+    next.simulation!.buildings.belt.belt!.count = 3;
+    const store = new LogisticsVisualStore(next);
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].belt?.payload.count).toBe(3);
+    expect(store.getSnapshot()[0].belt?.moving).toBe(true);
+  });
   it("does not replay initial history and keeps a single icon through both ports", () => {
     const store = new LogisticsVisualStore(snapshot(0));
     store.accept(snapshot(0), 0, true);

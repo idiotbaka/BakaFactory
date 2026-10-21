@@ -17,6 +17,7 @@ import {
 } from "./logisticsVisuals";
 import { useSimulationFrame } from "./SimulationAnimation";
 import { entityColor } from "./entityTheme";
+import { beltTicks } from "./local/catalog";
 
 type Track = Motion & {
   building: TransferEndpoint;
@@ -43,12 +44,21 @@ function ItemVisual({
   const { belt, transfer } = visual;
   const building = belt?.building ?? transfer!.source;
   const ends = beltEnds(building, width, height);
+  const durationTicks = beltTicks(building.building_type);
+  const position = (progress: number) => {
+    const fraction = Math.min(1, progress / durationTicks);
+    return {
+      x: ends.entry.x + (ends.goal.x - ends.entry.x) * fraction,
+      y: ends.entry.y + (ends.goal.y - ends.entry.y) * fraction,
+    };
+  };
   const initial = transfer
     ? transferPath(transfer, width, height)[0]
-    : belt!.payload.progress >= 1
-      ? ends.goal
-      : ends.entry;
-  const segment = `${visual.epoch}:${visual.tick}:${building.id}:${building.x}:${building.y}:${building.rotation}:${belt?.payload.progress}:${transfer?.id}`;
+    : position(belt!.payload.progress);
+  const goal = belt
+    ? position(belt.payload.progress + (belt.moving ? 1 : 0))
+    : ends.goal;
+  const segment = `${visual.epoch}:${visual.tick}:${building.id}:${building.x}:${building.y}:${building.rotation}:${belt?.payload.progress}:${belt?.moving}:${transfer?.id}`;
   useLayoutEffect(() => {
     const now = performance.now();
     const previous = track.current;
@@ -71,9 +81,16 @@ function ItemVisual({
       continuous && (!transfer || previous.building.id === transfer.source.id)
         ? sampleMotion(previous, now)
         : initial;
+    const destination =
+      belt &&
+      !belt.moving &&
+      belt.payload.progress < durationTicks &&
+      continuous
+        ? start
+        : goal;
     const points = transfer
       ? transferPath(transfer, width, height, start)
-      : [start, ends.goal];
+      : [start, destination];
     if (
       !transfer &&
       continuous &&
@@ -86,9 +103,9 @@ function ItemVisual({
       startedAt: now,
       duration: transfer
         ? 1000
-        : Math.hypot(ends.goal.x - start.x, ends.goal.y - start.y) < 0.01
+        : Math.hypot(destination.x - start.x, destination.y - start.y) < 0.01
           ? 0
-          : belt!.payload.progress >= 1
+          : belt!.payload.progress >= durationTicks
             ? 120
             : 1000,
       building,

@@ -51,7 +51,7 @@ func (a *API) saveRoutes(mux *http.ServeMux) {
 				BaseVersion *int64           `json:"base_version"`
 				Save        *domain.GameSave `json:"save"`
 			}
-			if !a.readLimitedBody(w, r, &body, 4*1024*1024) {
+			if !a.readLimitedBody(w, r, &body, 64*1024*1024) {
 				return
 			}
 			if body.BaseVersion == nil || body.Save == nil {
