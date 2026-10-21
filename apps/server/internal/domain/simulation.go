@@ -98,6 +98,7 @@ type WorkshopJob struct {
 	Total     *int   `json:"total,omitempty"`
 }
 type IndustryState struct {
+	Quests          *QuestProgress   `json:"quests,omitempty"`
 	DiscoveredItems []string         `json:"discovered_items,omitempty"`
 	WorkReceipts    []WorkReceipt    `json:"work_receipts,omitempty"`
 	Stage           int              `json:"stage"`
@@ -181,6 +182,9 @@ func (s Simulation) Validate(c Catalog) error {
 		}
 	}
 	if p := s.Industry; p != nil {
+		if !validQuestProgress(p.Quests, c) {
+			return fmt.Errorf("invalid quest progress")
+		}
 		discovered := map[string]bool{}
 		for _, id := range p.DiscoveredItems {
 			if !items[id] || discovered[id] {
@@ -223,10 +227,8 @@ func (s Simulation) Validate(c Catalog) error {
 			}
 			valid := false
 			for _, r := range c.Recipes {
-				for _, machine := range c.StartingMachines {
-					if r.ID == p.Workshop.RecipeID && r.BuildingType == machine && r.Tier <= p.Stage && p.Workshop.Progress >= 0 && int64(p.Workshop.Progress) < r.DurationMS/1000 {
-						valid = true
-					}
+				if r.ID == p.Workshop.RecipeID && workshopMachineAvailable(c, p, r.BuildingType) && r.Tier <= p.Stage && p.Workshop.Progress >= 0 && int64(p.Workshop.Progress) < r.DurationMS/1000 {
+					valid = true
 				}
 			}
 			if !valid {

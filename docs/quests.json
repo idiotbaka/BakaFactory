@@ -1,0 +1,58 @@
+[
+  {
+    "id": "p1_sort_waste",
+    "tier": 1,
+    "title": "在工作室加工一次垃圾包",
+    "description": "在工作室完成 1 批 R1001 基础分拣；开工和取消不计入。",
+    "goal": { "type": "workshop_recipe", "target": "r1001", "count": 1 },
+    "rewards": { "简易支架": 10 }
+  },
+  {
+    "id": "p1_dismantler",
+    "tier": 1,
+    "title": "获得设备：简易拆解台",
+    "description": "首次获得简易拆解台道具，已安装或已使用也算。",
+    "goal": { "type": "obtain_item", "target": "设备·简易拆解台", "count": 1 },
+    "rewards": { "粗铁片": 20 }
+  },
+  {
+    "id": "p1_crusher",
+    "tier": 1,
+    "title": "获得设备：手摇破碎机",
+    "description": "首次获得手摇破碎机道具。",
+    "goal": { "type": "obtain_item", "target": "设备·手摇破碎机", "count": 1 },
+    "rewards": { "垃圾包": 120 }
+  },
+  {
+    "id": "p1_smelter",
+    "tier": 1,
+    "title": "获得设备：简易熔炼炉",
+    "description": "首次获得简易熔炼炉道具。",
+    "goal": { "type": "obtain_item", "target": "设备·简易熔炼炉", "count": 1 },
+    "rewards": { "废铜线": 20, "铁质碎片": 40 }
+  },
+  {
+    "id": "p1_assembler",
+    "tier": 1,
+    "title": "获得设备：手工装配台",
+    "description": "首次获得手工装配台道具。",
+    "goal": { "type": "obtain_item", "target": "设备·手工装配台", "count": 1 },
+    "rewards": { "粗铁锭": 40, "简易齿轮": 40 }
+  },
+  {
+    "id": "p1_belt",
+    "tier": 1,
+    "title": "获得物流：手摇传送带",
+    "description": "首次获得手摇传送带道具。",
+    "goal": { "type": "obtain_item", "target": "手摇传送带", "count": 1 },
+    "rewards": { "手摇传送带": 15 }
+  },
+  {
+    "id": "p1_feeder",
+    "tier": 1,
+    "title": "获得物流：自动投料机",
+    "description": "实际对应道具为初阶自动投料机；可用于自动投料机或垃圾提取口。",
+    "goal": { "type": "obtain_item", "target": "初阶自动投料机", "count": 1 },
+    "rewards": { "初阶自动投料机": 5 }
+  }
+]

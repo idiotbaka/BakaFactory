@@ -367,6 +367,7 @@ export interface components {
             duration_ms: number;
         };
         Catalog: {
+            quests?: components["schemas"]["QuestDefinition"][];
             robots?: components["schemas"]["RobotDefinition"][];
             version: number;
             root_item?: string;
@@ -523,8 +524,31 @@ export interface components {
             goal: string;
             milestone_item: string;
         };
+        QuestDefinition: {
+            id: string;
+            tier: number;
+            title: string;
+            description: string;
+            goal: {
+                /** @enum {string} */
+                type: "obtain_item" | "workshop_recipe";
+                target: string;
+                count: number;
+            };
+            rewards: {
+                [key: string]: number;
+            };
+        };
+        QuestProgress: {
+            completed: string[];
+            claimed: string[];
+            workshop_batches: {
+                [key: string]: number;
+            };
+        };
         IndustryState: {
-            /** @description 曾获得的物品编号，仅用于图鉴显示；缺省时从制造记录和现有实物补记。 */
+            quests?: components["schemas"]["QuestProgress"];
+            /** @description 曾获得的物品编号，用于图鉴与首次获得任务；缺省时从制造记录和现有实物补记，不计入制造里程碑。 */
             discovered_items?: string[];
             work_receipts?: components["schemas"]["WorkReceipt"][];
             stage: number;

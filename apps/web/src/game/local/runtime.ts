@@ -20,6 +20,11 @@ import type { IndustryAction } from "./industry";
 import { previewRobotRoute } from "./robotNavigation";
 import { applyWorldFrame } from "./worldFrame";
 import { workshopOutputFits } from "./workshop";
+import {
+  storyIDs,
+  validViewedStories,
+  type StoryID,
+} from "../stories/progress";
 import type { Observation } from "./observations";
 import {
   districtSummary,
@@ -43,6 +48,8 @@ export type EditorCommands = {
   getFactory: (factory: string, signal?: AbortSignal) => Promise<FactoryDetail>;
 };
 export type GameView = {
+  viewedStories?: string[];
+  questNotices?: { sequence: number; id: string }[];
   workshopBlocked?: boolean;
   observation?: Observation;
   ready: boolean;
@@ -96,6 +103,7 @@ export class GameRuntime {
   private autoSaving = false;
   private autoRequested = false;
   private requestID = 0;
+  private questNoticeSequence = 0;
   private pending = new Map<
     number,
     {
@@ -195,6 +203,7 @@ export class GameRuntime {
         if (
           local.version !== 1 ||
           local.owner !== this.user.id ||
+          !validViewedStories(local.viewedStories) ||
           !Number.isSafeInteger(local.cloudVersion) ||
           local.cloudVersion < 0 ||
           (local.uploadedRevision !== null &&
@@ -219,6 +228,9 @@ export class GameRuntime {
         : null;
       const conflict =
         hasLocalSave && (this.cloud?.version ?? 0) !== local!.cloudVersion;
+      // Normalize historical acquisitions before the first Worker response so
+      // loading an older save cannot announce recovered tasks as new events.
+      if (factory) this.record.save = toSave(factory);
       this.worker = new Worker(
         new URL("./simulation.worker.ts", import.meta.url),
         { type: "module" },
@@ -233,6 +245,7 @@ export class GameRuntime {
       } satisfies WorkerCommand);
       this.publish({
         ready: true,
+        viewedStories: [...(this.record.viewedStories ?? [])],
         workshopBlocked: factory
           ? !workshopOutputFits(
               factory.simulation.industry,
@@ -323,8 +336,27 @@ export class GameRuntime {
       return;
     }
     if (request?.cloud) this.adoptCloud(request.cloud);
+    const previousQuests = new Set(
+      this.record.save?.factory.simulation?.industry?.quests?.completed ?? [],
+    );
+    const newQuests =
+      this.record.save && !request?.cloud
+        ? (event.factory.simulation?.industry?.quests?.completed ?? []).filter(
+            (id) => !previousQuests.has(id),
+          )
+        : [];
+    const questNotices = request?.cloud
+      ? []
+      : [
+          ...(this.view.questNotices ?? []),
+          ...newQuests.map((id) => ({
+            id,
+            sequence: ++this.questNoticeSequence,
+          })),
+        ].slice(-20);
     this.record.save = toSave(event.root ?? event.factory);
     this.publish({
+      questNotices,
       workshopBlocked: !workshopOutputFits(
         this.record.save.factory.simulation!.industry,
         this.record.save.factory.simulation!.warehouse,
@@ -381,6 +413,23 @@ export class GameRuntime {
     });
   readonly world = (action: WorldAction) =>
     this.command({ kind: "world", action });
+  async markStoryViewed(id: StoryID) {
+    if (this.disposed || !this.view.ready)
+      throw new Error("游戏尚未就绪，请稍后重试");
+    if (!storyIDs.includes(id)) throw new Error("未知剧情");
+    const viewed = [...new Set([...(this.record.viewedStories ?? []), id])];
+    if (!validViewedStories(viewed)) throw new Error("剧情观看记录已达到上限");
+    this.record.viewedStories = viewed;
+    // This can be committed before a factory exists, using the same owner key
+    // and write queue as all later local saves. It never changes the world.
+    await this.persist();
+    this.storageFailed = false;
+    this.publish({
+      viewedStories: [...this.record.viewedStories],
+      ...(this.view.message.startsWith("本地保存失败") ? { message: "" } : {}),
+    });
+    this.permit();
+  }
   readonly robotRoute = (id: string) =>
     this.record.save
       ? previewRobotRoute(this.record.save.factory as LocalFactory, id)

@@ -472,6 +472,10 @@ components:
       type: object
       required: [version, items, buildings, recipes]
       properties:
+        quests:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/QuestDefinition" }
         robots:
           type: array
           items: { $ref: "#/components/schemas/RobotDefinition" }
@@ -742,14 +746,53 @@ components:
         name: { type: string }
         goal: { type: string }
         milestone_item: { type: string }
+    QuestDefinition:
+      type: object
+      required: [id, tier, title, description, goal, rewards]
+      properties:
+        id: { type: string }
+        tier: { type: integer, minimum: 1, maximum: 6 }
+        title: { type: string }
+        description: { type: string }
+        goal:
+          type: object
+          required: [type, target, count]
+          properties:
+            type: { type: string, enum: [obtain_item, workshop_recipe] }
+            target: { type: string }
+            count: { type: integer, minimum: 1, maximum: 9007199254740991 }
+        rewards:
+          type: object
+          additionalProperties:
+            { type: integer, minimum: 1, maximum: 9007199254740991 }
+    QuestProgress:
+      type: object
+      additionalProperties: false
+      required: [completed, claimed, workshop_batches]
+      properties:
+        completed:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string }
+        claimed:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string }
+        workshop_batches:
+          type: object
+          additionalProperties:
+            { type: integer, minimum: 0, maximum: 9007199254740991 }
     IndustryState:
       type: object
       required: [stage, milestones, crafted]
       properties:
+        quests: { $ref: "#/components/schemas/QuestProgress" }
         discovered_items:
           type: array
           uniqueItems: true
-          description: 曾获得的物品编号，仅用于图鉴显示；缺省时从制造记录和现有实物补记。
+          description: 曾获得的物品编号，用于图鉴与首次获得任务；缺省时从制造记录和现有实物补记，不计入制造里程碑。
           items: { type: string }
         work_receipts:
           type: array

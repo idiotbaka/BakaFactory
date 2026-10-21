@@ -30,7 +30,8 @@ import { validIncident } from "./incidents";
 import { newMachine } from "./machine";
 import { validatePlacement } from "./placement";
 import { validDiscoveries, restoreDiscoveries } from "./discovery";
-import { validWorkshopCounts } from "./workshop";
+import { validWorkshopCounts, workshopMachineAvailable } from "./workshop";
+import { syncQuests, validQuestProgress } from "./quests";
 export { newMachine } from "./machine";
 
 export { catalog } from "./catalog";
@@ -333,6 +334,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       if (!items.has(id) || !integer(n)) return fail();
     if (!validWorkReceipts(p.work_receipts, sim.tick as number)) return fail();
     if (!validDiscoveries(p.discovered_items)) return fail();
+    if (!validQuestProgress(p.quests)) return fail();
     let expectedStage = 1;
     while (
       expectedStage < 6 &&
@@ -355,7 +357,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
         recipeDefinitions.get(p.workshop.recipe_id);
       if (
         !r ||
-        !catalog.starting_machines?.includes(r.building_type) ||
+        !workshopMachineAvailable(p.crafted, r.building_type) ||
         (r.tier ?? 1) > p.stage ||
         !integer(p.workshop.progress, r.duration_ms / 1000 - 1)
       )
@@ -427,6 +429,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   } else if (f.active_district_id !== undefined) return fail();
   if (!validRobotWorld(factory)) return fail();
   if (needsDiscovery) restoreDiscoveries(factory);
+  syncQuests(factory);
   return factory;
 }
 
@@ -447,6 +450,7 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
     throw new Error("存档版本已达到上限");
   if (edit.kind === "industry") {
     applyIndustry(f, edit.action);
+    syncQuests(f);
     f.revision++;
     return f;
   }

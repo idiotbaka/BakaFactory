@@ -9,6 +9,7 @@ import {
 } from "./state";
 import type { IndustryAction } from "./industry";
 import { step } from "./simulation";
+import { workshopMachineAvailable } from "./workshop";
 
 const user = {
   id: "recycler",
@@ -36,6 +37,72 @@ const install = (f: LocalFactory, type: string) => {
 };
 
 describe("recycling gameplay", () => {
+  it("unlocks M03 / M04 / M08 manual recipes only after actual equipment manufacture and keeps them through installation and reload", () => {
+    for (const [machine, manufacturing, processing] of [
+      ["m03", "r1006", "r1007"],
+      ["m04", "r1011", "r1012"],
+      ["m08", "r1032", "r1033"],
+    ]) {
+      let f = start();
+      const device = catalog.buildings.find((b) => b.id === machine)!.item!,
+        make = recipeDefinitions.get(manufacturing)!,
+        process = recipeDefinitions.get(processing)!;
+      f.simulation.warehouse[device] = 1;
+      Object.assign(f.simulation.warehouse, process.inputs);
+      f = editFactory(f, {
+        kind: "place",
+        id: machine,
+        building_type: machine,
+        placement: { x: 1, y: 0, rotation: 0 },
+      });
+      expect(
+        workshopMachineAvailable(f.simulation.industry!.crafted, machine),
+      ).toBe(false);
+      const before = structuredClone(f);
+      expect(() => act(f, { type: "workshop", recipe: processing })).toThrow(
+        "工作室尚不能加工",
+      );
+      expect(f).toEqual(before);
+      Object.assign(f.simulation.warehouse, make.inputs);
+      f = act(f, { type: "workshop", recipe: manufacturing });
+      f = advance(f, make.duration_ms / 1000);
+      expect(
+        workshopMachineAvailable(f.simulation.industry!.crafted, machine),
+      ).toBe(true);
+      f.simulation.warehouse[device] = 0;
+      f = validateSave(toSave(f), user.id);
+      Object.assign(
+        f.simulation.warehouse,
+        Object.fromEntries(
+          Object.entries(process.inputs).map(([id, n]) => [id, n * 2]),
+        ),
+      );
+      f = act(f, { type: "workshop", recipe: processing, batches: 2 });
+      f = advance(f, process.duration_ms / 1000);
+      expect(f.simulation.industry!.workshop?.remaining).toBe(1);
+      f = validateSave(toSave(f), user.id);
+      f = act(f, { type: "cancel_workshop" });
+      for (const [id, n] of Object.entries(process.inputs))
+        expect(f.simulation.warehouse[id]).toBe(n);
+      for (const [id, n] of Object.entries(process.outputs))
+        expect(f.simulation.warehouse[id]).toBe(n);
+      expect(
+        workshopMachineAvailable(f.simulation.industry!.crafted, "m05"),
+      ).toBe(false);
+    }
+  });
+  it("rejects a forged locked optional-workbench queue when loading a save", () => {
+    const f = start();
+    for (const recipe of ["r1007", "r1033"]) {
+      f.simulation.industry!.workshop = {
+        recipe_id: recipe,
+        progress: 0,
+        total: 1,
+        remaining: 1,
+      };
+      expect(() => validateSave(toSave(f), user.id)).toThrow();
+    }
+  });
   it("reserves a batch queue once, completes one batch at a time, restores it and refunds only unfinished inputs", () => {
     let f = start();
     const r = recipeDefinitions.get("r1001")!,

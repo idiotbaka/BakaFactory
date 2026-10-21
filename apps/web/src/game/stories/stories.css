@@ -1,0 +1,123 @@
+.story-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #040610eb;
+}
+.story-dialog {
+  width: min(960px, 100%);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--cyan);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 0 24px #46eff21a;
+  font-size: 14px;
+}
+.story-header,
+.story-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  flex: none;
+}
+.story-header {
+  border-bottom: 1px solid var(--line-dim);
+}
+.story-header h2 {
+  font-size: 18px;
+  margin: 0 0 5px;
+}
+.story-header h3 {
+  font-size: 14px;
+  font-weight: normal;
+  color: var(--purple);
+  margin: 0;
+  outline: none;
+}
+.story-header > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.story-header > button {
+  flex-shrink: 0;
+}
+.story-dialog button {
+  border: 1px solid #46eff266;
+  background: #46eff20a;
+  color: var(--cyan);
+  padding: 9px 15px;
+  font-size: 12px;
+}
+.story-dialog button:not(:disabled):hover {
+  border-color: var(--cyan);
+  background: #46eff21a;
+}
+.story-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+.story-illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 42dvh;
+  object-fit: contain;
+  background: #070912;
+}
+.story-text-area {
+  padding: 12px 20px;
+}
+.story-copy {
+  display: grid;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 18px;
+}
+.story-copy > span {
+  grid-area: 1 / 1;
+}
+.story-copy-reserve {
+  visibility: hidden;
+}
+.story-footer {
+  border-top: 1px solid var(--line-dim);
+  font-size: 12px;
+}
+.story-footer span {
+  color: var(--muted);
+}
+.story-error,
+.story-image-error {
+  padding: 0 20px;
+  color: var(--error, #ff8199);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.story-menu ul {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.story-menu li + li {
+  margin-top: 8px;
+}
+.story-menu button {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #0f1422;
+  color: var(--text);
+  font-size: 12px;
+  text-align: left;
+}

@@ -1,18 +1,24 @@
 import { useState, type ReactNode } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { IndustryAction } from "./local/industry";
-import { workshopBatchLimit } from "./local/workshop";
+import {
+  workshopBatchLimit,
+  workshopMachines,
+  workshopMachineAvailable,
+} from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
 import DiagnosticsPanel from "./DiagnosticsPanel";
+import QuestPanel from "./QuestPanel";
 import type { Observation } from "./local/observations";
 import type { LocalFactory } from "./local/state";
 import type { DistrictSummary, WorldAction } from "./local/world";
 
 export type IndustryView =
   | "factory"
+  | "quests"
   | "workshop"
   | "warehouse"
   | "power"
@@ -52,6 +58,7 @@ export default function IndustryViews({
 }) {
   const [query, setQuery] = useState("");
   const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
+  const [selectedMachine, setSelectedMachine] = useState<string>("m02");
   const s = factory.simulation,
     p = s?.industry,
     job = p?.workshop;
@@ -60,27 +67,54 @@ export default function IndustryViews({
     !districts.length ||
     !!districts.find((d) => d.id === factory.id)?.headquarters;
   const active = catalog.recipes.find((r) => r.id === job?.recipe_id);
+  const workshopMachine = workshopMachineAvailable(p?.crafted, selectedMachine)
+    ? selectedMachine
+    : "m02";
   const recipes = catalog.recipes.filter(
     (r) =>
-      catalog.starting_machines?.includes(r.building_type) &&
+      r.building_type === workshopMachine &&
       (r.tier ?? 1) <= (p?.stage ?? 1) &&
       `${r.id}${r.name}`.toLowerCase().includes(query.toLowerCase()),
   );
   const name = (id: string) =>
     catalog.items.find((i) => i.id === id)?.name ?? id;
-  const ingredients = (values: Record<string, number>, showStock = false) =>
-    Object.entries(values)
-      .map(
-        ([id, n]) =>
-          `${name(id)} ×${n}${showStock ? `（存 ${s?.warehouse[id] ?? 0}）` : ""}`,
-      )
-      .join("、");
+  const ingredients = (values: Record<string, number>, input: boolean) => (
+    <section
+      className="workshop-material-group"
+      aria-label={input ? "每批原料" : "每批产物"}
+    >
+      <h4>{input ? "每批原料" : "每批产物"}</h4>
+      <ul className="workshop-materials">
+        {Object.entries(values).map(([id, n]) => {
+          const item = catalog.items.find((i) => i.id === id),
+            stock = s?.warehouse[id] ?? 0;
+          return (
+            <li
+              key={id}
+              className={`workshop-material-card${input && stock < n ? " is-short" : ""}`}
+            >
+              {item && <DefinitionIcon definition={item} compact />}
+              <div>
+                <strong>{name(id)}</strong>
+                <span>
+                  存 {stock.toLocaleString()} / {input ? "需" : "产"}{" "}
+                  {n.toLocaleString()}
+                  {input && stock < n ? " · 不足" : ""}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
   return (
     <>
       <nav className="industry-tabs" aria-label="工厂视图">
         {(
           [
             ["factory", "工厂"],
+            ["quests", "任务"],
             ["workshop", "工作室"],
             ["warehouse", "仓库"],
             ["power", "能源"],
@@ -95,6 +129,16 @@ export default function IndustryViews({
             onClick={() => onViewChange(id)}
           >
             {label}
+            {id === "quests" &&
+              p?.quests?.completed.some(
+                (q) => !p.quests!.claimed.includes(q),
+              ) && (
+                <span
+                  className="quest-unclaimed-dot"
+                  role="img"
+                  aria-label="有任务奖励待领取"
+                />
+              )}
           </button>
         ))}
         <span title={stage?.goal}>
@@ -108,19 +152,22 @@ export default function IndustryViews({
         <div className="industry-content">
           <div className="industry-heading">
             <h3>
-              {view === "diagnostics"
-                ? "闭环诊断"
-                : view === "workshop"
-                  ? "拾荒工作室"
-                  : view === "robots"
-                    ? "机器人调度"
-                    : view === "world"
-                      ? "厂区管理"
-                      : view === "power"
-                        ? "能量网络"
-                        : "物料仓库"}
+              {view === "quests"
+                ? "阶段任务"
+                : view === "diagnostics"
+                  ? "闭环诊断"
+                  : view === "workshop"
+                    ? "拾荒工作室"
+                    : view === "robots"
+                      ? "机器人调度"
+                      : view === "world"
+                        ? "厂区管理"
+                        : view === "power"
+                          ? "能量网络"
+                          : "物料仓库"}
             </h3>
             {view !== "power" &&
+              view !== "quests" &&
               view !== "world" &&
               view !== "robots" &&
               view !== "diagnostics" && (
@@ -138,7 +185,14 @@ export default function IndustryViews({
             阶段成果：{stage && name(stage.milestone_item)}
             。首次制造后永久解锁下一阶段。
           </p>
-          {view === "diagnostics" ? (
+          {view === "quests" ? (
+            <QuestPanel
+              factory={factory}
+              catalog={catalog}
+              disabled={disabled}
+              act={world}
+            />
+          ) : view === "diagnostics" ? (
             <DiagnosticsPanel
               factory={factory as LocalFactory}
               observation={observation}
@@ -186,6 +240,36 @@ export default function IndustryViews({
                   <span>（{s?.warehouse[catalog.root_item ?? ""] ?? 0}）</span>
                 </button>
               </div>
+              <div
+                className="workshop-machine-tabs"
+                role="group"
+                aria-label="工作室设备"
+              >
+                {workshopMachines.map((id) => {
+                  const unlocked = workshopMachineAvailable(p?.crafted, id),
+                    machine = catalog.buildings.find((b) => b.id === id);
+                  return (
+                    <span
+                      className="workshop-machine-tab"
+                      key={id}
+                      title={
+                        unlocked
+                          ? undefined
+                          : "至少需要生产 1 次该设备后才能解锁"
+                      }
+                    >
+                      <button
+                        type="button"
+                        disabled={!unlocked}
+                        aria-pressed={id === workshopMachine}
+                        onClick={() => setSelectedMachine(id)}
+                      >
+                        {machine?.name ?? id}
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
               {job && active && (
                 <div className="workshop-active" role="status">
                   <p>
@@ -224,8 +308,8 @@ export default function IndustryViews({
                           )?.name
                         }
                       </p>
-                      <p>每批原料：{ingredients(r.inputs, true)}</p>
-                      <p>每批产物：{ingredients(r.outputs)}</p>
+                      {ingredients(r.inputs, true)}
+                      {ingredients(r.outputs, false)}
                       <form
                         className="workshop-batch"
                         onSubmit={(event) => {
@@ -272,6 +356,9 @@ export default function IndustryViews({
                   );
                 })}
               </div>
+              {!recipes.length && (
+                <p>当前设备下没有匹配的已解锁配方，请调整搜索条件。</p>
+              )}
             </>
           ) : (
             <section className="industry-warehouse" aria-label="当前厂区库存">

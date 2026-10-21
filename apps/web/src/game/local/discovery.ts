@@ -7,7 +7,8 @@ import {
   itemID,
 } from "./catalog";
 
-// Display history only: never changes quantities, crafted totals or milestones.
+// Lifetime acquisition history for the palette and obtain-item quests; never
+// changes quantities, crafted totals or manufacturing milestones.
 export function discoverItems(f: LocalFactory, ids: Iterable<string>) {
   const p = f.simulation.industry;
   if (!p) return;

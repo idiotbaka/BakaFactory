@@ -1,5 +1,7 @@
 # 账号、单点登录与在线校验
 
+首次开场不是服务端注册字段：在账号登录、工厂与云备份读取确认后，由客户端根据“当前无工厂 + 本机未观看”展示。观看状态按账号写入 IndexedDB，不存凭据、不修改账号或会话；已有工厂不强制播放。完成开场返回命名表单，之后由玩家创建工厂。细节见 stories.md。
+
 ## 分层与存储
 
 `httpapi/auth.go` 处理 Cookie、Origin、JSON、状态码和限流；`application/AuthService` 负责输入校验、密码认证、Session 生成与到期；`domain/User` 不依赖 HTTP；`repository/Accounts` 用参数化 SQL 访问 SQLite。

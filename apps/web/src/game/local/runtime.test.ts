@@ -25,6 +25,7 @@ import {
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
 import { worldFrame } from "./worldFrame";
+import { openingStoryID } from "../stories/progress";
 vi.mock("./storage", () => ({ readLocal: vi.fn(), writeLocal: vi.fn() }));
 vi.mock("../../api/client", () => ({
   ApiError: class ApiError extends Error {
@@ -155,6 +156,148 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("persists a completed opening before factory creation and retains UI history through cloud replacement", async () => {
+    await game.start();
+    expect(view.factory).toBeNull();
+    await game.markStoryViewed(openingStoryID);
+    expect(saved!.save).toBeNull();
+    expect(saved!.viewedStories).toEqual([openingStoryID]);
+    await game.markStoryViewed(openingStoryID);
+    expect(saved!.viewedStories).toEqual([openingStoryID]);
+    await game.close();
+    game = new GameRuntime(
+      user,
+      (next) => {
+        view = next;
+      },
+      expired,
+    );
+    await game.start();
+    expect(view.viewedStories).toEqual([openingStoryID]);
+    const root = createWorld(user, "已有云厂");
+    vi.mocked(downloadSave).mockResolvedValue({
+      version: 1,
+      saved_at: "now",
+      save: toSave(root),
+    });
+    await game.restoreCloud();
+    expect(saved!.viewedStories).toEqual([openingStoryID]);
+    expect(saved!.save!.factory.id).toBe(root.id);
+    vi.mocked(uploadSave).mockImplementation(async (_session, base, save) => ({
+      version: base + 1,
+      saved_at: "now",
+      save,
+    }));
+    await game.backup();
+    expect(vi.mocked(uploadSave).mock.calls[0][2]).not.toHaveProperty(
+      "viewedStories",
+    );
+  });
+  it("does not report story completion until its transaction commits and can retry a failed write", async () => {
+    await game.start();
+    vi.mocked(writeLocal).mockRejectedValueOnce(new Error("磁盘暂时不可写"));
+    await expect(game.markStoryViewed(openingStoryID)).rejects.toThrow(
+      "磁盘暂时不可写",
+    );
+    expect(view.viewedStories).toEqual([]);
+    expect(saved!.viewedStories).toBeUndefined();
+    expect(view.paused).toBe(true);
+    await game.markStoryViewed(openingStoryID);
+    expect(view.viewedStories).toEqual([openingStoryID]);
+    expect(saved!.viewedStories).toEqual([openingStoryID]);
+    expect(view.paused).toBe(false);
+    expect(view.message).not.toContain("本地保存失败");
+  });
+  it("keeps viewed-story history isolated between account records", async () => {
+    await game.start();
+    await game.markStoryViewed(openingStoryID);
+    await game.close();
+    const otherUser = { ...user, id: "other-story-owner", username: "other" };
+    vi.mocked(readLocal).mockResolvedValue(undefined);
+    vi.mocked(gameHeartbeat).mockResolvedValue({
+      user: otherUser,
+      session_id: "other-session",
+      lease_seconds: 30,
+    });
+    game = new GameRuntime(
+      otherUser,
+      (next) => {
+        view = next;
+      },
+      expired,
+    );
+    await game.start();
+    expect(view.viewedStories).toEqual([]);
+    expect(view.factory).toBeNull();
+  });
+  it("announces newly confirmed quests once, saves claimed rewards and suppresses cloud replay", async () => {
+    const root = createWorld(user, "任务通知");
+    root.simulation.warehouse[itemID("垃圾包")] = 12;
+    saved = {
+      owner: user.id,
+      version: 1,
+      save: toSave(root),
+      cloudVersion: 0,
+      cloudSavedAt: null,
+      uploadedRevision: null,
+      savedAt: "now",
+    };
+    await game.start();
+    await game.act({ type: "workshop", recipe: "r1001" });
+    const duration =
+      catalog.recipes.find((r) => r.id === "r1001")!.duration_ms / 1000;
+    for (let i = 0; i < duration; i++) FakeWorker.instances[0].tick();
+    expect(view.questNotices).toEqual([{ sequence: 1, id: "p1_sort_waste" }]);
+    await game.world({ type: "claim_quest", id: "p1_sort_waste" });
+    expect(saved!.save!.factory.simulation!.industry!.quests!.claimed).toEqual([
+      "p1_sort_waste",
+    ]);
+    expect(saved!.save!.factory.simulation!.warehouse[itemID("简易支架")]).toBe(
+      10,
+    );
+    FakeWorker.instances[0].tick();
+    expect(view.questNotices).toHaveLength(1);
+    const cloudRoot = createWorld(user, "云任务");
+    cloudRoot.simulation.industry!.crafted[
+      buildingDefinitions.get("m03")!.item!
+    ] = 1;
+    delete cloudRoot.simulation.industry!.quests;
+    delete cloudRoot.simulation.industry!.discovered_items;
+    vi.mocked(downloadSave).mockResolvedValue({
+      version: 1,
+      saved_at: "now",
+      save: toSave(cloudRoot),
+    });
+    await game.restoreCloud();
+    expect(view.questNotices).toEqual([]);
+    expect(view.factory!.simulation.industry!.quests!.completed).toContain(
+      "p1_dismantler",
+    );
+    FakeWorker.instances[0].tick();
+    expect(view.questNotices).toEqual([]);
+  });
+  it("normalizes old obtained-item tasks before establishing the notification baseline", async () => {
+    const root = createWorld(user, "旧任务");
+    root.simulation.industry!.crafted[buildingDefinitions.get("m03")!.item!] =
+      1;
+    delete root.simulation.industry!.quests;
+    delete root.simulation.industry!.discovered_items;
+    saved = {
+      owner: user.id,
+      version: 1,
+      save: toSave(root),
+      cloudVersion: 0,
+      cloudSavedAt: null,
+      uploadedRevision: null,
+      savedAt: "now",
+    };
+    await game.start();
+    FakeWorker.instances[0].tick();
+    expect(view.questNotices).toEqual([]);
+    expect(view.factory!.simulation.industry!.quests!.completed).toEqual([
+      "p1_dismantler",
+    ]);
+  });
   it("derives workshop backpressure from the headquarters warehouse while viewing an empty child", async () => {
     let root = createWorld(user, "批量背压");
     root.simulation.warehouse[itemID("垃圾包")] = 24;

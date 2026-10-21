@@ -15,6 +15,7 @@ import { advanceTransport, transferSolids } from "./logistics";
 import { enabled } from "./transportConfig";
 import { transferFluids } from "./fluids";
 import { claimWork } from "./workLedger";
+import { syncQuests } from "./quests";
 
 // Deterministic single-second transition, with no clock, DOM, network or disk.
 // Production settles first; transport reads that stock, plans once and commits.
@@ -108,5 +109,6 @@ export function step(current: LocalFactory, workshop = true): LocalFactory {
     if (!r || !enabled(b)) continue;
     m.status = canProcess(f, b, true);
   }
+  if (workshop) syncQuests(f);
   return f;
 }

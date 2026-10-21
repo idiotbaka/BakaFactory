@@ -33,3 +33,43 @@ func TestWorkshopBatchSaveCompatibility(t *testing.T) {
 		}
 	}
 }
+
+func TestWorkshopFirstManufactureUnlock(t *testing.T) {
+	c := Catalog{StartingMachines: []string{"m01", "m02", "m07"}, Items: []ItemDefinition{{Definition: Definition{ID: "device"}}}, Buildings: []BuildingDefinition{{Definition: Definition{ID: "m03"}, Item: "device"}}, Stages: make([]StageDefinition, 6), Recipes: []RecipeDefinition{{ID: "process", BuildingType: "m03", Tier: 1, DurationMS: 10000}}}
+	p := &IndustryState{Stage: 1, Milestones: []string{}, Crafted: map[string]int64{}, Workshop: &WorkshopJob{RecipeID: "process", Progress: 0}}
+	s := Simulation{Industry: p, Warehouse: map[string]int64{"device": 1}}
+	if s.Validate(c) == nil {
+		t.Fatal("holding a device unlocked manual processing")
+	}
+	if !workshopMachineAvailable(c, p, "m02") {
+		t.Fatal("starting workbench locked")
+	}
+	p.Crafted["device"] = 1
+	s.Warehouse["device"] = 0
+	if err := s.Validate(c); err != nil {
+		t.Fatal("manufactured device did not unlock queue", err)
+	}
+	encoded, err := json.Marshal(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored IndustryState
+	if err := json.Unmarshal(encoded, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if !workshopMachineAvailable(c, &restored, "m03") || workshopMachineAvailable(c, &restored, "m05") {
+		t.Fatal("invalid restored workshop access")
+	}
+	for _, machine := range []string{"m04", "m08"} {
+		c.Buildings[0].ID = machine
+		c.Recipes[0].BuildingType = machine
+		p.Crafted["device"] = 0
+		if s.Validate(c) == nil {
+			t.Fatal("unmanufactured optional workbench queue accepted")
+		}
+		p.Crafted["device"] = 1
+		if err := s.Validate(c); err != nil {
+			t.Fatal("optional workbench manufacture unlock rejected", err)
+		}
+	}
+}

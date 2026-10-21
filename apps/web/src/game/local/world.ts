@@ -14,9 +14,11 @@ import { routeEditsSafe, plannedBuildings } from "./robotRoutes";
 import { constructionValid } from "./construction";
 import { syncIncidents } from "./incidents";
 import { dispatchRobots } from "./robotAutonomy";
+import { claimQuest, syncQuests } from "./quests";
 
 export type WorldAction =
   | RobotAction
+  | { type: "claim_quest"; id: string }
   | { type: "select_district"; id: string }
   | { type: "expand_district"; name: string }
   | { type: "rename_district"; id: string; name: string };
@@ -151,6 +153,7 @@ export function stepWorld(current: LocalFactory): LocalFactory {
   syncIncidents(root);
   dispatchRobots(root);
   stepFreight(root);
+  syncQuests(root);
   return root;
 }
 export function editWorld(
@@ -242,6 +245,11 @@ export function actWorld(
   const root = structuredClone(initializeWorld(current));
   if (!Number.isSafeInteger(root.revision + 1))
     throw new Error("存档版本已达到上限");
+  if (action.type === "claim_quest") {
+    claimQuest(root, action.id);
+    root.revision++;
+    return root;
+  }
   if (
     action.type === "robot_deploy" ||
     action.type === "robot_recall" ||

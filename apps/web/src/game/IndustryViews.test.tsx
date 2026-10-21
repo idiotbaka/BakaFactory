@@ -12,6 +12,114 @@ const user = {
   last_login_at: "now",
 };
 describe("manual workshop batch controls", () => {
+  it("groups recipes by machine, locks optional workbenches until first manufacture and preserves the unlock after spending the device", () => {
+    const f = createLocalFactory(user, "子分类"),
+      act = vi.fn(),
+      dismantler = catalog.buildings.find((b) => b.id === "m03")!.item!;
+    f.simulation.warehouse[dismantler] = 1;
+    const props = {
+      factory: f,
+      catalog,
+      disabled: false,
+      act,
+      view: "workshop" as const,
+      onViewChange: vi.fn(),
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />),
+      tabs = within(screen.getByRole("group", { name: "工作室设备" }));
+    expect(tabs.getAllByRole("button").map((b) => b.textContent)).toEqual([
+      "手动分拣台",
+      "铁砧锻台",
+      "手工工作台",
+      "简易拆解台",
+      "手摇破碎机",
+      "手工装配台",
+    ]);
+    const sorter = recipeDefinitions.get("r1001")!,
+      makeDevice = recipeDefinitions.get("r1006")!,
+      extract = recipeDefinitions.get("r1007")!;
+    expect(screen.getByLabelText(`${sorter.name}加工批数`)).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(`${makeDevice.name}加工批数`),
+    ).not.toBeInTheDocument();
+    expect(tabs.getByRole("button", { name: "简易拆解台" })).toBeDisabled();
+    expect(tabs.getByRole("button", { name: "手摇破碎机" })).toBeDisabled();
+    expect(tabs.getByRole("button", { name: "手工装配台" })).toBeDisabled();
+    expect(
+      screen.getAllByTitle("至少需要生产 1 次该设备后才能解锁"),
+    ).toHaveLength(3);
+    fireEvent.click(tabs.getByRole("button", { name: "手工工作台" }));
+    expect(
+      screen.getByLabelText(`${makeDevice.name}加工批数`),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(`${sorter.name}加工批数`),
+    ).not.toBeInTheDocument();
+    f.simulation.industry!.crafted[dismantler] = 1;
+    f.simulation.warehouse[dismantler] = 0;
+    rerender(<IndustryViews {...props} />);
+    expect(tabs.getByRole("button", { name: "简易拆解台" })).toBeEnabled();
+    fireEvent.click(tabs.getByRole("button", { name: "简易拆解台" }));
+    expect(
+      screen.getByLabelText(`${extract.name}加工批数`),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(`${makeDevice.name}加工批数`),
+    ).not.toBeInTheDocument();
+    expect(act).not.toHaveBeenCalled();
+    const assemblyItem = catalog.buildings.find((b) => b.id === "m08")!.item!,
+      assemblyRecipe = recipeDefinitions.get("r1033")!;
+    f.simulation.industry!.crafted[assemblyItem] = 1;
+    f.simulation.warehouse[assemblyItem] = 0;
+    Object.assign(f.simulation.warehouse, assemblyRecipe.inputs);
+    rerender(<IndustryViews {...props} />);
+    expect(tabs.getByRole("button", { name: "手工装配台" })).toBeEnabled();
+    fireEvent.click(tabs.getByRole("button", { name: "手工装配台" }));
+    const assemblyInput = screen.getByLabelText(
+      `${assemblyRecipe.name}加工批数`,
+    );
+    fireEvent.click(
+      within(assemblyInput.closest("article")!).getByRole("button", {
+        name: "批量加工",
+      }),
+    );
+    expect(act).toHaveBeenCalledWith({
+      type: "workshop",
+      recipe: assemblyRecipe.id,
+      batches: 1,
+    });
+  });
+  it("shows material icons, names and separate stock / required or produced quantities", () => {
+    const f = createLocalFactory(user, "物料卡"),
+      r = recipeDefinitions.get("r1001")!;
+    f.simulation.warehouse[itemID("垃圾包")] = 60;
+    render(
+      <IndustryViews
+        factory={f}
+        catalog={catalog}
+        disabled={false}
+        act={vi.fn()}
+        view="workshop"
+        onViewChange={vi.fn()}
+      >
+        {null}
+      </IndustryViews>,
+    );
+    const recipe = within(
+        screen.getByLabelText(`${r.name}加工批数`).closest("article")!,
+      ),
+      inputs = within(recipe.getByRole("region", { name: "每批原料" })),
+      outputs = within(recipe.getByRole("region", { name: "每批产物" }));
+    expect(inputs.getByText("垃圾包")).toBeInTheDocument();
+    expect(inputs.getByText("存 60 / 需 12")).toBeInTheDocument();
+    expect(outputs.getByText("铁质碎片")).toBeInTheDocument();
+    expect(outputs.getByText("存 0 / 产 3")).toBeInTheDocument();
+    expect(outputs.getAllByRole("listitem")).toHaveLength(9);
+    expect(
+      outputs.getAllByRole("listitem").every((row) => row.querySelector("svg")),
+    ).toBe(true);
+  });
   it("validates current material limits and integer counts before submitting a real quantity", () => {
     const f = createLocalFactory(user, "批量"),
       r = recipeDefinitions.get("r1001")!,

@@ -14,11 +14,17 @@ import { applyUtilityAction, type UtilityAction } from "./utilityActions";
 import { recipeAvailable } from "./production";
 import { applyFluidAction, type FluidAction } from "./fluidActions";
 import { discoverItems } from "./discovery";
-import { workshopBatchLimit, workshopOutputFits } from "./workshop";
+import { newQuestProgress, recordWorkshopBatch } from "./quests";
+import {
+  workshopBatchLimit,
+  workshopOutputFits,
+  workshopMachineAvailable,
+} from "./workshop";
 export { recipeAvailable, canProcess } from "./production";
 
 export type IndustryState = components["schemas"]["IndustryState"];
 export const initialIndustry = (): IndustryState => ({
+  quests: newQuestProgress(),
   stage: 1,
   milestones: [],
   crafted: {},
@@ -67,7 +73,7 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
     const r = recipeDefinitions.get(action.recipe);
     if (
       !r ||
-      !catalog.starting_machines?.includes(r.building_type) ||
+      !workshopMachineAvailable(p.crafted, r.building_type) ||
       !recipeAvailable(f, r.id)
     )
       throw new Error("工作室尚不能加工该配方");
@@ -188,6 +194,7 @@ export function stepWorkshop(f: LocalFactory) {
   job.progress++;
   if (job.progress >= duration) {
     store(f.simulation.warehouse, r.outputs);
+    recordWorkshopBatch(f, r.id);
     recordCraft(f, r.outputs);
     if ((job.remaining ?? 1) > 1) {
       job.remaining = (job.remaining ?? 1) - 1;

@@ -117,6 +117,7 @@ type StageDefinition struct {
 	MilestoneItem string `json:"milestone_item"`
 }
 type Catalog struct {
+	Quests           []QuestDefinition    `json:"quests,omitempty"`
 	Robots           []RobotDefinition    `json:"robots,omitempty"`
 	Version          int                  `json:"version"`
 	Items            []ItemDefinition     `json:"items"`
@@ -225,5 +226,5 @@ func (c Catalog) Validate() error {
 			}
 		}
 	}
-	return nil
+	return validateQuestDefinitions(c)
 }

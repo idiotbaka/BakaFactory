@@ -12,6 +12,12 @@ import FactoryEditor from "./FactoryEditor";
 import { ProductionInspector } from "./ProductionPanel";
 import { isLogisticsBuilding } from "./catalogPresentation";
 import WorkshopHud from "./WorkshopHud";
+import BuildingRecipeGuide from "./BuildingRecipeGuide";
+import QuestNotifications from "./QuestNotifications";
+import StoryPlayer from "./stories/StoryPlayer";
+import StoryMenu from "./stories/StoryMenu";
+import { storyDefinitions } from "./stories/definitions";
+import { openingStoryID, type StoryID } from "./stories/progress";
 import { SimulationAnimationProvider } from "./SimulationAnimation";
 import { readPowerSaving, savePowerSaving } from "./displayPreferences";
 import { entityColor } from "./entityTheme";
@@ -69,6 +75,14 @@ export default function FactoryWorkspace({
   const [industryView, setIndustryView] = useState<IndustryView>("factory");
   const [selectedRobotID, setSelectedRobotID] = useState<string | null>(null);
   const [robotFocus, setRobotFocus] = useState<RobotFocus>();
+  const [replayStory, setReplayStory] = useState<StoryID | null>(null);
+  const automaticStory =
+    game.ready &&
+    !game.factory &&
+    !game.conflict &&
+    !game.viewedStories?.includes(openingStoryID);
+  const activeStoryID = replayStory ?? (automaticStory ? openingStoryID : null);
+  const noQuestNotices = useMemo(() => [], []);
   const robotRoute = useMemo(
     () =>
       selectedRobotID && game.factory
@@ -122,7 +136,7 @@ export default function FactoryWorkspace({
   }, [activeFactoryID, paletteCatalog, stage]);
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || workspace.kind !== "ready") return;
+    if (busy || workspace.kind !== "ready" || activeStoryID) return;
     setBusy(true);
     setError("");
     try {
@@ -175,6 +189,7 @@ export default function FactoryWorkspace({
     void game.runtime
       ?.world(action)
       .then(() => {
+        if (action.type === "claim_quest") return;
         setSelectedInstanceID(null);
         setPlacementType(null);
       })
@@ -527,7 +542,11 @@ export default function FactoryWorkspace({
                   <button
                     className="primary-button"
                     disabled={
-                      busy || !name.trim() || !game.online || game.conflict
+                      busy ||
+                      !!activeStoryID ||
+                      !name.trim() ||
+                      !game.online ||
+                      game.conflict
                     }
                   >
                     {busy ? "正在创建…" : "创建第一座工厂"}
@@ -677,40 +696,51 @@ export default function FactoryWorkspace({
                       disabled={game.paused}
                     />
                   )}
-                  <div className="recipe-section">
-                    <h4>
-                      关联配方{" "}
-                      <span>{recipes.length.toString().padStart(2, "0")}</span>
-                    </h4>
-                    {recipes.length ? (
-                      recipes.map((recipe) => (
-                        <div className="recipe-card" key={recipe.id}>
-                          <div className="recipe-name">
-                            {recipe.name}
-                            <span>{recipe.duration_ms / 1000}s</span>
+                  {buildingDefinition ? (
+                    <BuildingRecipeGuide
+                      key={buildingDefinition.id}
+                      definition={buildingDefinition}
+                      catalog={catalog}
+                      industry={factory?.simulation?.industry}
+                    />
+                  ) : (
+                    <div className="recipe-section">
+                      <h4>
+                        关联配方{" "}
+                        <span>
+                          {recipes.length.toString().padStart(2, "0")}
+                        </span>
+                      </h4>
+                      {recipes.length ? (
+                        recipes.map((recipe) => (
+                          <div className="recipe-card" key={recipe.id}>
+                            <div className="recipe-name">
+                              {recipe.name}
+                              <span>{recipe.duration_ms / 1000}s</span>
+                            </div>
+                            {ingredients(recipe.inputs)}
+                            <div className="recipe-arrow">↓</div>
+                            {ingredients(recipe.outputs)}
+                            <p>
+                              由{" "}
+                              {
+                                catalog.buildings.find(
+                                  (d) => d.id === recipe.building_type,
+                                )?.name
+                              }{" "}
+                              加工
+                            </p>
                           </div>
-                          {ingredients(recipe.inputs)}
-                          <div className="recipe-arrow">↓</div>
-                          {ingredients(recipe.outputs)}
-                          <p>
-                            由{" "}
-                            {
-                              catalog.buildings.find(
-                                (d) => d.id === recipe.building_type,
-                              )?.name
-                            }{" "}
-                            加工
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="no-recipes">
-                        {selection.id === "bus"
-                          ? "工厂仓库接收产线物品并计入总仓库，不执行加工配方。"
-                          : "暂无关联加工配方。"}
-                      </p>
-                    )}
-                  </div>
+                        ))
+                      ) : (
+                        <p className="no-recipes">
+                          {selection.id === "bus"
+                            ? "工厂仓库接收产线物品并计入总仓库，不执行加工配方。"
+                            : "暂无关联加工配方。"}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <p className="inspector-note">
                     接通产线，让工厂自行运转。
                     <br />
@@ -795,6 +825,7 @@ export default function FactoryWorkspace({
             >
               {powerSaving ? "◒ 节能已开启" : "◐ 节能模式"}
             </button>
+            <StoryMenu onOpen={setReplayStory} />
             <HudPopover
               className="controls-guide"
               label={
@@ -849,6 +880,23 @@ export default function FactoryWorkspace({
             </HudPopover>
           </div>
         </div>
+        <QuestNotifications
+          key={user.id}
+          notices={game.questNotices ?? noQuestNotices}
+          catalog={catalog}
+        />
+        {activeStoryID && (
+          <StoryPlayer
+            key={`${user.id}:${activeStoryID}`}
+            story={storyDefinitions[activeStoryID]}
+            powerSaving={powerSaving}
+            onClose={replayStory ? () => setReplayStory(null) : undefined}
+            onComplete={async () => {
+              await game.runtime!.markStoryViewed(activeStoryID);
+              setReplayStory(null);
+            }}
+          />
+        )}
       </section>
     </SimulationAnimationProvider>
   );

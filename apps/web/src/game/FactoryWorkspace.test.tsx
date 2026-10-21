@@ -6,6 +6,7 @@ import { useLocalGame } from "./local/useLocalGame";
 import { createLocalFactory, type LocalFactory } from "./local/state";
 import type { GameRuntime } from "./local/runtime";
 import { catalog, itemID } from "./local/catalog";
+import { openingStoryID } from "./stories/progress";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
   id: "owner",
@@ -23,7 +24,8 @@ const commands = {
 const backup = vi.fn().mockResolvedValue(undefined),
   restoreCloud = vi.fn().mockResolvedValue(undefined),
   chooseLocal = vi.fn().mockResolvedValue(undefined),
-  retry = vi.fn();
+  retry = vi.fn(),
+  markStoryViewed = vi.fn().mockResolvedValue(undefined);
 afterEach(() => {
   vi.clearAllMocks();
   localStorage.removeItem("bakafactory:power-saving");
@@ -35,9 +37,13 @@ function prepare(
     conflict?: boolean;
     online?: boolean;
     setup?: (f: LocalFactory) => void;
+    viewedStories?: string[];
   } = {},
 ) {
   vi.mocked(useLocalGame).mockImplementation(function useMockGame() {
+    const [viewedStories, setViewedStories] = useState(
+      options.viewedStories ?? [openingStoryID],
+    );
     const [factory, setFactory] = useState<LocalFactory | null>(() => {
       if (!existing) return null;
       const f = createLocalFactory(user, "本机工厂");
@@ -50,6 +56,10 @@ function prepare(
       restoreCloud,
       chooseLocal,
       retryStorage: vi.fn().mockResolvedValue(undefined),
+      markStoryViewed: async (id: string) => {
+        await markStoryViewed(id);
+        setViewedStories((previous) => [...new Set([...previous, id])]);
+      },
       create: async (name: string) => {
         const f = createLocalFactory(user, name);
         setFactory(f);
@@ -58,6 +68,7 @@ function prepare(
     } as unknown as GameRuntime;
     return {
       ready: !options.error,
+      viewedStories,
       factory,
       error: options.error ?? "",
       message: options.conflict
@@ -76,6 +87,102 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("automatically plays the opening before naming, saves completion and waits for explicit factory creation", async () => {
+    prepare(false, { viewedStories: [] });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    expect(
+      screen.getByRole("dialog", { name: "开场：下班计划开启" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /创建第一座工厂/ }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "关闭剧情" }),
+    ).not.toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    for (let i = 0; i < 4; i++)
+      fireEvent.click(screen.getByRole("button", { name: "下一页" }));
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+    await screen.findByRole("button", { name: /创建第一座工厂/ });
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(openingStoryID);
+    expect(screen.getByLabelText("工厂名称")).toHaveFocus();
+    expect(screen.queryByRole("grid")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("工厂名称"), {
+      target: { value: "下班计划" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /创建第一座工厂/ }));
+    await screen.findByRole("heading", { name: "下班计划" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+  it("does not force the opening on existing factories and replays from the upward story list", () => {
+    prepare(true, { viewedStories: [] });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const replay = screen.getByText("重放剧情"),
+      guide = screen.getByText("操作指南");
+    expect(
+      replay.compareDocumentPosition(guide) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    fireEvent.click(replay);
+    expect(replay.closest("details")).toHaveAttribute("open");
+    fireEvent.click(screen.getByRole("button", { name: "开场：下班计划开启" }));
+    expect(replay.closest("details")).not.toHaveAttribute("open");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "1" });
+    fireEvent.keyDown(window, { key: "f" });
+    expect(screen.getByRole("region", { name: "工厂工作台" })).not.toHaveClass(
+      "is-immersive",
+    );
+    expect(commands.placeBuilding).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(replay).toHaveFocus();
+    expect(markStoryViewed).not.toHaveBeenCalled();
+    fireEvent.click(replay);
+    fireEvent.click(screen.getByRole("button", { name: "开场：下班计划开启" }));
+    expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toBeInTheDocument();
+  });
+  it("opens building acquisition details without changing tools or triggering editor shortcuts", () => {
+    prepare();
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+      screen.getByRole("complementary", { name: "实体图鉴" }),
+    );
+    fireEvent.click(palette.getByRole("button", { name: "物流" }));
+    const port = palette.getByRole("button", { name: /^垃圾提取口/ });
+    fireEvent.click(port);
+    const trigger = screen.getByRole("button", { name: "获取来源和关联配方" });
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: /垃圾提取口/ });
+    const close = within(dialog).getByRole("button", {
+      name: "关闭获取来源和关联配方",
+    });
+    expect(close).toHaveFocus();
+    fireEvent.keyDown(window, { key: "1" });
+    fireEvent.keyDown(window, { key: "f" });
+    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.keyDown(window, { key: "Delete" });
+    expect(port).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("region", { name: "工厂工作台" })).not.toHaveClass(
+      "is-immersive",
+    );
+    fireEvent.keyDown(close, { key: "Tab", shiftKey: true });
+    expect(within(dialog).getByLabelText("配方详情滚动区域")).toHaveFocus();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    expect(port).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("dialog").parentElement!);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(commands.placeBuilding).not.toHaveBeenCalled();
+    expect(commands.updateBuilding).not.toHaveBeenCalled();
+    expect(commands.deleteBuilding).not.toHaveBeenCalled();
+  });
   it("separates logistics tools and keeps their placement selection", () => {
     prepare();
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
