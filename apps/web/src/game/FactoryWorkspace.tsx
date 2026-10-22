@@ -17,7 +17,7 @@ import QuestNotifications from "./QuestNotifications";
 import StoryPlayer from "./stories/StoryPlayer";
 import StoryMenu from "./stories/StoryMenu";
 import { storyDefinitions } from "./stories/definitions";
-import { openingStoryID, type StoryID } from "./stories/progress";
+import { openingStoryID, unlockedStoryIDs, type StoryID } from "./stories/progress";
 import { SimulationAnimationProvider } from "./SimulationAnimation";
 import { readPowerSaving, savePowerSaving } from "./displayPreferences";
 import { entityColor } from "./entityTheme";
@@ -76,12 +76,14 @@ export default function FactoryWorkspace({
   const [selectedRobotID, setSelectedRobotID] = useState<string | null>(null);
   const [robotFocus, setRobotFocus] = useState<RobotFocus>();
   const [replayStory, setReplayStory] = useState<StoryID | null>(null);
+  const unlockedStories = unlockedStoryIDs(game.factory?.simulation.industry?.quests?.claimed);
+  const pendingStory = unlockedStories.find((id) => id !== openingStoryID && game.pendingStories?.includes(id) && !game.viewedStories?.includes(id));
   const automaticStory =
     game.ready &&
     !game.factory &&
     !game.conflict &&
     !game.viewedStories?.includes(openingStoryID);
-  const activeStoryID = replayStory ?? (automaticStory ? openingStoryID : null);
+  const activeStoryID = replayStory ?? (automaticStory ? openingStoryID : game.ready && game.factory && !game.conflict ? pendingStory ?? null : null);
   const noQuestNotices = useMemo(() => [], []);
   const robotRoute = useMemo(
     () =>
@@ -835,7 +837,7 @@ export default function FactoryWorkspace({
             >
               {powerSaving ? "◒ 节能已开启" : "◐ 节能模式"}
             </button>
-            <StoryMenu onOpen={setReplayStory} />
+            <StoryMenu onOpen={setReplayStory} unlocked={unlockedStories} />
             <HudPopover
               className="controls-guide"
               label={

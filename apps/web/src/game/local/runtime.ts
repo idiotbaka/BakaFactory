@@ -23,6 +23,8 @@ import { workshopOutputFits } from "./workshop";
 import {
   storyIDs,
   validViewedStories,
+  newlyClaimedStories,
+  retainPendingStories,
   type StoryID,
 } from "../stories/progress";
 import type { Observation } from "./observations";
@@ -49,6 +51,7 @@ export type EditorCommands = {
 };
 export type GameView = {
   viewedStories?: string[];
+  pendingStories?: string[];
   questNotices?: { sequence: number; id: string }[];
   workshopBlocked?: boolean;
   observation?: Observation;
@@ -204,6 +207,7 @@ export class GameRuntime {
           local.version !== 1 ||
           local.owner !== this.user.id ||
           !validViewedStories(local.viewedStories) ||
+          !validViewedStories(local.pendingStories) ||
           !Number.isSafeInteger(local.cloudVersion) ||
           local.cloudVersion < 0 ||
           (local.uploadedRevision !== null &&
@@ -231,6 +235,7 @@ export class GameRuntime {
       // Normalize historical acquisitions before the first Worker response so
       // loading an older save cannot announce recovered tasks as new events.
       if (factory) this.record.save = toSave(factory);
+      this.record.pendingStories = retainPendingStories(this.record.pendingStories, this.record.viewedStories, factory?.simulation.industry?.quests?.claimed);
       this.worker = new Worker(
         new URL("./simulation.worker.ts", import.meta.url),
         { type: "module" },
@@ -246,6 +251,7 @@ export class GameRuntime {
       this.publish({
         ready: true,
         viewedStories: [...(this.record.viewedStories ?? [])],
+        pendingStories: [...(this.record.pendingStories ?? [])],
         workshopBlocked: factory
           ? !workshopOutputFits(
               factory.simulation.industry,
@@ -336,6 +342,11 @@ export class GameRuntime {
       return;
     }
     if (request?.cloud) this.adoptCloud(request.cloud);
+    const claimed = event.factory.simulation?.industry?.quests?.claimed ?? [];
+    const previousClaims = this.record.save?.factory.simulation?.industry?.quests?.claimed ?? [];
+    this.record.pendingStories = request?.cloud
+      ? retainPendingStories(this.record.pendingStories, this.record.viewedStories, claimed)
+      : [...new Set([...(this.record.pendingStories ?? []), ...(this.record.save ? newlyClaimedStories(previousClaims, claimed, this.record.viewedStories) : [])])].slice(-1000);
     const previousQuests = new Set(
       this.record.save?.factory.simulation?.industry?.quests?.completed ?? [],
     );
@@ -357,6 +368,7 @@ export class GameRuntime {
     this.record.save = toSave(event.root ?? event.factory);
     this.publish({
       questNotices,
+      pendingStories: [...this.record.pendingStories],
       workshopBlocked: !workshopOutputFits(
         this.record.save.factory.simulation!.industry,
         this.record.save.factory.simulation!.warehouse,
@@ -422,10 +434,12 @@ export class GameRuntime {
     this.record.viewedStories = viewed;
     // This can be committed before a factory exists, using the same owner key
     // and write queue as all later local saves. It never changes the world.
-    await this.persist();
+    await this.persist({ pendingStories: (this.record.pendingStories ?? []).filter((pending) => !viewed.includes(pending)) });
+    this.record.pendingStories = (this.record.pendingStories ?? []).filter((pending) => !this.record.viewedStories!.includes(pending));
     this.storageFailed = false;
     this.publish({
       viewedStories: [...this.record.viewedStories],
+      pendingStories: [...this.record.pendingStories],
       ...(this.view.message.startsWith("本地保存失败") ? { message: "" } : {}),
     });
     this.permit();
@@ -434,9 +448,10 @@ export class GameRuntime {
     this.record.save
       ? previewRobotRoute(this.record.save.factory as LocalFactory, id)
       : undefined;
-  private persist(): Promise<void> {
+  private persist(storyPatch: Pick<Partial<LocalRecord>, "pendingStories"> = {}): Promise<void> {
     const record = structuredClone({
       ...this.record,
+      ...storyPatch,
       savedAt: new Date().toISOString(),
     });
     const task = this.writeTail.catch(() => {}).then(() => writeLocal(record));

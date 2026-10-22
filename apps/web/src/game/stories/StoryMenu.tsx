@@ -1,18 +1,20 @@
 import HudPopover from "../../HudPopover";
 import { stories } from "./definitions";
-import type { StoryID } from "./progress";
+import { openingStoryID, type StoryID } from "./progress";
 
 export default function StoryMenu({
   onOpen,
+  unlocked = [openingStoryID],
 }: {
   onOpen: (id: StoryID) => void;
+  unlocked?: readonly StoryID[];
 }) {
   return (
     <HudPopover className="controls-guide story-menu" label="重放剧情">
       <div className="controls-guide-content">
         <h3>剧情列表</h3>
         <ul>
-          {stories.map((story) => (
+          {stories.filter((story) => unlocked.includes(story.id)).map((story) => (
             <li key={story.id}>
               <button
                 type="button"

@@ -2,6 +2,7 @@ import type { GameSave } from "./state";
 
 export type LocalRecord = {
   viewedStories?: string[];
+  pendingStories?: string[];
   owner: string;
   version: 1;
   save: GameSave | null;

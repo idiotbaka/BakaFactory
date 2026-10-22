@@ -26,7 +26,7 @@ import {
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
 import { worldFrame } from "./worldFrame";
-import { openingStoryID } from "../stories/progress";
+import { openingStoryID, p1StoryID } from "../stories/progress";
 vi.mock("./storage", () => ({ readLocal: vi.fn(), writeLocal: vi.fn() }));
 vi.mock("../../api/client", () => ({
   ApiError: class ApiError extends Error {
@@ -157,6 +157,57 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("persists a pending P1 chapter with the real claim, resumes it after reload and removes it only after completion commits", async () => {
+    const root = createWorld(user, "P1 领奖");
+    root.simulation.industry!.crafted.i0060 = 1;
+    root.simulation.industry!.milestones = ["i0060"];
+    root.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    saved = { owner: user.id, version: 1, save: toSave(root), cloudVersion: 0, cloudSavedAt: null, uploadedRevision: null, savedAt: "now" };
+    await game.start();
+    expect(view.pendingStories).toEqual([]);
+    await game.world({ type: "developer_settings", warehouse_orders_always_available: true });
+    expect(view.pendingStories).toEqual([]);
+    await game.world({ type: "claim_quest", id: "p1_free_hands" });
+    expect(view.pendingStories).toEqual([p1StoryID]);
+    expect(saved!.pendingStories).toEqual([p1StoryID]);
+    expect(saved!.save!.factory.simulation!.industry!.quests!.claimed).toContain("p1_free_hands");
+    FakeWorker.instances.at(-1)!.tick();
+    expect(view.pendingStories).toEqual([p1StoryID]);
+    await game.close();
+    game = new GameRuntime(user, (next) => { view = next; }, expired);
+    await game.start();
+    expect(view.pendingStories).toEqual([p1StoryID]);
+    vi.mocked(writeLocal).mockRejectedValueOnce(new Error("剧情保存失败"));
+    await expect(game.markStoryViewed(p1StoryID)).rejects.toThrow("剧情保存失败");
+    expect(view.pendingStories).toEqual([p1StoryID]);
+    expect(view.viewedStories).not.toContain(p1StoryID);
+    await game.markStoryViewed(p1StoryID);
+    expect(view.pendingStories).toEqual([]);
+    expect(saved!.pendingStories).toEqual([]);
+    expect(saved!.viewedStories).toContain(p1StoryID);
+  });
+  it("does not invent automatic chapters from historical or cloud claims and prunes invalidated pending chapters", async () => {
+    let root = createWorld(user, "既有 P2");
+    root.simulation.industry!.crafted.i0060 = 1;
+    root.simulation.industry!.milestones = ["i0060"];
+    root.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    root = actWorld(root, { type: "claim_quest", id: "p1_free_hands" });
+    saved = { owner: user.id, version: 1, save: toSave(root), cloudVersion: 0, cloudSavedAt: null, uploadedRevision: null, savedAt: "now" };
+    await game.start();
+    expect(view.pendingStories).toEqual([]);
+    vi.mocked(downloadSave).mockResolvedValue({ version: 1, saved_at: "now", save: toSave(root) });
+    await game.restoreCloud();
+    expect(view.pendingStories).toEqual([]);
+    await game.close();
+    saved!.pendingStories = [p1StoryID];
+    game = new GameRuntime(user, (next) => { view = next; }, expired);
+    await game.start();
+    expect(view.pendingStories).toEqual([p1StoryID]);
+    vi.mocked(downloadSave).mockResolvedValue({ version: 2, saved_at: "now", save: toSave(createWorld(user, "尚未领奖")) });
+    await game.restoreCloud();
+    expect(view.pendingStories).toEqual([]);
+    expect(saved!.pendingStories).toEqual([]);
+  });
   it("persists a completed opening before factory creation and retains UI history through cloud replacement", async () => {
     await game.start();
     expect(view.factory).toBeNull();

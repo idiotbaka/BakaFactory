@@ -1,6 +1,31 @@
-export const storyIDs = ["opening_clock_out"] as const;
+export const storyIDs = ["opening_clock_out", "p1_factory_feast"] as const;
 export type StoryID = (typeof storyIDs)[number];
 export const openingStoryID: StoryID = "opening_clock_out";
+export const p1StoryID: StoryID = "p1_factory_feast";
+const questRequirements: Partial<Record<StoryID, string>> = {
+  [p1StoryID]: "p1_free_hands",
+};
+
+export function unlockedStoryIDs(claimed: readonly string[] = []) {
+  return storyIDs.filter((id) => !questRequirements[id] || claimed.includes(questRequirements[id]!));
+}
+
+// Only a newly confirmed claim triggers an automatic chapter. Old saves and
+// cloud restore establish a baseline instead of inventing a new reward event.
+export function newlyClaimedStories(previous: readonly string[], next: readonly string[], viewed: readonly string[] = []) {
+  return storyIDs.filter((id) => {
+    const quest = questRequirements[id];
+    return !!quest && !previous.includes(quest) && next.includes(quest) && !viewed.includes(id);
+  });
+}
+
+export function retainPendingStories(pending: readonly string[] = [], viewed: readonly string[] = [], claimed: readonly string[] = []) {
+  return pending.filter((id) => {
+    const known = storyIDs.find((knownID) => knownID === id);
+    const quest = known && questRequirements[known];
+    return !viewed.includes(id) && (!quest || claimed.includes(quest));
+  });
+}
 
 // UI metadata may retain retired / future identifiers; never discard a save
 // merely because its story list was authored in a different content revision.
