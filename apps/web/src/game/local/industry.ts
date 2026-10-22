@@ -15,6 +15,7 @@ import { recipeAvailable } from "./production";
 import { applyFluidAction, type FluidAction } from "./fluidActions";
 import { discoverItems } from "./discovery";
 import { newQuestProgress, recordWorkshopBatch } from "./quests";
+import { machineBatchLimit, validFeedBatches } from "./machineFeed";
 import {
   workshopBatchLimit,
   workshopOutputFits,
@@ -54,7 +55,7 @@ export type IndustryAction =
   | { type: "cancel_workshop" }
   | { type: "recipe"; id: string; recipe: string }
   | { type: "feed"; id: string; item: string; count: number }
-  | { type: "feed_batch"; id: string }
+  | { type: "feed_batch"; id: string; batches?: number }
   | { type: "collect_input"; id: string }
   | { type: "fuel"; id: string; item: string; count: number }
   | { type: "collect"; id: string };
@@ -154,8 +155,21 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
   } else if (action.type === "feed_batch") {
     const r = selectedRecipe(b);
     if (!r) throw new Error("请先选择配方");
+    const requested = action.batches === undefined ? 1 : action.batches;
+    if (!validFeedBatches(requested)) throw new Error("补料批数须为正整数");
+    const batches = Math.min(
+      requested,
+      machineBatchLimit(
+        r,
+        m.input,
+        warehouse,
+        d.input_slots ?? 4,
+        d.stack_limit,
+      ),
+    );
+    if (batches < 1) throw new Error("仓库原料不足或输入缓存无法容纳一批");
     for (const [id, n] of Object.entries(r.inputs)) {
-      const missing = Math.max(0, n - count(m.input, id));
+      const missing = Math.max(0, n * batches - count(m.input, id));
       if (missing && !add(m.input, id, missing, d.input_slots))
         throw new Error("输入缓存已满");
       if (missing) store(warehouse, { [id]: -missing });

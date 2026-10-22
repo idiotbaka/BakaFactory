@@ -485,6 +485,30 @@
 .machine-actions label {
   font-size: 12px;
 }
+.machine-batch-feed {
+  display: grid;
+  grid-template-columns: minmax(56px, 72px) minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+}
+.machine-batch-feed input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 6px;
+  border: 1px solid var(--line);
+  background: #0b101c;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+}
+.machine-batch-feed button {
+  min-width: 0;
+  line-height: 18px;
+}
+.machine-batch-feed .production-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
 .logistics-settings {
   display: grid;
   gap: 9px;

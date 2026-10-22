@@ -23,6 +23,7 @@ import { isSolidTransport } from "./local/transportConfig";
 import { UtilityInspector } from "./PowerPanel";
 import { isPowerFacility } from "./local/power";
 import FluidInspector from "./FluidInspector";
+import MachineBatchFeed from "./MachineBatchFeed";
 
 export const machineStatuses: Record<string, string> = {
   idle: "待机",
@@ -287,12 +288,16 @@ export function ProductionInspector({
                         ))}
                     </select>
                   </label>
-                  <button
-                    disabled={disabled || !recipe}
-                    onClick={() => act({ type: "feed_batch", id: instance.id })}
-                  >
-                    从仓库补足一批原料
-                  </button>
+                  <MachineBatchFeed
+                    key={`${instance.id}:${recipe?.id ?? ""}`}
+                    id={instance.id}
+                    recipe={recipe}
+                    input={machine.input}
+                    warehouse={factory.simulation?.warehouse ?? {}}
+                    definition={definition}
+                    disabled={disabled}
+                    act={act}
+                  />
                   <button
                     disabled={disabled || !machine.output.length}
                     onClick={() => act({ type: "collect", id: instance.id })}

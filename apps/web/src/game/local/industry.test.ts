@@ -280,6 +280,111 @@ describe("recycling gameplay", () => {
     f = act(f, { type: "collect_input", id: "m02" });
     expect(f.simulation.warehouse[itemID("垃圾包")]).toBe(12);
   });
+  it("tops up a target number of complete batches using only missing material and preserves ongoing work", () => {
+    let f = act(install(start(), "m08"), {
+      type: "recipe",
+      id: "m08",
+      recipe: "r1039",
+    });
+    const recipe = recipeDefinitions.get("r1039")!;
+    for (const id of Object.keys(recipe.inputs))
+      f.simulation.warehouse[id] = 100;
+    f.simulation.buildings.m08.input = [
+      { item: "i0055", count: 7 },
+      { item: "i0057", count: 3 },
+    ];
+    f.simulation.buildings.m08.progress = 4;
+    f = act(f, { type: "feed_batch", id: "m08", batches: 6 });
+    expect(f.simulation.buildings.m08.input).toEqual([
+      { item: "i0055", count: 12 },
+      { item: "i0057", count: 12 },
+      { item: "i0054", count: 6 },
+    ]);
+    expect(
+      Object.fromEntries(
+        Object.keys(recipe.inputs).map((id) => [
+          id,
+          f.simulation.warehouse[id],
+        ]),
+      ),
+    ).toEqual({ i0055: 95, i0057: 91, i0054: 94 });
+    expect(f.simulation.buildings.m08.progress).toBe(4);
+    const inventory = structuredClone(f.simulation);
+    f = act(f, { type: "feed_batch", id: "m08", batches: 6 });
+    expect(f.simulation).toEqual(inventory);
+    expect(validateSave(toSave(f), user.id).simulation).toEqual(f.simulation);
+    f = editFactory(f, { kind: "delete", id: "m08" });
+    expect(f.simulation.warehouse.i0055).toBe(107);
+    expect(f.simulation.warehouse.i0057).toBe(103);
+    expect(f.simulation.warehouse.i0054).toBe(100);
+  });
+  it("clamps excessive requested batches to per-item capacity or current stock and can refill after real production", () => {
+    let f = act(install(start(), "m08"), {
+      type: "recipe",
+      id: "m08",
+      recipe: "r1039",
+    });
+    const recipe = recipeDefinitions.get("r1039")!;
+    for (const id of Object.keys(recipe.inputs))
+      f.simulation.warehouse[id] = 500;
+    f = act(f, { type: "feed_batch", id: "m08", batches: 1e100 });
+    expect(f.simulation.buildings.m08.input).toEqual([
+      { item: "i0055", count: 100 },
+      { item: "i0057", count: 100 },
+      { item: "i0054", count: 50 },
+    ]);
+    f = advance(f, recipe.duration_ms / 1000);
+    expect(f.simulation.buildings.m08.output).toEqual([
+      { item: "i0059", count: 1 },
+    ]);
+    f = act(f, { type: "feed_batch", id: "m08", batches: 999 });
+    expect(f.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
+      100, 100, 50,
+    ]);
+    expect(f.simulation.warehouse.i0055).toBe(398);
+    expect(f.simulation.warehouse.i0057).toBe(398);
+    expect(f.simulation.warehouse.i0054).toBe(449);
+    let scarce = act(install(start(), "m08"), {
+      type: "recipe",
+      id: "m08",
+      recipe: "r1039",
+    });
+    Object.assign(scarce.simulation.warehouse, {
+      i0055: 14,
+      i0057: 100,
+      i0054: 100,
+    });
+    scarce = act(scarce, { type: "feed_batch", id: "m08", batches: 100 });
+    expect(scarce.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
+      14, 14, 7,
+    ]);
+    expect(scarce.simulation.warehouse.i0055).toBe(0);
+  });
+  it("rejects invalid batch counts or a missing first batch atomically and keeps old no-count requests working", () => {
+    let f = act(install(start(), "m08"), {
+      type: "recipe",
+      id: "m08",
+      recipe: "r1039",
+    });
+    Object.assign(f.simulation.warehouse, { i0055: 10, i0057: 1, i0054: 10 });
+    const before = structuredClone(f);
+    expect(() => act(f, { type: "feed_batch", id: "m08", batches: 9 })).toThrow(
+      "无法容纳一批",
+    );
+    expect(f).toEqual(before);
+    f.simulation.warehouse.i0057 = 10;
+    const full = structuredClone(f);
+    for (const batches of [0, -1, 1.5, NaN, Infinity]) {
+      expect(() => act(f, { type: "feed_batch", id: "m08", batches })).toThrow(
+        "正整数",
+      );
+      expect(f).toEqual(full);
+    }
+    f = act(f, { type: "feed_batch", id: "m08" });
+    expect(f.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
+      2, 2, 1,
+    ]);
+  });
   it("charges heat separately from chemical ingredients, retains burn energy and rejects batteries as fuel", () => {
     let f = act(install(start(), "m05"), {
       type: "recipe",
