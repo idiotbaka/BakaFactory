@@ -9,7 +9,7 @@ func TestCatalogValidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(valid.Items) != 355 || len(valid.Buildings) != 90 || len(valid.Recipes) != 334 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 7 {
+	if len(valid.Items) != 355 || len(valid.Buildings) != 90 || len(valid.Recipes) != 334 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 9 {
 		t.Fatal("missing production definitions")
 	}
 	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "fractional_second", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity"} {

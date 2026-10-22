@@ -43,7 +43,11 @@ export function restoreDiscoveries(f: LocalFactory) {
     }
   }
   const job = f.simulation.industry?.workshop;
-  if (job)
+  if (job?.order)
+    Object.entries(job.order.inventory).forEach(([id, n]) => {
+      if (n > 0) ids.add(id);
+    });
+  else if (job)
     Object.keys(recipeDefinitions.get(job.recipe_id)?.inputs ?? {}).forEach(
       (id) => ids.add(id),
     );

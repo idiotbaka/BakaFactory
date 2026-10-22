@@ -22,7 +22,7 @@ export default function WorkshopHud({
   return (
     <section className="workshop-hud" aria-label="工作室加工">
       <div className="workshop-hud-heading">
-        <strong>手工加工</strong>
+        <strong>{job?.order ? "机械手自动加工中" : "手工加工"}</strong>
         <span>
           {job
             ? `${paused ? "已暂停 · " : blocked ? "产物上限等待 · " : ""}第 ${(job.total ?? 1) - (job.remaining ?? 1) + 1} / ${job.total ?? 1} 批`
@@ -46,7 +46,11 @@ export default function WorkshopHud({
       )}
       {job && (
         <div className="workshop-hud-actions">
-          <span>尚余 {job.remaining ?? 1} 批（含当前批）</span>
+          <span>
+            {job.order
+              ? `工序 ${job.order.step_index + 1} / ${job.order.steps.length} · 尚余 ${job.order.steps.slice(job.order.step_index + 1).reduce((n, step) => n + step.batches, job.remaining ?? 1)} 批`
+              : `尚余 ${job.remaining ?? 1} 批（含当前批）`}
+          </span>
           <span title={!canCancel ? "请切换到起始回收场取消队列" : undefined}>
             <button
               type="button"
@@ -54,11 +58,13 @@ export default function WorkshopHud({
               onClick={onCancel}
               title={
                 canCancel
-                  ? "取消后仅返还尚未完成批次的原料，保留已完成产物"
+                  ? job.order
+                    ? "退回未用材料及已完成产物，已消耗原料不重复返还"
+                    : "取消后仅返还尚未完成批次的原料，保留已完成产物"
                   : undefined
               }
             >
-              取消队列并返还未完成原料
+              {job.order ? "取消订单并回收物料" : "取消队列并返还未完成原料"}
             </button>
           </span>
         </div>

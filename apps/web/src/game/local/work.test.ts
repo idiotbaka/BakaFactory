@@ -34,6 +34,8 @@ function place(root: LocalFactory, id: string, type: string, x: number, y = 0) {
 function setup(item = inspector) {
   let root = createWorld(user, "真实作业");
   root.simulation.industry!.stage = 6;
+  root.simulation.industry!.quests!.completed.push("p1_free_hands");
+  root.simulation.industry!.quests!.claimed.push("p1_free_hands");
   root.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

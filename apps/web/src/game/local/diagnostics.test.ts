@@ -16,6 +16,8 @@ describe("read-only diagnostics and durable game outcomes", () => {
   it("uses confirmed supplied work power without falsely flagging a fully powered machine after credit consumption", () => {
     const f = createWorld(user, "供能诊断");
     f.simulation.industry!.stage = 6;
+    f.simulation.industry!.quests!.completed.push("p1_free_hands");
+    f.simulation.industry!.quests!.claimed.push("p1_free_hands");
     f.simulation.industry!.milestones = catalog
       .stages!.slice(0, 5)
       .map((s) => s.milestone_item);
@@ -73,6 +75,8 @@ describe("read-only diagnostics and durable game outcomes", () => {
   it("does not call entering P6 or acquiring an item a completed manufacturing milestone", () => {
     const f = createWorld(user, "终局");
     f.simulation.industry!.stage = 6;
+    f.simulation.industry!.quests!.completed.push("p1_free_hands");
+    f.simulation.industry!.quests!.claimed.push("p1_free_hands");
     f.simulation.industry!.milestones = catalog
       .stages!.slice(0, 5)
       .map((s) => s.milestone_item);

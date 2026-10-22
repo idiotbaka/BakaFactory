@@ -40,6 +40,8 @@ function place(
 function setup(item = cart) {
   let root = createWorld(user, "运输测试");
   root.simulation.industry!.stage = 6;
+  root.simulation.industry!.quests!.completed.push("p1_free_hands");
+  root.simulation.industry!.quests!.claimed.push("p1_free_hands");
   root.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);
@@ -181,6 +183,7 @@ describe("physical robot freight", () => {
     root = until(root, (f) => !f.robots![0].returning);
     expect(total(root)).toBe(4);
     expect(root.simulation.warehouse[iron]).toBe(before + 4);
+    expect(root.simulation.industry!.quests!.automated_received).toBe(0);
     expect(root.robots![0].completed_tasks ?? 0).toBe(0);
     root = actWorld(root, { type: "robot_recall", id: "r" });
     expect(root.simulation.warehouse[cart]).toBe(1);
@@ -218,6 +221,7 @@ describe("physical robot freight", () => {
     expect(root.robots![0].cargo?.count).toBe(1);
     root = until(root, (f) => f.robots![0].completed_tasks === 1);
     expect(root.districts![0].simulation.warehouse[body]).toBe(1);
+    expect(root.simulation.industry!.quests!.automated_received).toBe(1);
     expect(total(root, body)).toBe(1);
     expect(
       root.districts!.every((f) => f.simulation.tick === root.simulation.tick),

@@ -1,5 +1,6 @@
 import type { components } from "../../api/schema";
 import { recipeDefinitions, buildingDefinitions, catalog } from "./catalog";
+import { nextOrderInventory } from "./orderInventory";
 type Industry = components["schemas"]["IndustryState"];
 
 export const workshopMachines = [
@@ -72,6 +73,25 @@ export function workshopOutputFits(
   const job = p?.workshop;
   if (!job) return true;
   const r = recipeDefinitions.get(job.recipe_id)!;
+  if (job.order) {
+    const next = nextOrderInventory(job.order, r);
+    if (
+      !next ||
+      Object.entries(r.outputs).some(
+        ([id, n]) => !Number.isSafeInteger((p?.crafted[id] ?? 0) + n),
+      )
+    )
+      return false;
+    const last =
+      job.remaining === 1 &&
+      job.order.step_index === job.order.steps.length - 1;
+    return (
+      !last ||
+      Object.entries(next).every(([id, n]) =>
+        Number.isSafeInteger((warehouse[id] ?? 0) + n),
+      )
+    );
+  }
   return Object.entries(r.outputs).every(
     ([id, n]) =>
       Number.isSafeInteger((warehouse[id] ?? 0) + n) &&

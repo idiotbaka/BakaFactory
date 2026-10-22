@@ -16,6 +16,9 @@ import { applyFluidAction, type FluidAction } from "./fluidActions";
 import { discoverItems } from "./discovery";
 import { newQuestProgress, recordWorkshopBatch } from "./quests";
 import { machineBatchLimit, validFeedBatches } from "./machineFeed";
+import { expectedStage, ordersUnlocked } from "./progression";
+import { planWorkshopOrder } from "./orders";
+import { nextOrderInventory } from "./orderInventory";
 import {
   workshopBatchLimit,
   workshopOutputFits,
@@ -41,11 +44,7 @@ export function recordCraft(f: LocalFactory, outputs: Record<string, number>) {
     if (p.crafted[s.milestone_item] && !p.milestones.includes(s.milestone_item))
       p.milestones.push(s.milestone_item);
   }
-  while (
-    p.stage < 6 &&
-    p.milestones.includes(catalog.stages![p.stage - 1].milestone_item)
-  )
-    p.stage++;
+  p.stage = expectedStage(p);
 }
 export type IndustryAction =
   | FluidAction
@@ -53,6 +52,7 @@ export type IndustryAction =
   | TransportAction
   | { type: "scavenge" }
   | { type: "workshop"; recipe: string; batches?: number }
+  | { type: "order_workshop"; item: string; count: number; signature: string }
   | { type: "cancel_workshop" }
   | { type: "recipe"; id: string; recipe: string }
   | { type: "feed"; id: string; item: string; count: number }
@@ -98,8 +98,44 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
     };
     return;
   }
+  if (action.type === "order_workshop") {
+    if (!ordersUnlocked(p))
+      throw new Error("请先领取“是时候解放双手了”的任务奖励");
+    if (p.workshop) throw new Error("手工队列正在加工，请先完成或取消当前任务");
+    const plan = planWorkshopOrder(p, warehouse, action.item, action.count);
+    if (plan.limited || Object.keys(plan.missing).length)
+      throw new Error("订单材料不足或规划超出上限，请先准备材料");
+    if (action.signature !== plan.signature)
+      throw new Error("仓库或解锁状态已变化，请查看更新后的计划再确认");
+    store(
+      warehouse,
+      Object.fromEntries(
+        Object.entries(plan.consumed).map(([id, n]) => [id, -n]),
+      ),
+    );
+    const first = plan.steps[0];
+    p.workshop = {
+      recipe_id: first.recipe_id,
+      progress: 0,
+      total: first.batches,
+      remaining: first.batches,
+      order: {
+        item: plan.item,
+        requested: plan.requested,
+        steps: plan.steps,
+        step_index: 0,
+        inventory: { ...plan.consumed },
+      },
+    };
+    return;
+  }
   if (action.type === "cancel_workshop") {
     if (!p.workshop) return;
+    if (p.workshop.order) {
+      store(warehouse, p.workshop.order.inventory);
+      delete p.workshop;
+      return;
+    }
     store(
       warehouse,
       Object.fromEntries(
@@ -208,6 +244,28 @@ export function stepWorkshop(f: LocalFactory) {
   if (!workshopOutputFits(p, f.simulation.warehouse)) return;
   job.progress++;
   if (job.progress >= duration) {
+    if (job.order) {
+      const order = job.order;
+      const inventory = nextOrderInventory(order, r)!;
+      recordWorkshopBatch(f, r.id);
+      recordCraft(f, r.outputs);
+      if (job.remaining! > 1) {
+        order.inventory = inventory;
+        job.remaining = job.remaining! - 1;
+        job.progress = 0;
+      } else if (order.step_index + 1 < order.steps.length) {
+        order.inventory = inventory;
+        const next = order.steps[++order.step_index];
+        job.recipe_id = next.recipe_id;
+        job.total = next.batches;
+        job.remaining = next.batches;
+        job.progress = 0;
+      } else {
+        store(f.simulation.warehouse, inventory);
+        delete p.workshop;
+      }
+      return;
+    }
     store(f.simulation.warehouse, r.outputs);
     recordWorkshopBatch(f, r.id);
     recordCraft(f, r.outputs);

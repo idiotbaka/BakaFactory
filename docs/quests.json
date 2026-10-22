@@ -54,5 +54,22 @@
     "description": "实际对应道具为初阶自动投料机；可用于自动投料机或垃圾提取口。",
     "goal": { "type": "obtain_item", "target": "初阶自动投料机", "count": 1 },
     "rewards": { "初阶自动投料机": 5 }
+  },
+  {
+    "id": "p1_warehouse_delivery",
+    "tier": 1,
+    "title": "向工厂仓库自动化输送一个物品",
+    "description": "也许你不需要主动去翻垃圾包了~",
+    "goal": { "type": "automated_delivery", "target": "bus", "count": 1 },
+    "rewards": { "手摇传送带": 20, "分拣料箱": 6, "初阶自动投料机": 6 }
+  },
+  {
+    "id": "p1_free_hands",
+    "tier": 1,
+    "title": "是时候解放双手了",
+    "description": "制作一个 流水线机械手，它会让你的双手自动动起来，解放你的工作室",
+    "goal": { "type": "craft_item", "target": "流水线机械手", "count": 1 },
+    "rewards": {},
+    "unlocks": ["warehouse_orders", "stage_2"]
   }
 ]

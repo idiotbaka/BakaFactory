@@ -758,18 +758,35 @@ components:
           type: object
           required: [type, target, count]
           properties:
-            type: { type: string, enum: [obtain_item, workshop_recipe] }
+            type:
+              {
+                type: string,
+                enum:
+                  [
+                    obtain_item,
+                    workshop_recipe,
+                    craft_item,
+                    automated_delivery,
+                  ],
+              }
             target: { type: string }
             count: { type: integer, minimum: 1, maximum: 9007199254740991 }
         rewards:
           type: object
           additionalProperties:
             { type: integer, minimum: 1, maximum: 9007199254740991 }
+        unlocks:
+          type: array
+          maxItems: 2
+          uniqueItems: true
+          items: { type: string, enum: [warehouse_orders, stage_2] }
     QuestProgress:
       type: object
       additionalProperties: false
       required: [completed, claimed, workshop_batches]
       properties:
+        automated_received:
+          { type: integer, minimum: 0, maximum: 9007199254740991 }
         completed:
           type: array
           maxItems: 1000
@@ -788,6 +805,13 @@ components:
       type: object
       required: [stage, milestones, crafted]
       properties:
+        developer:
+          type: object
+          additionalProperties: false
+          required: [warehouse_orders_always_available]
+          description: 开发测试选项，缺省时全部关闭；不代表任务奖励或阶段解锁。
+          properties:
+            warehouse_orders_always_available: { type: boolean }
         quests: { $ref: "#/components/schemas/QuestProgress" }
         discovered_items:
           type: array
@@ -819,6 +843,30 @@ components:
               maximum: 100
               description: 尚未完成的批次，包含正在加工的一批；与 total 同时存在，旧存档缺省为一批。
             total: { type: integer, minimum: 1, maximum: 100 }
+            order: { $ref: "#/components/schemas/WorkshopOrder" }
+    WorkshopOrder:
+      type: object
+      additionalProperties: false
+      required: [item, requested, steps, step_index, inventory]
+      properties:
+        item: { type: string }
+        requested: { type: integer, minimum: 1, maximum: 1000 }
+        steps:
+          type: array
+          minItems: 1
+          maxItems: 256
+          items:
+            type: object
+            additionalProperties: false
+            required: [recipe_id, batches]
+            properties:
+              recipe_id: { type: string }
+              batches: { type: integer, minimum: 1, maximum: 100 }
+        step_index: { type: integer, minimum: 0, maximum: 255 }
+        inventory:
+          type: object
+          additionalProperties:
+            { type: integer, minimum: 0, maximum: 9007199254740991 }
     Credentials:
       type: object
       additionalProperties: false

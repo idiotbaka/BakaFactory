@@ -15,9 +15,11 @@ import { constructionValid } from "./construction";
 import { syncIncidents } from "./incidents";
 import { dispatchRobots } from "./robotAutonomy";
 import { claimQuest, syncQuests } from "./quests";
+import { orderRewardClaimed } from "./progression";
 
 export type WorldAction =
   | RobotAction
+  | { type: "developer_settings"; warehouse_orders_always_available: boolean }
   | { type: "claim_quest"; id: string }
   | { type: "select_district"; id: string }
   | { type: "expand_district"; name: string }
@@ -212,7 +214,9 @@ export function editWorld(
     throw new Error("垃圾提取口只允许建在起始回收场");
   if (
     edit.kind === "industry" &&
-    ["scavenge", "workshop", "cancel_workshop"].includes(edit.action.type)
+    ["scavenge", "workshop", "cancel_workshop", "order_workshop"].includes(
+      edit.action.type,
+    )
   )
     throw new Error("共用手工工作室位于起始回收场，请先切换厂区");
   const child = current.districts![index];
@@ -245,6 +249,23 @@ export function actWorld(
   const root = structuredClone(initializeWorld(current));
   if (!Number.isSafeInteger(root.revision + 1))
     throw new Error("存档版本已达到上限");
+  if (action.type === "developer_settings") {
+    if (typeof action.warehouse_orders_always_available !== "boolean")
+      throw new Error("开发者开关值无效");
+    const p = root.simulation.industry!;
+    if (
+      !action.warehouse_orders_always_available &&
+      p.workshop?.order &&
+      !orderRewardClaimed(p)
+    )
+      throw new Error("请先完成或取消当前机械手订单，再关闭开发者下单开关");
+    p.developer = {
+      warehouse_orders_always_available:
+        action.warehouse_orders_always_available,
+    };
+    root.revision++;
+    return root;
+  }
   if (action.type === "claim_quest") {
     claimQuest(root, action.id);
     root.revision++;

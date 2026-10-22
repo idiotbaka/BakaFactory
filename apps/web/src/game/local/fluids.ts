@@ -1,5 +1,6 @@
 import type { BuildingInstance } from "../../api/client";
 import type { LocalFactory } from "./state";
+import { recordWarehouseDelivery } from "./quests";
 import {
   buildingDefinitions,
   direction,
@@ -333,9 +334,10 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
   }
   for (const { target, item, count: n } of moves.values()) {
     const m = s.buildings[target.b.id];
-    if (target.kind === "warehouse")
+    if (target.kind === "warehouse") {
       s.warehouse[item] = (s.warehouse[item] ?? 0) + n;
-    else if (target.kind === "medium") m.medium = (m.medium ?? 0) + n;
+      recordWarehouseDelivery(f, n);
+    } else if (target.kind === "medium") m.medium = (m.medium ?? 0) + n;
     else if (target.kind === "buffer")
       m.fluid = { item, count: (m.fluid?.count ?? 0) + n };
     else {

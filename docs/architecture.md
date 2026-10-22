@@ -1,5 +1,9 @@
 # 当前架构
 
+开发测试选项保存在主厂可选 `industry.developer.warehouse_orders_always_available`，缺省关闭，随 IndexedDB / 云备份 / 行业增量帧保存。`developer_settings` 是 Worker 串行世界操作，任意厂区可修改唯一设置；两端严格验证布尔值 / 对象字段，不新增账号权限或 HTTP 接口。下单访问可由任务领奖或开发开关开放，阶段门槛始终只认原任务 / 里程碑。未领奖时进行中的订单要求开关保持开启，关闭请求原子拒绝，先完成或取消后可关；因此读档仍校验队列具备实际访问权限。
+
+仓库订单复用主厂唯一 `industry.workshop`，不启动新 Worker / 定时器。`local/orders.ts` 是主线程预览与 Worker 确认共用的有界纯规划器；确认签名仅比较计划一致性。Worker 在克隆世界内重新规划、一次预留仓库材料并保存 order（目标、数量、工序、指针、私有库存），逐批实际转换物料，完成 / 取消原子入起始仓。两端读档从私有库存重放剩余链检查数量、权限及溢出，读取不结算；云备份接口携带同一完整订单。规则版本保持，旧 P2 无自动入库字段的档补认机制解锁，详见 [warehouse-orders.md](warehouse-orders.md)。
+
 本项目采用客户端权威运行：浏览器以 1 TPS 推进工厂，IndexedDB 是本机存档，Go / SQLite 提供账号、单点登录校验和每账号唯一云备份。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)。
 
 剧情观看状态为按账号的 LocalRecord.viewedStories 可选展示元数据，同工厂记录串行写入 IndexedDB，建厂前 save=null 亦可保存。首次在无工厂且未观看时自动打开开场；提交完成记录后再关闭，不触发建厂。此字段不进入 Worker / GameSave / 云备份，云恢复保留本机记录；已有工厂始终不强制开场。无 API、Go 或数据库迁移，详见 stories.md。

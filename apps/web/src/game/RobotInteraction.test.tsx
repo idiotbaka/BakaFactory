@@ -34,6 +34,8 @@ const world = vi.fn(),
 function fixture(transit = false) {
   let root = createWorld(user, "导航工厂");
   root.simulation.industry!.stage = 6;
+  root.simulation.industry!.quests!.completed.push("p1_free_hands");
+  root.simulation.industry!.quests!.claimed.push("p1_free_hands");
   root.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

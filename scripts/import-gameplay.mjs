@@ -15,6 +15,8 @@ const report = new URL("docs/gameplay-data-audit.md", root);
 const d = JSON.parse(await readFile(source, "utf8"));
 const previous = JSON.parse(await readFile(target, "utf8"));
 const names = new Map(d.items.map((i) => [i.name, i.id.toLowerCase()]));
+names.set("流水线机械手", names.get("机械启动套件"));
+const displayName = (value) => value.replaceAll("机械启动套件", "流水线机械手");
 const item = (name) => {
   const id = names.get(name);
   if (!id) throw new Error(`Unknown design item: ${name}`);
@@ -52,7 +54,7 @@ const legacyRecipes = previous.recipes
   .map((r) => ({ ...r, legacy: true }));
 const recipes = d.recipes.map((r) => ({
   id: r.id.toLowerCase(),
-  name: Object.keys(r.output).join(" / "),
+  name: displayName(Object.keys(r.output).join(" / ")),
   building_type: r.machine.toLowerCase(),
   tier: r.tier,
   duration_ms: r.seconds * 1000,
@@ -382,19 +384,22 @@ const quests = questSource.map((q) => {
   )
     throw new Error(`Invalid quest: ${q.id}`);
   questIDs.add(q.id);
-  const target =
-    q.goal.type === "obtain_item" ? item(q.goal.target) : q.goal.target;
+  const target = ["obtain_item", "craft_item"].includes(q.goal.type)
+    ? item(q.goal.target)
+    : q.goal.target;
   if (
-    q.goal.type === "obtain_item"
+    ["obtain_item", "craft_item"].includes(q.goal.type)
       ? q.goal.count !== 1
-      : q.goal.type !== "workshop_recipe" ||
-        !recipes.some(
-          (r) =>
-            r.id === target &&
-            ["m01", "m02", "m07", "m03", "m04", "m08"].includes(
-              r.building_type,
-            ),
-        )
+      : q.goal.type === "automated_delivery"
+        ? target !== "bus"
+        : q.goal.type !== "workshop_recipe" ||
+          !recipes.some(
+            (r) =>
+              r.id === target &&
+              ["m01", "m02", "m07", "m03", "m04", "m08"].includes(
+                r.building_type,
+              ),
+          )
   )
     throw new Error(`Invalid quest goal: ${q.id}`);
   const rewards = Object.fromEntries(
@@ -404,7 +409,14 @@ const quests = questSource.map((q) => {
       return [item(name), n];
     }),
   );
-  if (!Object.keys(rewards).length)
+  if (
+    (q.unlocks ?? []).some(
+      (u) => !["warehouse_orders", "stage_2"].includes(u),
+    ) ||
+    new Set(q.unlocks ?? []).size !== (q.unlocks ?? []).length
+  )
+    throw new Error(`Invalid quest unlock: ${q.id}`);
+  if (!Object.keys(rewards).length && !q.unlocks?.length)
     throw new Error(`Empty quest reward: ${q.id}`);
   return { ...q, goal: { ...q.goal, target }, rewards };
 });
@@ -418,14 +430,17 @@ const base = {
   stages: d.stages.map((s) => ({
     tier: s.tier,
     name: s.name,
-    goal: s.goal,
+    goal:
+      s.tier === 1
+        ? "搭成首条可持续回收—熔炼—装配线，制造流水线机械手并领取任务奖励"
+        : displayName(s.goal),
     milestone_item: item(s.milestone_item.split(":")[0]),
   })),
   items: [
     ...legacyItems,
     ...d.items.map((i) => ({
       id: i.id.toLowerCase(),
-      name: i.name,
+      name: displayName(i.name),
       code: i.id,
       icon:
         i.kind === "machine"
@@ -436,7 +451,10 @@ const base = {
               ? "robot"
               : "plate",
       color: colors[Math.max(0, i.earliest_tier - 1)],
-      description: `${i.name} · ${i.kind === "fluid_or_gas" ? "流体工艺单位" : "工艺物品"}`,
+      description:
+        i.id.toLowerCase() === "i0060"
+          ? "可以队列顺序加工工作台中的物品"
+          : `${displayName(i.name)} · ${i.kind === "fluid_or_gas" ? "流体工艺单位" : "工艺物品"}`,
       kind: i.kind,
       tier: i.name === "流体管道" ? 2 : Math.max(1, i.earliest_tier),
       source_recipes: recipes
@@ -516,6 +534,8 @@ const lines = [
   "- 凭据能力表示可布置真实取送、运行后持续异常 / 实际备件清理并逐次积累；不赠送库存 / 历史。多燃料机并网、管线连通、邻格通路、仓储腾空与有限批次数量须玩家实际搭建，本报告不证明吞吐、布局、资源数量或长局通过。",
   "",
   "## 扩展与偏差",
+  "",
+  "P1 追加真实 WH 自动化入库与制造流水线机械手两任务。I0060 / R1040 编号与物料保持，原机械启动套件显示名改为流水线机械手。新进度制造后需领取 p1_free_hands 机制奖励才能进入 P2 并解锁仓库订单；旧 P2 以上存档保留解锁，不补发新物流奖励。静态工业闭包假设可领取该机制奖励，不将任务物品奖励作为原料，也不证明玩家已完成实际物流。仓库递归订单只使用当前已开放工作室配方，一次预留、独占队列、逐批真实结算，取消回收当前实物；复杂度 / 工序 / 批次数有界，见 warehouse-orders.md。",
   "",
   "工作室便捷加工保留初始 M01/M02/M07；M03 / M04 / M08 在累计制造对应设备至少 1 次后开放共用手工队列，不要求安装且不消耗解锁设备。仅持有、拆回或查看设备不算制造；工作室运行层每批耗时为 max(1, floor(duration_ms / 2000)) 秒，原始 duration_ms 留给地图机器，不改导入配方工时。材料和 1～100 批预留 / 取消规则保持；UI 超限自动回填当前库存上限，Worker 原子复核。旧队列保留原工时范围内的进度，达到新工时时下一运行 tick 最多结算当前一批。不开放热能炉或其他机器。starting_machines 仍只有原三种，不额外赠设备或独立队列。界面按 M02 / M07 / M01 / M03 / M04 / M08 分组，仅设备子分类在工作室滚动区内吸顶，垃圾堆正常滚动，库存 / 每批原料及产物用物品卡显示。",
   "",

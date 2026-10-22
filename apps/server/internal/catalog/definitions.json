@@ -56,6 +56,23 @@
       "description": "实际对应道具为初阶自动投料机；可用于自动投料机或垃圾提取口。",
       "goal": { "type": "obtain_item", "target": "i0059", "count": 1 },
       "rewards": { "i0059": 5 }
+    },
+    {
+      "id": "p1_warehouse_delivery",
+      "tier": 1,
+      "title": "向工厂仓库自动化输送一个物品",
+      "description": "也许你不需要主动去翻垃圾包了~",
+      "goal": { "type": "automated_delivery", "target": "bus", "count": 1 },
+      "rewards": { "i0053": 20, "i0054": 6, "i0059": 6 }
+    },
+    {
+      "id": "p1_free_hands",
+      "tier": 1,
+      "title": "是时候解放双手了",
+      "description": "制作一个 流水线机械手，它会让你的双手自动动起来，解放你的工作室",
+      "goal": { "type": "craft_item", "target": "i0060", "count": 1 },
+      "rewards": {},
+      "unlocks": ["warehouse_orders", "stage_2"]
     }
   ],
   "robots": [
@@ -174,7 +191,7 @@
     {
       "tier": 1,
       "name": "灰烬与拾荒",
-      "goal": "搭成首条可持续回收—熔炼—装配线，产出机械钥匙",
+      "goal": "搭成首条可持续回收—熔炼—装配线，制造流水线机械手并领取任务奖励",
       "milestone_item": "i0060"
     },
     {
@@ -997,11 +1014,11 @@
     },
     {
       "id": "i0060",
-      "name": "机械启动套件",
+      "name": "流水线机械手",
       "code": "I0060",
       "icon": "plate",
       "color": "#ffc879",
-      "description": "机械启动套件 · 工艺物品",
+      "description": "可以队列顺序加工工作台中的物品",
       "kind": "milestone",
       "tier": 1,
       "source_recipes": ["r1040"],
@@ -7496,7 +7513,7 @@
     },
     {
       "id": "r1040",
-      "name": "机械启动套件",
+      "name": "流水线机械手",
       "building_type": "m08",
       "tier": 1,
       "duration_ms": 20000,

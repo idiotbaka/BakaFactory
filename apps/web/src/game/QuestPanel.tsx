@@ -97,6 +97,13 @@ export default function QuestPanel({
                       );
                     })}
                   </ul>
+                  {!!q.unlocks?.length && (
+                    <p className="quest-mechanism-reward">
+                      {q.unlocks.includes("warehouse_orders") &&
+                        "仓库中解锁下单功能"}
+                      {q.unlocks.includes("stage_2") && "，并解放下一阶段"}
+                    </p>
+                  )}
                   {!taken && (
                     <button
                       disabled={!done || disabled || !act}

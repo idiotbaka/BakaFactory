@@ -17,6 +17,8 @@ describe("factory diagnostics panel", () => {
       "工厂",
     );
     f.simulation.industry!.stage = 6;
+    f.simulation.industry!.quests!.completed.push("p1_free_hands");
+    f.simulation.industry!.quests!.claimed.push("p1_free_hands");
     f.simulation.industry!.milestones = catalog
       .stages!.slice(0, 5)
       .map((s) => s.milestone_item);

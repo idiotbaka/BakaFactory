@@ -20,6 +20,73 @@ const user = {
   last_login_at: "now",
 };
 describe("open quests and atomic rewards", () => {
+  it("counts only successful automatic receipt into an actual WH, including a remote district", () => {
+    let root = createWorld(user, "仓库自动化");
+    root = editWorld(root, { kind: "industry", action: { type: "scavenge" } });
+    expect(root.simulation.industry!.quests!.automated_received).toBe(0);
+    const child = root.districts![0];
+    child.simulation.warehouse[buildingDefinitions.get("hand_belt")!.item!] = 1;
+    root = actWorld(root, { type: "select_district", id: child.id });
+    root = editWorld(root, {
+      kind: "place",
+      id: "delivery-belt",
+      building_type: "hand_belt",
+      placement: { x: -1, y: 0, rotation: 0 },
+    });
+    root.districts![0].simulation.buildings["delivery-belt"].belt = {
+      id: "quest-payload",
+      item: itemID("垃圾包"),
+      count: 1,
+      progress: 0,
+    };
+    root.districts![0].buildings[0].configuration.face_180 = {
+      mode: "closed",
+      filter: "",
+    };
+    for (let i = 0; i < 3; i++) root = stepWorld(root);
+    expect(root.simulation.industry!.quests!.automated_received).toBe(0);
+    root.districts![0].buildings[0].configuration.face_180 = {
+      mode: "input",
+      filter: "",
+    };
+    root = stepWorld(root);
+    expect(root.simulation.industry!.quests!.automated_received).toBe(1);
+    expect(root.simulation.industry!.quests!.completed).toContain(
+      "p1_warehouse_delivery",
+    );
+    root = actWorld(root, { type: "claim_quest", id: "p1_warehouse_delivery" });
+    expect(root.simulation.warehouse[itemID("手摇传送带")]).toBe(20);
+    expect(root.simulation.warehouse[itemID("分拣料箱")]).toBe(6);
+    expect(root.simulation.warehouse[itemID("初阶自动投料机")]).toBe(6);
+    expect(
+      root.districts![0].simulation.warehouse[itemID("手摇传送带")] ?? 0,
+    ).toBe(0);
+    expect(
+      validateSave(toSave(root), user.id).simulation.industry!.quests!
+        .automated_received,
+    ).toBe(1);
+  });
+  it("preserves old P2 progress and unlocks orders without granting new logistics item rewards", () => {
+    const root = createWorld(user, "旧 P2"),
+      p = root.simulation.industry!;
+    p.stage = 2;
+    p.milestones = ["i0060"];
+    p.crafted.i0060 = 1;
+    delete p.quests!.automated_received;
+    const restored = validateSave(toSave(root), user.id);
+    expect(restored.simulation.industry!.stage).toBe(2);
+    expect(restored.simulation.industry!.quests!.claimed).toContain(
+      "p1_free_hands",
+    );
+    expect(restored.simulation.industry!.quests!.claimed).not.toContain(
+      "p1_warehouse_delivery",
+    );
+    expect(restored.simulation.warehouse[itemID("手摇传送带")] ?? 0).toBe(0);
+    expect(p.quests!.claimed).not.toContain("p1_free_hands");
+    const modern = structuredClone(root);
+    modern.simulation.industry!.quests!.automated_received = 0;
+    expect(() => validateSave(toSave(modern), user.id)).toThrow();
+  });
   it("recognizes real remote production through the one global ledger without waiting for collection", () => {
     let root = createWorld(user, "分厂制造");
     const child = root.districts![0];
@@ -156,7 +223,7 @@ describe("open quests and atomic rewards", () => {
     ]);
     expect(restored.simulation.industry!.quests!.workshop_batches).toEqual({});
   });
-  it("uses the authored seven-task order and actual feeder item and reward quantities", () => {
+  it("uses the authored nine-task order and actual feeder item and mechanism rewards", () => {
     expect(catalog.quests?.map((q) => q.id)).toEqual([
       "p1_sort_waste",
       "p1_dismantler",
@@ -165,6 +232,8 @@ describe("open quests and atomic rewards", () => {
       "p1_assembler",
       "p1_belt",
       "p1_feeder",
+      "p1_warehouse_delivery",
+      "p1_free_hands",
     ]);
     expect(catalog.quests?.map((q) => q.rewards)).toEqual([
       { [itemID("简易支架")]: 10 },
@@ -174,10 +243,29 @@ describe("open quests and atomic rewards", () => {
       { [itemID("粗铁锭")]: 40, [itemID("简易齿轮")]: 40 },
       { [itemID("手摇传送带")]: 15 },
       { [buildingDefinitions.get("feeder")!.item!]: 5 },
+      {
+        [itemID("手摇传送带")]: 20,
+        [itemID("分拣料箱")]: 6,
+        [itemID("初阶自动投料机")]: 6,
+      },
+      {},
     ]);
   });
   it("rejects malformed ledgers and duplicate, unknown or uncompleted claims", () => {
     const f = createLocalFactory(user, "坏档");
+    for (const automated_received of [
+      null,
+      -1,
+      1.5,
+      Number.MAX_SAFE_INTEGER + 1,
+      "1",
+    ]) {
+      const save = structuredClone(toSave(f));
+      Object.assign(save.factory.simulation!.industry!.quests!, {
+        automated_received,
+      });
+      expect(() => validateSave(save, user.id)).toThrow();
+    }
     for (const bad of [
       null,
       {},

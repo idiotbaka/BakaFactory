@@ -97,14 +97,14 @@ func (v *MachineState) UnmarshalJSON(data []byte) error {
 }
 func (v *IndustryState) UnmarshalJSON(data []byte) error {
 	type plain IndustryState
-	if err := rejectNullWork(data, "work_receipts", "discovered_items", "quests"); err != nil {
+	if err := rejectNullWork(data, "work_receipts", "discovered_items", "quests", "developer"); err != nil {
 		return err
 	}
 	return decodeRobotObject(data, (*plain)(v))
 }
 func (v *WorkshopJob) UnmarshalJSON(data []byte) error {
 	type plain WorkshopJob
-	if err := rejectNullWork(data, "remaining", "total"); err != nil {
+	if err := rejectNullWork(data, "remaining", "total", "order"); err != nil {
 		return err
 	}
 	return decodeRobotObject(data, (*plain)(v), "recipe_id", "progress")

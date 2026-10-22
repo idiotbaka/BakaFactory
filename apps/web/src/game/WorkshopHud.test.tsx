@@ -4,6 +4,47 @@ import WorkshopHud from "./WorkshopHud";
 import { createWorld, projectFactory } from "./local/world";
 import { catalog, recipeDefinitions } from "./local/catalog";
 describe("persistent top manual-work progress", () => {
+  it("identifies mechanical orders and shows remaining work across recipe steps", () => {
+    const factory = createWorld(
+      {
+        id: "order-hud",
+        username: "hud",
+        display_name: "机械手",
+        created_at: "now",
+        last_login_at: "now",
+      },
+      "主厂",
+    );
+    factory.simulation.industry!.workshop = {
+      recipe_id: "r1030",
+      progress: 1,
+      remaining: 1,
+      total: 2,
+      order: {
+        item: "i0053",
+        requested: 3,
+        step_index: 0,
+        inventory: { i0009: 2, i0029: 1, i0050: 3 },
+        steps: [
+          { recipe_id: "r1030", batches: 2 },
+          { recipe_id: "r1033", batches: 2 },
+        ],
+      },
+    };
+    const onCancel = vi.fn();
+    render(
+      <WorkshopHud
+        factory={factory}
+        catalog={catalog}
+        paused={false}
+        onCancel={onCancel}
+      />,
+    );
+    expect(screen.getByText("机械手自动加工中")).toBeInTheDocument();
+    expect(screen.getByText("工序 1 / 2 · 尚余 3 批")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "取消订单并回收物料" }));
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
   it("manages remaining batches in the HUD and respects pause and headquarters restrictions", () => {
     const factory = createWorld(
       {

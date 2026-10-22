@@ -273,6 +273,36 @@
   border-color: var(--cyan);
   color: var(--cyan);
 }
+.developer-tools {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.developer-tools p {
+  margin: 0;
+  color: var(--muted);
+}
+.developer-switch {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  cursor: pointer;
+}
+.developer-switch input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--cyan);
+}
+.developer-switch strong {
+  color: var(--cyan);
+  font-size: 12px;
+}
 .industry-editor {
   display: flex;
   flex: 1;
@@ -465,6 +495,109 @@
 .industry-warehouse article strong {
   flex: 1;
   line-height: 1.5;
+}
+.industry-warehouse .warehouse-orderable {
+  position: relative;
+  padding-top: 36px;
+}
+.industry-warehouse .warehouse-order-trigger {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 3px 7px;
+  color: var(--cyan);
+}
+.order-form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.order-plan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  list-style: none;
+  gap: 12px;
+  padding: 0;
+}
+.order-plan > li {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left-color: var(--purple);
+  background: linear-gradient(135deg, #ad92ff0d, transparent), #0b101c;
+}
+.order-plan header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.order-step-number {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 3px;
+  border: 1px solid var(--purple);
+  color: var(--purple);
+  font-size: 12px;
+}
+.order-materials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+.order-materials li {
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--line);
+  background: #101622;
+}
+.order-materials strong {
+  display: block;
+  color: var(--cyan);
+  font-size: 12px;
+}
+.order-footer {
+  flex: none;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.order-footer label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+.order-footer input {
+  width: 100px;
+  padding: 7px;
+  font-size: 12px;
+}
+.order-footer button {
+  padding: 7px 12px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  background: #11232c;
+  font-size: 12px;
+}
+.order-footer p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+.order-dialog [role="alert"] {
+  color: var(--danger);
+}
+.quest-mechanism-reward {
+  color: var(--cyan);
 }
 .industry-warehouse article > span:last-child {
   max-width: 100%;

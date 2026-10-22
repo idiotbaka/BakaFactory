@@ -15,6 +15,8 @@ const user = {
 function setup() {
   const r = createWorld(user, "完整世界");
   r.simulation.industry!.stage = 6;
+  r.simulation.industry!.quests!.completed.push("p1_free_hands");
+  r.simulation.industry!.quests!.claimed.push("p1_free_hands");
   r.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

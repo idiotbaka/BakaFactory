@@ -92,19 +92,21 @@ type PowerNetwork struct {
 	StoredKJ    int    `json:"stored_kj"`
 }
 type WorkshopJob struct {
-	RecipeID  string `json:"recipe_id"`
-	Progress  int    `json:"progress"`
-	Remaining *int   `json:"remaining,omitempty"`
-	Total     *int   `json:"total,omitempty"`
+	RecipeID  string         `json:"recipe_id"`
+	Progress  int            `json:"progress"`
+	Remaining *int           `json:"remaining,omitempty"`
+	Total     *int           `json:"total,omitempty"`
+	Order     *WorkshopOrder `json:"order,omitempty"`
 }
 type IndustryState struct {
-	Quests          *QuestProgress   `json:"quests,omitempty"`
-	DiscoveredItems []string         `json:"discovered_items,omitempty"`
-	WorkReceipts    []WorkReceipt    `json:"work_receipts,omitempty"`
-	Stage           int              `json:"stage"`
-	Milestones      []string         `json:"milestones"`
-	Crafted         map[string]int64 `json:"crafted"`
-	Workshop        *WorkshopJob     `json:"workshop,omitempty"`
+	Developer       *DeveloperSettings `json:"developer,omitempty"`
+	Quests          *QuestProgress     `json:"quests,omitempty"`
+	DiscoveredItems []string           `json:"discovered_items,omitempty"`
+	WorkReceipts    []WorkReceipt      `json:"work_receipts,omitempty"`
+	Stage           int                `json:"stage"`
+	Milestones      []string           `json:"milestones"`
+	Crafted         map[string]int64   `json:"crafted"`
+	Workshop        *WorkshopJob       `json:"workshop,omitempty"`
 }
 
 func (s Simulation) Validate(c Catalog) error {
@@ -211,6 +213,16 @@ func (s Simulation) Validate(c Catalog) error {
 		}
 		expected := 1
 		for expected < 6 && seen[c.Stages[expected-1].MilestoneItem] {
+			gate := false
+			for _, q := range c.Quests {
+				if q.ID == "p1_free_hands" {
+					gate = true
+				}
+			}
+			legacy := p.Quests == nil || p.Quests.AutomatedReceived == nil
+			if expected == 1 && gate && !warehouseOrderRewardClaimed(p) && !(legacy && p.Stage >= 2) {
+				break
+			}
 			expected++
 		}
 		if p.Stage != expected {
@@ -224,6 +236,9 @@ func (s Simulation) Validate(c Catalog) error {
 		if p.Workshop != nil {
 			if !validWorkshopCounts(p.Workshop) {
 				return fmt.Errorf("invalid workshop batches")
+			}
+			if p.Workshop.Order != nil && !validWorkshopOrder(p, c) {
+				return fmt.Errorf("invalid workshop order")
 			}
 			valid := false
 			for _, r := range c.Recipes {

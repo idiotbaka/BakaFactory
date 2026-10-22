@@ -404,6 +404,8 @@ describe("local persistence and cloud lifecycle", () => {
   it("keeps a real construction checkpoint and read-only route through offline permission loss", async () => {
     let root = createWorld(user, "施工恢复");
     root.simulation.industry!.stage = 6;
+    root.simulation.industry!.quests!.completed.push("p1_free_hands");
+    root.simulation.industry!.quests!.claimed.push("p1_free_hands");
     root.simulation.industry!.milestones = catalog
       .stages!.slice(0, 5)
       .map((s) => s.milestone_item);

@@ -5,6 +5,7 @@ import type {
 } from "../../api/client";
 import type { LocalFactory } from "./state";
 import { discoverItems } from "./discovery";
+import { recordWarehouseDelivery } from "./quests";
 import {
   buildingDefinitions,
   beltCapacity,
@@ -418,9 +419,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     if (t.destination === "belt") {
       m.belt = { id: t.payload, item: t.item, count: t.quantity, progress: 0 };
       m.status = "transporting";
-    } else if (t.destination === "warehouse")
+    } else if (t.destination === "warehouse") {
       s.warehouse[t.item] = (s.warehouse[t.item] ?? 0) + t.quantity;
-    else {
+      recordWarehouseDelivery(f, t.quantity);
+    } else {
       m[t.destination] ??= [];
       add(m[t.destination]!, t.item, t.quantity);
     }

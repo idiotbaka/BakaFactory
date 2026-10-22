@@ -531,15 +531,17 @@ export interface components {
             description: string;
             goal: {
                 /** @enum {string} */
-                type: "obtain_item" | "workshop_recipe";
+                type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery";
                 target: string;
                 count: number;
             };
             rewards: {
                 [key: string]: number;
             };
+            unlocks?: ("warehouse_orders" | "stage_2")[];
         };
         QuestProgress: {
+            automated_received?: number;
             completed: string[];
             claimed: string[];
             workshop_batches: {
@@ -547,6 +549,10 @@ export interface components {
             };
         };
         IndustryState: {
+            /** @description 开发测试选项，缺省时全部关闭；不代表任务奖励或阶段解锁。 */
+            developer?: {
+                warehouse_orders_always_available: boolean;
+            };
             quests?: components["schemas"]["QuestProgress"];
             /** @description 曾获得的物品编号，用于图鉴与首次获得任务；缺省时从制造记录和现有实物补记，不计入制造里程碑。 */
             discovered_items?: string[];
@@ -562,6 +568,19 @@ export interface components {
                 /** @description 尚未完成的批次，包含正在加工的一批；与 total 同时存在，旧存档缺省为一批。 */
                 remaining?: number;
                 total?: number;
+                order?: components["schemas"]["WorkshopOrder"];
+            };
+        };
+        WorkshopOrder: {
+            item: string;
+            requested: number;
+            steps: {
+                recipe_id: string;
+                batches: number;
+            }[];
+            step_index: number;
+            inventory: {
+                [key: string]: number;
             };
         };
         Credentials: {

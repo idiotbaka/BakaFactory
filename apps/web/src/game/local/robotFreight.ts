@@ -1,5 +1,6 @@
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
+import { recordWarehouseDelivery } from "./quests";
 import {
   buildingDefinitions,
   catalog,
@@ -393,9 +394,10 @@ function exchange(
     n,
     status: loading ? "loading" : "unloading",
     commit: () => {
-      if (kind === "warehouse")
+      if (kind === "warehouse") {
         store(f.simulation.warehouse, { [item]: loading ? -n : n });
-      else if (kind === "fluid") {
+        if (!loading) recordWarehouseDelivery(root, n);
+      } else if (kind === "fluid") {
         if (loading) {
           m.fluid!.count -= n;
           if (!m.fluid!.count) delete m.fluid;

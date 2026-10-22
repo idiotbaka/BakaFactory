@@ -27,6 +27,8 @@ const user = {
 function start() {
   const f = createLocalFactory(user, "流体厂");
   f.simulation.industry!.stage = 6;
+  f.simulation.industry!.quests!.completed.push("p1_free_hands");
+  f.simulation.industry!.quests!.claimed.push("p1_free_hands");
   f.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);
@@ -81,6 +83,34 @@ const water = itemID("净化水"),
   steam = itemID("高压蒸汽");
 
 describe("bounded fluid routing and conserved volume", () => {
+  it("records real pipe deliveries into WH without treating manual drainage as automation", () => {
+    let f = fill(place(start(), "p", "pipe", -1, 0), "p", water, 3);
+    const bus = f.buildings[0].id;
+    f = act(f, {
+      type: "bus_face",
+      id: bus,
+      rotation: 180,
+      mode: "closed",
+      filter: water,
+    });
+    f = advance(f, 3);
+    expect(f.simulation.industry!.quests!.automated_received).toBe(0);
+    f = act(f, {
+      type: "bus_face",
+      id: bus,
+      rotation: 180,
+      mode: "input",
+      filter: water,
+    });
+    f = step(f);
+    const remaining = f.simulation.buildings.p.fluid!.count;
+    const received = 3 - remaining;
+    expect(received).toBeGreaterThan(0);
+    expect(f.simulation.industry!.quests!.automated_received).toBe(received);
+    f = act(f, { type: "drain_fluid", id: "p" });
+    expect(f.simulation.warehouse[water]).toBe(3);
+    expect(f.simulation.industry!.quests!.automated_received).toBe(received);
+  });
   it("moves one cell per tick and preserves all volume over a long blocked run", () => {
     let f = place(
       place(place(start(), "a", "tank", 1), "b", "pipe", 2),

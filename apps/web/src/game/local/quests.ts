@@ -3,6 +3,7 @@ import type { LocalFactory } from "./state";
 import { catalog, recipeDefinitions } from "./catalog";
 import { discoverItems } from "./discovery";
 import { store } from "./inventory";
+import { expectedStage, orderQuestID } from "./progression";
 
 export type Quest = components["schemas"]["QuestDefinition"];
 export type QuestProgress = components["schemas"]["QuestProgress"];
@@ -10,17 +11,44 @@ export const newQuestProgress = (): QuestProgress => ({
   completed: [],
   claimed: [],
   workshop_batches: {},
+  automated_received: 0,
 });
 export function questAmount(
   p: components["schemas"]["IndustryState"] | undefined,
   q: Quest,
 ) {
+  if (q.goal.type === "automated_delivery")
+    return p?.quests?.automated_received ?? 0;
+  if (q.goal.type === "craft_item")
+    return Math.min(q.goal.count, p?.crafted[q.goal.target] ?? 0);
   return q.goal.type === "obtain_item"
     ? p?.discovered_items?.includes(q.goal.target) ||
       (p?.crafted[q.goal.target] ?? 0) > 0
       ? 1
       : 0
     : (p?.quests?.workshop_batches[q.goal.target] ?? 0);
+}
+export function recordWarehouseDelivery(f: LocalFactory, count: number) {
+  if (count <= 0 || !f.simulation.industry) return;
+  const p = (f.simulation.industry.quests ??= newQuestProgress());
+  p.automated_received = Math.min(
+    Number.MAX_SAFE_INTEGER,
+    (p.automated_received ?? 0) + count,
+  );
+}
+
+export function restoreQuestProgress(f: LocalFactory) {
+  const p = f.simulation.industry!;
+  const legacy = p.quests?.automated_received === undefined;
+  const quests = (p.quests ??= newQuestProgress());
+  quests.automated_received ??= 0;
+  // Preserve the already unlocked industrial stages of pre-feature saves.
+  if (legacy && p.stage >= 2) {
+    if (!quests.completed.includes(orderQuestID))
+      quests.completed.push(orderQuestID);
+    if (!quests.claimed.includes(orderQuestID))
+      quests.claimed.push(orderQuestID);
+  }
 }
 // Called only on the next atomic state, after actual production / acquisition.
 export function syncQuests(f: LocalFactory) {
@@ -51,6 +79,7 @@ export function claimQuest(root: LocalFactory, id: string) {
   // The caller owns a cloned world; failure commits neither items nor claim.
   store(root.simulation.warehouse, q.rewards);
   p.claimed.push(id);
+  root.simulation.industry!.stage = expectedStage(root.simulation.industry!);
   discoverItems(root, Object.keys(q.rewards));
   syncQuests(root);
 }
@@ -60,7 +89,13 @@ export function validQuestProgress(value: unknown) {
   const p = value as Record<string, unknown>;
   if (
     Object.keys(p).some(
-      (k) => !["completed", "claimed", "workshop_batches"].includes(k),
+      (k) =>
+        ![
+          "completed",
+          "claimed",
+          "workshop_batches",
+          "automated_received",
+        ].includes(k),
     )
   )
     return false;
@@ -73,6 +108,13 @@ export function validQuestProgress(value: unknown) {
   if (!ids(p.completed) || !ids(p.claimed)) return false;
   const completed = p.completed;
   if (p.claimed.some((id) => !completed.includes(id))) return false;
+  if (
+    p.automated_received !== undefined &&
+    (typeof p.automated_received !== "number" ||
+      !Number.isSafeInteger(p.automated_received) ||
+      p.automated_received < 0)
+  )
+    return false;
   const counts = p.workshop_batches;
   return (
     !!counts &&

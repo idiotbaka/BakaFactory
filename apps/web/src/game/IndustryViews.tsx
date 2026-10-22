@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { IndustryAction } from "./local/industry";
 import {
@@ -13,8 +13,14 @@ import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
 import DiagnosticsPanel from "./DiagnosticsPanel";
+import DeveloperToolsPanel from "./DeveloperToolsPanel";
 import QuestPanel from "./QuestPanel";
 import { ItemInfoProvider, ItemName } from "./ItemInfo";
+import WarehouseOrderDialog, {
+  type PlaceWorkshopOrder,
+} from "./WarehouseOrderDialog";
+import { ordersUnlocked } from "./local/progression";
+import { orderRecipes } from "./local/orders";
 import type { Observation } from "./local/observations";
 import type { LocalFactory } from "./local/state";
 import type { DistrictSummary, WorldAction } from "./local/world";
@@ -27,7 +33,8 @@ export type IndustryView =
   | "power"
   | "world"
   | "robots"
-  | "diagnostics";
+  | "diagnostics"
+  | "developer";
 export default function IndustryViews({
   factory,
   catalog,
@@ -43,6 +50,7 @@ export default function IndustryViews({
   onLocateRobot,
   observation,
   onLocateBuilding,
+  onOrder,
 }: {
   factory: FactoryDetail;
   catalog: Catalog;
@@ -58,13 +66,22 @@ export default function IndustryViews({
   onLocateRobot?: React.ComponentProps<typeof RobotPanel>["onLocateRobot"];
   observation?: Observation;
   onLocateBuilding?: (id: string) => void;
+  onOrder?: PlaceWorkshopOrder;
 }) {
   const [query, setQuery] = useState("");
   const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
   const [selectedMachine, setSelectedMachine] = useState<string>("m02");
+  const [orderItem, setOrderItem] = useState<string>();
+  const closeOrder = useCallback(() => setOrderItem(undefined), []);
   const s = factory.simulation,
     p = s?.industry,
     job = p?.workshop;
+  const orderable = useMemo(
+    () =>
+      new Set(orderRecipes(p, catalog).flatMap((r) => Object.keys(r.outputs))),
+    [p, catalog],
+  );
+  const canOrder = ordersUnlocked(p);
   const stage = catalog.stages?.find((x) => x.tier === (p?.stage ?? 1));
   const headquarters =
     !districts.length ||
@@ -125,12 +142,16 @@ export default function IndustryViews({
             ["world", "厂区"],
             ["robots", "机器人"],
             ["diagnostics", "诊断"],
+            ["developer", "开发者工具"],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             aria-pressed={view === id}
-            onClick={() => onViewChange(id)}
+            onClick={() => {
+              closeOrder();
+              onViewChange(id);
+            }}
           >
             {label}
             {id === "quests" &&
@@ -163,22 +184,25 @@ export default function IndustryViews({
               <h3>
                 {view === "quests"
                   ? "阶段任务"
-                  : view === "diagnostics"
-                    ? "闭环诊断"
-                    : view === "workshop"
-                      ? "拾荒工作室"
-                      : view === "robots"
-                        ? "机器人调度"
-                        : view === "world"
-                          ? "厂区管理"
-                          : view === "power"
-                            ? "能量网络"
-                            : "物料仓库"}
+                  : view === "developer"
+                    ? "开发者工具"
+                    : view === "diagnostics"
+                      ? "闭环诊断"
+                      : view === "workshop"
+                        ? "拾荒工作室"
+                        : view === "robots"
+                          ? "机器人调度"
+                          : view === "world"
+                            ? "厂区管理"
+                            : view === "power"
+                              ? "能量网络"
+                              : "物料仓库"}
               </h3>
               {view !== "power" &&
                 view !== "quests" &&
                 view !== "world" &&
                 view !== "robots" &&
+                view !== "developer" &&
                 view !== "diagnostics" && (
                   <input
                     aria-label="搜索工作室或仓库"
@@ -188,13 +212,21 @@ export default function IndustryViews({
                   />
                 )}
             </div>
-            <p className="industry-goal">
+            <p className="industry-goal" hidden={view === "developer"}>
               {stage?.goal}
               <br />
-              阶段成果：{stage && name(stage.milestone_item)}
-              。首次制造后永久解锁下一阶段。
+              阶段成果：{stage && name(stage.milestone_item)}。
+              {p?.stage === 1
+                ? "制造流水线机械手并领取“是时候解放双手了”奖励后，解锁下一阶段。"
+                : "首次制造后永久解锁下一阶段。"}
             </p>
-            {view === "quests" ? (
+            {view === "developer" ? (
+              <DeveloperToolsPanel
+                factory={factory}
+                disabled={disabled}
+                act={world}
+              />
+            ) : view === "quests" ? (
               <QuestPanel
                 factory={factory}
                 catalog={catalog}
@@ -373,13 +405,39 @@ export default function IndustryViews({
                 {catalog.items
                   .filter(
                     (i) =>
-                      (s?.warehouse[i.id] ?? 0) > 0 &&
+                      ((s?.warehouse[i.id] ?? 0) > 0 ||
+                        (canOrder && orderable.has(i.id))) &&
                       `${i.name}${i.code}`
                         .toLowerCase()
                         .includes(query.toLowerCase()),
                   )
                   .map((i) => (
-                    <article key={i.id}>
+                    <article
+                      key={i.id}
+                      className={
+                        canOrder && orderable.has(i.id)
+                          ? "warehouse-orderable"
+                          : undefined
+                      }
+                    >
+                      {canOrder && orderable.has(i.id) && (
+                        <button
+                          className="warehouse-order-trigger"
+                          type="button"
+                          aria-label={`下单${i.name}`}
+                          disabled={
+                            disabled || !headquarters || !!job || !onOrder
+                          }
+                          title={
+                            !headquarters
+                              ? "请切回起始回收场下单，订单使用起始仓库"
+                              : undefined
+                          }
+                          onClick={() => setOrderItem(i.id)}
+                        >
+                          下单
+                        </button>
+                      )}
                       <DefinitionIcon definition={i} compact />
                       <strong>
                         <ItemName item={i.id} />
@@ -390,9 +448,24 @@ export default function IndustryViews({
                     </article>
                   ))}
                 {!Object.values(s?.warehouse ?? {}).some((n) => n > 0) && (
-                  <p>仓库为空，前往工作室拾取第一包垃圾。</p>
+                  <p>
+                    {canOrder
+                      ? "仓库暂无存量；可预览下单计划，缺少的材料需先备齐。"
+                      : "仓库为空，前往工作室拾取第一包垃圾。"}
+                  </p>
                 )}
               </section>
+            )}
+            {view === "warehouse" && orderItem && (
+              <WarehouseOrderDialog
+                key={`${factory.id}:${orderItem}`}
+                item={orderItem}
+                factory={factory}
+                catalog={catalog}
+                disabled={disabled || !headquarters}
+                onConfirm={onOrder}
+                onClose={closeOrder}
+              />
             )}
           </div>
         </ItemInfoProvider>

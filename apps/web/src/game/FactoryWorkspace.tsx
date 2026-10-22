@@ -567,6 +567,11 @@ export default function FactoryWorkspace({
                 factory={factory}
                 catalog={catalog}
                 act={act}
+                onOrder={async (action) => {
+                  setError("");
+                  if (!game.runtime) throw new Error("本地工厂尚未就绪");
+                  await game.runtime.act(action);
+                }}
                 districts={game.districts}
                 world={world}
                 disabled={game.paused}

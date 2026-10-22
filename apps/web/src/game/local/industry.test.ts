@@ -10,6 +10,7 @@ import {
 import type { IndustryAction } from "./industry";
 import { step } from "./simulation";
 import { workshopDuration, workshopMachineAvailable } from "./workshop";
+import { claimQuest } from "./quests";
 
 const user = {
   id: "recycler",
@@ -492,7 +493,7 @@ describe("recycling gameplay", () => {
       validateSave(toSave(f), user.id).simulation.buildings.m05.energy_kj,
     ).toBe(f.simulation.buildings.m05.energy_kj);
   });
-  it("unlocks the next stage on first actual completion, without consuming the milestone as an installation fee", () => {
+  it("unlocks the next stage only after claiming the manufacturing quest, without consuming the milestone", () => {
     let f = act(install(start(), "m08"), {
       type: "recipe",
       id: "m08",
@@ -502,10 +503,12 @@ describe("recycling gameplay", () => {
     Object.assign(f.simulation.warehouse, r.inputs);
     f = act(f, { type: "feed_batch", id: "m08" });
     f = advance(f, r.duration_ms / 1000);
+    expect(f.simulation.industry?.stage).toBe(1);
+    claimQuest(f, "p1_free_hands");
     expect(f.simulation.industry?.stage).toBe(2);
     f = act(f, { type: "collect", id: "m08" });
-    expect(f.simulation.warehouse[itemID("机械启动套件")]).toBe(1);
-    expect(f.simulation.industry?.milestones).toEqual([itemID("机械启动套件")]);
+    expect(f.simulation.warehouse[itemID("流水线机械手")]).toBe(1);
+    expect(f.simulation.industry?.milestones).toEqual([itemID("流水线机械手")]);
   });
   it("upgrades old rules without deleting legacy machines, inventories or tick", () => {
     let f = editFactory(start(), {

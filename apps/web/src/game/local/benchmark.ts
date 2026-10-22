@@ -9,6 +9,7 @@ import { newMachine, type LocalFactory } from "./state";
 import { stepWorld, allDistricts } from "./world";
 import { worldFrame } from "./worldFrame";
 import { adjacentCells } from "./robotRoutes";
+import { newQuestProgress } from "./quests";
 export type BenchmarkOptions = {
   districts: number;
   machines: number;
@@ -171,6 +172,11 @@ export function benchmarkFixture(o: BenchmarkOptions): LocalFactory {
   root.robots = robots;
   root.simulation.industry = {
     stage: 6,
+    quests: {
+      ...newQuestProgress(),
+      completed: ["p1_free_hands"],
+      claimed: ["p1_free_hands"],
+    },
     milestones: catalog.stages!.slice(0, 5).map((s) => s.milestone_item),
     crafted: {},
   };

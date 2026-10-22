@@ -21,6 +21,10 @@ const user = {
 const start = (stage = 1) => {
   const f = createLocalFactory(user, "物流厂");
   f.simulation.industry!.stage = stage;
+  if (stage > 1) {
+    f.simulation.industry!.quests!.completed.push("p1_free_hands");
+    f.simulation.industry!.quests!.claimed.push("p1_free_hands");
+  }
   f.simulation.industry!.milestones = catalog
     .stages!.slice(0, stage - 1)
     .map((s) => s.milestone_item);

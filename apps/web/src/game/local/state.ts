@@ -31,7 +31,9 @@ import { newMachine } from "./machine";
 import { validatePlacement } from "./placement";
 import { validDiscoveries, restoreDiscoveries } from "./discovery";
 import { validWorkshopCounts, workshopMachineAvailable } from "./workshop";
-import { syncQuests, validQuestProgress } from "./quests";
+import { restoreQuestProgress, syncQuests, validQuestProgress } from "./quests";
+import { expectedStage } from "./progression";
+import { validWorkshopOrder } from "./orders";
 export { newMachine } from "./machine";
 
 export { catalog } from "./catalog";
@@ -335,20 +337,40 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
     if (!validWorkReceipts(p.work_receipts, sim.tick as number)) return fail();
     if (!validDiscoveries(p.discovered_items)) return fail();
     if (!validQuestProgress(p.quests)) return fail();
-    let expectedStage = 1;
-    while (
-      expectedStage < 6 &&
-      p.milestones.includes(catalog.stages![expectedStage - 1].milestone_item)
+    if (
+      p.developer !== undefined &&
+      (!object(p.developer) ||
+        Object.keys(p.developer).some(
+          (key) => key !== "warehouse_orders_always_available",
+        ) ||
+        typeof p.developer.warehouse_orders_always_available !== "boolean")
     )
-      expectedStage++;
-    if (p.stage !== expectedStage) return fail();
+      return fail();
+    if (
+      p.stage !==
+      expectedStage(
+        p as unknown as NonNullable<Simulation["industry"]>,
+        !object(p.quests) || p.quests.automated_received === undefined,
+      )
+    )
+      return fail();
     if (p.workshop !== undefined) {
       if (
         !object(p.workshop) ||
         !validWorkshopCounts(p.workshop) ||
         Object.keys(p.workshop).some(
           (key) =>
-            !["recipe_id", "progress", "remaining", "total"].includes(key),
+            !["recipe_id", "progress", "remaining", "total", "order"].includes(
+              key,
+            ),
+        )
+      )
+        return fail();
+      if (
+        p.workshop.order !== undefined &&
+        !validWorkshopOrder(
+          p.workshop.order,
+          p as unknown as NonNullable<Simulation["industry"]>,
         )
       )
         return fail();
@@ -370,6 +392,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   const factory = structuredClone(f) as LocalFactory;
   factory.simulation.transfers = [];
   factory.simulation.industry ??= initialIndustry();
+  restoreQuestProgress(factory);
   const sources = factory.buildings.filter(
     (b) => buildingDefinitions.get(b.building_type)?.role === "source",
   );

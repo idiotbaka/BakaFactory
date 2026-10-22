@@ -28,6 +28,8 @@ const smart = itemID("智能机器人"),
 function setup(peers = 1) {
   let root = createWorld(user, "路线现场");
   root.simulation.industry!.stage = 6;
+  root.simulation.industry!.quests!.completed.push("p1_free_hands");
+  root.simulation.industry!.quests!.claimed.push("p1_free_hands");
   root.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

@@ -15,6 +15,34 @@ const user = {
 };
 afterEach(() => vi.useRealTimers());
 describe("quest interface", () => {
+  it("presents mechanism unlocks as a claimable reward without inventing an item payout", () => {
+    const factory = createLocalFactory(user, "机制"),
+      act = vi.fn();
+    factory.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    render(
+      <QuestPanel
+        factory={factory}
+        catalog={catalog}
+        disabled={false}
+        act={act}
+      />,
+    );
+    const card = within(
+      screen.getByRole("article", { name: "是时候解放双手了" }),
+    );
+    expect(
+      card.getByText("仓库中解锁下单功能，并解放下一阶段"),
+    ).toBeInTheDocument();
+    expect(card.queryByRole("listitem")).not.toBeInTheDocument();
+    expect(
+      card.getByRole("button", { name: "流水线机械手" }),
+    ).toBeInTheDocument();
+    fireEvent.click(card.getByRole("button", { name: "领取奖励" }));
+    expect(act).toHaveBeenCalledWith({
+      type: "claim_quest",
+      id: "p1_free_hands",
+    });
+  });
   it("keeps recommended order, leaves unclaimed completions pending and moves claimed tasks to completed", () => {
     const factory = createLocalFactory(user, "任务"),
       world = vi.fn();
@@ -44,7 +72,9 @@ describe("quest interface", () => {
     expect(ready.getByRole("button", { name: "领取奖励" })).toBeDisabled();
     progress.claimed = ["p1_belt"];
     rerender(<QuestPanel {...props} />);
-    expect(screen.getAllByRole("article")).toHaveLength(6);
+    expect(screen.getAllByRole("article")).toHaveLength(
+      catalog.quests!.length - 1,
+    );
     fireEvent.click(screen.getByRole("button", { name: /^已完成/ }));
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.getByText("P1 · 已领奖")).toBeInTheDocument();
