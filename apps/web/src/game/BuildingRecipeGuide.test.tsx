@@ -29,6 +29,7 @@ describe("building acquisition guide", () => {
     expect(source.getByText("分拣料箱 × 1")).toBeInTheDocument();
     expect(source.getByText("初阶自动投料机 × 1")).toBeInTheDocument();
     expect(source.getByText("15 秒 / 批")).toBeInTheDocument();
+    expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
     expect(source.getByText(/首次制造该加工设备后/)).toBeInTheDocument();
     expect(
       dialog.getByText("该设施不执行加工配方；获取方式见上方。"),

@@ -326,6 +326,15 @@
 .scavenge-box button {
   flex: none;
 }
+.workshop-controls {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -16px;
+  padding: 8px 16px 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
 .workshop-machine-tabs {
   display: flex;
   gap: 6px;

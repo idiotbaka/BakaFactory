@@ -11,6 +11,21 @@ export const workshopMachines = [
   "m08",
 ] as const;
 
+// Machine recipes keep their catalog duration. Only the shared manual queue
+// gets the bonus, rounded down to complete one-second simulation ticks.
+export const workshopDuration = (recipe: { duration_ms: number }) =>
+  Math.max(1, Math.floor(recipe.duration_ms / 2000));
+
+export function clampWorkshopBatches(raw: string, maximum: number) {
+  const value = Number(raw);
+  return raw.trim() !== "" &&
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value >= 1
+    ? String(Math.min(value, maximum))
+    : raw;
+}
+
 // Extra manual workbench access is a permanent first-manufacture achievement;
 // holding, installing or recovering an equipment item does not unlock it.
 export function workshopMachineAvailable(

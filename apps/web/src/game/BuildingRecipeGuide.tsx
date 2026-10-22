@@ -2,7 +2,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { BuildingDefinition, Catalog, FactoryDetail } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
-import { workshopMachineAvailable, workshopMachines } from "./local/workshop";
+import {
+  workshopDuration,
+  workshopMachineAvailable,
+  workshopMachines,
+} from "./local/workshop";
 
 export default function BuildingRecipeGuide({
   definition,
@@ -127,6 +131,12 @@ export default function BuildingRecipeGuide({
             ? `可在起始厂区「工作室 → ${machine?.name ?? r.building_type}」加工。`
             : `安装${machine?.name ?? r.building_type}后，选择此配方并提供原料及所需动力。`}
         </p>
+        {workshopMachines.some((id) => id === r.building_type) && (
+          <p>
+            工作室手工耗时：{workshopDuration(r)} 秒 /
+            批（原配方工时的一半，向下取整且至少 1 秒）。
+          </p>
+        )}
         {!inWorkshop &&
           workshopMachines.some((id) => id === r.building_type) && (
             <p>首次制造该加工设备后，也可解锁工作室的同名子分类。</p>

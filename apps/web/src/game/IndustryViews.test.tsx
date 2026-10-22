@@ -138,13 +138,15 @@ describe("manual workshop batch controls", () => {
     const input = screen.getByLabelText(`${r.name}加工批数`),
       card = within(input.closest("article")!);
     expect(input).toHaveAttribute("max", "2");
-    for (const value of ["3", "1.5", "", "0"]) {
+    for (const value of ["1.5", "", "0", "-1"]) {
       fireEvent.change(input, { target: { value } });
       expect(card.getByRole("button", { name: "批量加工" })).toBeDisabled();
       fireEvent.submit(input.closest("form")!);
       expect(act).not.toHaveBeenCalled();
     }
-    fireEvent.change(input, { target: { value: "2" } });
+    fireEvent.change(input, { target: { value: "3" } });
+    expect(input).toHaveValue(2);
+    expect(card.getByRole("button", { name: "批量加工" })).toBeEnabled();
     fireEvent.click(card.getByRole("button", { name: "批量加工" }));
     expect(act).toHaveBeenCalledWith({
       type: "workshop",
@@ -156,11 +158,52 @@ describe("manual workshop batch controls", () => {
     rerender(<IndustryViews {...props} />);
     expect(input).toHaveAttribute("max", "100");
     fireEvent.change(input, { target: { value: "101" } });
-    expect(card.getByRole("button", { name: "批量加工" })).toBeDisabled();
-    fireEvent.change(input, { target: { value: "100" } });
+    expect(input).toHaveValue(100);
+    expect(card.getByRole("button", { name: "批量加工" })).toBeEnabled();
     f.simulation.warehouse[itemID("垃圾包")] = 12;
     rerender(<IndustryViews {...props} />);
-    expect(card.getByRole("button", { name: "批量加工" })).toBeDisabled();
+    expect(input).toHaveValue(1);
+    expect(card.getByRole("button", { name: "批量加工" })).toBeEnabled();
+    fireEvent.click(card.getByRole("button", { name: "批量加工" }));
+    expect(act).toHaveBeenCalledWith({
+      type: "workshop",
+      recipe: r.id,
+      batches: 1,
+    });
+  });
+  it("keeps only machine tabs in sticky controls while scavenging stays outside and shows manual duration", () => {
+    const f = createLocalFactory(user, "固定操作"),
+      act = vi.fn();
+    render(
+      <IndustryViews
+        factory={f}
+        catalog={catalog}
+        disabled={false}
+        act={act}
+        view="workshop"
+        onViewChange={vi.fn()}
+      >
+        {null}
+      </IndustryViews>,
+    );
+    const controls = within(
+      screen.getByRole("region", { name: "工作室快捷操作" }),
+    );
+    expect(screen.getByRole("region", { name: "工作室快捷操作" })).toHaveClass(
+      "workshop-controls",
+    );
+    expect(
+      controls.getByRole("group", { name: "工作室设备" }),
+    ).toBeInTheDocument();
+    expect(
+      controls.queryByRole("button", { name: /拾取 1 包垃圾/ }),
+    ).not.toBeInTheDocument();
+    expect(controls.queryByText("无尽垃圾堆")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /拾取 1 包垃圾/ }));
+    expect(act).toHaveBeenCalledWith({ type: "scavenge" });
+    expect(screen.getAllByText("手工 3s").length).toBeGreaterThan(0);
+    expect(screen.getByText(/R1002/)).toBeInTheDocument();
+    expect(screen.queryByText(/原配方.*s/)).not.toBeInTheDocument();
   });
   it("uses the scarcest required material and the shared queue prevents another submission", () => {
     expect(

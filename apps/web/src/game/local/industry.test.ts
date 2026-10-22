@@ -9,7 +9,7 @@ import {
 } from "./state";
 import type { IndustryAction } from "./industry";
 import { step } from "./simulation";
-import { workshopMachineAvailable } from "./workshop";
+import { workshopDuration, workshopMachineAvailable } from "./workshop";
 
 const user = {
   id: "recycler",
@@ -37,6 +37,82 @@ const install = (f: LocalFactory, type: string) => {
 };
 
 describe("recycling gameplay", () => {
+  it("finishes an odd-duration manual batch in three ticks while the installed machine still needs seven", () => {
+    const r = recipeDefinitions.get("r1002")!;
+    expect(r.duration_ms).toBe(7000);
+    let manual = start();
+    Object.assign(
+      manual.simulation.warehouse,
+      Object.fromEntries(
+        Object.entries(r.inputs).map(([id, n]) => [id, n * 2]),
+      ),
+    );
+    manual = act(manual, { type: "workshop", recipe: r.id, batches: 2 });
+    manual = advance(manual, 2);
+    expect(manual.simulation.industry!.workshop).toMatchObject({
+      remaining: 2,
+      progress: 2,
+    });
+    for (const id of Object.keys(r.outputs))
+      expect(manual.simulation.warehouse[id] ?? 0).toBe(0);
+    manual = step(manual);
+    expect(manual.simulation.industry!.workshop).toMatchObject({
+      remaining: 1,
+      progress: 0,
+    });
+    manual = act(validateSave(toSave(manual), user.id), {
+      type: "cancel_workshop",
+    });
+    for (const [id, n] of Object.entries(r.inputs))
+      expect(manual.simulation.warehouse[id]).toBe(n);
+    for (const [id, n] of Object.entries(r.outputs))
+      expect(manual.simulation.warehouse[id]).toBe(n);
+
+    let machine = act(install(start(), "m02"), {
+      type: "recipe",
+      id: "m02",
+      recipe: r.id,
+    });
+    Object.assign(machine.simulation.warehouse, r.inputs);
+    machine = act(machine, { type: "feed_batch", id: "m02" });
+    machine = advance(machine, 3);
+    expect(machine.simulation.buildings.m02.output).toEqual([]);
+    expect(machine.simulation.buildings.m02.progress).toBe(3);
+    machine = advance(machine, 4);
+    for (const [id, n] of Object.entries(r.outputs))
+      expect(
+        machine.simulation.buildings.m02.output.find(
+          (stack) => stack.item === id,
+        )?.count,
+      ).toBe(n);
+  });
+  it("retains pre-bonus save progress, pauses on output overflow and settles only one legacy batch on resumption", () => {
+    const r = recipeDefinitions.get("r1001")!,
+      trash = itemID("垃圾包"),
+      product = Object.keys(r.outputs)[0];
+    let f = start();
+    f.simulation.warehouse[trash] = 24;
+    f = act(f, { type: "workshop", recipe: r.id, batches: 2 });
+    f.simulation.industry!.workshop!.progress = 9;
+    f = validateSave(toSave(f), user.id);
+    expect(f.simulation.industry!.workshop!.progress).toBe(9);
+    f.simulation.warehouse[product] = Number.MAX_SAFE_INTEGER;
+    f = step(f);
+    expect(f.simulation.industry!.workshop).toMatchObject({
+      progress: 9,
+      remaining: 2,
+    });
+    f.simulation.warehouse[product] = 0;
+    f = step(f);
+    expect(f.simulation.industry!.workshop).toMatchObject({
+      progress: 0,
+      remaining: 1,
+    });
+    expect(f.simulation.warehouse[product]).toBe(r.outputs[product]);
+    expect(f.simulation.industry!.quests!.workshop_batches.r1001).toBe(1);
+    f = act(f, { type: "cancel_workshop" });
+    expect(f.simulation.warehouse[trash]).toBe(12);
+  });
   it("unlocks M03 / M04 / M08 manual recipes only after actual equipment manufacture and keeps them through installation and reload", () => {
     for (const [machine, manufacturing, processing] of [
       ["m03", "r1006", "r1007"],
@@ -65,7 +141,7 @@ describe("recycling gameplay", () => {
       expect(f).toEqual(before);
       Object.assign(f.simulation.warehouse, make.inputs);
       f = act(f, { type: "workshop", recipe: manufacturing });
-      f = advance(f, make.duration_ms / 1000);
+      f = advance(f, workshopDuration(make));
       expect(
         workshopMachineAvailable(f.simulation.industry!.crafted, machine),
       ).toBe(true);
@@ -78,7 +154,7 @@ describe("recycling gameplay", () => {
         ),
       );
       f = act(f, { type: "workshop", recipe: processing, batches: 2 });
-      f = advance(f, process.duration_ms / 1000);
+      f = advance(f, workshopDuration(process));
       expect(f.simulation.industry!.workshop?.remaining).toBe(1);
       f = validateSave(toSave(f), user.id);
       f = act(f, { type: "cancel_workshop" });
@@ -116,7 +192,7 @@ describe("recycling gameplay", () => {
       remaining: 3,
       total: 3,
     });
-    f = advance(f, r.duration_ms / 1000 + 3);
+    f = advance(f, workshopDuration(r) + 3);
     expect(f.simulation.industry!.workshop).toMatchObject({
       remaining: 2,
       total: 3,
@@ -154,7 +230,7 @@ describe("recycling gameplay", () => {
     expect(scarce.simulation.warehouse[trash]).toBe(13);
     const done = advance(
       act(f, { type: "workshop", recipe: r.id, batches: 100 }),
-      (r.duration_ms / 1000) * 100,
+      workshopDuration(r) * 100,
     );
     expect(done.simulation.industry!.workshop).toBeUndefined();
     expect(done.simulation.warehouse[trash]).toBe(0);
@@ -181,7 +257,7 @@ describe("recycling gameplay", () => {
     delete legacy.factory.simulation!.industry!.workshop!.remaining;
     delete legacy.factory.simulation!.industry!.workshop!.total;
     expect(
-      advance(validateSave(legacy, user.id), r.duration_ms / 1000).simulation
+      advance(validateSave(legacy, user.id), workshopDuration(r)).simulation
         .industry!.workshop,
     ).toBeUndefined();
     for (const fields of [
@@ -205,7 +281,7 @@ describe("recycling gameplay", () => {
     f = act(f, { type: "workshop", recipe: "r1001" });
     expect(f.simulation.warehouse[itemID("垃圾包")]).toBe(0);
     expect(() => act(f, { type: "workshop", recipe: "r1001" })).toThrow();
-    f = advance(f, 7);
+    f = advance(f, 2);
     const reloaded = validateSave(toSave(f), user.id);
     expect(advance(reloaded, 3)).toEqual(advance(f, 3));
     f = advance(f, 3);

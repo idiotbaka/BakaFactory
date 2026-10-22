@@ -20,6 +20,7 @@ import {
   workshopBatchLimit,
   workshopOutputFits,
   workshopMachineAvailable,
+  workshopDuration,
 } from "./workshop";
 export { recipeAvailable, canProcess } from "./production";
 
@@ -202,7 +203,7 @@ export function stepWorkshop(f: LocalFactory) {
     job = p?.workshop;
   if (!job) return;
   const r = recipeDefinitions.get(job.recipe_id)!;
-  const duration = r.duration_ms / 1000;
+  const duration = workshopDuration(r);
   // Output overflow is backpressure; do not lose a reserved batch on a tick.
   if (!workshopOutputFits(p, f.simulation.warehouse)) return;
   job.progress++;

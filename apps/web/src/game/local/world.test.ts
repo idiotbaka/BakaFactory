@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildingDefinitions, catalog, itemID } from "./catalog";
+import {
+  buildingDefinitions,
+  catalog,
+  itemID,
+  recipeDefinitions,
+} from "./catalog";
+import { workshopDuration } from "./workshop";
 import { createLocalFactory, toSave, validateSave } from "./state";
 import {
   actWorld,
@@ -53,15 +59,18 @@ describe("one worker world with independent districts", () => {
       type: "select_district",
       id: root.districts![0].id,
     });
-    for (let i = 0; i < 10; i++) root = stepWorld(root);
+    const duration = workshopDuration(recipeDefinitions.get("r1001")!);
+    for (let i = 0; i < duration; i++) root = stepWorld(root);
     expect(root.simulation.industry!.workshop).toMatchObject({
       total: 2,
       remaining: 1,
       progress: 0,
     });
     expect(root.simulation.warehouse[iron]).toBe(3);
-    expect(root.districts!.every((d) => d.simulation.tick === 10)).toBe(true);
-    for (let i = 0; i < 10; i++) root = stepWorld(root);
+    expect(root.districts!.every((d) => d.simulation.tick === duration)).toBe(
+      true,
+    );
+    for (let i = 0; i < duration; i++) root = stepWorld(root);
     expect(root.simulation.industry!.workshop).toBeUndefined();
     expect(root.simulation.warehouse[iron]).toBe(6);
   });

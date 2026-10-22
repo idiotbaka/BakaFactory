@@ -10,6 +10,7 @@ import { step } from "./simulation";
 import { actWorld, createWorld, editWorld, stepWorld } from "./world";
 import { discoverItems } from "./discovery";
 import { syncQuests } from "./quests";
+import { workshopDuration } from "./workshop";
 
 const user = {
   id: "quests",
@@ -53,7 +54,7 @@ describe("open quests and atomic rewards", () => {
       kind: "industry",
       action: { type: "workshop", recipe: "r1001", batches: 2 },
     });
-    const duration = recipeDefinitions.get("r1001")!.duration_ms / 1000;
+    const duration = workshopDuration(recipeDefinitions.get("r1001")!);
     let cancelled = start;
     for (let i = 1; i < duration; i++) cancelled = step(cancelled);
     expect(cancelled.simulation.industry!.quests!.completed).not.toContain(
@@ -90,7 +91,8 @@ describe("open quests and atomic rewards", () => {
     machine.simulation.buildings.sorter.input = [
       { item: itemID("垃圾包"), count: 12 },
     ];
-    for (let i = 0; i < duration; i++) machine = step(machine);
+    for (let i = 0; i < recipeDefinitions.get("r1001")!.duration_ms / 1000; i++)
+      machine = step(machine);
     expect(machine.simulation.buildings.sorter.batches_completed).toBe(1);
     expect(machine.simulation.industry!.quests!.completed).not.toContain(
       "p1_sort_waste",

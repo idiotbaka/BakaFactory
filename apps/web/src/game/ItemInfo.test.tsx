@@ -70,6 +70,7 @@ describe("item acquisition popovers", () => {
     const source = within(card.getByRole("region", { name: /^R1039 / }));
     expect(source.getByText("加工设备：手工装配台")).toBeInTheDocument();
     expect(source.getByText(/15 秒 \/ 批/)).toBeInTheDocument();
+    expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
     expect(
       source.getByRole("button", { name: "机械抓取爪" }).closest("li"),
     ).toHaveTextContent("机械抓取爪 × 2");

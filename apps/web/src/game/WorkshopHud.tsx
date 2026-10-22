@@ -1,5 +1,6 @@
 import type { Catalog, FactoryDetail } from "../api/client";
 import { DetailedProgress } from "./SimulationAnimation";
+import { workshopDuration } from "./local/workshop";
 
 export default function WorkshopHud({
   factory,
@@ -34,8 +35,8 @@ export default function WorkshopHud({
           machine={{
             input: [],
             output: [],
-            progress: job.progress,
-            duration: recipe.duration_ms / 1000,
+            progress: Math.min(job.progress, workshopDuration(recipe)),
+            duration: workshopDuration(recipe),
             cooldown: 0,
             status: paused || blocked ? "idle" : "working",
           }}

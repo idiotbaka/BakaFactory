@@ -34,6 +34,21 @@ func TestWorkshopBatchSaveCompatibility(t *testing.T) {
 	}
 }
 
+func TestWorkshopPreBonusProgressCompatibility(t *testing.T) {
+	c := Catalog{StartingMachines: []string{"m02"}, Stages: make([]StageDefinition, 6), Recipes: []RecipeDefinition{{ID: "sort", BuildingType: "m02", Tier: 1, DurationMS: 10000}}}
+	p := &IndustryState{Stage: 1, Milestones: []string{}, Crafted: map[string]int64{}, Workshop: &WorkshopJob{RecipeID: "sort", Progress: 9}}
+	s := Simulation{Industry: p, Warehouse: map[string]int64{}}
+	if err := s.Validate(c); err != nil {
+		t.Fatal("pre-bonus progress must remain cloud-backup compatible", err)
+	}
+	for _, progress := range []int{-1, 10} {
+		p.Workshop.Progress = progress
+		if s.Validate(c) == nil {
+			t.Fatal("invalid original progress envelope accepted", progress)
+		}
+	}
+}
+
 func TestWorkshopFirstManufactureUnlock(t *testing.T) {
 	c := Catalog{StartingMachines: []string{"m01", "m02", "m07"}, Items: []ItemDefinition{{Definition: Definition{ID: "device"}}}, Buildings: []BuildingDefinition{{Definition: Definition{ID: "m03"}, Item: "device"}}, Stages: make([]StageDefinition, 6), Recipes: []RecipeDefinition{{ID: "process", BuildingType: "m03", Tier: 1, DurationMS: 10000}}}
 	p := &IndustryState{Stage: 1, Milestones: []string{}, Crafted: map[string]int64{}, Workshop: &WorkshopJob{RecipeID: "process", Progress: 0}}

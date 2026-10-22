@@ -17,7 +17,11 @@ import {
   itemKindNames,
   splitItemText,
 } from "./itemInfoModel";
-import { workshopMachineAvailable, workshopMachines } from "./local/workshop";
+import {
+  workshopDuration,
+  workshopMachineAvailable,
+  workshopMachines,
+} from "./local/workshop";
 import "./ItemInfo.css";
 
 type Industry = NonNullable<FactoryDetail["simulation"]>["industry"];
@@ -278,6 +282,12 @@ function ItemInfoScope({
                         )
                           ? `工作室 → ${machine?.name ?? recipe.building_type}`
                           : `首次制造${machine?.name ?? recipe.building_type}后解锁工作室同名分类。`}
+                      </p>
+                    )}
+                    {manual && (
+                      <p>
+                        工作室手工耗时：{workshopDuration(recipe)} 秒 /
+                        批（原配方工时的一半，向下取整且至少 1 秒）。
                       </p>
                     )}
                     {!stageReady && (

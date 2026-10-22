@@ -5,6 +5,8 @@ import {
   workshopBatchLimit,
   workshopMachines,
   workshopMachineAvailable,
+  workshopDuration,
+  clampWorkshopBatches,
 } from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
 import { PowerOverview } from "./PowerPanel";
@@ -249,40 +251,48 @@ export default function IndustryViews({
                     </span>
                   </button>
                 </div>
-                <div
-                  className="workshop-machine-tabs"
-                  role="group"
-                  aria-label="工作室设备"
+                <section
+                  className="workshop-controls"
+                  aria-label="工作室快捷操作"
                 >
-                  {workshopMachines.map((id) => {
-                    const unlocked = workshopMachineAvailable(p?.crafted, id),
-                      machine = catalog.buildings.find((b) => b.id === id);
-                    return (
-                      <span
-                        className="workshop-machine-tab"
-                        key={id}
-                        title={
-                          unlocked
-                            ? undefined
-                            : "至少需要生产 1 次该设备后才能解锁"
-                        }
-                      >
-                        <button
-                          type="button"
-                          disabled={!unlocked}
-                          aria-pressed={id === workshopMachine}
-                          onClick={() => setSelectedMachine(id)}
+                  <div
+                    className="workshop-machine-tabs"
+                    role="group"
+                    aria-label="工作室设备"
+                  >
+                    {workshopMachines.map((id) => {
+                      const unlocked = workshopMachineAvailable(p?.crafted, id),
+                        machine = catalog.buildings.find((b) => b.id === id);
+                      return (
+                        <span
+                          className="workshop-machine-tab"
+                          key={id}
+                          title={
+                            unlocked
+                              ? undefined
+                              : "至少需要生产 1 次该设备后才能解锁"
+                          }
                         >
-                          {machine?.name ?? id}
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
+                          <button
+                            type="button"
+                            disabled={!unlocked}
+                            aria-pressed={id === workshopMachine}
+                            onClick={() => setSelectedMachine(id)}
+                          >
+                            {machine?.name ?? id}
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </section>
                 <div className="workshop-recipes">
                   {recipes.map((r) => {
                     const maximum = workshopBatchLimit(r, s?.warehouse ?? {}),
-                      raw = batchCounts[r.id] ?? "1",
+                      raw = clampWorkshopBatches(
+                        batchCounts[r.id] ?? "1",
+                        maximum,
+                      ),
                       batches = Number(raw),
                       valid =
                         raw.trim() !== "" &&
@@ -293,7 +303,7 @@ export default function IndustryViews({
                       <article className="recipe-card" key={r.id}>
                         <div className="recipe-name">
                           {r.name}
-                          <span>{r.duration_ms / 1000}s</span>
+                          <span>手工 {workshopDuration(r)}s</span>
                         </div>
                         <p>
                           {r.id.toUpperCase()} ·{" "}
@@ -329,7 +339,10 @@ export default function IndustryViews({
                               onChange={(event) =>
                                 setBatchCounts((previous) => ({
                                   ...previous,
-                                  [r.id]: event.target.value,
+                                  [r.id]: clampWorkshopBatches(
+                                    event.target.value,
+                                    maximum,
+                                  ),
                                 }))
                               }
                             />

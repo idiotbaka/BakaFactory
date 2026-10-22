@@ -81,11 +81,16 @@ describe("persistent top manual-work progress", () => {
     expect(hud.getByText(r.name)).toBeInTheDocument();
     expect(hud.getByText("第 2 / 3 批")).toBeInTheDocument();
     expect(hud.getByRole("progressbar")).toHaveAttribute("value", "4");
+    expect(hud.getByRole("progressbar")).toHaveAttribute("max", "5");
     rerender(<WorkshopHud {...props} paused />);
     expect(hud.getByText(/已暂停/)).toBeInTheDocument();
     expect(hud.getByRole("progressbar")).toHaveAttribute("value", "4");
     rerender(<WorkshopHud {...props} blocked />);
     expect(hud.getByText(/产物上限等待/)).toBeInTheDocument();
     expect(root.simulation.industry!.workshop?.remaining).toBe(2);
+    root.simulation.industry!.workshop!.progress = 9;
+    rerender(<WorkshopHud {...props} paused />);
+    expect(hud.getByRole("progressbar")).toHaveAttribute("value", "5");
+    expect(root.simulation.industry!.workshop!.progress).toBe(9);
   });
 });

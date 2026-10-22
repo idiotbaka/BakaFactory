@@ -359,6 +359,8 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
         !r ||
         !workshopMachineAvailable(p.crafted, r.building_type) ||
         (r.tier ?? 1) > p.stage ||
+        // Keep the original duration as the legacy save envelope. A retained
+        // progress beyond the manual duration settles only one batch next tick.
         !integer(p.workshop.progress, r.duration_ms / 1000 - 1)
       )
         return fail();

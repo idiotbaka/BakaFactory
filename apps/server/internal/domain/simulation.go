@@ -227,6 +227,8 @@ func (s Simulation) Validate(c Catalog) error {
 			}
 			valid := false
 			for _, r := range c.Recipes {
+				// Preserve old pre-bonus queues up to the original recipe duration.
+				// The client settles at most one retained batch on its next tick.
 				if r.ID == p.Workshop.RecipeID && workshopMachineAvailable(c, p, r.BuildingType) && r.Tier <= p.Stage && p.Workshop.Progress >= 0 && int64(p.Workshop.Progress) < r.DurationMS/1000 {
 					valid = true
 				}
