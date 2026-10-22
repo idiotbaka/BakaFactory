@@ -6,11 +6,15 @@ export default function WorkshopHud({
   catalog,
   paused,
   blocked = false,
+  canCancel = true,
+  onCancel,
 }: {
   factory: FactoryDetail | null;
   catalog: Catalog;
   paused: boolean;
   blocked?: boolean;
+  canCancel?: boolean;
+  onCancel?: () => void;
 }) {
   const job = factory?.simulation?.industry?.workshop;
   const recipe = catalog.recipes.find((r) => r.id === job?.recipe_id);
@@ -38,6 +42,25 @@ export default function WorkshopHud({
         />
       ) : (
         <p>前往工作室选择配方并批量加工。</p>
+      )}
+      {job && (
+        <div className="workshop-hud-actions">
+          <span>尚余 {job.remaining ?? 1} 批（含当前批）</span>
+          <span title={!canCancel ? "请切换到起始回收场取消队列" : undefined}>
+            <button
+              type="button"
+              disabled={paused || !canCancel || !onCancel}
+              onClick={onCancel}
+              title={
+                canCancel
+                  ? "取消后仅返还尚未完成批次的原料，保留已完成产物"
+                  : undefined
+              }
+            >
+              取消队列并返还未完成原料
+            </button>
+          </span>
+        </div>
       )}
     </section>
   );

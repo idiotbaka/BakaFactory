@@ -326,11 +326,6 @@
 .scavenge-box button {
   flex: none;
 }
-.workshop-active {
-  padding: 12px;
-  border: 1px solid var(--cyan);
-  margin: 12px 0;
-}
 .workshop-machine-tabs {
   display: flex;
   gap: 6px;
@@ -609,7 +604,7 @@
 }
 .workshop-hud {
   display: grid;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
   padding-left: 18px;
   border-left: 1px solid var(--line);
@@ -619,6 +614,7 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 12px;
+  line-height: 18px;
 }
 .workshop-hud-heading > span {
   color: var(--muted);
@@ -630,6 +626,38 @@
 }
 .workshop-hud .production-progress {
   margin: 0;
+}
+.workshop-hud .production-progress > div {
+  line-height: 18px;
+}
+.workshop-hud .production-progress progress {
+  margin-top: 4px;
+}
+.workshop-hud-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.workshop-hud-actions > span:first-child {
+  color: var(--muted);
+}
+.workshop-hud-actions > span:last-child {
+  flex: none;
+}
+.workshop-hud-actions button {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  background: #151c2e;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+}
+.workshop-hud-actions button:hover:not(:disabled) {
+  border-color: var(--cyan);
+  color: var(--cyan);
 }
 .workshop-hud .production-progress > div > span:first-child {
   min-width: 0;

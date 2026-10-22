@@ -197,9 +197,10 @@ describe("manual workshop batch controls", () => {
         .getAllByRole("button", { name: "批量加工" })
         .every((b) => b.hasAttribute("disabled")),
     ).toBe(true);
-    fireEvent.click(
-      screen.getByRole("button", { name: "取消队列并返还未完成原料" }),
-    );
-    expect(act).toHaveBeenCalledWith({ type: "cancel_workshop" });
+    expect(
+      screen.queryByRole("button", { name: "取消队列并返还未完成原料" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/当前进度见顶部横栏/)).not.toBeInTheDocument();
+    expect(act).not.toHaveBeenCalled();
   });
 });

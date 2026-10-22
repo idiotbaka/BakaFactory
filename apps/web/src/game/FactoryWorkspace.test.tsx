@@ -22,6 +22,7 @@ const commands = {
   getFactory: vi.fn(),
 };
 const backup = vi.fn().mockResolvedValue(undefined),
+  runtimeAct = vi.fn().mockResolvedValue(undefined),
   restoreCloud = vi.fn().mockResolvedValue(undefined),
   chooseLocal = vi.fn().mockResolvedValue(undefined),
   retry = vi.fn(),
@@ -52,6 +53,7 @@ function prepare(
     });
     const runtime = {
       commands,
+      act: runtimeAct,
       backup,
       restoreCloud,
       chooseLocal,
@@ -87,6 +89,38 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("keeps manual queue management only in the top HUD across workshop and warehouse views", () => {
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.workshop = {
+          recipe_id: "r1001",
+          progress: 4,
+          total: 3,
+          remaining: 2,
+        };
+      },
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const hud = within(screen.getByRole("region", { name: "工作室加工" }));
+    fireEvent.click(screen.getByRole("button", { name: "工作室" }));
+    expect(screen.queryByText(/当前进度见顶部横栏/)).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: "取消队列并返还未完成原料" }),
+    ).toHaveLength(1);
+    expect(hud.getByText("第 2 / 3 批")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "仓库" }));
+    expect(hud.getByText("尚余 2 批（含当前批）")).toBeInTheDocument();
+    fireEvent.click(
+      hud.getByRole("button", { name: "取消队列并返还未完成原料" }),
+    );
+    expect(runtimeAct).toHaveBeenCalledExactlyOnceWith({
+      type: "cancel_workshop",
+    });
+    expect(screen.getByRole("button", { name: "仓库" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
   it("automatically plays the opening before naming, saves completion and waits for explicit factory creation", async () => {
     prepare(false, { viewedStories: [] });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
