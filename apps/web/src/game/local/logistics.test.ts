@@ -22,8 +22,20 @@ const start = (stage = 1) => {
   const f = createLocalFactory(user, "物流厂");
   f.simulation.industry!.stage = stage;
   if (stage > 1) {
-    f.simulation.industry!.quests!.completed.push("p1_free_hands");
-    f.simulation.industry!.quests!.claimed.push("p1_free_hands");
+    f.simulation.industry!.quests!.completed.push(
+      ...catalog
+        .quests!.filter(
+          (q) => q.stage_final && q.tier < f.simulation.industry!.stage,
+        )
+        .map((q) => q.id),
+    );
+    f.simulation.industry!.quests!.claimed.push(
+      ...catalog
+        .quests!.filter(
+          (q) => q.stage_final && q.tier < f.simulation.industry!.stage,
+        )
+        .map((q) => q.id),
+    );
   }
   f.simulation.industry!.milestones = catalog
     .stages!.slice(0, stage - 1)

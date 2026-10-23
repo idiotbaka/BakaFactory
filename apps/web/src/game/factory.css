@@ -183,6 +183,25 @@
 .quest-card.is-ready {
   border-color: var(--cyan);
 }
+.quest-card.is-stage-final {
+  border-color: var(--pink);
+  box-shadow:
+    inset 0 0 0 1px #ff62cb30,
+    0 0 12px #ff62cb16;
+}
+.quest-final-label {
+  display: inline-block;
+  border: 1px solid #ff62cb70;
+  color: var(--pink);
+  background: #ff62cb12;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.quest-final-unlock,
+.quest-final-hint {
+  color: var(--pink);
+  font-size: 12px;
+}
 .quest-card header {
   display: flex;
   flex-wrap: wrap;

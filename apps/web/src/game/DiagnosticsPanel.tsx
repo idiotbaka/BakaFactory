@@ -37,8 +37,15 @@ export default function DiagnosticsPanel({
       <ol>
         {outcome.stages.map((s) => (
           <li key={s.tier}>
-            P{s.tier} {s.name}：{s.complete ? "首次制造已达成" : "尚未达成"} ·{" "}
-            {itemDefinitions.get(s.milestone_item)?.name}
+            P{s.tier} {s.name}：
+            {s.complete
+              ? s.tier === 6
+                ? "首次制造已达成"
+                : "终局任务已领奖"
+              : s.manufactured
+                ? "已制造，待完成终局任务并领奖"
+                : "尚未达成"}{" "}
+            · {itemDefinitions.get(s.milestone_item)?.name}
           </li>
         ))}
       </ol>

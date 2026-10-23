@@ -12,7 +12,7 @@ func orderFixture() (Catalog, Simulation) {
 		c.Items = append(c.Items, ItemDefinition{Definition: Definition{ID: id}})
 	}
 	c.Stages[0].MilestoneItem = "milestone"
-	c.Quests = []QuestDefinition{{ID: "p1_free_hands", Tier: 1, Title: "解放双手", Description: "制作机械手", Goal: QuestGoal{Type: "craft_item", Target: "milestone", Count: 1}, Rewards: map[string]int64{}, Unlocks: []string{"warehouse_orders", "stage_2"}}}
+	c.Quests = []QuestDefinition{{ID: "p1_free_hands", Tier: 1, StageFinal: true, Title: "解放双手", Description: "制作机械手", Goal: QuestGoal{Type: "craft_item", Target: "milestone", Count: 1}, Rewards: map[string]int64{}, Unlocks: []string{"warehouse_orders", "stage_2"}}}
 	c.Recipes = []RecipeDefinition{
 		{ID: "a", BuildingType: "m01", Tier: 1, DurationMS: 6000, Inputs: map[string]int64{"raw": 2}, Outputs: map[string]int64{"mid": 3, "slag": 1}},
 		{ID: "b", BuildingType: "m01", Tier: 1, DurationMS: 6000, Inputs: map[string]int64{"mid": 2}, Outputs: map[string]int64{"product": 1}},

@@ -73,6 +73,7 @@ describe("open quests and atomic rewards", () => {
     p.milestones = ["i0060"];
     p.crafted.i0060 = 1;
     delete p.quests!.automated_received;
+    delete p.quests!.stage_quests_version;
     const restored = validateSave(toSave(root), user.id);
     expect(restored.simulation.industry!.stage).toBe(2);
     expect(restored.simulation.industry!.quests!.claimed).toContain(
@@ -224,7 +225,9 @@ describe("open quests and atomic rewards", () => {
     expect(restored.simulation.industry!.quests!.workshop_batches).toEqual({});
   });
   it("uses the authored nine-task order and actual feeder item and mechanism rewards", () => {
-    expect(catalog.quests?.map((q) => q.id)).toEqual([
+    expect(
+      catalog.quests?.filter((q) => q.tier === 1).map((q) => q.id),
+    ).toEqual([
       "p1_sort_waste",
       "p1_dismantler",
       "p1_crusher",
@@ -235,7 +238,9 @@ describe("open quests and atomic rewards", () => {
       "p1_warehouse_delivery",
       "p1_free_hands",
     ]);
-    expect(catalog.quests?.map((q) => q.rewards)).toEqual([
+    expect(
+      catalog.quests?.filter((q) => q.tier === 1).map((q) => q.rewards),
+    ).toEqual([
       { [itemID("简易支架")]: 10 },
       { [itemID("粗铁片")]: 20 },
       { [itemID("垃圾包")]: 120 },

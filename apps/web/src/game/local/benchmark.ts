@@ -174,8 +174,8 @@ export function benchmarkFixture(o: BenchmarkOptions): LocalFactory {
     stage: 6,
     quests: {
       ...newQuestProgress(),
-      completed: ["p1_free_hands"],
-      claimed: ["p1_free_hands"],
+      completed: catalog.quests!.filter((q) => q.stage_final).map((q) => q.id),
+      claimed: catalog.quests!.filter((q) => q.stage_final).map((q) => q.id),
     },
     milestones: catalog.stages!.slice(0, 5).map((s) => s.milestone_item),
     crafted: {},

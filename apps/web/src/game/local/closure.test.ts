@@ -2,6 +2,18 @@ import { describe, it, expect } from "vitest";
 import { auditClosure } from "../../../../../scripts/gameplay-closure.mjs";
 import { catalog, itemID } from "./catalog";
 describe("energy and actual-work start-up closure", () => {
+  it("does not advance through a reachable milestone when half the ordinary quests cannot be reached", () => {
+    const c = structuredClone(catalog);
+    let blocked = 0;
+    for (const q of c.quests!) {
+      if (q.tier === 1 && !q.stage_final && blocked++ < 5)
+        q.goal = { type: "workshop_recipe", target: "r6001", count: 1 };
+    }
+    const audit = auditClosure(c);
+    expect(audit.milestones[0].reached).toBe(true);
+    expect(audit.stage).toBe(1);
+    expect(audit.unreachable.map((r) => r.id)).toContain("r2001");
+  });
   it("reaches every industrial recipe and all six milestones through paid energy and real job capabilities", () => {
     const r = auditClosure(catalog);
     expect(r.stage).toBe(6);

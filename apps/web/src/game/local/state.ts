@@ -350,7 +350,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       p.stage !==
       expectedStage(
         p as unknown as NonNullable<Simulation["industry"]>,
-        !object(p.quests) || p.quests.automated_received === undefined,
+        !object(p.quests) || p.quests.stage_quests_version === undefined,
       )
     )
       return fail();

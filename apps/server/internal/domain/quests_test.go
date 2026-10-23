@@ -5,6 +5,86 @@ import (
 	"testing"
 )
 
+func TestFinalQuestStageValidationAndLegacyEnvelope(t *testing.T) {
+	c, s := orderFixture()
+	s.Industry.Workshop = nil
+	c.Stages[1].MilestoneItem = "raw"
+	c.Quests = append(c.Quests, QuestDefinition{ID: "p2_final", Tier: 2, StageFinal: true, Title: "阶段终局", Description: "制造原料并领奖", Goal: QuestGoal{Type: "craft_item", Target: "raw", Count: 1}, Rewards: map[string]int64{}})
+	if err := validateQuestDefinitions(c); err != nil {
+		t.Fatal("final stage reward should not require a fake item", err)
+	}
+	p := s.Industry
+	p.Milestones = []string{"milestone", "raw"}
+	p.Crafted = map[string]int64{"milestone": 1, "raw": 1}
+	p.Stage = 3
+	// Old, already unlocked stages can still be uploaded/restored unchanged.
+	before, _ := json.Marshal(s)
+	if err := s.Validate(c); err != nil {
+		t.Fatal("old unlocked stage rejected", err)
+	}
+	after, _ := json.Marshal(s)
+	if string(before) != string(after) {
+		t.Fatal("legacy validation must not grant claims or mutate the save")
+	}
+	version := 1
+	p.Quests.StageQuestsVersion = &version
+	if s.Validate(c) == nil {
+		t.Fatal("manufacturing a P2 milestone must not unlock P3")
+	}
+	p.Stage = 2
+	if err := s.Validate(c); err != nil {
+		t.Fatal("unclaimed P2 milestone should remain in P2", err)
+	}
+	p.Quests.Completed = append(p.Quests.Completed, "p2_final")
+	if err := s.Validate(c); err != nil {
+		t.Fatal("completed but unclaimed final should remain in P2", err)
+	}
+	p.Quests.Claimed = append(p.Quests.Claimed, "p2_final")
+	p.Stage = 3
+	if err := s.Validate(c); err != nil {
+		t.Fatal("claimed final should unlock P3", err)
+	}
+	p.Quests.Claimed = []string{"p2_final"}
+	if s.Validate(c) == nil {
+		t.Fatal("later claims must not bypass an earlier final")
+	}
+}
+
+func TestFinalQuestDefinitionUniquenessAndVersionBounds(t *testing.T) {
+	c, _ := orderFixture()
+	q := c.Quests[0]
+	duplicate := q
+	duplicate.ID = "another_final"
+	c.Quests = append(c.Quests, duplicate)
+	if validateQuestDefinitions(c) == nil {
+		t.Fatal("duplicate tier final accepted")
+	}
+	for _, mutate := range []func(*QuestDefinition){
+		func(q *QuestDefinition) { q.Tier = 6 },
+		func(q *QuestDefinition) { q.StageFinal = false },
+		func(q *QuestDefinition) { q.Tier = 2 },
+	} {
+		bad := q
+		mutate(&bad)
+		c.Quests = []QuestDefinition{bad}
+		if validateQuestDefinitions(c) == nil {
+			t.Fatal("invalid stage final definition accepted")
+		}
+	}
+	c.Quests = []QuestDefinition{q}
+	for _, raw := range []string{`null`, `0`, `2`, `1.5`, `"1"`} {
+		var p QuestProgress
+		data := `{"completed":[],"claimed":[],"workshop_batches":{},"stage_quests_version":` + raw + `}`
+		if err := json.Unmarshal([]byte(data), &p); err == nil && validQuestProgress(&p, c) {
+			t.Fatal("invalid stage quest version accepted", raw)
+		}
+	}
+	var restored QuestProgress
+	if err := json.Unmarshal([]byte(`{"completed":[],"claimed":[],"workshop_batches":{},"stage_quests_version":1}`), &restored); err != nil || !validQuestProgress(&restored, c) || restored.StageQuestsVersion == nil || *restored.StageQuestsVersion != 1 {
+		t.Fatal("versioned quest progress lost", err)
+	}
+}
+
 func TestQuestProgressRoundTripAndBounds(t *testing.T) {
 	c := Catalog{Items: []ItemDefinition{{Definition: Definition{ID: "item"}}}, Recipes: []RecipeDefinition{{ID: "r1001"}}, Stages: make([]StageDefinition, 6), Quests: []QuestDefinition{{ID: "quest", Tier: 1, Title: "任务", Description: "说明", Goal: QuestGoal{Type: "obtain_item", Target: "item", Count: 1}, Rewards: map[string]int64{"item": 120}}}}
 	if err := validateQuestDefinitions(c); err != nil {

@@ -136,7 +136,16 @@ export function industryOutcome(f: LocalFactory) {
   return {
     stages: (catalog.stages ?? []).map((s) => ({
       ...s,
-      complete: (p?.milestones ?? []).includes(s.milestone_item),
+      manufactured: (p?.milestones ?? []).includes(s.milestone_item),
+      complete:
+        s.tier === 6
+          ? (p?.milestones ?? []).includes(s.milestone_item)
+          : !!catalog.quests?.some(
+              (q) =>
+                q.stage_final &&
+                q.tier === s.tier &&
+                p?.quests?.claimed.includes(q.id),
+            ),
     })),
     complete: (p?.milestones ?? []).includes(catalog.stages![5].milestone_item),
     sandbox: (p?.crafted[itemID("可扩展智能工厂许可证")] ?? 0) > 0,

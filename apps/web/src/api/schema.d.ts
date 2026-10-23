@@ -529,6 +529,8 @@ export interface components {
             tier: number;
             title: string;
             description: string;
+            /** @description 阶段终局任务；同阶段其他任务完成至少一半后可见，领奖解锁下一阶段。 */
+            stage_final?: boolean;
             goal: {
                 /** @enum {string} */
                 type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery";
@@ -541,6 +543,8 @@ export interface components {
             unlocks?: ("warehouse_orders" | "stage_2")[];
         };
         QuestProgress: {
+            /** @enum {integer} */
+            stage_quests_version?: 1;
             automated_received?: number;
             completed: string[];
             claimed: string[];

@@ -15,8 +15,20 @@ const user = {
 function setup() {
   const r = createWorld(user, "完整世界");
   r.simulation.industry!.stage = 6;
-  r.simulation.industry!.quests!.completed.push("p1_free_hands");
-  r.simulation.industry!.quests!.claimed.push("p1_free_hands");
+  r.simulation.industry!.quests!.completed.push(
+    ...catalog
+      .quests!.filter(
+        (q) => q.stage_final && q.tier < r.simulation.industry!.stage,
+      )
+      .map((q) => q.id),
+  );
+  r.simulation.industry!.quests!.claimed.push(
+    ...catalog
+      .quests!.filter(
+        (q) => q.stage_final && q.tier < r.simulation.industry!.stage,
+      )
+      .map((q) => q.id),
+  );
   r.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

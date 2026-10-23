@@ -1,3 +1,5 @@
+import { advanceQuestStages } from "./quest-closure.mjs";
+
 // Existence of a start-up route, not a stock balance or throughput simulation.
 // Every capability is derived from already reachable items and installed types.
 export function auditClosure(c) {
@@ -117,8 +119,15 @@ export function auditClosure(c) {
           changed = true;
         }
       }
-    while (stage < 6 && items.has(c.stages[stage - 1].milestone_item)) {
-      stage++;
+    const nextStage = advanceQuestStages(
+      c,
+      stage,
+      items,
+      recipes,
+      facility("hand_belt") && facility("feeder"),
+    );
+    if (nextStage !== stage) {
+      stage = nextStage;
       changed = true;
     }
   }

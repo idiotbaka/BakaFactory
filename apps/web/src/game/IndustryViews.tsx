@@ -20,6 +20,7 @@ import WarehouseOrderDialog, {
   type PlaceWorkshopOrder,
 } from "./WarehouseOrderDialog";
 import { ordersUnlocked } from "./local/progression";
+import { questVisible } from "./local/questRules";
 import { orderRecipes } from "./local/orders";
 import type { Observation } from "./local/observations";
 import type { LocalFactory } from "./local/state";
@@ -155,8 +156,11 @@ export default function IndustryViews({
           >
             {label}
             {id === "quests" &&
-              p?.quests?.completed.some(
-                (q) => !p.quests!.claimed.includes(q),
+              catalog.quests?.some(
+                (q) =>
+                  questVisible(p, q, catalog.quests) &&
+                  p?.quests?.completed.includes(q.id) &&
+                  !p.quests.claimed.includes(q.id),
               ) && (
                 <span
                   className="quest-unclaimed-dot"
@@ -216,9 +220,9 @@ export default function IndustryViews({
               {stage?.goal}
               <br />
               阶段成果：{stage && name(stage.milestone_item)}。
-              {p?.stage === 1
-                ? "制造流水线机械手并领取“是时候解放双手了”奖励后，解锁下一阶段。"
-                : "首次制造后永久解锁下一阶段。"}
+              {(p?.stage ?? 1) < 6
+                ? "完成本阶段其他任务的至少一半后开放终局任务；完成并领取终局奖励后永久解锁下一阶段。"
+                : "首次制造智能机器人，达成六阶段主目标。"}
             </p>
             {view === "developer" ? (
               <DeveloperToolsPanel

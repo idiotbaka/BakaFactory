@@ -16,20 +16,22 @@ type QuestDefinition struct {
 	Tier        int              `json:"tier"`
 	Title       string           `json:"title"`
 	Description string           `json:"description"`
+	StageFinal  bool             `json:"stage_final,omitempty"`
 	Goal        QuestGoal        `json:"goal"`
 	Rewards     map[string]int64 `json:"rewards"`
 	Unlocks     []string         `json:"unlocks,omitempty"`
 }
 type QuestProgress struct {
-	Completed         []string         `json:"completed"`
-	Claimed           []string         `json:"claimed"`
-	WorkshopBatches   map[string]int64 `json:"workshop_batches"`
-	AutomatedReceived *int64           `json:"automated_received,omitempty"`
+	StageQuestsVersion *int             `json:"stage_quests_version,omitempty"`
+	Completed          []string         `json:"completed"`
+	Claimed            []string         `json:"claimed"`
+	WorkshopBatches    map[string]int64 `json:"workshop_batches"`
+	AutomatedReceived  *int64           `json:"automated_received,omitempty"`
 }
 
 func (v *QuestProgress) UnmarshalJSON(data []byte) error {
 	type plain QuestProgress
-	if err := rejectNullWork(data, "automated_received"); err != nil {
+	if err := rejectNullWork(data, "automated_received", "stage_quests_version"); err != nil {
 		return err
 	}
 	if err := decodeRobotObject(data, (*plain)(v), "completed", "claimed", "workshop_batches"); err != nil {
@@ -53,6 +55,7 @@ func validateQuestDefinitions(c Catalog) error {
 		return fmt.Errorf("too many quests")
 	}
 	items, recipes, seen := map[string]bool{}, map[string]bool{}, map[string]bool{}
+	finals := map[int]bool{}
 	for _, i := range c.Items {
 		items[i.ID] = true
 	}
@@ -60,8 +63,14 @@ func validateQuestDefinitions(c Catalog) error {
 		recipes[r.ID] = true
 	}
 	for _, q := range c.Quests {
-		if q.ID == "" || len(q.ID) > 128 || seen[q.ID] || q.Tier < 1 || q.Tier > 6 || q.Title == "" || q.Description == "" || q.Goal.Count < 1 || q.Goal.Count > MaxSafeInteger || (len(q.Rewards) < 1 && len(q.Unlocks) < 1) || len(q.Rewards) > len(c.Items) {
+		if q.ID == "" || len(q.ID) > 128 || seen[q.ID] || q.Tier < 1 || q.Tier > 6 || q.Title == "" || q.Description == "" || q.Goal.Count < 1 || q.Goal.Count > MaxSafeInteger || (len(q.Rewards) < 1 && len(q.Unlocks) < 1 && !q.StageFinal) || len(q.Rewards) > len(c.Items) {
 			return fmt.Errorf("invalid quest definition: %s", q.ID)
+		}
+		if q.StageFinal {
+			if q.Tier >= 6 || finals[q.Tier] {
+				return fmt.Errorf("invalid or duplicate stage final")
+			}
+			finals[q.Tier] = true
 		}
 		if q.Goal.Type == "obtain_item" || q.Goal.Type == "craft_item" {
 			if !items[q.Goal.Target] || q.Goal.Count != 1 {
@@ -79,6 +88,9 @@ func validateQuestDefinitions(c Catalog) error {
 			if (u != "warehouse_orders" && u != "stage_2") || unlocks[u] {
 				return fmt.Errorf("invalid quest unlock")
 			}
+			if u == "stage_2" && (!q.StageFinal || q.Tier != 1) {
+				return fmt.Errorf("stage unlock requires P1 final quest")
+			}
 			unlocks[u] = true
 		}
 		for id, n := range q.Rewards {
@@ -93,6 +105,9 @@ func validateQuestDefinitions(c Catalog) error {
 func validQuestProgress(p *QuestProgress, c Catalog) bool {
 	if p == nil {
 		return true
+	}
+	if p.StageQuestsVersion != nil && *p.StageQuestsVersion != 1 {
+		return false
 	}
 	if p.AutomatedReceived != nil && (*p.AutomatedReceived < 0 || *p.AutomatedReceived > MaxSafeInteger) {
 		return false
@@ -125,6 +140,49 @@ func validQuestProgress(p *QuestProgress, c Catalog) bool {
 		}
 	}
 	return true
+}
+
+// New saves progress exclusively through the ordered final quest claims.
+// Legacy envelopes are checked under their original rules, then the client
+// upgrades only the stages that were already unlocked. Validation is read-only.
+func expectedQuestStage(p *IndustryState, c Catalog) int {
+	expected := 1
+	if p.Quests != nil && p.Quests.StageQuestsVersion != nil {
+		claimed := map[string]bool{}
+		for _, id := range p.Quests.Claimed {
+			claimed[id] = true
+		}
+		for expected < 6 {
+			found := false
+			for _, q := range c.Quests {
+				if q.StageFinal && q.Tier == expected && claimed[q.ID] {
+					found = true
+					break
+				}
+			}
+			if !found {
+				break
+			}
+			expected++
+		}
+		return expected
+	}
+	seen := map[string]bool{}
+	for _, id := range p.Milestones {
+		seen[id] = true
+	}
+	for expected < 6 && seen[c.Stages[expected-1].MilestoneItem] {
+		gate := false
+		for _, q := range c.Quests {
+			gate = gate || q.ID == "p1_free_hands"
+		}
+		legacy := p.Quests == nil || p.Quests.AutomatedReceived == nil
+		if expected == 1 && gate && !warehouseOrderRewardClaimed(p) && !(legacy && p.Stage >= 2) {
+			break
+		}
+		expected++
+	}
+	return expected
 }
 
 func warehouseOrdersUnlocked(p *IndustryState) bool {

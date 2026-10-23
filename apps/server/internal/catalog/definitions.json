@@ -68,11 +68,48 @@
     {
       "id": "p1_free_hands",
       "tier": 1,
+      "stage_final": true,
       "title": "是时候解放双手了",
       "description": "制作一个 流水线机械手，它会让你的双手自动动起来，解放你的工作室",
       "goal": { "type": "craft_item", "target": "i0060", "count": 1 },
       "rewards": {},
       "unlocks": ["warehouse_orders", "stage_2"]
+    },
+    {
+      "id": "p2_industrial_license",
+      "tier": 2,
+      "stage_final": true,
+      "title": "液压时代入场券",
+      "description": "制造液压工业许可包，完成并领取阶段终局任务奖励后开放 P3。",
+      "goal": { "type": "craft_item", "target": "i0112", "count": 1 },
+      "rewards": {}
+    },
+    {
+      "id": "p3_electrification",
+      "tier": 3,
+      "stage_final": true,
+      "title": "迈向电气化",
+      "description": "制造电气化建设包，完成并领取阶段终局任务奖励后开放 P4。",
+      "goal": { "type": "craft_item", "target": "i0174", "count": 1 },
+      "rewards": {}
+    },
+    {
+      "id": "p4_precision",
+      "tier": 4,
+      "stage_final": true,
+      "title": "迈向精密工业",
+      "description": "制造微电子实验许可证，完成并领取阶段终局任务奖励后开放 P5。",
+      "goal": { "type": "craft_item", "target": "i0233", "count": 1 },
+      "rewards": {}
+    },
+    {
+      "id": "p5_cognition",
+      "tier": 5,
+      "stage_final": true,
+      "title": "迈向认知与觉醒",
+      "description": "制造认知系统项目包，完成并领取阶段终局任务奖励后开放 P6。",
+      "goal": { "type": "craft_item", "target": "i0293", "count": 1 },
+      "rewards": {}
     }
   ],
   "robots": [
@@ -7519,7 +7556,7 @@
       "duration_ms": 20000,
       "inputs": { "i0057": 4, "i0045": 4, "i0040": 2, "i0058": 1 },
       "outputs": { "i0060": 1 },
-      "description": "阶段 1 目标及阶段 2 门禁",
+      "description": "P1 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P2，不额外消耗本体。",
       "power_kw": 0,
       "conditions": []
     },
@@ -8164,7 +8201,7 @@
       "duration_ms": 25000,
       "inputs": { "i0111": 1, "i0091": 4, "i0108": 1, "i0109": 1 },
       "outputs": { "i0112": 1 },
-      "description": "阶段 2 目标及阶段 3 门禁",
+      "description": "P2 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P3，不额外消耗本体。",
       "power_kw": 18,
       "gate": "i0060",
       "conditions": []
@@ -8970,7 +9007,7 @@
       "duration_ms": 26000,
       "inputs": { "i0173": 1, "i0165": 2, "i0166": 2, "i0164": 2 },
       "outputs": { "i0174": 1 },
-      "description": "阶段 3 目标及阶段 4 门禁",
+      "description": "P3 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P4，不额外消耗本体。",
       "power_kw": 31,
       "gate": "i0112",
       "conditions": []
@@ -9750,7 +9787,7 @@
       "duration_ms": 27000,
       "inputs": { "i0232": 1, "i0205": 3, "i0214": 1, "i0217": 2 },
       "outputs": { "i0233": 1 },
-      "description": "阶段 4 目标及阶段 5 门禁",
+      "description": "P4 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P5，不额外消耗本体。",
       "power_kw": 35,
       "gate": "i0174",
       "conditions": []
@@ -10531,7 +10568,7 @@
       "duration_ms": 29000,
       "inputs": { "i0292": 1, "i0289": 4, "i0290": 4, "i0291": 4 },
       "outputs": { "i0293": 1 },
-      "description": "阶段 5 目标及阶段 6 门禁",
+      "description": "P5 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P6，不额外消耗本体。",
       "power_kw": 50,
       "gate": "i0233",
       "conditions": []

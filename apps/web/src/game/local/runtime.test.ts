@@ -161,7 +161,13 @@ describe("local persistence and cloud lifecycle", () => {
     const root = createWorld(user, "P1 领奖");
     root.simulation.industry!.crafted.i0060 = 1;
     root.simulation.industry!.milestones = ["i0060"];
-    root.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    root.simulation.industry!.quests!.completed = [
+      "p1_dismantler",
+      "p1_crusher",
+      "p1_smelter",
+      "p1_assembler",
+      "p1_free_hands",
+    ];
     saved = {
       owner: user.id,
       version: 1,
@@ -211,6 +217,12 @@ describe("local persistence and cloud lifecycle", () => {
     let root = createWorld(user, "剧情保存中");
     root.simulation.industry!.crafted.i0060 = 1;
     root.simulation.industry!.milestones = ["i0060"];
+    root.simulation.industry!.quests!.completed = [
+      "p1_dismantler",
+      "p1_crusher",
+      "p1_smelter",
+      "p1_assembler",
+    ];
     root = actWorld(root, { type: "claim_quest", id: "p1_free_hands" });
     saved = {
       owner: user.id,
@@ -247,7 +259,13 @@ describe("local persistence and cloud lifecycle", () => {
     let root = createWorld(user, "既有 P2");
     root.simulation.industry!.crafted.i0060 = 1;
     root.simulation.industry!.milestones = ["i0060"];
-    root.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    root.simulation.industry!.quests!.completed = [
+      "p1_dismantler",
+      "p1_crusher",
+      "p1_smelter",
+      "p1_assembler",
+      "p1_free_hands",
+    ];
     root = actWorld(root, { type: "claim_quest", id: "p1_free_hands" });
     saved = {
       owner: user.id,
@@ -534,8 +552,20 @@ describe("local persistence and cloud lifecycle", () => {
   it("keeps a real construction checkpoint and read-only route through offline permission loss", async () => {
     let root = createWorld(user, "施工恢复");
     root.simulation.industry!.stage = 6;
-    root.simulation.industry!.quests!.completed.push("p1_free_hands");
-    root.simulation.industry!.quests!.claimed.push("p1_free_hands");
+    root.simulation.industry!.quests!.completed.push(
+      ...catalog
+        .quests!.filter(
+          (q) => q.stage_final && q.tier < root.simulation.industry!.stage,
+        )
+        .map((q) => q.id),
+    );
+    root.simulation.industry!.quests!.claimed.push(
+      ...catalog
+        .quests!.filter(
+          (q) => q.stage_final && q.tier < root.simulation.industry!.stage,
+        )
+        .map((q) => q.id),
+    );
     root.simulation.industry!.milestones = catalog
       .stages!.slice(0, 5)
       .map((s) => s.milestone_item);

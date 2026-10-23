@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
 import { auditClosure } from "./gameplay-closure.mjs";
+import { advanceQuestStages } from "./quest-closure.mjs";
 
 // The supplied design JSON is the import source. Do not copy recipe formulas
 // from the prose/CSV: IDs remain stable if display names or ordering change.
@@ -370,6 +371,7 @@ const questSource = JSON.parse(
   await readFile(new URL("docs/quests.json", root), "utf8"),
 );
 const questIDs = new Set();
+const finalTiers = new Set();
 const quests = questSource.map((q) => {
   if (
     !/^[a-z][a-z0-9_]*$/.test(q.id) ||
@@ -384,6 +386,13 @@ const quests = questSource.map((q) => {
   )
     throw new Error(`Invalid quest: ${q.id}`);
   questIDs.add(q.id);
+  if (q.stage_final !== undefined && typeof q.stage_final !== "boolean")
+    throw new Error(`Invalid final quest flag: ${q.id}`);
+  if (q.stage_final) {
+    if (q.tier >= 6 || finalTiers.has(q.tier))
+      throw new Error(`Invalid or duplicate final quest tier: ${q.id}`);
+    finalTiers.add(q.tier);
+  }
   const target = ["obtain_item", "craft_item"].includes(q.goal.type)
     ? item(q.goal.target)
     : q.goal.target;
@@ -417,10 +426,20 @@ const quests = questSource.map((q) => {
   )
     throw new Error(`Invalid quest unlock: ${q.id}`);
   if (!Object.keys(rewards).length && !q.unlocks?.length)
-    throw new Error(`Empty quest reward: ${q.id}`);
+    if (!q.stage_final) throw new Error(`Empty quest reward: ${q.id}`);
+  if (q.unlocks?.includes("stage_2") && (!q.stage_final || q.tier !== 1))
+    throw new Error(`Stage unlock requires P1 final quest: ${q.id}`);
   return { ...q, goal: { ...q.goal, target }, rewards };
 });
 if (quests.length > 1000) throw new Error("Too many quests");
+if (finalTiers.size !== 5)
+  throw new Error("P1–P5 each require one final quest");
+for (const q of quests.filter(
+  (q) => q.stage_final && q.goal.type === "craft_item",
+))
+  for (const r of recipes)
+    if (r.outputs[q.goal.target])
+      r.description = `P${q.tier} 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P${q.tier + 1}，不额外消耗本体。`;
 const base = {
   version: 2,
   quests,
@@ -504,8 +523,19 @@ while (changed) {
       machines.add(b.id);
       changed = true;
     }
-  while (stage < 6 && available.has(base.stages[stage - 1].milestone_item)) {
-    stage++;
+  const canDeliver = ["hand_belt", "feeder"].every((id) => {
+    const b = utilities.find((b) => b.id === id);
+    return b && available.has(b.item);
+  });
+  const nextStage = advanceQuestStages(
+    base,
+    stage,
+    available,
+    reached,
+    canDeliver,
+  );
+  if (nextStage !== stage) {
+    stage = nextStage;
     changed = true;
   }
 }
@@ -521,7 +551,7 @@ const lines = [
   "由 `node scripts/import-gameplay.mjs` 生成。原始文件不改写；本报告为静态前置可达分析，不代替实际生产、供能与长局测试。",
   "",
   `- 原始物品 ${d.items.length}、机器 ${d.machines.length}、配方 ${d.recipes.length}；全部保留稳定的小写原始编号。`,
-  `- 开放任务 ${quests.length} 项由 docs/quests.json 按推荐顺序导入；校验目标 / 奖励引用，不以任务奖励作为工业闭包的免费启动资源。`,
+  `- 开放任务 ${quests.length} 项由 docs/quests.json 按推荐顺序导入；P1～P5 各一项阶段终局，其他任务完成至少一半（向上取整）后可达，领奖推进下一阶段；不以任务奖励作为工业闭包的免费启动资源。`,
   `- 兼容旧测试物品 ${legacyItems.length} / 设备 ${legacyBuildings.length} / 配方 ${legacyRecipes.length}，不展示为新建造内容。`,
   `- 基础分拣有 9 种产物，通用机器缓存提升至 12 格；终局最大输入 5 种。`,
   `- 不考虑能源和真实作业条件的材料/机器/阶段闭包到达 P${stage}；${reached.size}/${recipes.length} 配方可达。`,
@@ -535,7 +565,7 @@ const lines = [
   "",
   "## 扩展与偏差",
   "",
-  "P1 追加真实 WH 自动化入库与制造流水线机械手两任务。I0060 / R1040 编号与物料保持，原机械启动套件显示名改为流水线机械手。新进度制造后需领取 p1_free_hands 机制奖励才能进入 P2 并解锁仓库订单；旧 P2 以上存档保留解锁，不补发新物流奖励。静态工业闭包假设可领取该机制奖励，不将任务物品奖励作为原料，也不证明玩家已完成实际物流。仓库递归订单只使用当前已开放工作室配方，一次预留、独占队列、逐批真实结算，取消回收当前实物；复杂度 / 工序 / 批次数有界，见 warehouse-orders.md。",
+  "P1 追加真实 WH 自动化入库与制造流水线机械手两任务。I0060 / R1040 编号与物料保持，原机械启动套件显示名改为流水线机械手。P1～P5 每阶段唯一终局，需完成同阶段其他任务至少一半（向上取整）才开放；只有完成并领取终局奖励才推进下一阶段，制造记录仅保留成果与配方前置。P1 终局同时开放仓库订单；旧档只补认已跨过阶段的终局，不补普通历史或奖励。静态闭包检查任务目标与半数门槛可达，不发任务物品、不证明实际数量 / 物流已完成。P2～P5 普通量产任务尚待配置，当前暂沿用制造目标。仓库递归订单只使用当前已开放工作室配方，一次预留、独占队列、逐批真实结算，取消回收当前实物；复杂度 / 工序 / 批次数有界，见 warehouse-orders.md。",
   "",
   "工作室便捷加工保留初始 M01/M02/M07；M03 / M04 / M08 在累计制造对应设备至少 1 次后开放共用手工队列，不要求安装且不消耗解锁设备。仅持有、拆回或查看设备不算制造；工作室运行层每批耗时为 max(1, floor(duration_ms / 2000)) 秒，原始 duration_ms 留给地图机器，不改导入配方工时。材料和 1～100 批预留 / 取消规则保持；UI 超限自动回填当前库存上限，Worker 原子复核。旧队列保留原工时范围内的进度，达到新工时时下一运行 tick 最多结算当前一批。不开放热能炉或其他机器。starting_machines 仍只有原三种，不额外赠设备或独立队列。界面按 M02 / M07 / M01 / M03 / M04 / M08 分组，仅设备子分类在工作室滚动区内吸顶，垃圾堆正常滚动，库存 / 每批原料及产物用物品卡显示。",
   "",

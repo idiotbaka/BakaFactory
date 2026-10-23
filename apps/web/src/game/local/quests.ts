@@ -4,10 +4,12 @@ import { catalog, recipeDefinitions } from "./catalog";
 import { discoverItems } from "./discovery";
 import { store } from "./inventory";
 import { expectedStage, orderQuestID } from "./progression";
+import { questVisible } from "./questRules";
 
 export type Quest = components["schemas"]["QuestDefinition"];
 export type QuestProgress = components["schemas"]["QuestProgress"];
 export const newQuestProgress = (): QuestProgress => ({
+  stage_quests_version: 1,
   completed: [],
   claimed: [],
   workshop_batches: {},
@@ -40,6 +42,7 @@ export function recordWarehouseDelivery(f: LocalFactory, count: number) {
 export function restoreQuestProgress(f: LocalFactory) {
   const p = f.simulation.industry!;
   const legacy = p.quests?.automated_received === undefined;
+  const legacyStages = p.quests?.stage_quests_version === undefined;
   const quests = (p.quests ??= newQuestProgress());
   quests.automated_received ??= 0;
   // Preserve the already unlocked industrial stages of pre-feature saves.
@@ -49,15 +52,30 @@ export function restoreQuestProgress(f: LocalFactory) {
     if (!quests.claimed.includes(orderQuestID))
       quests.claimed.push(orderQuestID);
   }
+  if (legacyStages) {
+    // Preserve old unlocked stages, without paying rewards or fabricating
+    // ordinary quest history. Future stages must follow the new quest gates.
+    for (const q of catalog.quests ?? []) {
+      if (!q.stage_final || q.tier >= p.stage) continue;
+      if (!quests.completed.includes(q.id)) quests.completed.push(q.id);
+      if (!quests.claimed.includes(q.id)) quests.claimed.push(q.id);
+    }
+    quests.stage_quests_version = 1;
+  }
 }
 // Called only on the next atomic state, after actual production / acquisition.
 export function syncQuests(f: LocalFactory) {
   const p = f.simulation.industry;
   if (!p) return;
   const progress = (p.quests ??= newQuestProgress());
-  for (const q of catalog.quests ?? [])
+  // Resolve ordinary tasks first, independent of recommendation order.
+  const definitions = catalog.quests ?? [];
+  for (const q of [
+    ...definitions.filter((q) => !q.stage_final),
+    ...definitions.filter((q) => q.stage_final),
+  ])
     if (
-      q.tier <= p.stage &&
+      questVisible(p, q) &&
       !progress.completed.includes(q.id) &&
       questAmount(p, q) >= q.goal.count
     )
@@ -76,6 +94,8 @@ export function claimQuest(root: LocalFactory, id: string) {
   if (!q || !p?.completed.includes(id))
     throw new Error("任务尚未达成，不能领取奖励");
   if (p.claimed.includes(id)) throw new Error("该任务奖励已经领取");
+  if (!questVisible(root.simulation.industry, q))
+    throw new Error("阶段终局任务尚未开放，请先完成本阶段至少一半的其他任务");
   // The caller owns a cloned world; failure commits neither items nor claim.
   store(root.simulation.warehouse, q.rewards);
   p.claimed.push(id);
@@ -87,6 +107,8 @@ export function validQuestProgress(value: unknown) {
   if (value === undefined) return true;
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const p = value as Record<string, unknown>;
+  if (p.stage_quests_version !== undefined && p.stage_quests_version !== 1)
+    return false;
   if (
     Object.keys(p).some(
       (k) =>
@@ -95,6 +117,7 @@ export function validQuestProgress(value: unknown) {
           "claimed",
           "workshop_batches",
           "automated_received",
+          "stage_quests_version",
         ].includes(k),
     )
   )

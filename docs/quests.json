@@ -66,10 +66,47 @@
   {
     "id": "p1_free_hands",
     "tier": 1,
+    "stage_final": true,
     "title": "是时候解放双手了",
     "description": "制作一个 流水线机械手，它会让你的双手自动动起来，解放你的工作室",
     "goal": { "type": "craft_item", "target": "流水线机械手", "count": 1 },
     "rewards": {},
     "unlocks": ["warehouse_orders", "stage_2"]
+  },
+  {
+    "id": "p2_industrial_license",
+    "tier": 2,
+    "stage_final": true,
+    "title": "液压时代入场券",
+    "description": "制造液压工业许可包，完成并领取阶段终局任务奖励后开放 P3。",
+    "goal": { "type": "craft_item", "target": "液压工业许可包", "count": 1 },
+    "rewards": {}
+  },
+  {
+    "id": "p3_electrification",
+    "tier": 3,
+    "stage_final": true,
+    "title": "迈向电气化",
+    "description": "制造电气化建设包，完成并领取阶段终局任务奖励后开放 P4。",
+    "goal": { "type": "craft_item", "target": "电气化建设包", "count": 1 },
+    "rewards": {}
+  },
+  {
+    "id": "p4_precision",
+    "tier": 4,
+    "stage_final": true,
+    "title": "迈向精密工业",
+    "description": "制造微电子实验许可证，完成并领取阶段终局任务奖励后开放 P5。",
+    "goal": { "type": "craft_item", "target": "微电子实验许可证", "count": 1 },
+    "rewards": {}
+  },
+  {
+    "id": "p5_cognition",
+    "tier": 5,
+    "stage_final": true,
+    "title": "迈向认知与觉醒",
+    "description": "制造认知系统项目包，完成并领取阶段终局任务奖励后开放 P6。",
+    "goal": { "type": "craft_item", "target": "认知系统项目包", "count": 1 },
+    "rewards": {}
   }
 ]

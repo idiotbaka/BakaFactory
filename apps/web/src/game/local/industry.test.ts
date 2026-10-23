@@ -504,6 +504,12 @@ describe("recycling gameplay", () => {
     f = act(f, { type: "feed_batch", id: "m08" });
     f = advance(f, r.duration_ms / 1000);
     expect(f.simulation.industry?.stage).toBe(1);
+    f.simulation.industry!.quests!.completed.push(
+      "p1_dismantler",
+      "p1_crusher",
+      "p1_smelter",
+      "p1_assembler",
+    );
     claimQuest(f, "p1_free_hands");
     expect(f.simulation.industry?.stage).toBe(2);
     f = act(f, { type: "collect", id: "m08" });

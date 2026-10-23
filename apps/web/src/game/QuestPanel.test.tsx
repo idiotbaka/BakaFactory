@@ -18,7 +18,13 @@ describe("quest interface", () => {
   it("presents mechanism unlocks as a claimable reward without inventing an item payout", () => {
     const factory = createLocalFactory(user, "机制"),
       act = vi.fn();
-    factory.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    factory.simulation.industry!.quests!.completed = [
+      "p1_dismantler",
+      "p1_crusher",
+      "p1_smelter",
+      "p1_assembler",
+      "p1_free_hands",
+    ];
     render(
       <QuestPanel
         factory={factory}
@@ -30,9 +36,14 @@ describe("quest interface", () => {
     const card = within(
       screen.getByRole("article", { name: "是时候解放双手了" }),
     );
+    expect(card.getByText("仓库中解锁下单功能")).toBeInTheDocument();
+    expect(card.getByText("阶段终局任务")).toBeInTheDocument();
     expect(
-      card.getByText("仓库中解锁下单功能，并解放下一阶段"),
+      card.getByText("完成本任务并领取奖励后解锁 P2 阶段。"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("article", { name: "是时候解放双手了" }),
+    ).toHaveClass("is-stage-final");
     expect(card.queryByRole("listitem")).not.toBeInTheDocument();
     expect(
       card.getByRole("button", { name: "流水线机械手" }),
@@ -52,7 +63,11 @@ describe("quest interface", () => {
     const { rerender } = render(<QuestPanel {...props} />);
     expect(
       screen.getAllByRole("article").map((x) => x.getAttribute("aria-label")),
-    ).toEqual(catalog.quests!.map((q) => q.title));
+    ).toEqual(
+      catalog
+        .quests!.filter((q) => q.tier === 1 && !q.stage_final)
+        .map((q) => q.title),
+    );
     const ready = within(
       screen.getByRole("article", { name: "获得物流：手摇传送带" }),
     );
@@ -73,13 +88,68 @@ describe("quest interface", () => {
     progress.claimed = ["p1_belt"];
     rerender(<QuestPanel {...props} />);
     expect(screen.getAllByRole("article")).toHaveLength(
-      catalog.quests!.length - 1,
+      catalog.quests!.filter((q) => q.tier === 1 && !q.stage_final).length - 1,
     );
     fireEvent.click(screen.getByRole("button", { name: /^已完成/ }));
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.getByText("P1 · 已领奖")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "领取奖励" }),
+    ).not.toBeInTheDocument();
+  });
+  it("hides the final and its pending count until four ordinary tasks are achieved, then keeps a historical claim visible", () => {
+    const factory = createLocalFactory(user, "终局显示");
+    const p = factory.simulation.industry!;
+    const props = { factory, catalog, disabled: false, act: vi.fn() };
+    const ids = catalog
+      .quests!.filter((q) => q.tier === 1 && !q.stage_final)
+      .map((q) => q.id);
+    p.quests!.completed = ids.slice(0, 3);
+    const { rerender } = render(<QuestPanel {...props} />);
+    expect(
+      screen.queryByRole("article", { name: "是时候解放双手了" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "待完成（8）" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/3 \/ 4 项/)).toBeInTheDocument();
+    p.quests!.completed.push(ids[3]);
+    rerender(<QuestPanel {...props} />);
+    expect(
+      screen.getByRole("article", { name: "是时候解放双手了" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "待完成（9）" }),
+    ).toBeInTheDocument();
+    p.quests!.completed = ["p1_free_hands"];
+    p.quests!.claimed = ["p1_free_hands"];
+    p.stage = 2;
+    rerender(<QuestPanel {...props} />);
+    expect(
+      screen.getByRole("article", { name: "液压时代入场券" }),
+    ).toHaveTextContent("解锁 P3 阶段");
+    fireEvent.click(screen.getByRole("button", { name: /^已完成/ }));
+    expect(
+      screen.getByRole("article", { name: "是时候解放双手了" }),
+    ).toHaveClass("is-stage-final");
+  });
+  it("does not signal a hidden stale final completion as a claimable reward", () => {
+    const factory = createLocalFactory(user, "隐藏红点");
+    factory.simulation.industry!.quests!.completed = ["p1_free_hands"];
+    render(
+      <IndustryViews
+        factory={factory}
+        catalog={catalog}
+        disabled={false}
+        act={vi.fn()}
+        view="factory"
+        onViewChange={vi.fn()}
+      >
+        {null}
+      </IndustryViews>,
+    );
+    expect(
+      screen.queryByRole("img", { name: "有任务奖励待领取" }),
     ).not.toBeInTheDocument();
   });
   it("places the quest entry immediately after factory and signals only unclaimed rewards", () => {

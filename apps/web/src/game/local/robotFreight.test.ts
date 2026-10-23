@@ -40,8 +40,20 @@ function place(
 function setup(item = cart) {
   let root = createWorld(user, "运输测试");
   root.simulation.industry!.stage = 6;
-  root.simulation.industry!.quests!.completed.push("p1_free_hands");
-  root.simulation.industry!.quests!.claimed.push("p1_free_hands");
+  root.simulation.industry!.quests!.completed.push(
+    ...catalog
+      .quests!.filter(
+        (q) => q.stage_final && q.tier < root.simulation.industry!.stage,
+      )
+      .map((q) => q.id),
+  );
+  root.simulation.industry!.quests!.claimed.push(
+    ...catalog
+      .quests!.filter(
+        (q) => q.stage_final && q.tier < root.simulation.industry!.stage,
+      )
+      .map((q) => q.id),
+  );
   root.simulation.industry!.milestones = catalog
     .stages!.slice(0, 5)
     .map((s) => s.milestone_item);

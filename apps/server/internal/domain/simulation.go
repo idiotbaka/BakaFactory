@@ -211,21 +211,7 @@ func (s Simulation) Validate(c Catalog) error {
 			}
 			seen[id] = true
 		}
-		expected := 1
-		for expected < 6 && seen[c.Stages[expected-1].MilestoneItem] {
-			gate := false
-			for _, q := range c.Quests {
-				if q.ID == "p1_free_hands" {
-					gate = true
-				}
-			}
-			legacy := p.Quests == nil || p.Quests.AutomatedReceived == nil
-			if expected == 1 && gate && !warehouseOrderRewardClaimed(p) && !(legacy && p.Stage >= 2) {
-				break
-			}
-			expected++
-		}
-		if p.Stage != expected {
+		if p.Stage != expectedQuestStage(p, c) {
 			return fmt.Errorf("inconsistent stage")
 		}
 		for id, n := range p.Crafted {
