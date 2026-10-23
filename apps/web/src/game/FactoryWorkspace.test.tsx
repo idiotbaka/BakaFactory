@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import FactoryWorkspace from "./FactoryWorkspace";
@@ -30,6 +30,7 @@ const backup = vi.fn().mockResolvedValue(undefined),
   retry = vi.fn(),
   markStoryViewed = vi.fn().mockResolvedValue(undefined);
 afterEach(() => {
+  vi.useRealTimers();
   vi.clearAllMocks();
   localStorage.removeItem("bakafactory:power-saving");
 });
@@ -101,6 +102,33 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("hides map operation errors after three seconds and gives repeated errors a fresh lifetime", async () => {
+    vi.useFakeTimers();
+    prepare();
+    runtimeAct
+      .mockRejectedValueOnce(new Error("原料不足"))
+      .mockRejectedValueOnce(new Error("原料不足"));
+    const { unmount } = render(
+      <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "工作室" }));
+    const scavenge = screen.getByRole("button", { name: /拾取 1 包垃圾/ });
+    await act(async () => {
+      fireEvent.click(scavenge);
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent("原料不足");
+    act(() => vi.advanceTimersByTime(2000));
+    await act(async () => {
+      fireEvent.click(scavenge);
+    });
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByRole("alert")).toHaveTextContent("原料不足");
+    act(() => vi.advanceTimersByTime(1999));
+    expect(screen.getByRole("alert")).toHaveTextContent("原料不足");
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    unmount();
+  });
   it("filters each catalog by phase, locks future structures, previews future items and keeps original shortcuts", () => {
     prepare(true, {
       setup: (f) => {

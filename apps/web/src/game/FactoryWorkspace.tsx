@@ -68,7 +68,12 @@ export default function FactoryWorkspace({
     [...`${user.display_name}的工厂`].slice(0, 32).join(""),
   );
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [errorNotice, setErrorNotice] = useState({ message: "" });
+  const error = errorNotice.message;
+  function setError(message: string) {
+    // A new notice also restarts the lifetime when its text is identical.
+    setErrorNotice({ message });
+  }
   const syncError = game.message;
   const [tab, setTab] = useState<"building" | "logistics" | "item">("building");
   const [placementType, setPlacementType] = useState<string | null>(null);
@@ -122,6 +127,15 @@ export default function FactoryWorkspace({
   const phaseFor = (category: typeof tab) =>
     Math.min(catalogPhases[category] ?? stage, category === "item" ? 6 : stage);
   useEffect(() => savePowerSaving(powerSaving), [powerSaving]);
+  useEffect(() => {
+    if (!errorNotice.message) return;
+    const timeout = setTimeout(() => {
+      setErrorNotice((current) =>
+        current === errorNotice ? { message: "" } : current,
+      );
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [errorNotice]);
   useEffect(() => {
     if (!game.runtime) return;
     return installDeveloperConsole(game.runtime, () => {
