@@ -39,7 +39,7 @@ export default function RobotTaskForm({
     if (!zone) return [];
     if (zone.id !== factory.id)
       return zone.warehouse_id
-        ? [{ id: zone.warehouse_id, name: "WH · 工厂分仓" }]
+        ? [{ id: zone.warehouse_id, name: "WH · 总仓库接口" }]
         : [];
     return factory.buildings
       .filter(

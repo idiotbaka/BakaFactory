@@ -405,7 +405,7 @@ export default function IndustryViews({
                 )}
               </>
             ) : (
-              <section className="industry-warehouse" aria-label="当前厂区库存">
+              <section className="industry-warehouse" aria-label="工厂总仓库">
                 {catalog.items
                   .filter(
                     (i) =>
@@ -429,14 +429,7 @@ export default function IndustryViews({
                           className="warehouse-order-trigger"
                           type="button"
                           aria-label={`下单${i.name}`}
-                          disabled={
-                            disabled || !headquarters || !!job || !onOrder
-                          }
-                          title={
-                            !headquarters
-                              ? "请切回起始回收场下单，订单使用起始仓库"
-                              : undefined
-                          }
+                          disabled={disabled || !!job || !onOrder}
                           onClick={() => setOrderItem(i.id)}
                         >
                           下单
@@ -466,7 +459,7 @@ export default function IndustryViews({
                 item={orderItem}
                 factory={factory}
                 catalog={catalog}
-                disabled={disabled || !headquarters}
+                disabled={disabled}
                 onConfirm={onOrder}
                 onClose={closeOrder}
               />

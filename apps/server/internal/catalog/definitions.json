@@ -4821,7 +4821,7 @@
       "code": "WH",
       "icon": "bus",
       "color": "#c8ed9c",
-      "description": "位于工厂中心的固定仓库，接收传送带或物品端口送来的物品，自动计入玩家总仓库。",
+      "description": "所有厂区 WH 共用同一总仓库；实际入库统一计数，端口方向、过滤与输出速率各自独立。机器仍需实际供料。",
       "category": "logistics",
       "fixed": true,
       "input_slots": 4,

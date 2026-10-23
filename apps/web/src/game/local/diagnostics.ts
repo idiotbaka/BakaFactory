@@ -57,7 +57,7 @@ export function diagnoseFactory(f: LocalFactory) {
           missing
             .map(
               ([id, n]) =>
-                `${name(id)} 缺 ${n - count(m.input, id)}（本区仓 ${f.simulation.warehouse[id] ?? 0}）`,
+                `${name(id)} 缺 ${n - count(m.input, id)}（总仓库 ${f.simulation.warehouse[id] ?? 0}）`,
             )
             .join("；"),
         );

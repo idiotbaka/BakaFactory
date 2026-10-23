@@ -140,7 +140,7 @@ describe("item acquisition popovers", () => {
     rerender(<IndustryViews {...props} view="warehouse" />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.click(
-      within(screen.getByRole("region", { name: "当前厂区库存" })).getByRole(
+      within(screen.getByRole("region", { name: "工厂总仓库" })).getByRole(
         "button",
         { name: "垃圾包" },
       ),

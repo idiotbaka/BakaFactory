@@ -19,18 +19,23 @@ import { syncQuests } from "./quests";
 
 // Deterministic single-second transition, with no clock, DOM, network or disk.
 // Production settles first; transport reads that stock, plans once and commits.
-export function step(current: LocalFactory, workshop = true): LocalFactory {
+export function step(
+  current: LocalFactory,
+  workshop = true,
+  sharedWarehouse?: Record<string, number>,
+): LocalFactory {
   if (
     current.simulation.tick >= Number.MAX_SAFE_INTEGER ||
     current.revision >= Number.MAX_SAFE_INTEGER
   )
     throw new Error("游戏时间已达到上限");
-  const { industry, ...local } = current.simulation;
+  const { industry, warehouse, ...local } = current.simulation;
   const f: LocalFactory = {
     ...current,
     revision: current.revision + 1,
     simulation: {
       ...structuredClone(local),
+      warehouse: sharedWarehouse ?? { ...warehouse },
       ...(industry
         ? { industry: workshop ? structuredClone(industry) : industry }
         : {}),

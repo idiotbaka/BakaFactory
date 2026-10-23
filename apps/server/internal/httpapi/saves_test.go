@@ -242,6 +242,53 @@ func sampleSave(owner string) domain.GameSave {
 	f.Simulation = domain.Simulation{Tick: 7, TickRate: 1, Buildings: map[string]*domain.MachineState{"bus": {Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "warehouse"}}, Warehouse: map[string]int64{"iron_ore": 5}, Transfers: []domain.ItemTransfer{}}
 	return domain.GameSave{FormatVersion: 1, RulesVersion: 1, Factory: f}
 }
+
+func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
+	f := newAuthFixture(t, false)
+	registered := f.request("POST", "/api/v1/auth/register", credentials("shared_warehouse", "correct-password"), nil)
+	user := userFrom(t, registered, 201)
+	cookie := registered.Result().Cookies()[0]
+	session := heartbeatID(t, f, cookie)
+	save := sampleSave(user.ID)
+	save.RulesVersion = 2
+	save.Factory.Simulation.Industry = &domain.IndustryState{Stage: 1, Milestones: []string{}, Crafted: map[string]int64{}}
+	child := sampleSave(user.ID).Factory
+	child.ID = "shared-child"
+	child.Buildings[0].FactoryID = child.ID
+	child.Simulation.Warehouse["iron_ore"] = 3
+	save.Factory.Districts = []domain.FactoryDetail{child}
+	save.Factory.ActiveDistrictID = child.ID
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie); w.Code != 200 {
+		t.Fatal("legacy split stock rejected", w.Code, w.Body)
+	}
+	// The client merges only public stock, then saves one canonical v3 ledger.
+	save.RulesVersion = 3
+	save.Factory.Simulation.Warehouse["iron_ore"] = 8
+	save.Factory.Districts[0].Simulation.Warehouse = map[string]int64{}
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 200 {
+		t.Fatal("shared warehouse upgrade rejected", w.Code, w.Body)
+	}
+	var response struct {
+		Backup domain.CloudSave `json:"backup"`
+	}
+	w := f.cloudRequest("GET", session, "", cookie)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 2 || !reflect.DeepEqual(response.Backup.Save, save) {
+		t.Fatal("shared stock changed during cloud roundtrip", err)
+	}
+	save.Factory.Districts[0].Simulation.Warehouse["iron_ore"] = 8
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 2, save), cookie); w.Code != 400 {
+		t.Fatal("duplicate district stock accepted in a v3 save", w.Code, w.Body)
+	}
+	save.Factory.Districts[0].Simulation.Warehouse = map[string]int64{}
+	save.RulesVersion = 4
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 2, save), cookie); w.Code != 400 {
+		t.Fatal("future warehouse semantics accepted", w.Code, w.Body)
+	}
+	w = f.cloudRequest("GET", session, "", cookie)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 2 || response.Backup.Save.Factory.Simulation.Warehouse["iron_ore"] != 8 {
+		t.Fatal("rejected upgrade overwrote the cloud backup", err)
+	}
+}
 func TestConstructionCloudSaveRoundTripAndStrictShape(t *testing.T) {
 	f := newAuthFixture(t, false)
 	registered := f.request("POST", "/api/v1/auth/register", credentials("construction_save", "correct-password"), nil)

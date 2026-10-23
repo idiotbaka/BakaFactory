@@ -32,7 +32,7 @@ function factory() {
   return f;
 }
 describe("warehouse order interface", () => {
-  it("reveals craftable zero-stock items only after claiming, and disables orders outside headquarters or during a queue", () => {
+  it("reveals craftable zero-stock items only after claiming, and blocks busy queues and permits orders at every WH", () => {
     const f = factory(),
       onOrder = vi.fn().mockResolvedValue(undefined);
     const props = {
@@ -67,7 +67,7 @@ describe("warehouse order interface", () => {
     delete f.simulation.industry!.workshop;
     f.active_district_id = f.districts![0].id;
     rerender(<IndustryViews {...props} factory={projectFactory(f)} />);
-    expect(screen.getByRole("button", { name: "下单粗密封圈" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "下单粗密封圈" })).toBeEnabled();
   });
   it("previews rounded outputs with icons, sends the confirmed signature and keeps errors reviewable", async () => {
     const f = factory(),

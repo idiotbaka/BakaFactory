@@ -178,7 +178,7 @@ export default function WarehouseOrderDialog({
             aria-label="下单计划滚动区域"
           >
             <p>
-              优先使用起始仓库存量，按已解锁工作室配方顺序加工；副产物可供后续步骤使用。此数量为本次新增加工需求，原有目标成品不抵扣。
+              使用所有厂区共用的总仓库存量，按已解锁工作室配方顺序加工；副产物可供后续步骤使用。此数量为本次新增加工需求，原有目标成品不抵扣。
             </p>
             {preview.error && <p role="alert">{preview.error}</p>}
             {plan && (

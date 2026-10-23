@@ -30,7 +30,7 @@ type CloudSave struct {
 func (s GameSave) Validate(owner string, c Catalog) error {
 	bad := func() error { return fmt.Errorf("%w: 存档格式或游戏版本不兼容", ErrValidation) }
 	f := s.Factory
-	if s.FormatVersion != 1 || (s.RulesVersion != 1 && s.RulesVersion != 2) || (s.RulesVersion == 2 && f.Simulation.Industry == nil) || f.OwnerID != owner || f.ID == "" || len(f.ID) > 128 || f.Width != InitialFactorySize || f.Height != InitialFactorySize || len(f.Buildings) < 1 || len(f.Buildings) > InitialFactorySize*InitialFactorySize || f.Revision < 0 || f.Revision > MaxSafeInteger {
+	if s.FormatVersion != 1 || (s.RulesVersion < 1 || s.RulesVersion > 3) || (s.RulesVersion >= 2 && f.Simulation.Industry == nil) || f.OwnerID != owner || f.ID == "" || len(f.ID) > 128 || f.Width != InitialFactorySize || f.Height != InitialFactorySize || len(f.Buildings) < 1 || len(f.Buildings) > InitialFactorySize*InitialFactorySize || f.Revision < 0 || f.Revision > MaxSafeInteger {
 		return bad()
 	}
 	if !utf8.ValidString(f.Name) || strings.TrimSpace(f.Name) == "" || utf8.RuneCountInString(f.Name) > 32 {
@@ -195,6 +195,9 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 		}
 		factoryIDs := map[string]bool{f.ID: true}
 		for _, child := range f.Districts {
+			if s.RulesVersion == 3 && len(child.Simulation.Warehouse) != 0 {
+				return bad()
+			}
 			if child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || factoryIDs[child.ID] {
 				return bad()
 			}

@@ -50,12 +50,8 @@ function start() {
   return root;
 }
 function place(root: LocalFactory, id: string, type: string, x: number, y = 0) {
-  const f =
-    root.id === root.active_district_id
-      ? root
-      : root.districts!.find((f) => f.id === root.active_district_id)!;
   const item = buildingDefinitions.get(type)!.item!;
-  f.simulation.warehouse[item] = (f.simulation.warehouse[item] ?? 0) + 1;
+  root.simulation.warehouse[item] = (root.simulation.warehouse[item] ?? 0) + 1;
   return editWorld(root, {
     kind: "place",
     id,
@@ -69,7 +65,7 @@ function deploy(root: LocalFactory, id: string, item = cart) {
     root.id === root.active_district_id
       ? root
       : root.districts!.find((f) => f.id === root.active_district_id)!;
-  f.simulation.warehouse[item] = (f.simulation.warehouse[item] ?? 0) + 1;
+  root.simulation.warehouse[item] = (root.simulation.warehouse[item] ?? 0) + 1;
   return act(root, {
     type: "robot_deploy",
     id,
@@ -311,8 +307,8 @@ describe("robot bodies, real charging and save boundaries", () => {
     expect(projectFactory(root).robots).toHaveLength(1);
     root = act(root, { type: "select_district", id: root.id });
     root = act(root, { type: "robot_recall", id: "r" });
-    expect(root.districts![0].simulation.warehouse[cart]).toBe(1);
-    expect(root.simulation.warehouse[cart] ?? 0).toBe(0);
+    expect(root.districts![0].simulation.warehouse).toEqual({});
+    expect(root.simulation.warehouse[cart]).toBe(1);
   });
   it("validates zone permissions, compatible energy, whole-save bounds and unique occupancy atomically", () => {
     let root = deploy(place(start(), "station", "m18", 4), "r");

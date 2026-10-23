@@ -230,7 +230,7 @@ components:
       required: [format_version, rules_version, factory]
       properties:
         format_version: { type: integer, enum: [1] }
-        rules_version: { type: integer, enum: [1, 2] }
+        rules_version: { type: integer, enum: [1, 2, 3] }
         factory: { $ref: "#/components/schemas/FactoryDetail" }
     CloudSave:
       type: object

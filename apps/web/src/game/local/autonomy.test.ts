@@ -20,11 +20,7 @@ const smart = itemID("智能机器人"),
   recipe = recipeDefinitions.get("r1007")!,
   input = Object.keys(recipe.inputs)[0];
 function place(root: LocalFactory, id: string, type: string, x: number, y = 0) {
-  const f =
-    root.active_district_id === root.id
-      ? root
-      : root.districts!.find((f) => f.id === root.active_district_id)!;
-  f.simulation.warehouse[buildingDefinitions.get(type)!.item!] = 1;
+  root.simulation.warehouse[buildingDefinitions.get(type)!.item!] = 1;
   return editWorld(root, {
     kind: "place",
     id,
@@ -84,6 +80,29 @@ const advance = (r: LocalFactory, n: number) => {
   return r;
 };
 describe("deterministic authorized robot dispatch", () => {
+  it("reserves one shared stock pool across different WH endpoints instead of promising the same units twice", () => {
+    let root = setup(2);
+    root = place(root, "other-target", "m03", 7, 3);
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "recipe", id: "other-target", recipe: recipe.id },
+    });
+    const child = root.districts![0];
+    child.buildings[0].configuration.face_0 = { mode: "output", filter: input };
+    for (const r of root.robots!)
+      root = actWorld(root, {
+        type: "robot_config",
+        id: r.id,
+        allowed_zones: [root.id, child.id],
+      });
+    dispatchRobots(root);
+    expect(root.robots!.filter((r) => r.task)).toHaveLength(1);
+    expect(root.robots!.reduce((n, r) => n + (r.task?.count ?? 0), 0)).toBe(
+      recipe.inputs[input],
+    );
+    expect(root.simulation.warehouse[input]).toBe(recipe.inputs[input]);
+    expect(root.districts![0].simulation.warehouse).toEqual({});
+  });
   it("reserves demand across peers and performs real freight rather than teleporting warehouse stock", () => {
     let root = setup(2);
     dispatchRobots(root);

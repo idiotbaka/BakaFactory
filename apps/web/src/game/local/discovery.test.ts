@@ -55,7 +55,7 @@ describe("persistent obtained-item history", () => {
     f.simulation.industry!.crafted[itemID("基础铁板")] = 1;
     f.simulation.warehouse[itemID("垃圾包")] = 0;
     f.districts![0].simulation.warehouse[itemID("粗铜丝")] = 2;
-    const restored = validateSave(toSave(f), user.id);
+    const restored = validateSave({ ...toSave(f), rules_version: 2 }, user.id);
     expect(restored.simulation.industry!.discovered_items).toEqual(
       expect.arrayContaining([
         itemID("基础铁板"),

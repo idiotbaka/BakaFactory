@@ -25,7 +25,8 @@ export default function WorldPanel({
         {districtLimit(factory.simulation?.industry?.stage ?? 1)}
       </h3>
       <p>
-        各厂区同步生产，库存和能源独立。跨区物料需实际物流；垃圾堆与共用手工工作室在起始回收场。
+        各厂区同步生产，所有 WH
+        共用总仓库；设备缓存、产线物流和能源网络独立。垃圾堆与共用手工工作室在起始回收场。
       </p>
       <div className="world-districts">
         {districts.map((d) => (
@@ -68,7 +69,7 @@ export default function WorldPanel({
         }
         onClick={() => act({ type: "expand_district", name })}
       >
-        扩建厂区：起始仓库基础铁板 20 + 简易支架 10
+        扩建厂区：总仓库基础铁板 20 + 简易支架 10
       </button>
       <small>
         阶段上限：6 / 12 / 24 / 40 / 70 /

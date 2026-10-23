@@ -487,6 +487,8 @@ const base = {
   buildings: [
     {
       ...previous.buildings.find((b) => b.id === "bus"),
+      description:
+        "所有厂区 WH 共用同一总仓库；实际入库统一计数，端口方向、过滤与输出速率各自独立。机器仍需实际供料。",
       input_whitelist: [],
       role: "warehouse",
     },
@@ -552,6 +554,7 @@ const lines = [
   "",
   `- 原始物品 ${d.items.length}、机器 ${d.machines.length}、配方 ${d.recipes.length}；全部保留稳定的小写原始编号。`,
   `- 开放任务 ${quests.length} 项由 docs/quests.json 按推荐顺序导入；P1～P5 各一项阶段终局，其他任务完成至少一半（向上取整）后可达，领奖推进下一阶段；不以任务奖励作为工业闭包的免费启动资源。`,
+  "- 网页适配：所有 WH 共用总仓库，规则 3 只保存一份库存；旧 1/2 分仓在客户端校验后合并，现场缓存 / 管道 / 能网独立。P2 可直接启动空分厂，机器人本轮只对接共享库存，定位调整留待后续。",
   `- 兼容旧测试物品 ${legacyItems.length} / 设备 ${legacyBuildings.length} / 配方 ${legacyRecipes.length}，不展示为新建造内容。`,
   `- 基础分拣有 9 种产物，通用机器缓存提升至 12 格；终局最大输入 5 种。`,
   `- 不考虑能源和真实作业条件的材料/机器/阶段闭包到达 P${stage}；${reached.size}/${recipes.length} 配方可达。`,

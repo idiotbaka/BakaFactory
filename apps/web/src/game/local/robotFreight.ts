@@ -336,11 +336,11 @@ function exchange(
         return { n: 0, status: "blocked" };
       budgetKey = `${f.id}:${b.id}:${rotation}`;
       const limit = 1 - (budgets.get(budgetKey) ?? 0);
-      n = Math.min(n, f.simulation.warehouse[item] ?? 0, limit);
+      n = Math.min(n, root.simulation.warehouse[item] ?? 0, limit);
     } else
       n = Math.min(
         n,
-        Number.MAX_SAFE_INTEGER - (f.simulation.warehouse[item] ?? 0),
+        Number.MAX_SAFE_INTEGER - (root.simulation.warehouse[item] ?? 0),
       );
   } else if (isFluidNode(b.building_type)) {
     if (
@@ -395,7 +395,7 @@ function exchange(
     status: loading ? "loading" : "unloading",
     commit: () => {
       if (kind === "warehouse") {
-        store(f.simulation.warehouse, { [item]: loading ? -n : n });
+        store(root.simulation.warehouse, { [item]: loading ? -n : n });
         if (!loading) recordWarehouseDelivery(root, n);
       } else if (kind === "fluid") {
         if (loading) {
@@ -608,17 +608,16 @@ export function stepFreight(root: LocalFactory) {
     }
     if (r.returning) {
       if (r.cargo) {
-        const f = worldFactories(root).find((f) => f.id === r.home_factory_id)!;
         if (
           !Number.isSafeInteger(
-            (f.simulation.warehouse[r.cargo.item] ?? 0) + r.cargo.count,
+            (root.simulation.warehouse[r.cargo.item] ?? 0) + r.cargo.count,
           )
         ) {
           r.status = "blocked";
           continue;
         }
         if (!spend()) continue;
-        store(f.simulation.warehouse, { [r.cargo.item]: r.cargo.count });
+        store(root.simulation.warehouse, { [r.cargo.item]: r.cargo.count });
         delete r.cargo;
         if (r.task) {
           if (r.task.repeat) {

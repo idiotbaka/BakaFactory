@@ -85,8 +85,8 @@ describe("one worker world with independent districts", () => {
       action: { type: "workshop", recipe: "r1001" },
     });
     const child = root.districts![0];
-    child.simulation.warehouse[garbage] = 12;
-    child.simulation.warehouse[machineItem] = 1;
+    root.simulation.warehouse[garbage] = 12;
+    root.simulation.warehouse[machineItem] = 1;
     root = actWorld(root, { type: "select_district", id: child.id });
     root = editWorld(root, {
       kind: "place",
@@ -192,10 +192,10 @@ describe("one worker world with independent districts", () => {
     ).toThrow(/上限/);
     expect(validateSave(toSave(root), user.id).districts).toHaveLength(99);
   });
-  it("saves all local warehouses, active district and geometry; rejects nested, foreign and inconsistent worlds", () => {
+  it("saves one global warehouse, active district and geometry; rejects nested, foreign and inconsistent worlds", () => {
     let root = createWorld(user, "回收场");
     const child = root.districts![0];
-    child.simulation.warehouse[itemID("净化水")] = 500;
+    root.simulation.warehouse[itemID("净化水")] = 500;
     root = actWorld(root, { type: "select_district", id: child.id });
     root = stepWorld(root);
     const loaded = validateSave(toSave(root), user.id);
@@ -203,7 +203,7 @@ describe("one worker world with independent districts", () => {
     expect(projectFactory(loaded).simulation.warehouse[itemID("净化水")]).toBe(
       500,
     );
-    expect(loaded.simulation.warehouse[itemID("净化水")]).toBeUndefined();
+    expect(loaded.simulation.warehouse[itemID("净化水")]).toBe(500);
     for (const mutate of [
       (r: typeof root) => {
         r.districts![0].owner_id = "other";

@@ -25,7 +25,7 @@ describe("open quests and atomic rewards", () => {
     root = editWorld(root, { kind: "industry", action: { type: "scavenge" } });
     expect(root.simulation.industry!.quests!.automated_received).toBe(0);
     const child = root.districts![0];
-    child.simulation.warehouse[buildingDefinitions.get("hand_belt")!.item!] = 1;
+    root.simulation.warehouse[buildingDefinitions.get("hand_belt")!.item!] = 1;
     root = actWorld(root, { type: "select_district", id: child.id });
     root = editWorld(root, {
       kind: "place",
@@ -91,7 +91,7 @@ describe("open quests and atomic rewards", () => {
   it("recognizes real remote production through the one global ledger without waiting for collection", () => {
     let root = createWorld(user, "分厂制造");
     const child = root.districts![0];
-    child.simulation.warehouse[buildingDefinitions.get("m08")!.item!] = 1;
+    root.simulation.warehouse[buildingDefinitions.get("m08")!.item!] = 1;
     root = actWorld(root, { type: "select_district", id: child.id });
     root = editWorld(root, {
       kind: "place",

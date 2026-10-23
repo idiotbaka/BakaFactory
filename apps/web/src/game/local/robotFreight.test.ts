@@ -232,7 +232,7 @@ describe("physical robot freight", () => {
     expect(root.robots![0].energy_kj).toBe(energy - 8);
     expect(root.robots![0].cargo?.count).toBe(1);
     root = until(root, (f) => f.robots![0].completed_tasks === 1);
-    expect(root.districts![0].simulation.warehouse[body]).toBe(1);
+    expect(root.simulation.warehouse[body]).toBe(1);
     expect(root.simulation.industry!.quests!.automated_received).toBe(1);
     expect(total(root, body)).toBe(1);
     expect(
@@ -458,9 +458,7 @@ describe("physical robot freight", () => {
     );
     const landing = transit.robots![0].transit!;
     transit = actWorld(transit, { type: "select_district", id: child.id });
-    transit.districts![0].simulation.warehouse[
-      buildingDefinitions.get("chest")!.item!
-    ] = 1;
+    transit.simulation.warehouse[buildingDefinitions.get("chest")!.item!] = 1;
     expect(() =>
       editWorld(transit, {
         kind: "place",

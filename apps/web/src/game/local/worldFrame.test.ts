@@ -146,7 +146,8 @@ describe("incremental world snapshots and immutable quiet factories", () => {
     const old = structuredClone(root),
       after = stepWorld(root);
     expect(root).toEqual(old);
-    expect(after.districts![0].simulation.warehouse[iron]).toBe(1);
+    expect(after.simulation.warehouse[iron]).toBe(1);
+    expect(after.districts![0].simulation.warehouse).toEqual({});
     expect(
       applyWorldFrame(root, structuredClone(worldFrame(root, after))),
     ).toEqual(after);

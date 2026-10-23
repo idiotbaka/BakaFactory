@@ -359,10 +359,7 @@ export default function FactoryWorkspace({
             catalog={catalog}
             paused={game.paused}
             blocked={game.workshopBlocked}
-            canCancel={
-              !game.districts?.length ||
-              !!game.districts.find((d) => d.id === factory?.id)?.headquarters
-            }
+            canCancel
             onCancel={() => act({ type: "cancel_workshop" })}
           />
         </div>

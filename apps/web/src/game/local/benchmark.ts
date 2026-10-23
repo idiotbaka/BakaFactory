@@ -10,6 +10,7 @@ import { stepWorld, allDistricts } from "./world";
 import { worldFrame } from "./worldFrame";
 import { adjacentCells } from "./robotRoutes";
 import { newQuestProgress } from "./quests";
+import { store } from "./inventory";
 export type BenchmarkOptions = {
   districts: number;
   machines: number;
@@ -168,6 +169,10 @@ export function benchmarkFixture(o: BenchmarkOptions): LocalFactory {
   }
   const root = factories[0];
   root.districts = factories.slice(1);
+  for (const child of root.districts) {
+    store(root.simulation.warehouse, child.simulation.warehouse);
+    child.simulation.warehouse = {};
+  }
   root.active_district_id = root.id;
   root.robots = robots;
   root.simulation.industry = {

@@ -107,11 +107,10 @@ export function configureAutonomy(root: LocalFactory, action: AutonomyAction) {
   );
 }
 // An automatic rejected proposal must be as atomic as a rejected player edit.
-// These proposal handlers only mutate this robot and its home warehouse.
+// These proposal handlers only mutate this robot and the shared warehouse.
 function proposal(root: LocalFactory, r: Robot, apply: () => void) {
   const previous = structuredClone(r),
-    home = worldFactories(root).find((f) => f.id === r.home_factory_id)!,
-    warehouse = structuredClone(home.simulation.warehouse);
+    warehouse = structuredClone(root.simulation.warehouse);
   try {
     apply();
     return true;
@@ -119,7 +118,7 @@ function proposal(root: LocalFactory, r: Robot, apply: () => void) {
     for (const key of Object.keys(r))
       delete (r as unknown as Record<string, unknown>)[key];
     Object.assign(r, previous);
-    home.simulation.warehouse = warehouse;
+    root.simulation.warehouse = warehouse;
     return false;
   }
 }
@@ -153,13 +152,22 @@ export function dispatchRobots(root: LocalFactory) {
     pledges = new Map<string, number>();
   const key = (factory: string, building: string, item: string) =>
     JSON.stringify([factory, building, item]);
+  const sourceKey = (factory: string, building: string, item: string) =>
+    endpointBuilding(root, { factory_id: factory, building_id: building })
+      ?.building_type === "bus"
+      ? JSON.stringify(["shared-warehouse", item])
+      : key(factory, building, item);
   const reserve = (bot: Robot) => {
     const t = bot.task;
     if (!t) return;
     const target = key(t.target.factory_id, t.target.building_id, t.item);
     demand.set(target, (demand.get(target) ?? 0) + t.count - t.delivered);
     if (t.phase === "pickup") {
-      const source = key(t.source.factory_id, t.source.building_id, t.item);
+      const source = sourceKey(
+        t.source.factory_id,
+        t.source.building_id,
+        t.item,
+      );
       pledges.set(
         source,
         (pledges.get(source) ?? 0) + t.count - (bot.cargo?.count ?? 0),
@@ -232,8 +240,9 @@ export function dispatchRobots(root: LocalFactory) {
               })
             )
               continue;
-            const pledged = pledges.get(key(source.id, bus.id, item)) ?? 0,
-              available = (source.simulation.warehouse[item] ?? 0) - pledged;
+            const pledged =
+                pledges.get(sourceKey(source.id, bus.id, item)) ?? 0,
+              available = (root.simulation.warehouse[item] ?? 0) - pledged;
             const amount = Math.min(missing, 32, available);
             if (
               amount < 1 ||

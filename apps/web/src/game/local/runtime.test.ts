@@ -473,7 +473,9 @@ describe("local persistence and cloud lifecycle", () => {
     FakeWorker.instances[0].tick();
     expect(view.workshopBlocked).toBe(true);
     expect(view.factory!.id).toBe(root.active_district_id);
-    expect(view.factory!.simulation.warehouse).toEqual({});
+    expect(view.factory!.simulation.warehouse).toEqual(
+      root.simulation.warehouse,
+    );
     expect(view.factory!.simulation.industry!.workshop).toMatchObject({
       remaining: 2,
       total: 2,

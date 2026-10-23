@@ -61,7 +61,11 @@ export function projectFactory(root: LocalFactory): LocalFactory {
   return {
     ...view,
     revision: root.revision,
-    simulation: { ...f.simulation, industry: root.simulation.industry },
+    simulation: {
+      ...f.simulation,
+      warehouse: root.simulation.warehouse,
+      industry: root.simulation.industry,
+    },
     robots: root.robots,
   };
 }
@@ -131,12 +135,13 @@ export function stepWorld(current: LocalFactory): LocalFactory {
         revision: child.revision + 1,
         simulation: {
           ...child.simulation,
-          warehouse: { ...child.simulation.warehouse },
           tick: root.simulation.tick,
         },
       });
       continue;
     }
+    // Share only this owned next world's ledger while stepping a district.
+    // Persist no district copy, so snapshots cannot duplicate total stock.
     const next = step(
       {
         ...child,
@@ -144,10 +149,12 @@ export function stepWorld(current: LocalFactory): LocalFactory {
         simulation: { ...child.simulation, industry: root.simulation.industry },
       },
       false,
+      root.simulation.warehouse,
     );
     root.simulation.industry = next.simulation.industry;
     delete next.simulation.industry;
     delete next.robots;
+    next.simulation.warehouse = {};
     districts.push(next);
   }
   root.districts = districts;
@@ -205,6 +212,11 @@ export function editWorld(
     return next;
   };
   if (id === current.id) return verify(editFactory(current, edit));
+  if (
+    edit.kind === "industry" &&
+    ["order_workshop", "cancel_workshop"].includes(edit.action.type)
+  )
+    return verify(editFactory(current, edit));
   const index = current.districts?.findIndex((f) => f.id === id) ?? -1;
   if (index < 0) throw new Error("厂区不存在");
   if (
@@ -214,9 +226,7 @@ export function editWorld(
     throw new Error("垃圾提取口只允许建在起始回收场");
   if (
     edit.kind === "industry" &&
-    ["scavenge", "workshop", "cancel_workshop", "order_workshop"].includes(
-      edit.action.type,
-    )
+    ["scavenge", "workshop"].includes(edit.action.type)
   )
     throw new Error("共用手工工作室位于起始回收场，请先切换厂区");
   const child = current.districts![index];
@@ -225,6 +235,7 @@ export function editWorld(
       ...child,
       simulation: {
         ...child.simulation,
+        warehouse: current.simulation.warehouse,
         industry: current.simulation.industry,
       },
     },
@@ -233,12 +244,17 @@ export function editWorld(
   const root = {
     ...current,
     revision: current.revision + 1,
-    simulation: { ...current.simulation, industry: next.simulation.industry },
+    simulation: {
+      ...current.simulation,
+      warehouse: next.simulation.warehouse,
+      industry: next.simulation.industry,
+    },
     districts: [...current.districts!],
   };
   if (!Number.isSafeInteger(root.revision))
     throw new Error("存档版本已达到上限");
   delete next.simulation.industry;
+  next.simulation.warehouse = {};
   root.districts[index] = next;
   return verify(root);
 }

@@ -185,7 +185,7 @@ export interface components {
             /** @enum {integer} */
             format_version: 1;
             /** @enum {integer} */
-            rules_version: 1 | 2;
+            rules_version: 1 | 2 | 3;
             factory: components["schemas"]["FactoryDetail"];
         };
         CloudSave: {

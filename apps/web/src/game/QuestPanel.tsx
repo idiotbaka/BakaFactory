@@ -40,7 +40,7 @@ export default function QuestPanel({
     <ItemInfoProvider catalog={catalog} industry={p}>
       <section className="quest-panel" aria-label="阶段任务">
         <p>
-          任务无需接受，可按任意顺序完成；列表按推荐顺序排列。奖励统一送到起始厂区仓库。
+          任务无需接受，可按任意顺序完成；列表按推荐顺序排列。奖励存入所有厂区共用的总仓库。
         </p>
         {requirement && (
           <p className="quest-final-hint">

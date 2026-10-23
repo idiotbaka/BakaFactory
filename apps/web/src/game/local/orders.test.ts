@@ -257,7 +257,7 @@ describe("paid order queue and conservation", () => {
     });
     expect(repeat.simulation.warehouse).toEqual(later.simulation.warehouse);
   });
-  it("commits no reservation for stale plans, shortages, locked accounts or child-district requests", () => {
+  it("commits no reservation for stale plans, shortages or locked accounts and accepts shared-stock orders from a child", () => {
     const f = root(),
       before = structuredClone(f);
     expect(() =>
@@ -282,7 +282,10 @@ describe("paid order queue and conservation", () => {
       type: "select_district",
       id: remote.districts![0].id,
     });
-    expect(() => place(remote)).toThrow("起始回收场");
+    remote = place(remote);
+    expect(remote.simulation.industry!.workshop?.order?.requested).toBe(5);
+    expect(remote.simulation.warehouse.i0009).toBe(0);
+    expect(remote.districts![0].simulation.warehouse).toEqual({});
   });
   it("executes a multi-recipe dependency chain and retains the surplus intermediate parts", () => {
     const f = root(),

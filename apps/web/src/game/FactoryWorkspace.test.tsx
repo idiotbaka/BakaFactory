@@ -358,14 +358,14 @@ describe("local factory workspace", () => {
     ).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "仓库" }));
     expect(
-      within(screen.getByRole("region", { name: "当前厂区库存" })).getAllByRole(
+      within(screen.getByRole("region", { name: "工厂总仓库" })).getAllByRole(
         "article",
       ),
     ).toHaveLength(7);
     fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
       target: { value: items[0].name },
     });
-    const stock = within(screen.getByRole("region", { name: "当前厂区库存" }));
+    const stock = within(screen.getByRole("region", { name: "工厂总仓库" }));
     expect(stock.getAllByRole("article")).toHaveLength(1);
     expect(stock.getByText("42 u")).toBeInTheDocument();
   });

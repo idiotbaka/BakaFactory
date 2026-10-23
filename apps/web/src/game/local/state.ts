@@ -84,7 +84,7 @@ export function createLocalFactory(user: User, name: string): LocalFactory {
 }
 export const toSave = (factory: LocalFactory): GameSave => ({
   format_version: 1,
-  rules_version: 2,
+  rules_version: 3,
   factory,
 });
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -109,11 +109,12 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
   if (
     !object(value) ||
     value.format_version !== 1 ||
-    ![1, 2].includes(value.rules_version as number) ||
+    ![1, 2, 3].includes(value.rules_version as number) ||
     !object(value.factory)
   )
     return fail();
   const f = value.factory;
+  const sharedWarehouse = value.rules_version === 3;
   if (
     !identifier(f.id) ||
     f.owner_id !== owner ||
@@ -387,7 +388,7 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       )
         return fail();
     }
-  } else if (value.rules_version === 2) return fail();
+  } else if ((value.rules_version as number) >= 2) return fail();
   // Transfer receipts are transient visuals, not persistent gameplay inputs.
   const factory = structuredClone(f) as LocalFactory;
   factory.simulation.transfers = [];
@@ -411,6 +412,9 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
         value.active_district_id !== undefined ||
         value.robots !== undefined ||
         !object(value.simulation) ||
+        (sharedWarehouse &&
+          (!object(value.simulation.warehouse) ||
+            Object.keys(value.simulation.warehouse).length > 0)) ||
         value.simulation.industry !== undefined ||
         value.simulation.tick !== sim.tick
       )
@@ -452,6 +456,18 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       return fail();
     factory.active_district_id = f.active_district_id;
   } else if (f.active_district_id !== undefined) return fail();
+  if (!sharedWarehouse) {
+    // Upgrade only a cloned, completely validated world. Persist one ledger,
+    // never a copy per district; another load of rules v3 cannot merge again.
+    for (const child of factory.districts ?? []) {
+      try {
+        store(factory.simulation.warehouse, child.simulation.warehouse);
+      } catch {
+        return fail();
+      }
+      child.simulation.warehouse = {};
+    }
+  }
   if (!validRobotWorld(factory)) return fail();
   if (needsDiscovery) restoreDiscoveries(factory);
   syncQuests(factory);

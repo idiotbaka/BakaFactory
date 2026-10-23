@@ -78,7 +78,7 @@ describe("read-only diagnostics and durable game outcomes", () => {
       report = diagnoseFactory(f);
     expect(report.issues.map((i) => i.kind)).toContain("缺料");
     expect(report.issues.map((i) => i.kind)).toContain("副产物 / 产物堵塞");
-    expect(report.issues[0].detail).toContain("本区仓 8");
+    expect(report.issues[0].detail).toContain("总仓库 8");
     expect(report.rates.find((i) => i.item === output)?.output).toBe(
       (r.outputs[output] * 60000) / r.duration_ms,
     );

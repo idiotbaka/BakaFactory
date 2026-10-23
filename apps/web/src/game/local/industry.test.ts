@@ -534,6 +534,6 @@ describe("recycling gameplay", () => {
     expect(upgraded.simulation.tick).toBe(3);
     expect(upgraded.simulation.buildings.legacy.output[0].count).toBe(3);
     expect(upgraded.simulation.industry?.stage).toBe(1);
-    expect(toSave(upgraded).rules_version).toBe(2);
+    expect(toSave(upgraded).rules_version).toBe(3);
   });
 });

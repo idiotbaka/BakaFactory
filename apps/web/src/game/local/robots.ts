@@ -234,7 +234,7 @@ export function applyRobotAction(root: LocalFactory, action: RobotAction) {
           ),
       );
     if (!dock) throw new Error("补能站相邻空格已满，请留出停靠位置");
-    store(home.simulation.warehouse, { [d.item]: -1 });
+    store(root.simulation.warehouse, { [d.item]: -1 });
     robots.push({
       id: action.id,
       item: d.item,
@@ -268,9 +268,9 @@ export function applyRobotAction(root: LocalFactory, action: RobotAction) {
         Math.abs(r.x - station.x) + Math.abs(r.y - station.y) !== 1
       )
         throw new Error("机器人须实际返站后才能召回");
-      store(home.simulation.warehouse, { [r.item]: 1 });
+      store(root.simulation.warehouse, { [r.item]: 1 });
       if (r.camera)
-        store(home.simulation.warehouse, { [itemID("摄像头组件")]: 1 });
+        store(root.simulation.warehouse, { [itemID("摄像头组件")]: 1 });
       root.robots = robots.filter((b) => b.id !== r.id);
       if (root.simulation.industry?.work_receipts)
         root.simulation.industry.work_receipts =

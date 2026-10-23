@@ -59,7 +59,7 @@ export default function DiagnosticsPanel({
       </p>
       <h3>当前厂区待处理 · {report.issues.length}</h3>
       <p>
-        依据当前确认库存与配置诊断。缺料显示本区仓库，不自动借用远厂；新建空机的缺料提示不授予巡检凭据。
+        依据当前确认库存与配置诊断。缺料显示共用总仓库数量，机器仍需实际补料或物流供料；新建空机的缺料提示不授予巡检凭据。
       </p>
       <ul>
         {report.issues.slice(0, 80).map((issue, i) => (
