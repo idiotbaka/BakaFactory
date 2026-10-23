@@ -4,6 +4,7 @@ import IndustryViews from "./IndustryViews";
 import { createLocalFactory } from "./local/state";
 import { catalog, recipeDefinitions, itemID } from "./local/catalog";
 import { workshopBatchLimit } from "./local/workshop";
+import { createWorld, projectFactory, districtSummary } from "./local/world";
 const user = {
   id: "batch-ui",
   username: "batch-ui",
@@ -12,6 +13,49 @@ const user = {
   last_login_at: "now",
 };
 describe("manual workshop batch controls", () => {
+  it("shows shared workshop actions in a child and disables every recipe when the global queue is occupied", () => {
+    const root = createWorld(user, "全局工作室"),
+      act = vi.fn(),
+      recipe = recipeDefinitions.get("r1001")!;
+    root.simulation.warehouse[itemID("垃圾包")] = 120;
+    root.active_district_id = root.districts![0].id;
+    const props = {
+      factory: projectFactory(root),
+      catalog,
+      districts: districtSummary(root),
+      disabled: false,
+      act,
+      view: "workshop" as const,
+      onViewChange: vi.fn(),
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: /拾取 1 包垃圾/ }));
+    expect(act).toHaveBeenCalledWith({ type: "scavenge" });
+    const card = within(
+      screen.getByLabelText(`${recipe.name}加工批数`).closest("article")!,
+    );
+    fireEvent.click(card.getByRole("button", { name: "批量加工" }));
+    expect(act).toHaveBeenCalledWith({
+      type: "workshop",
+      recipe: recipe.id,
+      batches: 1,
+    });
+    root.simulation.industry!.workshop = {
+      recipe_id: recipe.id,
+      progress: 0,
+      total: 1,
+      remaining: 1,
+    };
+    root.active_district_id = root.districts![1].id;
+    rerender(<IndustryViews {...props} factory={projectFactory(root)} />);
+    expect(
+      screen
+        .getAllByRole("button", { name: "批量加工" })
+        .every((button) => button.hasAttribute("disabled")),
+    ).toBe(true);
+    expect(screen.queryByText(/请在“厂区”切回/)).not.toBeInTheDocument();
+  });
   it("groups recipes by machine, locks optional workbenches until first manufacture and preserves the unlock after spending the device", () => {
     const f = createLocalFactory(user, "子分类"),
       act = vi.fn(),

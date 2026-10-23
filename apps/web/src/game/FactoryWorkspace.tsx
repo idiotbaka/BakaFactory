@@ -13,6 +13,7 @@ import { ProductionInspector } from "./ProductionPanel";
 import { isLogisticsBuilding } from "./catalogPresentation";
 import WorkshopHud from "./WorkshopHud";
 import BuildingRecipeGuide from "./BuildingRecipeGuide";
+import BuildingOrderButton from "./BuildingOrderButton";
 import QuestNotifications from "./QuestNotifications";
 import StoryPlayer from "./stories/StoryPlayer";
 import StoryMenu from "./stories/StoryMenu";
@@ -76,6 +77,9 @@ export default function FactoryWorkspace({
   const [powerSaving, setPowerSaving] = useState(readPowerSaving);
   const [immersive, setImmersive] = useState(false);
   const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogPhases, setCatalogPhases] = useState<
+    Partial<Record<"building" | "logistics" | "item", number>>
+  >({});
   const [industryView, setIndustryView] = useState<IndustryView>("factory");
   const [selectedRobotID, setSelectedRobotID] = useState<string | null>(null);
   const [robotFocus, setRobotFocus] = useState<RobotFocus>();
@@ -114,6 +118,8 @@ export default function FactoryWorkspace({
   const activeFactoryID =
     workspace.kind === "ready" ? workspace.factory?.id : undefined;
   const stage = game.factory?.simulation.industry?.stage ?? 1;
+  const phaseFor = (category: typeof tab) =>
+    Math.min(catalogPhases[category] ?? stage, category === "item" ? 6 : stage);
   useEffect(() => savePowerSaving(powerSaving), [powerSaving]);
   useEffect(() => {
     if (!activeFactoryID || !paletteCatalog) return;
@@ -143,6 +149,11 @@ export default function FactoryWorkspace({
       if (!definition) return;
       event.preventDefault();
       setTab(isLogisticsBuilding(definition) ? "logistics" : "building");
+      setCatalogPhases((previous) => ({
+        ...previous,
+        [isLogisticsBuilding(definition) ? "logistics" : "building"]:
+          definition.tier ?? 1,
+      }));
       setSelection({ kind: "building", id: definition.id });
       setSelectedInstanceID(null);
       setSelectedRobotID(null);
@@ -184,6 +195,12 @@ export default function FactoryWorkspace({
           ? "logistics"
           : "building",
       );
+      if (definition)
+        setCatalogPhases((previous) => ({
+          ...previous,
+          [isLogisticsBuilding(definition) ? "logistics" : "building"]:
+            definition.tier ?? 1,
+        }));
     }
   }
   function applyFactory(snapshot: FactoryDetail, selectedID: string | null) {
@@ -203,6 +220,13 @@ export default function FactoryWorkspace({
     setError("");
     void game.runtime?.act(action).catch(editorError);
   }
+  async function placeOrder(
+    action: Extract<IndustryAction, { type: "order_workshop" }>,
+  ) {
+    setError("");
+    if (!game.runtime) throw new Error("本地工厂尚未就绪");
+    await game.runtime.act(action);
+  }
   function world(action: WorldAction) {
     setError("");
     void game.runtime
@@ -211,6 +235,13 @@ export default function FactoryWorkspace({
         if (action.type === "claim_quest") return;
         setSelectedInstanceID(null);
         setPlacementType(null);
+        if (
+          action.type === "select_district" ||
+          action.type === "expand_district"
+        ) {
+          setSelectedRobotID(null);
+          setRobotFocus(undefined);
+        }
       })
       .catch(editorError);
   }
@@ -265,14 +296,17 @@ export default function FactoryWorkspace({
   const placeable = catalog.buildings.filter(
     (d) => !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
   );
+  const catalogPhase = phaseFor(tab);
   const definitions = (
     tab === "item"
       ? catalog.items.filter((i) => !i.legacy)
       : placeable.filter(
           (d) => isLogisticsBuilding(d) === (tab === "logistics"),
         )
-  ).filter((d) =>
-    `${d.name}${d.code}`.toLowerCase().includes(catalogQuery.toLowerCase()),
+  ).filter(
+    (d) =>
+      (d.tier ?? 1) === catalogPhase &&
+      `${d.name}${d.code}`.toLowerCase().includes(catalogQuery.toLowerCase()),
   );
   const discoveredItems = new Set(
     factory?.simulation?.industry?.discovered_items ?? [],
@@ -420,7 +454,11 @@ export default function FactoryWorkspace({
                   setSelectedRobotID(null);
                   setPlacementType(null);
                   setSelectedInstanceID(null);
-                  const first = placeable.find(isLogisticsBuilding);
+                  const first = placeable.find(
+                    (d) =>
+                      isLogisticsBuilding(d) &&
+                      (d.tier ?? 1) === phaseFor("logistics"),
+                  );
                   if (first) setSelection({ kind: "building", id: first.id });
                 }}
               >
@@ -434,7 +472,9 @@ export default function FactoryWorkspace({
                   setPlacementType(null);
                   setSelection({
                     kind: "item",
-                    id: catalog.items.find((i) => !i.legacy)!.id,
+                    id: catalog.items.find(
+                      (i) => !i.legacy && (i.tier ?? 1) === phaseFor("item"),
+                    )!.id,
                   });
                   setSelectedInstanceID(null);
                 }}
@@ -442,13 +482,46 @@ export default function FactoryWorkspace({
                 物品
               </button>
             </div>
-            <input
-              className="catalog-search"
-              aria-label="搜索图鉴"
-              placeholder="搜索名称 / 编号"
-              value={catalogQuery}
-              onChange={(e) => setCatalogQuery(e.target.value)}
-            />
+            <div className="catalog-filters">
+              <input
+                className="catalog-search"
+                aria-label="搜索图鉴"
+                placeholder="搜索名称 / 编号"
+                value={catalogQuery}
+                onChange={(e) => setCatalogQuery(e.target.value)}
+              />
+              <div
+                className="catalog-phase-tabs"
+                role="group"
+                aria-label="图鉴阶段"
+              >
+                {[1, 2, 3, 4, 5, 6].map((tier) => {
+                  const locked = tab !== "item" && tier > stage;
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      aria-pressed={catalogPhase === tier}
+                      disabled={locked}
+                      title={
+                        locked
+                          ? `完成 P${tier - 1} 阶段终局任务并领奖后解锁`
+                          : `查看 P${tier}`
+                      }
+                      onClick={() => {
+                        setCatalogPhases((previous) => ({
+                          ...previous,
+                          [tab]: tier,
+                        }));
+                        setPlacementType(null);
+                      }}
+                    >
+                      P{tier}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="catalog-list">
               {definitions.map((d) => {
                 const shortcut =
@@ -524,6 +597,9 @@ export default function FactoryWorkspace({
                   </button>
                 );
               })}
+              {!definitions.length && (
+                <p className="catalog-empty">当前阶段暂无匹配内容。</p>
+              )}
             </div>
             <p className="catalog-footnote">
               <span>QUICK BUILD / 连续建造</span>
@@ -583,11 +659,7 @@ export default function FactoryWorkspace({
                 factory={factory}
                 catalog={catalog}
                 act={act}
-                onOrder={async (action) => {
-                  setError("");
-                  if (!game.runtime) throw new Error("本地工厂尚未就绪");
-                  await game.runtime.act(action);
-                }}
+                onOrder={placeOrder}
                 districts={game.districts}
                 world={world}
                 disabled={game.paused}
@@ -626,6 +698,11 @@ export default function FactoryWorkspace({
                   onSelectRobot={selectRobot}
                   robotRoute={robotRoute}
                   robotFocus={robotFocus}
+                  districts={game.districts}
+                  onSelectDistrict={(id) =>
+                    world({ type: "select_district", id })
+                  }
+                  districtSwitchDisabled={game.paused}
                 />
               </IndustryViews>
             )}
@@ -723,12 +800,24 @@ export default function FactoryWorkspace({
                     />
                   )}
                   {buildingDefinition ? (
-                    <BuildingRecipeGuide
-                      key={buildingDefinition.id}
-                      definition={buildingDefinition}
-                      catalog={catalog}
-                      industry={factory?.simulation?.industry}
-                    />
+                    <>
+                      <BuildingRecipeGuide
+                        key={buildingDefinition.id}
+                        definition={buildingDefinition}
+                        catalog={catalog}
+                        industry={factory?.simulation?.industry}
+                      />
+                      {factory && (
+                        <BuildingOrderButton
+                          key={`${factory.id}:${buildingDefinition.id}`}
+                          definition={buildingDefinition}
+                          factory={factory}
+                          catalog={catalog}
+                          disabled={game.paused}
+                          onOrder={placeOrder}
+                        />
+                      )}
+                    </>
                   ) : (
                     <div className="recipe-section">
                       <h4>

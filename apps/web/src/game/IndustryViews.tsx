@@ -84,9 +84,6 @@ export default function IndustryViews({
   );
   const canOrder = ordersUnlocked(p);
   const stage = catalog.stages?.find((x) => x.tier === (p?.stage ?? 1));
-  const headquarters =
-    !districts.length ||
-    !!districts.find((d) => d.id === factory.id)?.headquarters;
   const workshopMachine = workshopMachineAvailable(p?.crafted, selectedMachine)
     ? selectedMachine
     : "m02";
@@ -263,10 +260,6 @@ export default function IndustryViews({
               />
             ) : view === "power" ? (
               <PowerOverview factory={factory} />
-            ) : view === "workshop" && !headquarters ? (
-              <p>
-                共用手工工作室位于起始回收场，请在“厂区”切回后操作。其他厂区仍同步生产。
-              </p>
             ) : view === "workshop" ? (
               <>
                 <div className="scavenge-box">

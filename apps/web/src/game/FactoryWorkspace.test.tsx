@@ -6,6 +6,7 @@ import { useLocalGame } from "./local/useLocalGame";
 import { createLocalFactory, type LocalFactory } from "./local/state";
 import type { GameRuntime } from "./local/runtime";
 import { catalog, itemID } from "./local/catalog";
+import { createWorld, districtSummary } from "./local/world";
 import { openingStoryID, p1StoryID } from "./stories/progress";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
@@ -22,6 +23,7 @@ const commands = {
   getFactory: vi.fn(),
 };
 const backup = vi.fn().mockResolvedValue(undefined),
+  runtimeWorld = vi.fn().mockResolvedValue(undefined),
   runtimeAct = vi.fn().mockResolvedValue(undefined),
   restoreCloud = vi.fn().mockResolvedValue(undefined),
   chooseLocal = vi.fn().mockResolvedValue(undefined),
@@ -58,6 +60,7 @@ function prepare(
     const runtime = {
       commands,
       act: runtimeAct,
+      world: runtimeWorld,
       backup,
       restoreCloud,
       chooseLocal,
@@ -80,6 +83,7 @@ function prepare(
       viewedStories,
       pendingStories,
       factory,
+      districts: factory ? districtSummary(factory) : [],
       error: options.error ?? "",
       message: options.conflict
         ? "发现另一设备上传的云存档，请选择保留的进度"
@@ -97,6 +101,84 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("filters each catalog by phase, locks future structures, previews future items and keeps original shortcuts", () => {
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.stage = 2;
+      },
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+        screen.getByRole("complementary", { name: "实体图鉴" }),
+      ),
+      phases = within(palette.getByRole("group", { name: "图鉴阶段" }));
+    expect(phases.getByRole("button", { name: "P2" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(phases.getByRole("button", { name: "P3" })).toBeDisabled();
+    fireEvent.click(palette.getByRole("button", { name: "物流" }));
+    expect(
+      palette.getByRole("button", { name: /^流体管道/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(phases.getByRole("button", { name: "P1" }));
+    expect(
+      palette.getByRole("button", { name: /^手摇传送带/ }),
+    ).toBeInTheDocument();
+    expect(
+      palette.queryByRole("button", { name: /^流体管道/ }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(palette.getByRole("button", { name: "物品" }));
+    expect(phases.getByRole("button", { name: "P6" })).toBeEnabled();
+    fireEvent.click(phases.getByRole("button", { name: "P6" }));
+    const future = catalog.items.find((i) => !i.legacy && i.tier === 6)!;
+    fireEvent.change(palette.getByLabelText("搜索图鉴"), {
+      target: { value: future.code },
+    });
+    const entries = palette
+      .getAllByRole("button")
+      .filter((b) => b.classList.contains("catalog-entry"));
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toHaveClass("is-undiscovered");
+    fireEvent.click(entries[0]);
+    expect(
+      screen.getByRole("complementary", { name: "实体详情" }),
+    ).toHaveTextContent(future.name);
+    fireEvent.click(palette.getByRole("button", { name: "建筑" }));
+    expect(phases.getByRole("button", { name: "P6" })).toBeDisabled();
+    fireEvent.change(palette.getByLabelText("搜索图鉴"), {
+      target: { value: "" },
+    });
+    fireEvent.keyDown(window, { key: "1" });
+    expect(phases.getByRole("button", { name: "P1" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      palette.getByRole("button", { name: /^手工工作台/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+  it("dispatches the map's quick district selector through the same world operation", async () => {
+    let destination = "";
+    prepare(true, {
+      setup: (f) => {
+        Object.assign(f, createWorld(user, "快捷切厂"));
+        destination = f.districts![0].id;
+      },
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const selector = screen.getByRole("combobox", { name: "快捷切换厂区" });
+    expect(within(selector).getAllByRole("option")).toHaveLength(6);
+    fireEvent.change(selector, { target: { value: destination } });
+    await vi.waitFor(() =>
+      expect(runtimeWorld).toHaveBeenCalledWith({
+        type: "select_district",
+        id: destination,
+      }),
+    );
+    expect(commands.placeBuilding).not.toHaveBeenCalled();
+    expect(runtimeAct).not.toHaveBeenCalled();
+  });
   it("opens the pending P1 chapter once and keeps its replay entry after completion", async () => {
     prepare(true, {
       pendingStories: [p1StoryID],
@@ -335,7 +417,9 @@ describe("local factory workspace", () => {
       .getAllByRole("button")
       .filter((b) => b.classList.contains("catalog-entry"));
     expect(entries.map((b) => b.querySelector("strong")!.textContent)).toEqual(
-      catalog.items.filter((i) => !i.legacy).map((i) => i.name),
+      catalog.items
+        .filter((i) => !i.legacy && (i.tier ?? 1) === 1)
+        .map((i) => i.name),
     );
     const seen = palette.getByRole("button", { name: /^基础铁板/ }),
       unknown = palette.getByRole("button", { name: /^垃圾包/ });

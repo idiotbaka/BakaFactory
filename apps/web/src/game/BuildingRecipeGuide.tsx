@@ -128,7 +128,7 @@ export default function BuildingRecipeGuide({
         <p>
           加工设备：{machine?.name ?? r.building_type}。
           {inWorkshop
-            ? `可在起始厂区「工作室 → ${machine?.name ?? r.building_type}」加工。`
+            ? `可在任意厂区「工作室 → ${machine?.name ?? r.building_type}」加工。`
             : `安装${machine?.name ?? r.building_type}后，选择此配方并提供原料及所需动力。`}
         </p>
         {workshopMachines.some((id) => id === r.building_type) && (

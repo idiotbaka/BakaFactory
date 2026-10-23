@@ -212,23 +212,20 @@ export function editWorld(
     return next;
   };
   if (id === current.id) return verify(editFactory(current, edit));
-  if (
-    edit.kind === "industry" &&
-    ["order_workshop", "cancel_workshop"].includes(edit.action.type)
-  )
-    return verify(editFactory(current, edit));
   const index = current.districts?.findIndex((f) => f.id === id) ?? -1;
   if (index < 0) throw new Error("厂区不存在");
+  if (
+    edit.kind === "industry" &&
+    ["scavenge", "workshop", "order_workshop", "cancel_workshop"].includes(
+      edit.action.type,
+    )
+  )
+    return verify(editFactory(current, edit));
   if (
     edit.kind === "place" &&
     buildingDefinitions.get(edit.building_type)?.role === "source"
   )
     throw new Error("垃圾提取口只允许建在起始回收场");
-  if (
-    edit.kind === "industry" &&
-    ["scavenge", "workshop"].includes(edit.action.type)
-  )
-    throw new Error("共用手工工作室位于起始回收场，请先切换厂区");
   const child = current.districts![index];
   const next = editFactory(
     {

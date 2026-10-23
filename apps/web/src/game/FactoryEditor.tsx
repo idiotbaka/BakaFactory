@@ -18,6 +18,7 @@ import {
 import DefinitionIcon from "./DefinitionIcon";
 import type { EditorCommands } from "./local/runtime";
 import type { RobotRoute } from "./local/robotNavigation";
+import type { DistrictSummary } from "./local/world";
 import ConveyorVisual from "./ConveyorVisual";
 import FluidVisual from "./FluidVisual";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
@@ -37,6 +38,9 @@ import {
 } from "./editorGeometry";
 
 type Props = {
+  districts?: DistrictSummary[];
+  onSelectDistrict?: (id: string) => void;
+  districtSwitchDisabled?: boolean;
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
   robotRoute?: RobotRoute;
@@ -768,7 +772,31 @@ export default function FactoryEditor(props: Props) {
           <span className="small-square" />
           产线现场 / LIVE FLOOR
         </span>
-        <span>X → / Y ↑</span>
+        <span className="map-caption-actions">
+          <span>X → / Y ↑</span>
+          {props.onSelectDistrict && (
+            <select
+              aria-label="快捷切换厂区"
+              value={factory.id}
+              disabled={
+                props.districtSwitchDisabled ||
+                saving ||
+                !!dragPreview ||
+                panning
+              }
+              onChange={(event) => props.onSelectDistrict?.(event.target.value)}
+            >
+              {(props.districts?.length
+                ? props.districts
+                : [{ id: factory.id, name: factory.name }]
+              ).map((district) => (
+                <option key={district.id} value={district.id}>
+                  {district.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </span>
       </div>
       <div className="camera-controls" aria-label="地图视图工具">
         <span aria-label="当前缩放">{Math.round(camera.zoom * 100)}%</span>

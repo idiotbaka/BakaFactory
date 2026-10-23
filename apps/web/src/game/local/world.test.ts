@@ -122,7 +122,7 @@ describe("one worker world with independent districts", () => {
     );
     expect(projectFactory(root).districts).toBeUndefined();
   });
-  it("rejects stale editor requests, duplicated garbage sources and additional manual queues", () => {
+  it("rejects stale editor requests and duplicated garbage sources while allowing shared scavenging", () => {
     let root = createWorld(user, "回收场");
     root = actWorld(root, {
       type: "select_district",
@@ -148,9 +148,10 @@ describe("one worker world with independent districts", () => {
         placement: { x: 1, y: 10, rotation: 0 },
       }),
     ).toThrow(/起始/);
-    expect(() =>
-      editWorld(root, { kind: "industry", action: { type: "scavenge" } }),
-    ).toThrow(/手工/);
+    const before = root.simulation.warehouse[catalog.root_item!] ?? 0;
+    root = editWorld(root, { kind: "industry", action: { type: "scavenge" } });
+    expect(root.simulation.warehouse[catalog.root_item!]).toBe(before + 1);
+    expect(root.districts![0].simulation.warehouse).toEqual({});
     expect(root.districts![0].buildings).toHaveLength(1);
   });
   it("expands with actual headquarters materials, obeys stage limits and preserves the original on failure", () => {

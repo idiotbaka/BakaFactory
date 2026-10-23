@@ -11,6 +11,7 @@ import {
 import { toSave, validateSave, newMachine, type LocalFactory } from "./state";
 import { worldFrame, applyWorldFrame } from "./worldFrame";
 import { planWorkshopOrder } from "./orders";
+import { workshopDuration } from "./workshop";
 
 const user = {
   id: "shared-stock",
@@ -33,6 +34,64 @@ function place(root: LocalFactory, id: string, type: string, x: number, y = 0) {
 }
 
 describe("one shared warehouse across every WH", () => {
+  it("scavenges, starts, observes and cancels one global manual queue across districts without duplicate ticks or refunds", () => {
+    let root = createWorld(user, "共用工作室");
+    const recipe = recipeDefinitions.get("r1001")!,
+      [material, amount] = Object.entries(recipe.inputs)[0],
+      districtA = root.districts![0].id,
+      districtB = root.districts![1].id;
+    root.simulation.warehouse[material] = amount * 2;
+    root = actWorld(root, { type: "select_district", id: districtA });
+    root = editWorld(root, { kind: "industry", action: { type: "scavenge" } });
+    expect(root.simulation.warehouse[material]).toBe(amount * 2 + 1);
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "workshop", recipe: recipe.id, batches: 2 },
+    });
+    expect(root.simulation.warehouse[material]).toBe(1);
+    root = actWorld(root, { type: "select_district", id: districtB });
+    expect(projectFactory(root).simulation.industry!.workshop!.remaining).toBe(
+      2,
+    );
+    const before = structuredClone(root);
+    expect(() =>
+      editWorld(root, {
+        kind: "industry",
+        action: { type: "workshop", recipe: recipe.id },
+      }),
+    ).toThrow(/工作室正在加工/);
+    expect(root).toEqual(before);
+    for (let i = 0; i < workshopDuration(recipe); i++) root = stepWorld(root);
+    expect(root.simulation.industry!.workshop!.remaining).toBe(1);
+    expect(root.simulation.industry!.workshop!.progress).toBe(0);
+    for (const [item, n] of Object.entries(recipe.outputs))
+      expect(root.simulation.warehouse[item]).toBe(n);
+    expect(
+      root.districts!.every(
+        (d) =>
+          !d.simulation.industry && !Object.keys(d.simulation.warehouse).length,
+      ),
+    ).toBe(true);
+    root = validateSave(toSave(root), user.id);
+    expect(projectFactory(root).simulation.industry!.workshop!.remaining).toBe(
+      1,
+    );
+    root = actWorld(root, { type: "select_district", id: root.id });
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "cancel_workshop" },
+    });
+    expect(root.simulation.warehouse[material]).toBe(amount + 1);
+    expect(root.simulation.industry!.workshop).toBeUndefined();
+    const returned = structuredClone(root.simulation.warehouse);
+    root = actWorld(root, { type: "select_district", id: districtA });
+    root = editWorld(root, {
+      kind: "industry",
+      action: { type: "cancel_workshop" },
+    });
+    root = stepWorld(root);
+    expect(root.simulation.warehouse).toEqual(returned);
+  });
   it("merges legacy district stock once without touching machine buffers, identities, time or the input snapshot", () => {
     const root = createWorld(user, "旧分仓");
     root.simulation.warehouse[iron] = 20;
@@ -236,6 +295,21 @@ describe("one shared warehouse across every WH", () => {
       },
     });
     expect(root.simulation.warehouse[rubber]).toBe(0);
+    root = actWorld(root, {
+      type: "select_district",
+      id: root.districts![1].id,
+    });
+    expect(
+      projectFactory(root).simulation.industry!.workshop!.order,
+    ).toBeDefined();
+    const occupied = structuredClone(root);
+    expect(() =>
+      editWorld(root, {
+        kind: "industry",
+        action: { type: "workshop", recipe: "r1001" },
+      }),
+    ).toThrow(/工作室正在加工/);
+    expect(root).toEqual(occupied);
     for (let i = 0; i < 3; i++) root = stepWorld(root);
     expect(projectFactory(root).simulation.industry!.workshop!.remaining).toBe(
       1,

@@ -26,7 +26,7 @@ export default function WorldPanel({
       </h3>
       <p>
         各厂区同步生产，所有 WH
-        共用总仓库；设备缓存、产线物流和能源网络独立。垃圾堆与共用手工工作室在起始回收场。
+        共用总仓库和唯一手工工作室，可在任意厂区拾荒、加工；设备缓存、产线物流和能源网络独立，地图垃圾提取口仍仅限起始回收场。
       </p>
       <div className="world-districts">
         {districts.map((d) => (
