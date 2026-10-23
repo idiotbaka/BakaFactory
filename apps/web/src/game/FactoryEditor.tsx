@@ -960,7 +960,7 @@ export default function FactoryEditor(props: Props) {
                           isBelt(instance.building_type)
                             ? "conveyor-building"
                             : isFluidNode(instance.building_type)
-                              ? "fluid-building"
+                              ? `fluid-building${d.role === "pipe" ? " fluid-pipe-building" : ""}`
                               : undefined
                         }
                         aria-label={`${d.name} ${d.code} (${x},${y})`}
@@ -985,7 +985,11 @@ export default function FactoryEditor(props: Props) {
                         ) : isFluidNode(instance.building_type) ? (
                           <FluidVisual
                             definition={d}
+                            x={x}
+                            y={y}
                             rotation={instance.rotation}
+                            buildings={buildings}
+                            instanceID={instance.id}
                             machine={runtime}
                           />
                         ) : (
@@ -1045,7 +1049,11 @@ export default function FactoryEditor(props: Props) {
                         ) : isFluidNode(preview.definition.id) ? (
                           <FluidVisual
                             definition={preview.definition}
+                            x={x}
+                            y={y}
                             rotation={preview.rotation}
+                            buildings={buildings}
+                            instanceID={preview.instanceID}
                           />
                         ) : (
                           <DefinitionIcon

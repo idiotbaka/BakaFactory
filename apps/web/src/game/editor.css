@@ -84,7 +84,8 @@
 .map-tile > button.empty-tile:focus-visible {
   outline: none;
 }
-.map-tile > button.conveyor-building {
+.map-tile > button.conveyor-building,
+.map-tile > button.fluid-pipe-building {
   position: absolute;
   left: 0;
   top: 0;
@@ -95,8 +96,43 @@
   background: none;
   box-shadow: none;
 }
-.map-tile > button.conveyor-building:hover {
+.map-tile > button.conveyor-building:hover,
+.map-tile > button.fluid-pipe-building:hover {
   background: none;
+}
+.fluid-pipe-visual {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  color: var(--entity-color);
+  pointer-events: none;
+}
+.fluid-pipe-shell,
+.fluid-pipe-bore,
+.fluid-pipe-content {
+  stroke-linejoin: round;
+}
+.fluid-pipe-shell {
+  stroke: currentColor;
+  stroke-width: 24;
+  stroke-opacity: 0.65;
+}
+.fluid-pipe-bore {
+  stroke: #101b2b;
+  stroke-width: 18;
+}
+.fluid-pipe-content {
+  stroke: currentColor;
+  stroke-width: 9;
+}
+.fluid-pipe-arrow {
+  stroke: #eeedf9;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .conveyor-visual {
   position: absolute;

@@ -1,19 +1,57 @@
-import { memo } from "react";
-import type { BuildingDefinition, MachineState } from "../api/client";
+import { memo, type CSSProperties } from "react";
+import type {
+  BuildingDefinition,
+  BuildingInstance,
+  BuildingPlacement,
+  MachineState,
+} from "../api/client";
+import { entityColor } from "./entityTheme";
+import { fluidPipePath } from "./fluidVisuals";
 
 function FluidVisual({
   definition,
   rotation,
   machine,
+  x,
+  y,
+  buildings,
+  instanceID,
 }: {
   definition: BuildingDefinition;
-  rotation: number;
+  rotation: BuildingPlacement["rotation"];
   machine?: MachineState;
+  x: number;
+  y: number;
+  buildings: ReadonlyMap<string, BuildingInstance>;
+  instanceID?: string;
 }) {
   const level = Math.min(
     1,
     (machine?.fluid?.count ?? 0) / (definition.fluid_capacity ?? 1),
   );
+  if (definition.role === "pipe") {
+    const path = fluidPipePath({ x, y, rotation, buildings, instanceID });
+    return (
+      <svg
+        className="fluid-visual fluid-pipe-visual"
+        viewBox="0 0 48 48"
+        fill="none"
+        style={{ "--entity-color": entityColor(definition) } as CSSProperties}
+        aria-hidden="true"
+      >
+        <g transform={`rotate(${rotation} 24 24)`}>
+          <path className="fluid-pipe-shell" d={path} />
+          <path className="fluid-pipe-bore" d={path} />
+          <path
+            className="fluid-pipe-content"
+            d={path}
+            opacity={level ? 0.85 : 0.25}
+          />
+          <path className="fluid-pipe-arrow" d="M21 19L27 24 21 29" />
+        </g>
+      </svg>
+    );
+  }
   return (
     <svg
       className="fluid-visual"
