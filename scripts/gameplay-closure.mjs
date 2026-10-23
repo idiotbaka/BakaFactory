@@ -125,6 +125,20 @@ export function auditClosure(c) {
       items,
       recipes,
       facility("hand_belt") && facility("feeder"),
+      {
+        shaft_craft:
+          power("shaft") &&
+          c.recipes.some(
+            (r) =>
+              recipes.has(r.id) &&
+              r.power_kw > 0 &&
+              byID.get(r.building_type)?.energy === "shaft",
+          ),
+        steam_tank_fill: has("高压蒸汽") && facility("steam_tank"),
+        clockwork_transport: bots().some(
+          (b) => b.name === "发条搬运车" && worked(b, "freight"),
+        ),
+      },
     );
     if (nextStage !== stage) {
       stage = nextStage;

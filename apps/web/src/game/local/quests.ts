@@ -1,6 +1,6 @@
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
-import { catalog, recipeDefinitions } from "./catalog";
+import { catalog, itemDefinitions, itemID, recipeDefinitions } from "./catalog";
 import { discoverItems } from "./discovery";
 import { store } from "./inventory";
 import { expectedStage, orderQuestID } from "./progression";
@@ -8,6 +8,13 @@ import { questVisible } from "./questRules";
 
 export type Quest = components["schemas"]["QuestDefinition"];
 export type QuestProgress = components["schemas"]["QuestProgress"];
+export const questEventLimits = {
+  shaft_craft: Number.MAX_SAFE_INTEGER,
+  steam_tank_fill: Number.MAX_SAFE_INTEGER,
+  clockwork_transport: Number.MAX_SAFE_INTEGER,
+  district_count: 100,
+} as const;
+type QuestEvent = keyof typeof questEventLimits;
 export const newQuestProgress = (): QuestProgress => ({
   stage_quests_version: 1,
   completed: [],
@@ -15,12 +22,35 @@ export const newQuestProgress = (): QuestProgress => ({
   workshop_batches: {},
   automated_received: 0,
 });
+export const questItemAmount = (
+  p: components["schemas"]["IndustryState"] | undefined,
+  item: string,
+) =>
+  Math.min(
+    p?.quests?.factory_produced?.[item] ?? 0,
+    p?.quests?.warehouse_received?.[item] ?? 0,
+  );
 export function questAmount(
   p: components["schemas"]["IndustryState"] | undefined,
   q: Quest,
 ) {
   if (q.goal.type === "automated_delivery")
     return p?.quests?.automated_received ?? 0;
+  if (q.goal.type === "factory_delivery")
+    return q.goal.items?.length
+      ? Math.min(
+          ...q.goal.items.map((id) => questItemAmount(p, id)),
+          q.goal.count,
+        )
+      : 0;
+  if (q.goal.type === "factory_event" || q.goal.type === "district_count")
+    return (
+      p?.quests?.factory_events?.[
+        q.goal.type === "district_count"
+          ? "district_count"
+          : (q.goal.target as QuestEvent)
+      ] ?? 0
+    );
   if (q.goal.type === "craft_item")
     return Math.min(q.goal.count, p?.crafted[q.goal.target] ?? 0);
   return q.goal.type === "obtain_item"
@@ -30,13 +60,52 @@ export function questAmount(
       : 0
     : (p?.quests?.workshop_batches[q.goal.target] ?? 0);
 }
-export function recordWarehouseDelivery(f: LocalFactory, count: number) {
+const increment = (
+  counts: Record<string, number>,
+  id: string,
+  count: number,
+) => {
+  counts[id] = Math.min(Number.MAX_SAFE_INTEGER, (counts[id] ?? 0) + count);
+};
+export function recordFactoryOutput(
+  f: LocalFactory,
+  outputs: Record<string, number>,
+) {
+  if (!f.simulation.industry) return;
+  const p = (f.simulation.industry.quests ??= newQuestProgress());
+  const counts = (p.factory_produced ??= {});
+  for (const [item, count] of Object.entries(outputs))
+    increment(counts, item, count);
+}
+export function recordQuestEvent(
+  f: LocalFactory,
+  event: Exclude<QuestEvent, "district_count">,
+) {
+  if (!f.simulation.industry) return;
+  const p = (f.simulation.industry.quests ??= newQuestProgress());
+  increment((p.factory_events ??= {}), event, 1);
+}
+export function recordFluidReceipt(
+  f: LocalFactory,
+  buildingType: string,
+  item: string,
+  count: number,
+) {
+  if (count > 0 && buildingType === "steam_tank" && item === itemID("高压蒸汽"))
+    recordQuestEvent(f, "steam_tank_fill");
+}
+export function recordWarehouseDelivery(
+  f: LocalFactory,
+  item: string,
+  count: number,
+) {
   if (count <= 0 || !f.simulation.industry) return;
   const p = (f.simulation.industry.quests ??= newQuestProgress());
   p.automated_received = Math.min(
     Number.MAX_SAFE_INTEGER,
     (p.automated_received ?? 0) + count,
   );
+  increment((p.warehouse_received ??= {}), item, count);
 }
 
 export function restoreQuestProgress(f: LocalFactory) {
@@ -68,6 +137,12 @@ export function syncQuests(f: LocalFactory) {
   const p = f.simulation.industry;
   if (!p) return;
   const progress = (p.quests ??= newQuestProgress());
+  // World size is observable without inventing missing historic work events.
+  const events = (progress.factory_events ??= {});
+  events.district_count = Math.max(
+    events.district_count ?? 0,
+    1 + (f.districts?.length ?? 0),
+  );
   // Resolve ordinary tasks first, independent of recommendation order.
   const definitions = catalog.quests ?? [];
   for (const q of [
@@ -118,6 +193,9 @@ export function validQuestProgress(value: unknown) {
           "workshop_batches",
           "automated_received",
           "stage_quests_version",
+          "factory_produced",
+          "warehouse_received",
+          "factory_events",
         ].includes(k),
     )
   )
@@ -136,6 +214,29 @@ export function validQuestProgress(value: unknown) {
     (typeof p.automated_received !== "number" ||
       !Number.isSafeInteger(p.automated_received) ||
       p.automated_received < 0)
+  )
+    return false;
+  const validCounts = (value: unknown, limits: ReadonlyMap<string, number>) =>
+    !!value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.entries(value).length <= limits.size &&
+    Object.entries(value).every(
+      ([id, n]) =>
+        limits.has(id) &&
+        typeof n === "number" &&
+        Number.isSafeInteger(n) &&
+        n >= 0 &&
+        n <= limits.get(id)!,
+    );
+  const itemLimits = new Map(
+    [...itemDefinitions.keys()].map((id) => [id, Number.MAX_SAFE_INTEGER]),
+  );
+  for (const key of ["factory_produced", "warehouse_received"])
+    if (p[key] !== undefined && !validCounts(p[key], itemLimits)) return false;
+  if (
+    p.factory_events !== undefined &&
+    !validCounts(p.factory_events, new Map(Object.entries(questEventLimits)))
   )
     return false;
   const counts = p.workshop_batches;

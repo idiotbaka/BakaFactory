@@ -1,5 +1,7 @@
 # 当前架构
 
+P2 任务在主厂 industry.quests 增加可选的 factory_produced / warehouse_received 逐物品统计和 factory_events 真实事件账本；Worker 在生产 / 运输 / 扩建的成功原子转换中写入，随完整存档和增量行业状态保存。OpenAPI、TypeScript 和 Go 同步校验安全整数、已知物品 / 事件及缺省兼容；新统计不从旧库存推算，不改变规则版本或数据库。阶段仍由终局领奖推进，已解锁阶段不回退，具体边界见 [quests.md](quests.md)。
+
 ## 共用总仓库（规则版本 3）
 
 所有厂区 WH 连接同一库存，主厂 simulation.warehouse 是唯一持久账本，分厂 simulation.warehouse 必须为空对象。projectFactory 将总库存投影到当前厂视图；WorldFrame 只随主厂发送一次库存，安静分厂无需重复发送。每世界 tick 克隆总库存一次，分厂模拟临时使用这份当前账本顺序扣收，完成后移除临时库存；编辑分厂同样克隆 / 验证并原子提交总账。前一快照不会被新 tick、机器人或失败编辑改写。

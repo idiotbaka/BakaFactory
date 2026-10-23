@@ -4,64 +4,64 @@
     {
       "id": "p1_sort_waste",
       "tier": 1,
-      "title": "在工作室加工一次垃圾包",
-      "description": "在工作室完成 1 批 R1001 基础分拣；开工和取消不计入。",
+      "title": "开局一对爪，材料全靠捡",
+      "description": "在工作室加工分拣一次垃圾包",
       "goal": { "type": "workshop_recipe", "target": "r1001", "count": 1 },
       "rewards": { "i0016": 10 }
     },
     {
       "id": "p1_dismantler",
       "tier": 1,
-      "title": "获得设备：简易拆解台",
-      "description": "首次获得简易拆解台道具，已安装或已使用也算。",
+      "title": "逆向工程",
+      "description": "合成一个设备道具：简易拆解台",
       "goal": { "type": "obtain_item", "target": "i0017", "count": 1 },
       "rewards": { "i0015": 20 }
     },
     {
       "id": "p1_crusher",
       "tier": 1,
-      "title": "获得设备：手摇破碎机",
-      "description": "首次获得手摇破碎机道具。",
+      "title": "手摇曲柄",
+      "description": "合成一个设备道具：手摇破碎机",
       "goal": { "type": "obtain_item", "target": "i0026", "count": 1 },
       "rewards": { "i0001": 120 }
     },
     {
       "id": "p1_smelter",
       "tier": 1,
-      "title": "获得设备：简易熔炼炉",
-      "description": "首次获得简易熔炼炉道具。",
+      "title": "欢迎来到青铜时代",
+      "description": "合成一个设备道具：简易熔炼炉",
       "goal": { "type": "obtain_item", "target": "i0037", "count": 1 },
       "rewards": { "i0004": 20, "i0002": 40 }
     },
     {
       "id": "p1_assembler",
       "tier": 1,
-      "title": "获得设备：手工装配台",
-      "description": "首次获得手工装配台道具。",
+      "title": "这是？工作台！",
+      "description": "合成一个设备道具：手工装配台",
       "goal": { "type": "obtain_item", "target": "i0052", "count": 1 },
       "rewards": { "i0038": 40, "i0049": 40 }
     },
     {
       "id": "p1_belt",
       "tier": 1,
-      "title": "获得物流：手摇传送带",
-      "description": "首次获得手摇传送带道具。",
+      "title": "给我自己动！",
+      "description": "合成一个物流道具：手摇传送带",
       "goal": { "type": "obtain_item", "target": "i0053", "count": 1 },
       "rewards": { "i0053": 15 }
     },
     {
       "id": "p1_feeder",
       "tier": 1,
-      "title": "获得物流：自动投料机",
-      "description": "实际对应道具为初阶自动投料机；可用于自动投料机或垃圾提取口。",
+      "title": "筷子夹来夹去",
+      "description": "合成一个物流道具：自动投料机",
       "goal": { "type": "obtain_item", "target": "i0059", "count": 1 },
       "rewards": { "i0059": 5 }
     },
     {
       "id": "p1_warehouse_delivery",
       "tier": 1,
-      "title": "向工厂仓库自动化输送一个物品",
-      "description": "也许你不需要主动去翻垃圾包了~",
+      "title": "工厂的一小步",
+      "description": "向工厂仓库自动化输送任意一个物品",
       "goal": { "type": "automated_delivery", "target": "bus", "count": 1 },
       "rewards": { "i0053": 20, "i0054": 6, "i0059": 6 }
     },
@@ -70,17 +70,214 @@
       "tier": 1,
       "stage_final": true,
       "title": "是时候解放双手了",
-      "description": "制作一个 流水线机械手，它会让你的双手自动动起来，解放你的工作室",
+      "description": "制作一个流水线机械手来自动化加工配方，解放你的大脑",
       "goal": { "type": "craft_item", "target": "i0060", "count": 1 },
       "rewards": {},
       "unlocks": ["warehouse_orders", "stage_2"]
     },
     {
+      "id": "p2_biochar",
+      "tier": 2,
+      "title": "熔炉的自助餐",
+      "description": "自动化生产 100 个生物炭，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0034"],
+        "count": 100
+      },
+      "rewards": { "i0053": 24, "i0059": 4 }
+    },
+    {
+      "id": "p2_iron",
+      "tier": 2,
+      "title": "铁傀儡保护协会",
+      "description": "自动化生产粗铁锭和基础铁板各 100 个，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0038", "i0045"],
+        "count": 100
+      },
+      "rewards": { "i0053": 24, "i0054": 4, "i0057": 9 }
+    },
+    {
+      "id": "p2_nonferrous",
+      "tier": 2,
+      "title": "格雷科技的微笑",
+      "description": "自动化生产粗铜锭和粗铝锭各 100 个，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0040", "i0041"],
+        "count": 100
+      },
+      "rewards": { "i0018": 24, "i0050": 12, "i0170": 12 }
+    },
+    {
+      "id": "p2_shaft_work",
+      "tier": 2,
+      "title": "机械动力：应力过载",
+      "description": "轴功网络驱动机器完成一次加工。",
+      "goal": { "type": "factory_event", "target": "shaft_craft", "count": 1 },
+      "rewards": { "i0057": 12, "i0045": 16, "i0049": 16 }
+    },
+    {
+      "id": "p2_seals",
+      "tier": 2,
+      "title": "滴水不漏（大概吧）",
+      "description": "自动化生产 100 个粗密封圈，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0050"],
+        "count": 100
+      },
+      "rewards": { "i0170": 16, "i0018": 24 }
+    },
+    {
+      "id": "p2_solid_fuel",
+      "tier": 2,
+      "title": "热量高达8000大卡",
+      "description": "自动化生产 100 个固体燃料块，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0036"],
+        "count": 100
+      },
+      "rewards": { "i0057": 12, "i0059": 6 }
+    },
+    {
+      "id": "p2_glass_sand",
+      "tier": 2,
+      "title": "沙子熟了",
+      "description": "自动化生产 100 个玻璃砂，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0027"],
+        "count": 100
+      },
+      "rewards": { "i0170": 12, "i0050": 12 }
+    },
+    {
+      "id": "p2_steel_fasteners",
+      "tier": 2,
+      "title": "拒绝手搓螺丝刀",
+      "description": "自动化生产标准钢板和标准紧固件各 100 个，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0068", "i0072"],
+        "count": 100
+      },
+      "rewards": { "i0120": 12, "i0090": 12, "i0091": 4 }
+    },
+    {
+      "id": "p2_standard_parts",
+      "tier": 2,
+      "title": "零件开始标准化",
+      "description": "自动化生产精制传动轴、轴承组件和精制齿轮各 100 个，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0075", "i0076", "i0079"],
+        "count": 100
+      },
+      "rewards": { "i0120": 18, "i0124": 2 }
+    },
+    {
+      "id": "p2_industrial_parts",
+      "tier": 2,
+      "title": "严丝合缝",
+      "description": "自动化生产工业钢板和标准齿轮组各 100 个，并输入到工厂仓库。",
+      "goal": {
+        "type": "factory_delivery",
+        "target": "bus",
+        "items": ["i0090", "i0091"],
+        "count": 100
+      },
+      "rewards": { "i0120": 24, "i0124": 2, "i0090": 8, "i0091": 4 }
+    },
+    {
+      "id": "p2_steam_storage",
+      "tier": 2,
+      "title": "工厂喝上热水了",
+      "description": "将高压蒸汽输入进蒸汽储压罐。",
+      "goal": {
+        "type": "factory_event",
+        "target": "steam_tank_fill",
+        "count": 1
+      },
+      "rewards": { "i0170": 16, "i0050": 12 }
+    },
+    {
+      "id": "p2_clockwork_colleague",
+      "tier": 2,
+      "title": "第一位会走路的帕鲁同事",
+      "description": "发条搬运车成功完成一次运输工作。",
+      "goal": {
+        "type": "factory_event",
+        "target": "clockwork_transport",
+        "count": 1
+      },
+      "rewards": { "i0059": 6, "i0124": 2, "i0057": 9 }
+    },
+    {
+      "id": "p2_expansion",
+      "tier": 2,
+      "title": "工厂必须扩张！",
+      "description": "扩建到 10 个厂区。",
+      "goal": { "type": "district_count", "target": "world", "count": 10 },
+      "rewards": { "i0053": 36, "i0059": 8, "i0054": 6 }
+    },
+    {
+      "id": "p2_first_screen",
+      "tier": 2,
+      "title": "筛一筛，垃圾也有编制",
+      "description": "制造 1 台机械筛分器。恭喜垃圾获得分流岗位，再来两台的材料也安排上了~",
+      "goal": { "type": "craft_item", "target": "i0064", "count": 1 },
+      "rewards": { "i0057": 6, "i0045": 8, "i0055": 2 }
+    },
+    {
+      "id": "p2_first_press",
+      "tier": 2,
+      "title": "工业区禁止徒手拍扁",
+      "description": "制造 1 台冲压机。把拍铁板的工作交给机器，夹爪协会对此表示满意。",
+      "goal": { "type": "craft_item", "target": "i0067", "count": 1 },
+      "rewards": { "i0045": 12, "i0057": 6, "i0049": 8 }
+    },
+    {
+      "id": "p2_first_lathe",
+      "tier": 2,
+      "title": "车床不是用来开车的",
+      "description": "制造 1 台机械车床。它不会载你去兜风，但能让下一批零件少绕点弯路。",
+      "goal": { "type": "craft_item", "target": "i0074", "count": 1 },
+      "rewards": { "i0068": 10, "i0057": 8, "i0049": 8 }
+    },
+    {
+      "id": "p2_first_mechanical_belt",
+      "tier": 2,
+      "title": "传送带开始卷了",
+      "description": "制造 1 个机械传送带。一批会产出 3 个；下一批的材料已经在路上。",
+      "goal": { "type": "craft_item", "target": "i0120", "count": 1 },
+      "rewards": { "i0091": 6, "i0090": 12, "i0075": 6 }
+    },
+    {
+      "id": "p2_first_steam_tank",
+      "tier": 2,
+      "title": "罐装开水，谢绝饮用",
+      "description": "制造 1 个蒸汽储压包，用它安装蒸汽储压罐。请不要把高压蒸汽当成热饮。",
+      "goal": { "type": "craft_item", "target": "i0111", "count": 1 },
+      "rewards": { "i0092": 4, "i0068": 6, "i0095": 4, "i0086": 4 }
+    },
+    {
       "id": "p2_industrial_license",
       "tier": 2,
       "stage_final": true,
-      "title": "液压时代入场券",
-      "description": "制造液压工业许可包，完成并领取阶段终局任务奖励后开放 P3。",
+      "title": "科技树点歪了吗？没有",
+      "description": "制造液压工业许可包，获得液压时代入场券（P3）。",
       "goal": { "type": "craft_item", "target": "i0112", "count": 1 },
       "rewards": {}
     },

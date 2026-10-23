@@ -5,6 +5,67 @@ import (
 	"testing"
 )
 
+func TestP2QuestGoalDefinitionsAndLedger(t *testing.T) {
+	c := Catalog{Items: []ItemDefinition{{Definition: Definition{ID: "raw"}}, {Definition: Definition{ID: "plate"}}}}
+	goals := []QuestGoal{
+		{Type: "factory_delivery", Target: "bus", Items: []string{"raw", "plate"}, Count: 100},
+		{Type: "factory_event", Target: "shaft_craft", Count: 1},
+		{Type: "factory_event", Target: "steam_tank_fill", Count: 1},
+		{Type: "factory_event", Target: "clockwork_transport", Count: 1},
+		{Type: "district_count", Target: "world", Count: 10},
+	}
+	for _, goal := range goals {
+		c.Quests = []QuestDefinition{{ID: "p2", Tier: 2, Title: "任务", Description: "说明", Goal: goal, Rewards: map[string]int64{"raw": 12}}}
+		if err := validateQuestDefinitions(c); err != nil {
+			t.Fatal("P2 definition rejected", goal, err)
+		}
+	}
+	for _, goal := range []QuestGoal{
+		{Type: "factory_delivery", Target: "bus", Count: 100},
+		{Type: "factory_delivery", Target: "bus", Items: []string{"unknown"}, Count: 100},
+		{Type: "factory_delivery", Target: "bus", Items: []string{"raw", "raw"}, Count: 100},
+		{Type: "factory_delivery", Target: "box", Items: []string{"raw"}, Count: 100},
+		{Type: "factory_event", Target: "unknown", Count: 1},
+		{Type: "district_count", Target: "world", Count: 101},
+		{Type: "district_count", Target: "world", Items: []string{"raw"}, Count: 10},
+	} {
+		c.Quests[0].Goal = goal
+		if validateQuestDefinitions(c) == nil {
+			t.Fatal("bad P2 definition accepted", goal)
+		}
+	}
+	p := &QuestProgress{Completed: []string{}, Claimed: []string{}, WorkshopBatches: map[string]int64{},
+		FactoryProduced: map[string]int64{"raw": 100}, WarehouseReceived: map[string]int64{"raw": 99},
+		FactoryEvents: map[string]int64{"shaft_craft": 1, "steam_tank_fill": 1, "clockwork_transport": 1, "district_count": 10}}
+	if !validQuestProgress(p, c) {
+		t.Fatal("P2 ledger rejected")
+	}
+	encoded, err := json.Marshal(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored QuestProgress
+	if err := json.Unmarshal(encoded, &restored); err != nil || !validQuestProgress(&restored, c) || restored.WarehouseReceived["raw"] != 99 || restored.FactoryEvents["district_count"] != 10 {
+		t.Fatal("P2 counters lost", err)
+	}
+	for _, raw := range []string{
+		`"factory_produced":null`, `"warehouse_received":[]`, `"factory_produced":{"raw":null}`,
+		`"factory_produced":{"unknown":1}`, `"warehouse_received":{"raw":-1}`,
+		`"factory_events":{"district_count":101}`, `"factory_events":{"unknown":1}`,
+		`"factory_events":{"shaft_craft":1.5}`, `"warehouse_received":{"raw":9007199254740992}`,
+	} {
+		var invalid QuestProgress
+		data := `{"completed":[],"claimed":[],"workshop_batches":{},` + raw + `}`
+		if err := json.Unmarshal([]byte(data), &invalid); err == nil && validQuestProgress(&invalid, c) {
+			t.Fatal("malformed P2 counter accepted", raw)
+		}
+	}
+	var legacy QuestProgress
+	if err := json.Unmarshal([]byte(`{"completed":[],"claimed":[],"workshop_batches":{}}`), &legacy); err != nil || !validQuestProgress(&legacy, c) {
+		t.Fatal("old missing counters rejected", err)
+	}
+}
+
 func TestFinalQuestStageValidationAndLegacyEnvelope(t *testing.T) {
 	c, s := orderFixture()
 	s.Industry.Workshop = nil

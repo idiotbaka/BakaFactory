@@ -319,6 +319,7 @@ export function actWorld(
       root.active_district_id = child.id;
     }
   }
+  syncQuests(root);
   root.revision++;
   return root;
 }

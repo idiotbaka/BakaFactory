@@ -533,9 +533,11 @@ export interface components {
             stage_final?: boolean;
             goal: {
                 /** @enum {string} */
-                type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery";
+                type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery" | "factory_delivery" | "factory_event" | "district_count";
                 target: string;
                 count: number;
+                /** @description factory_delivery 的逐物品目标，每种分别达到 count。 */
+                items?: string[];
             };
             rewards: {
                 [key: string]: number;
@@ -546,6 +548,20 @@ export interface components {
             /** @enum {integer} */
             stage_quests_version?: 1;
             automated_received?: number;
+            /** @description 地图机器实际完成配方的逐物品累计产出，不含工作室。 */
+            factory_produced?: {
+                [key: string]: number;
+            };
+            /** @description 物流正常卸货进入 WH 的逐物品累计，不含手动收取与退款。 */
+            warehouse_received?: {
+                [key: string]: number;
+            };
+            factory_events?: {
+                shaft_craft?: number;
+                steam_tank_fill?: number;
+                clockwork_transport?: number;
+                district_count?: number;
+            };
             completed: string[];
             claimed: string[];
             workshop_batches: {

@@ -770,10 +770,20 @@ components:
                     workshop_recipe,
                     craft_item,
                     automated_delivery,
+                    factory_delivery,
+                    factory_event,
+                    district_count,
                   ],
               }
             target: { type: string }
             count: { type: integer, minimum: 1, maximum: 9007199254740991 }
+            items:
+              type: array
+              minItems: 1
+              maxItems: 12
+              uniqueItems: true
+              description: factory_delivery 的逐物品目标，每种分别达到 count。
+              items: { type: string }
         rewards:
           type: object
           additionalProperties:
@@ -791,6 +801,27 @@ components:
         stage_quests_version: { type: integer, enum: [1] }
         automated_received:
           { type: integer, minimum: 0, maximum: 9007199254740991 }
+        factory_produced:
+          type: object
+          description: 地图机器实际完成配方的逐物品累计产出，不含工作室。
+          additionalProperties:
+            { type: integer, minimum: 0, maximum: 9007199254740991 }
+        warehouse_received:
+          type: object
+          description: 物流正常卸货进入 WH 的逐物品累计，不含手动收取与退款。
+          additionalProperties:
+            { type: integer, minimum: 0, maximum: 9007199254740991 }
+        factory_events:
+          type: object
+          additionalProperties: false
+          properties:
+            shaft_craft:
+              { type: integer, minimum: 0, maximum: 9007199254740991 }
+            steam_tank_fill:
+              { type: integer, minimum: 0, maximum: 9007199254740991 }
+            clockwork_transport:
+              { type: integer, minimum: 0, maximum: 9007199254740991 }
+            district_count: { type: integer, minimum: 0, maximum: 100 }
         completed:
           type: array
           maxItems: 1000

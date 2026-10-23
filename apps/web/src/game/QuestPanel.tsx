@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { WorldAction } from "./local/world";
-import { questAmount } from "./local/quests";
-import { finalQuestRequirement, questVisible } from "./local/questRules";
+import { questAmount, questItemAmount } from "./local/quests";
+import { questVisible } from "./local/questRules";
 import DefinitionIcon from "./DefinitionIcon";
 import { ItemInfoProvider, ItemName, ItemText } from "./ItemInfo";
 
@@ -34,16 +34,12 @@ export default function QuestPanel({
       q.tier === (p?.stage ?? 1) &&
       !questVisible(p, q, catalog.quests),
   );
-  const requirement =
-    hiddenFinal && finalQuestRequirement(p, hiddenFinal, catalog.quests);
   return (
     <ItemInfoProvider catalog={catalog} industry={p}>
       <section className="quest-panel" aria-label="阶段任务">
-        {requirement && (
+        {hiddenFinal && (
           <p className="quest-final-hint">
-            阶段终局任务将在完成本阶段其他任务的至少一半后出现：
-            {requirement.completed} / {requirement.required} 项 （共{" "}
-            {requirement.total} 项，向上取整；达成但未领奖也计入）。
+            终局任务会在工厂发展到一定程度后出现
           </p>
         )}
         <div className="quest-tabs" role="group" aria-label="任务分类">
@@ -74,22 +70,30 @@ export default function QuestPanel({
             return (
               <li key={q.id}>
                 <article
-                  className={`quest-card${done && !taken ? " is-ready" : ""}${q.stage_final ? " is-stage-final" : ""}`}
+                  className={`quest-card${done && !taken ? " is-ready" : ""}${taken ? " is-claimed" : ""}${q.stage_final ? " is-stage-final" : ""}`}
                   aria-label={q.title}
                 >
-                  <header>
+                  <header className="quest-card-heading">
                     <h4>
                       <ItemText>{q.title}</ItemText>
                     </h4>
-                    <span>
-                      P{q.tier} ·{" "}
-                      {taken ? "已领奖" : done ? "已达成 · 待领奖" : "进行中"}
-                    </span>
+                    <div className="quest-tags" aria-label="任务标签">
+                      <span className="quest-tag quest-stage-tag">
+                        P{q.tier}
+                      </span>
+                      <span
+                        className={`quest-tag quest-status-tag${taken ? " is-claimed" : done ? " is-ready" : ""}`}
+                      >
+                        {taken ? "已领奖" : done ? "已达成 · 待领奖" : "进行中"}
+                      </span>
+                      {q.stage_final && (
+                        <span className="quest-tag quest-final-label">
+                          阶段终局任务
+                        </span>
+                      )}
+                    </div>
                   </header>
-                  {q.stage_final && (
-                    <p className="quest-final-label">阶段终局任务</p>
-                  )}
-                  <p>
+                  <p className="quest-description">
                     <ItemText>{q.description}</ItemText>
                   </p>
                   {q.stage_final && (
@@ -97,35 +101,84 @@ export default function QuestPanel({
                       完成本任务并领取奖励后解锁 P{q.tier + 1} 阶段。
                     </p>
                   )}
-                  <p>
-                    进度：
-                    {done
-                      ? q.goal.count
-                      : Math.min(q.goal.count, questAmount(p, q))}{" "}
-                    / {q.goal.count}
-                  </p>
-                  <h5>任务奖励</h5>
-                  <ul className="quest-rewards">
-                    {Object.entries(q.rewards).map(([id, n]) => {
-                      const item = catalog.items.find((i) => i.id === id);
-                      return (
-                        <li key={id}>
-                          {item && <DefinitionIcon definition={item} compact />}
-                          <span>
-                            <ItemName item={id} /> × {n}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {!!q.unlocks?.length && (
-                    <p className="quest-mechanism-reward">
-                      {q.unlocks.includes("warehouse_orders") &&
-                        "仓库中解锁下单功能"}
+                  {q.goal.type === "factory_delivery" ? (
+                    <ul
+                      className="quest-delivery-progress"
+                      aria-label="自动化入库进度"
+                    >
+                      {q.goal.items?.map((id) => {
+                        const item = catalog.items.find((i) => i.id === id);
+                        return (
+                          <li key={id}>
+                            {item && (
+                              <DefinitionIcon definition={item} compact />
+                            )}
+                            <div>
+                              <ItemName item={id} />
+                              <span>
+                                {done
+                                  ? q.goal.count
+                                  : Math.min(
+                                      q.goal.count,
+                                      questItemAmount(p, id),
+                                    )}{" "}
+                                / {q.goal.count}
+                              </span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="quest-progress">
+                      进度：
+                      {done
+                        ? q.goal.count
+                        : Math.min(q.goal.count, questAmount(p, q))}{" "}
+                      / {q.goal.count}
                     </p>
+                  )}
+                  {(Object.keys(q.rewards).length > 0 ||
+                    !!q.unlocks?.length) && (
+                    <section
+                      className="quest-reward-section"
+                      aria-label="任务奖励"
+                    >
+                      <h5>任务奖励</h5>
+                      {Object.keys(q.rewards).length > 0 && (
+                        <ul className="quest-rewards">
+                          {Object.entries(q.rewards).map(([id, n]) => {
+                            const item = catalog.items.find((i) => i.id === id);
+                            return (
+                              <li
+                                key={id}
+                                className="workshop-material-card quest-reward-card"
+                              >
+                                {item && (
+                                  <DefinitionIcon definition={item} compact />
+                                )}
+                                <div>
+                                  <strong>
+                                    <ItemName item={id} />
+                                  </strong>
+                                  <span>× {n.toLocaleString()}</span>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                      {!!q.unlocks?.length && (
+                        <p className="quest-mechanism-reward">
+                          {q.unlocks.includes("warehouse_orders") &&
+                            "仓库中解锁下单功能"}
+                        </p>
+                      )}
+                    </section>
                   )}
                   {!taken && (
                     <button
+                      className="quest-claim"
                       disabled={!done || disabled || !act}
                       onClick={() => act?.({ type: "claim_quest", id: q.id })}
                     >

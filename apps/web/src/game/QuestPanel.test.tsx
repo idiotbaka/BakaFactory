@@ -15,6 +15,36 @@ const user = {
 };
 afterEach(() => vi.useRealTimers());
 describe("quest interface", () => {
+  it("shows per-item P2 progress and logistics rewards without enabling a partial completion claim", () => {
+    const factory = createLocalFactory(user, "P2 进度"),
+      p = factory.simulation.industry!;
+    p.stage = 2;
+    p.quests!.completed = ["p1_free_hands"];
+    p.quests!.claimed = ["p1_free_hands"];
+    const q = catalog.quests!.find((q) => q.id === "p2_iron")!,
+      [iron, plate] = q.goal.items!;
+    p.quests!.factory_produced = { [iron]: 100, [plate]: 60 };
+    p.quests!.warehouse_received = { [iron]: 40, [plate]: 90 };
+    render(
+      <QuestPanel
+        factory={factory}
+        catalog={catalog}
+        disabled={false}
+        act={vi.fn()}
+      />,
+    );
+    const card = within(
+        screen.getByRole("article", { name: "铁傀儡保护协会" }),
+      ),
+      progress = within(card.getByRole("list", { name: "自动化入库进度" }));
+    expect(progress.getByText("40 / 100")).toBeInTheDocument();
+    expect(progress.getByText("60 / 100")).toBeInTheDocument();
+    expect(card.getByRole("button", { name: "领取奖励" })).toBeDisabled();
+    expect(card.getByText(/× 24/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("article", { name: "科技树点歪了吗？没有" }),
+    ).not.toBeInTheDocument();
+  });
   it("presents mechanism unlocks as a claimable reward without inventing an item payout", () => {
     const factory = createLocalFactory(user, "机制"),
       act = vi.fn();
@@ -68,9 +98,7 @@ describe("quest interface", () => {
         .quests!.filter((q) => q.tier === 1 && !q.stage_final)
         .map((q) => q.title),
     );
-    const ready = within(
-      screen.getByRole("article", { name: "获得物流：手摇传送带" }),
-    );
+    const ready = within(screen.getByRole("article", { name: "给我自己动！" }));
     const reward = within(ready.getByRole("listitem"));
     expect(
       reward.getByRole("button", { name: "手摇传送带" }),
@@ -79,9 +107,10 @@ describe("quest interface", () => {
     fireEvent.click(ready.getByRole("button", { name: "领取奖励" }));
     expect(world).toHaveBeenCalledWith({ type: "claim_quest", id: "p1_belt" });
     expect(
-      within(
-        screen.getByRole("article", { name: "获得设备：简易拆解台" }),
-      ).getByRole("button", { name: "领取奖励" }),
+      within(screen.getByRole("article", { name: "逆向工程" })).getByRole(
+        "button",
+        { name: "领取奖励" },
+      ),
     ).toBeDisabled();
     rerender(<QuestPanel {...props} disabled />);
     expect(ready.getByRole("button", { name: "领取奖励" })).toBeDisabled();
@@ -92,7 +121,9 @@ describe("quest interface", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /^已完成/ }));
     expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByText("P1 · 已领奖")).toBeInTheDocument();
+    const tags = within(screen.getByLabelText("任务标签"));
+    expect(tags.getByText("P1")).toBeInTheDocument();
+    expect(tags.getByText("已领奖")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "领取奖励" }),
     ).not.toBeInTheDocument();
@@ -112,7 +143,9 @@ describe("quest interface", () => {
     expect(
       screen.getByRole("button", { name: "待完成（8）" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/3 \/ 4 项/)).toBeInTheDocument();
+    expect(
+      screen.getByText("终局任务会在工厂发展到一定程度后出现"),
+    ).toBeInTheDocument();
     p.quests!.completed.push(ids[3]);
     rerender(<QuestPanel {...props} />);
     expect(
@@ -126,7 +159,17 @@ describe("quest interface", () => {
     p.stage = 2;
     rerender(<QuestPanel {...props} />);
     expect(
-      screen.getByRole("article", { name: "液压时代入场券" }),
+      screen.queryByRole("article", { name: "科技树点歪了吗？没有" }),
+    ).not.toBeInTheDocument();
+    p.quests!.completed.push(
+      ...catalog
+        .quests!.filter((q) => q.tier === 2 && !q.stage_final)
+        .slice(0, 9)
+        .map((q) => q.id),
+    );
+    rerender(<QuestPanel {...props} />);
+    expect(
+      screen.getByRole("article", { name: "科技树点歪了吗？没有" }),
     ).toHaveTextContent("解锁 P3 阶段");
     fireEvent.click(screen.getByRole("button", { name: /^已完成/ }));
     expect(
@@ -192,7 +235,7 @@ describe("quest interface", () => {
       <QuestNotifications notices={notices} catalog={catalog} />,
     );
     expect(screen.getByRole("status")).toHaveTextContent(
-      "任务达成：获得物流：手摇传送带",
+      "任务达成：给我自己动！",
     );
     act(() => vi.advanceTimersByTime(2000));
     rerender(
@@ -203,7 +246,7 @@ describe("quest interface", () => {
     );
     act(() => vi.advanceTimersByTime(1000));
     expect(screen.getByRole("status")).toHaveTextContent(
-      "任务达成：获得物流：自动投料机",
+      "任务达成：筷子夹来夹去",
     );
     act(() => vi.advanceTimersByTime(3000));
     expect(screen.getByRole("status")).toBeEmptyDOMElement();

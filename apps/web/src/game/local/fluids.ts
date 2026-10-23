@@ -1,6 +1,6 @@
 import type { BuildingInstance } from "../../api/client";
 import type { LocalFactory } from "./state";
-import { recordWarehouseDelivery } from "./quests";
+import { recordFluidReceipt, recordWarehouseDelivery } from "./quests";
 import {
   buildingDefinitions,
   direction,
@@ -336,7 +336,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
     const m = s.buildings[target.b.id];
     if (target.kind === "warehouse") {
       s.warehouse[item] = (s.warehouse[item] ?? 0) + n;
-      recordWarehouseDelivery(f, n);
+      recordWarehouseDelivery(f, item, n);
     } else if (target.kind === "medium") m.medium = (m.medium ?? 0) + n;
     else if (target.kind === "buffer")
       m.fluid = { item, count: (m.fluid?.count ?? 0) + n };
@@ -346,6 +346,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
         throw new Error("流体预留与提交不一致");
     }
     m.flow_in = (m.flow_in ?? 0) + n;
+    recordFluidReceipt(f, target.b.building_type, item, n);
   }
   for (const b of nodes) {
     if (!activeFluidNode(f, b)) continue;

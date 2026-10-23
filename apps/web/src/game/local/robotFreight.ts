@@ -1,6 +1,10 @@
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
-import { recordWarehouseDelivery } from "./quests";
+import {
+  recordFluidReceipt,
+  recordQuestEvent,
+  recordWarehouseDelivery,
+} from "./quests";
 import {
   buildingDefinitions,
   catalog,
@@ -8,6 +12,7 @@ import {
   isFluid,
   isFluidNode,
   itemDefinitions,
+  itemID,
   selectedRecipe,
 } from "./catalog";
 import { add, count, remove, store } from "./inventory";
@@ -396,12 +401,15 @@ function exchange(
     commit: () => {
       if (kind === "warehouse") {
         store(root.simulation.warehouse, { [item]: loading ? -n : n });
-        if (!loading) recordWarehouseDelivery(root, n);
+        if (!loading) recordWarehouseDelivery(root, item, n);
       } else if (kind === "fluid") {
         if (loading) {
           m.fluid!.count -= n;
           if (!m.fluid!.count) delete m.fluid;
-        } else m.fluid = { item, count: (m.fluid?.count ?? 0) + n };
+        } else {
+          m.fluid = { item, count: (m.fluid?.count ?? 0) + n };
+          recordFluidReceipt(root, b.building_type, item, n);
+        }
       } else if (loading) remove(m[kind]!, item, n);
       else {
         m[kind] ??= [];
@@ -703,6 +711,8 @@ export function stepFreight(root: LocalFactory) {
       if (!r.cargo!.count) {
         delete r.cargo;
         recordWork(root, r, "freight");
+        if (r.item === itemID("发条搬运车"))
+          recordQuestEvent(root, "clockwork_transport");
         r.completed_tasks = Math.min(
           Number.MAX_SAFE_INTEGER,
           (r.completed_tasks ?? 0) + 1,

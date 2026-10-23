@@ -1,6 +1,7 @@
 import type { LocalFactory } from "./state";
 import { buildingDefinitions, isFluidNode } from "./catalog";
 import { store } from "./inventory";
+import { recordFluidReceipt } from "./quests";
 import { acceptsFluid, type FluidTarget } from "./fluidConfig";
 import {
   itemFilter,
@@ -43,6 +44,7 @@ export function applyFluidAction(f: LocalFactory, action: FluidAction) {
     if (n > (d.fluid_capacity ?? 0)) throw new Error("容器容量不足");
     store(f.simulation.warehouse, { [action.item]: -action.count });
     m.fluid = { item: action.item, count: n };
+    recordFluidReceipt(f, b.building_type, action.item, action.count);
   } else if (action.type === "drain_fluid") {
     if (m.fluid)
       store(f.simulation.warehouse, { [m.fluid.item]: m.fluid.count });

@@ -421,7 +421,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       m.status = "transporting";
     } else if (t.destination === "warehouse") {
       s.warehouse[t.item] = (s.warehouse[t.item] ?? 0) + t.quantity;
-      recordWarehouseDelivery(f, t.quantity);
+      recordWarehouseDelivery(f, t.item, t.quantity);
     } else {
       m[t.destination] ??= [];
       add(m[t.destination]!, t.item, t.quantity);

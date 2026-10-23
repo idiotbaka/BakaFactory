@@ -162,6 +162,12 @@ describe("physical robot freight", () => {
       { item: iron, count: 4 },
     ]);
     expect(root.robots![0]).toMatchObject({ completed_tasks: 1 });
+    expect(
+      root.simulation.industry!.quests!.factory_events?.clockwork_transport,
+    ).toBe(1);
+    expect(root.simulation.industry!.quests!.completed).toContain(
+      "p2_clockwork_colleague",
+    );
     expect(root.robots![0].cargo).toBeUndefined();
     expect(root.robots![0].task).toBeUndefined();
     expect(root.robots![0].returning).toBeUndefined();
@@ -196,6 +202,10 @@ describe("physical robot freight", () => {
     expect(total(root)).toBe(4);
     expect(root.simulation.warehouse[iron]).toBe(before + 4);
     expect(root.simulation.industry!.quests!.automated_received).toBe(0);
+    expect(
+      root.simulation.industry!.quests!.factory_events?.clockwork_transport ??
+        0,
+    ).toBe(0);
     expect(root.robots![0].completed_tasks ?? 0).toBe(0);
     root = actWorld(root, { type: "robot_recall", id: "r" });
     expect(root.simulation.warehouse[cart]).toBe(1);
@@ -234,6 +244,10 @@ describe("physical robot freight", () => {
     root = until(root, (f) => f.robots![0].completed_tasks === 1);
     expect(root.simulation.warehouse[body]).toBe(1);
     expect(root.simulation.industry!.quests!.automated_received).toBe(1);
+    expect(
+      root.simulation.industry!.quests!.factory_events?.clockwork_transport ??
+        0,
+    ).toBe(0);
     expect(total(root, body)).toBe(1);
     expect(
       root.districts!.every((f) => f.simulation.tick === root.simulation.tick),

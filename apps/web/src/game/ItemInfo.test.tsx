@@ -54,13 +54,11 @@ describe("item acquisition popovers", () => {
         act={act}
       />,
     );
-    const quest = within(
-      screen.getByRole("article", { name: "获得物流：自动投料机" }),
-    );
+    const quest = within(screen.getByRole("article", { name: "筷子夹来夹去" }));
     expect(
       quest.getAllByRole("button", { name: "初阶自动投料机" }),
-    ).toHaveLength(2);
-    const trigger = quest.getByRole("button", { name: "垃圾提取口" });
+    ).toHaveLength(1);
+    const trigger = quest.getByRole("button", { name: "自动投料机" });
     fireEvent.click(trigger);
     const card = within(screen.getByRole("dialog", { name: "初阶自动投料机" }));
     expect(card.getByText("I0059")).toBeInTheDocument();

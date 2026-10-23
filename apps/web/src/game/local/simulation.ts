@@ -9,13 +9,13 @@ import {
 } from "./catalog";
 import { canProcess, recordCraft, stepWorkshop } from "./industry";
 import { add, remove } from "./inventory";
-import { consumeWorkEnergy } from "./production";
+import { consumeWorkEnergy, workKind } from "./production";
 import { allocatePower } from "./power";
 import { advanceTransport, transferSolids } from "./logistics";
 import { enabled } from "./transportConfig";
 import { transferFluids } from "./fluids";
 import { claimWork } from "./workLedger";
-import { syncQuests } from "./quests";
+import { recordFactoryOutput, recordQuestEvent, syncQuests } from "./quests";
 
 // Deterministic single-second transition, with no clock, DOM, network or disk.
 // Production settles first; transport reads that stock, plans once and commits.
@@ -103,6 +103,9 @@ export function step(
         (m.batches_completed ?? 0) + 1,
       );
       recordCraft(f, r.outputs);
+      recordFactoryOutput(f, r.outputs);
+      if (workKind(b) === "shaft" && (r.power_kw ?? 0) > 0)
+        recordQuestEvent(f, "shaft_craft");
     }
   }
   transferSolids(f, ordered);

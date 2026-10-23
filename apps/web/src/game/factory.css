@@ -158,8 +158,7 @@
   border-radius: 50%;
   background: #ff527b;
 }
-.quest-tabs,
-.quest-rewards {
+.quest-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -174,14 +173,24 @@
   list-style: none;
 }
 .quest-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
   border: 1px solid var(--line);
-  background: #0c1120;
-  padding: 14px;
+  border-left: 3px solid var(--purple);
+  background: linear-gradient(120deg, #b69aff08, transparent 70%), #0c1120;
+  padding: 16px;
   margin-top: 12px;
   overflow-wrap: anywhere;
 }
 .quest-card.is-ready {
   border-color: var(--cyan);
+}
+.quest-card.is-claimed {
+  border-color: var(--line-dim);
+}
+.quest-card p {
+  margin: 0;
 }
 .quest-card.is-stage-final {
   border-color: var(--pink);
@@ -189,13 +198,10 @@
     inset 0 0 0 1px #ff62cb30,
     0 0 12px #ff62cb16;
 }
-.quest-final-label {
-  display: inline-block;
-  border: 1px solid #ff62cb70;
+.quest-tag.quest-final-label {
   color: var(--pink);
+  border-color: #ff62cb70;
   background: #ff62cb12;
-  padding: 3px 8px;
-  font-size: 12px;
 }
 .quest-final-unlock,
 .quest-final-hint {
@@ -207,20 +213,106 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px;
+  align-items: flex-start;
 }
-.quest-card h4,
+.quest-card h4 {
+  flex: 1 1 200px;
+  min-width: 0;
+  margin: 0;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.quest-card h4 .item-name-link {
+  color: inherit;
+}
 .quest-card h5 {
   font-size: 12px;
   margin: 0;
+  color: var(--muted);
 }
-.quest-card header > span {
-  color: var(--cyan);
-}
-.quest-rewards li {
+.quest-tags {
   display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.quest-tag {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
+  padding: 3px 8px;
+  border: 1px solid;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.quest-stage-tag {
+  color: var(--purple);
+  border-color: #b69aff60;
+  background: #b69aff10;
+  font-family: var(--mono);
+}
+.quest-status-tag {
+  color: #ffc879;
+  border-color: #ffc87950;
+  background: #ffc8790c;
+}
+.quest-status-tag.is-ready {
+  color: var(--cyan);
+  border-color: #46eff260;
+  background: #46eff210;
+}
+.quest-status-tag.is-claimed {
+  color: var(--muted);
+  border-color: var(--line-dim);
+  background: #ffffff04;
+}
+.quest-description {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.quest-progress {
+  color: var(--cyan);
+  font: 12px var(--mono);
+  padding: 8px 10px;
+  border-left: 2px solid var(--line);
+  background: #46eff206;
+}
+.quest-reward-section {
+  display: grid;
+  gap: 8px;
   min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-dim);
+}
+.quest-rewards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.quest-card .quest-reward-card {
+  padding: 10px;
+  border-color: var(--line-dim);
+}
+.quest-card .quest-reward-card > div > span {
+  color: var(--cyan);
+  font-family: var(--mono);
+}
+.quest-mechanism-reward {
+  padding: 10px;
+  border: 1px solid #b69aff50;
+  background: #b69aff0a;
+  color: var(--purple);
+  font-size: 12px;
+}
+.quest-claim {
+  justify-self: end;
+  min-width: 108px;
+}
+.quest-card.is-ready .quest-claim {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: #46eff210;
 }
 .quest-notification {
   position: absolute;
@@ -619,6 +711,32 @@
   border: 1px solid var(--line-dim);
   color: #ffc879;
 }
+.quest-delivery-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.quest-delivery-progress li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line-dim);
+}
+.quest-delivery-progress li > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.quest-delivery-progress li > div > span {
+  color: var(--cyan);
+  font-size: 12px;
+}
 .industry-editor {
   display: flex;
   flex: 1;
@@ -912,9 +1030,6 @@
 }
 .order-dialog [role="alert"] {
   color: var(--danger);
-}
-.quest-mechanism-reward {
-  color: var(--cyan);
 }
 .industry-warehouse article > span:last-child {
   max-width: 100%;

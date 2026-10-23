@@ -85,6 +85,16 @@ describe("stage final quest gates", () => {
     const nextRecipes = ["r2001", "r3001", "r4001", "r5001", "r6001"];
     for (let tier = 1; tier <= 5; tier++) {
       const q = catalog.quests!.find((q) => q.stage_final && q.tier === tier)!;
+      root.simulation.industry!.quests!.completed.push(
+        ...catalog
+          .quests!.filter(
+            (q) =>
+              q.tier === tier &&
+              !q.stage_final &&
+              !root.simulation.industry!.quests!.completed.includes(q.id),
+          )
+          .map((q) => q.id),
+      );
       recordCraft(root, { [catalog.stages![tier - 1].milestone_item]: 1 });
       syncQuests(root);
       expect(root.simulation.industry!.stage).toBe(tier);
