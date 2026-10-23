@@ -1,5 +1,7 @@
 # 当前架构
 
+开发者工具入口显示偏好为 LocalRecord.developerToolsVisible，可选布尔值、缺省 false，按账号同工厂记录串行写入 IndexedDB。GameRuntime 提供只读状态与串行切换方法，保存成功后发布 GameView；普通 tick / 编辑继续携带同一元数据，失败沿用暂停 / 重试保护。该字段不进入 Worker、GameSave 或云备份，恢复云档保留当前浏览器偏好。登录工作台只暴露 `window.bakaFactory.devTools()` 查询 / `devTools(true|false)` 切换入口，退出 / 换账号后清理并废止旧句柄；不暴露运行层对象或新增账号权限。隐藏入口与 industry.developer 的实际功能测试设置相互独立。
+
 P2 任务在主厂 industry.quests 增加可选的 factory_produced / warehouse_received 逐物品统计和 factory_events 真实事件账本；Worker 在生产 / 运输 / 扩建的成功原子转换中写入，随完整存档和增量行业状态保存。OpenAPI、TypeScript 和 Go 同步校验安全整数、已知物品 / 事件及缺省兼容；新统计不从旧库存推算，不改变规则版本或数据库。阶段仍由终局领奖推进，已解锁阶段不回退，具体边界见 [quests.md](quests.md)。
 
 ## 共用总仓库（规则版本 3）

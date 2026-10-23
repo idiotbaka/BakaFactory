@@ -2,6 +2,14 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-23：开发者入口默认隐藏与本机控制台偏好
+
+- 开发者工具默认不显示，增加 `bakaFactory.devTools(true|false)` 控制台开关和无参数查询；关闭时回工厂，隐藏期间不渲染开发页。显隐不修改既有功能测试开关、任务或模拟。
+- LocalRecord 新增可选 developerToolsVisible，按账号随本机 IndexedDB 保存，GameRuntime 串行写入，刷新 / tick / 编辑保持；云恢复保留本机偏好、不上传到 GameSave。退出 / 账号切换清理全局入口，旧句柄失效，无 API / 存档协议 / 数据库迁移。
+- 补默认显隐 / 旧视图回退、控制台生命周期、串行持久化 / 刷新、账号隔离、云边界和失败重试测试，适配原开发者页测试显式开启；同步指令和验收步骤。
+
+验证状态：Prettier、前端 `npm run lint --workspace @bakafactory/web`（12px / ESLint / TypeScript）、`npm run build --workspace @bakafactory/web` 编译及 `git diff --check` 通过。已补测试代码，未执行自动 / 冒烟 / 浏览器测试，实际浏览器控制台由用户验收；未启动服务、访问数据库、清档或修改协议。
+
 ## 2026-10-23：P1 九项任务文案更新
 
 - 按用户定稿替换 P1 九项标题 / 描述，核对与既有任务 ID 顺序逐一对应；保留 goal、奖励、解锁与终局标记，仅通过配置源导入生成目录。

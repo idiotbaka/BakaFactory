@@ -25,6 +25,7 @@ import {
 } from "./stories/progress";
 import { SimulationAnimationProvider } from "./SimulationAnimation";
 import { readPowerSaving, savePowerSaving } from "./displayPreferences";
+import { installDeveloperConsole } from "./developerConsole";
 import { entityColor } from "./entityTheme";
 import HudPopover from "../HudPopover";
 import { useLocalGame } from "./local/useLocalGame";
@@ -121,6 +122,14 @@ export default function FactoryWorkspace({
   const phaseFor = (category: typeof tab) =>
     Math.min(catalogPhases[category] ?? stage, category === "item" ? 6 : stage);
   useEffect(() => savePowerSaving(powerSaving), [powerSaving]);
+  useEffect(() => {
+    if (!game.runtime) return;
+    return installDeveloperConsole(game.runtime, () => {
+      setIndustryView((current) =>
+        current === "developer" ? "factory" : current,
+      );
+    });
+  }, [game.runtime]);
   useEffect(() => {
     if (!activeFactoryID || !paletteCatalog) return;
     const key = (event: KeyboardEvent) => {
@@ -678,6 +687,7 @@ export default function FactoryWorkspace({
                   }));
                 }}
                 view={industryView}
+                developerToolsVisible={game.developerToolsVisible === true}
                 onViewChange={setIndustryView}
                 selectedRobotID={selectedRobotID}
                 onSelectRobot={selectRobot}

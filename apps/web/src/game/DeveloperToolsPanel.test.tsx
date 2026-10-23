@@ -13,6 +13,45 @@ const user = {
   last_login_at: "now",
 };
 describe("developer tools", () => {
+  it("hides the entry and developer content by default, including a stale selected view", () => {
+    const factory = createWorld(user, "默认隐藏"),
+      props = {
+        factory,
+        catalog,
+        disabled: false,
+        act: vi.fn(),
+        world: vi.fn(),
+        view: "developer" as const,
+        onViewChange: vi.fn(),
+      };
+    const { rerender } = render(
+      <IndustryViews {...props}>
+        <span>原工厂地图</span>
+      </IndustryViews>,
+    );
+    expect(
+      screen.queryByRole("button", { name: "开发者工具" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    expect(screen.getByText("原工厂地图")).toBeVisible();
+    rerender(
+      <IndustryViews {...props} developerToolsVisible>
+        <span>原工厂地图</span>
+      </IndustryViews>,
+    );
+    expect(
+      screen.getByRole("button", { name: "开发者工具" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("switch")).toBeInTheDocument();
+    rerender(
+      <IndustryViews {...props} developerToolsVisible={false}>
+        <span>原工厂地图</span>
+      </IndustryViews>,
+    );
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    expect(screen.getByText("原工厂地图")).toBeVisible();
+    expect(props.world).not.toHaveBeenCalled();
+  });
   it("preserves diagnostic observations and locate actions inside the diagnostics subpage without changing the world", () => {
     const factory = createWorld(user, "诊断子页"),
       world = vi.fn(),
@@ -36,6 +75,7 @@ describe("developer tools", () => {
         act={vi.fn()}
         world={world}
         view="developer"
+        developerToolsVisible
         onViewChange={vi.fn()}
         onLocateBuilding={onLocateBuilding}
         observation={{
@@ -73,6 +113,7 @@ describe("developer tools", () => {
       world,
       children: null,
       view: "developer" as const,
+      developerToolsVisible: true,
       onViewChange,
     };
     const { rerender } = render(<IndustryViews {...props} />);
@@ -126,6 +167,7 @@ describe("developer tools", () => {
       world: vi.fn(),
       children: null,
       view: "developer" as const,
+      developerToolsVisible: true,
       onViewChange: vi.fn(),
     };
     const { rerender } = render(<IndustryViews {...props} />);

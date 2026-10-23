@@ -157,6 +157,91 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("defaults developer visibility off, serializes toggles with world saves and restores the local-only preference", async () => {
+    await game.start();
+    expect(view.developerToolsVisible).toBe(false);
+    await game.create("本机工具");
+    const revision = view.factory!.revision;
+    await Promise.all([
+      game.setDeveloperToolsVisible(true),
+      game.setDeveloperToolsVisible(false),
+    ]);
+    expect(saved!.developerToolsVisible).toBe(false);
+    await game.setDeveloperToolsVisible(true);
+    expect(game.developerToolsVisible).toBe(true);
+    expect(view.factory!.revision).toBe(revision);
+    expect(saved!.save).not.toHaveProperty("developerToolsVisible");
+    for (let i = 0; i < 5; i++) FakeWorker.instances[0].tick();
+    await game.act({ type: "scavenge" });
+    expect(saved!.developerToolsVisible).toBe(true);
+    await game.close();
+    game = new GameRuntime(
+      user,
+      (next) => {
+        view = next;
+      },
+      expired,
+    );
+    await game.start();
+    expect(view.developerToolsVisible).toBe(true);
+    await game.setDeveloperToolsVisible(false);
+    expect(saved!.developerToolsVisible).toBe(false);
+    expect(view.developerToolsVisible).toBe(false);
+  });
+  it("keeps developer visibility local during cloud restore and upload and isolates another account", async () => {
+    await game.start();
+    await game.setDeveloperToolsVisible(true);
+    const cloudRoot = createWorld(user, "云端工厂");
+    vi.mocked(downloadSave).mockResolvedValue({
+      version: 1,
+      saved_at: "now",
+      save: toSave(cloudRoot),
+    });
+    await game.restoreCloud();
+    expect(saved!.developerToolsVisible).toBe(true);
+    vi.mocked(uploadSave).mockImplementation(async (_session, base, save) => ({
+      version: base + 1,
+      saved_at: "now",
+      save,
+    }));
+    await game.backup();
+    expect(vi.mocked(uploadSave).mock.calls[0][2]).not.toHaveProperty(
+      "developerToolsVisible",
+    );
+    await game.close();
+    const otherUser = { ...user, id: "another-developer" };
+    vi.mocked(readLocal).mockResolvedValue(undefined);
+    vi.mocked(downloadSave).mockResolvedValue(null);
+    vi.mocked(gameHeartbeat).mockResolvedValue({
+      user: otherUser,
+      session_id: "other-session",
+      lease_seconds: 30,
+    });
+    game = new GameRuntime(
+      otherUser,
+      (next) => {
+        view = next;
+      },
+      expired,
+    );
+    await game.start();
+    expect(view.developerToolsVisible).toBe(false);
+  });
+  it("rejects invalid toggles and reports a failed metadata write before showing the tools, with retry support", async () => {
+    await game.start();
+    await expect(
+      game.setDeveloperToolsVisible("true" as unknown as boolean),
+    ).rejects.toThrow("devTools");
+    vi.mocked(writeLocal).mockRejectedValueOnce(new Error("暂时不可写"));
+    await expect(game.setDeveloperToolsVisible(true)).rejects.toThrow(
+      "暂时不可写",
+    );
+    expect(view.developerToolsVisible).toBe(false);
+    expect(view.paused).toBe(true);
+    await game.retryStorage();
+    expect(saved!.developerToolsVisible).toBe(true);
+    expect(view.developerToolsVisible).toBe(true);
+  });
   it("persists a pending P1 chapter with the real claim, resumes it after reload and removes it only after completion commits", async () => {
     const root = createWorld(user, "P1 领奖");
     root.simulation.industry!.crafted.i0060 = 1;

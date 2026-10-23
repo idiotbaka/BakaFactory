@@ -50,6 +50,7 @@ export type EditorCommands = {
   getFactory: (factory: string, signal?: AbortSignal) => Promise<FactoryDetail>;
 };
 export type GameView = {
+  developerToolsVisible?: boolean;
   viewedStories?: string[];
   pendingStories?: string[];
   questNotices?: { sequence: number; id: string }[];
@@ -103,6 +104,7 @@ export class GameRuntime {
   private worker?: Worker;
   private releaseLock?: () => void;
   private writeTail: Promise<void> = Promise.resolve();
+  private developerWriteTail: Promise<unknown> = Promise.resolve();
   private autoSaving = false;
   private autoRequested = false;
   private requestID = 0;
@@ -206,6 +208,8 @@ export class GameRuntime {
         if (
           local.version !== 1 ||
           local.owner !== this.user.id ||
+          (local.developerToolsVisible !== undefined &&
+            typeof local.developerToolsVisible !== "boolean") ||
           !validViewedStories(local.viewedStories) ||
           !validViewedStories(local.pendingStories) ||
           !Number.isSafeInteger(local.cloudVersion) ||
@@ -254,6 +258,7 @@ export class GameRuntime {
       } satisfies WorkerCommand);
       this.publish({
         ready: true,
+        developerToolsVisible: this.record.developerToolsVisible === true,
         viewedStories: [...(this.record.viewedStories ?? [])],
         pendingStories: [...(this.record.pendingStories ?? [])],
         workshopBlocked: factory
@@ -470,6 +475,35 @@ export class GameRuntime {
     });
     this.permit();
   }
+  get developerToolsVisible() {
+    return !this.disposed && this.view.developerToolsVisible === true;
+  }
+  setDeveloperToolsVisible(enabled: boolean): Promise<boolean> {
+    const task = this.developerWriteTail
+      .catch(() => {})
+      .then(async () => {
+        if (this.disposed || !this.view.ready)
+          throw new Error("游戏尚未就绪，请登录并等待本地存档加载完成");
+        if (typeof enabled !== "boolean")
+          throw new Error(
+            "请使用 bakaFactory.devTools(true) 或 bakaFactory.devTools(false)",
+          );
+        // Set before enqueueing the snapshot so later tick saves retain it.
+        this.record.developerToolsVisible = enabled;
+        await this.persist();
+        this.storageFailed = false;
+        this.publish({
+          developerToolsVisible: enabled,
+          ...(this.view.message.startsWith("本地保存失败")
+            ? { message: "" }
+            : {}),
+        });
+        this.permit();
+        return enabled;
+      });
+    this.developerWriteTail = task;
+    return task;
+  }
   readonly robotRoute = (id: string) =>
     this.record.save
       ? previewRobotRoute(this.record.save.factory as LocalFactory, id)
@@ -504,7 +538,10 @@ export class GameRuntime {
       throw new Error("本地模拟已中断，请刷新页面恢复最近本地存档");
     await this.persist();
     this.storageFailed = false;
-    this.publish({ message: "" });
+    this.publish({
+      message: "",
+      developerToolsVisible: this.record.developerToolsVisible === true,
+    });
     this.permit();
   }
   private async heartbeat() {

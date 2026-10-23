@@ -41,7 +41,8 @@ export default function IndustryViews({
   children,
   districts = [],
   world,
-  view,
+  view: requestedView,
+  developerToolsVisible = false,
   onViewChange,
   selectedRobotID,
   onSelectRobot,
@@ -58,6 +59,7 @@ export default function IndustryViews({
   districts?: DistrictSummary[];
   world?: (action: WorldAction) => void;
   view: IndustryView;
+  developerToolsVisible?: boolean;
   onViewChange: (view: IndustryView) => void;
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
@@ -66,6 +68,10 @@ export default function IndustryViews({
   onLocateBuilding?: (id: string) => void;
   onOrder?: PlaceWorkshopOrder;
 }) {
+  const view =
+    requestedView === "developer" && !developerToolsVisible
+      ? "factory"
+      : requestedView;
   const [query, setQuery] = useState("");
   const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
   const [selectedMachine, setSelectedMachine] = useState<string>("m02");
@@ -136,31 +142,33 @@ export default function IndustryViews({
             ["robots", "机器人"],
             ["developer", "开发者工具"],
           ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            aria-pressed={view === id}
-            onClick={() => {
-              closeOrder();
-              onViewChange(id);
-            }}
-          >
-            {label}
-            {id === "quests" &&
-              catalog.quests?.some(
-                (q) =>
-                  questVisible(p, q, catalog.quests) &&
-                  p?.quests?.completed.includes(q.id) &&
-                  !p.quests.claimed.includes(q.id),
-              ) && (
-                <span
-                  className="quest-unclaimed-dot"
-                  role="img"
-                  aria-label="有任务奖励待领取"
-                />
-              )}
-          </button>
-        ))}
+        )
+          .filter(([id]) => id !== "developer" || developerToolsVisible)
+          .map(([id, label]) => (
+            <button
+              key={id}
+              aria-pressed={view === id}
+              onClick={() => {
+                closeOrder();
+                onViewChange(id);
+              }}
+            >
+              {label}
+              {id === "quests" &&
+                catalog.quests?.some(
+                  (q) =>
+                    questVisible(p, q, catalog.quests) &&
+                    p?.quests?.completed.includes(q.id) &&
+                    !p.quests.claimed.includes(q.id),
+                ) && (
+                  <span
+                    className="quest-unclaimed-dot"
+                    role="img"
+                    aria-label="有任务奖励待领取"
+                  />
+                )}
+            </button>
+          ))}
         <span title={stage?.goal}>
           P{p?.stage ?? 1} · {stage?.name ?? "灰烬与拾荒"}
         </span>
