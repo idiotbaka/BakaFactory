@@ -46,7 +46,9 @@ function prepare(
     const [viewedStories, setViewedStories] = useState(
       options.viewedStories ?? [openingStoryID],
     );
-    const [pendingStories, setPendingStories] = useState(options.pendingStories ?? []);
+    const [pendingStories, setPendingStories] = useState(
+      options.pendingStories ?? [],
+    );
     const [factory, setFactory] = useState<LocalFactory | null>(() => {
       if (!existing) return null;
       const f = createLocalFactory(user, "本机工厂");
@@ -63,7 +65,9 @@ function prepare(
       markStoryViewed: async (id: string) => {
         await markStoryViewed(id);
         setViewedStories((previous) => [...new Set([...previous, id])]);
-        setPendingStories((previous) => previous.filter((pending) => pending !== id));
+        setPendingStories((previous) =>
+          previous.filter((pending) => pending !== id),
+        );
       },
       create: async (name: string) => {
         const f = createLocalFactory(user, name);
@@ -94,36 +98,72 @@ function prepare(
 }
 describe("local factory workspace", () => {
   it("opens the pending P1 chapter once and keeps its replay entry after completion", async () => {
-    prepare(true, { pendingStories: [p1StoryID], setup: (f) => {
-      f.simulation.industry!.quests!.completed = ["p1_free_hands"];
-      f.simulation.industry!.quests!.claimed = ["p1_free_hands"];
-    } });
+    prepare(true, {
+      pendingStories: [p1StoryID],
+      setup: (f) => {
+        f.simulation.industry!.quests!.completed = ["p1_free_hands"];
+        f.simulation.industry!.quests!.claimed = ["p1_free_hands"];
+      },
+    });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
-    expect(screen.getByRole("dialog", { name: "P1：工厂开饭了" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "关闭剧情" })).not.toBeInTheDocument();
-    for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: "下一页" }));
+    expect(
+      screen.getByRole("dialog", { name: "P1：工厂开饭了" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "关闭剧情" }),
+    ).not.toBeInTheDocument();
+    for (let i = 0; i < 4; i++)
+      fireEvent.click(screen.getByRole("button", { name: "下一页" }));
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
-    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
     expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(p1StoryID);
     fireEvent.click(screen.getByText("重放剧情"));
     fireEvent.click(screen.getByRole("button", { name: "P1：工厂开饭了" }));
-    expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toHaveTextContent("零件里面");
+    expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toHaveTextContent(
+      "零件里面",
+    );
     fireEvent.click(screen.getByRole("button", { name: "关闭剧情" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
   it("keeps P1 replay locked until a real claim and avoids forcing historical or conflicted progress", () => {
-    prepare(true, { setup: (f) => { f.simulation.industry!.developer = { warehouse_orders_always_available: true }; } });
-    const { unmount } = render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.developer = {
+          warehouse_orders_always_available: true,
+        };
+      },
+    });
+    const { unmount } = render(
+      <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
+    );
     fireEvent.click(screen.getByText("重放剧情"));
-    expect(screen.queryByRole("button", { name: "P1：工厂开饭了" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "P1：工厂开饭了" }),
+    ).not.toBeInTheDocument();
     unmount();
-    prepare(true, { setup: (f) => { f.simulation.industry!.quests!.claimed = ["p1_free_hands"]; } });
-    const historical = render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.quests!.claimed = ["p1_free_hands"];
+      },
+    });
+    const historical = render(
+      <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("重放剧情"));
-    expect(screen.getByRole("button", { name: "P1：工厂开饭了" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "P1：工厂开饭了" }),
+    ).toBeInTheDocument();
     historical.unmount();
-    prepare(true, { conflict: true, pendingStories: [p1StoryID], setup: (f) => { f.simulation.industry!.quests!.claimed = ["p1_free_hands"]; } });
+    prepare(true, {
+      conflict: true,
+      pendingStories: [p1StoryID],
+      setup: (f) => {
+        f.simulation.industry!.quests!.claimed = ["p1_free_hands"];
+      },
+    });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

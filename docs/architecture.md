@@ -6,7 +6,7 @@
 
 本项目采用客户端权威运行：浏览器以 1 TPS 推进工厂，IndexedDB 是本机存档，Go / SQLite 提供账号、单点登录校验和每账号唯一云备份。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)。
 
-剧情观看状态为按账号的 LocalRecord.viewedStories 可选展示元数据，同工厂记录串行写入 IndexedDB，建厂前 save=null 亦可保存。首次在无工厂且未观看时自动打开开场；提交完成记录后再关闭，不触发建厂。此字段不进入 Worker / GameSave / 云备份，云恢复保留本机记录；已有工厂始终不强制开场。无 API、Go 或数据库迁移，详见 stories.md。
+剧情观看 / 待播状态为按账号的 LocalRecord.viewedStories / pendingStories 可选展示元数据，同工厂记录串行写入 IndexedDB，建厂前 save=null 亦可保存开场完成。P1 只在确认快照出现新的 p1_free_hands 领奖时入待播队列，同一事务保存领奖与待播；旧档加载 / 兼容与云恢复不补造事件。刷新可继续待播，完成事务成功后才发布已观看并关闭，运行 tick 不抢先移除。两字段不进入 Worker / GameSave / 云备份；云恢复保留观看历史并清理不再满足领奖条件的待播项。重放按实际 claimed 开放，不以开发者下单开关替代。无 API、Go 或数据库迁移，详见 stories.md。
 
 开放任务定义由 docs/quests.json 经玩法导入进入 catalog.quests；主厂 industry.quests 可选保存完成 / 领奖 ID 及工作室实际完成批次数，投影与增量帧共用。Worker 的世界操作 claim_quest 原子发奖至主厂仓库，重复或溢出拒绝；两端校验结构，沿用格式 / 规则版本，无数据库迁移。旧档读取补认获得任务但不虚构工作室历史；运行时先建立补认后的基线，只对随后确认的新增完成生成临时通知，云恢复清通知，不将展示状态写回模拟。详见 quests.md。
 

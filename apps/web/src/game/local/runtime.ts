@@ -235,7 +235,11 @@ export class GameRuntime {
       // Normalize historical acquisitions before the first Worker response so
       // loading an older save cannot announce recovered tasks as new events.
       if (factory) this.record.save = toSave(factory);
-      this.record.pendingStories = retainPendingStories(this.record.pendingStories, this.record.viewedStories, factory?.simulation.industry?.quests?.claimed);
+      this.record.pendingStories = retainPendingStories(
+        this.record.pendingStories,
+        this.record.viewedStories,
+        factory?.simulation.industry?.quests?.claimed,
+      );
       this.worker = new Worker(
         new URL("./simulation.worker.ts", import.meta.url),
         { type: "module" },
@@ -343,10 +347,26 @@ export class GameRuntime {
     }
     if (request?.cloud) this.adoptCloud(request.cloud);
     const claimed = event.factory.simulation?.industry?.quests?.claimed ?? [];
-    const previousClaims = this.record.save?.factory.simulation?.industry?.quests?.claimed ?? [];
+    const previousClaims =
+      this.record.save?.factory.simulation?.industry?.quests?.claimed ?? [];
     this.record.pendingStories = request?.cloud
-      ? retainPendingStories(this.record.pendingStories, this.record.viewedStories, claimed)
-      : [...new Set([...(this.record.pendingStories ?? []), ...(this.record.save ? newlyClaimedStories(previousClaims, claimed, this.record.viewedStories) : [])])].slice(-1000);
+      ? retainPendingStories(
+          this.record.pendingStories,
+          this.record.viewedStories,
+          claimed,
+        )
+      : [
+          ...new Set([
+            ...(this.record.pendingStories ?? []),
+            ...(this.record.save
+              ? newlyClaimedStories(
+                  previousClaims,
+                  claimed,
+                  this.record.viewedStories,
+                )
+              : []),
+          ]),
+        ].slice(-1000);
     const previousQuests = new Set(
       this.record.save?.factory.simulation?.industry?.quests?.completed ?? [],
     );
@@ -434,8 +454,14 @@ export class GameRuntime {
     this.record.viewedStories = viewed;
     // This can be committed before a factory exists, using the same owner key
     // and write queue as all later local saves. It never changes the world.
-    await this.persist({ pendingStories: (this.record.pendingStories ?? []).filter((pending) => !viewed.includes(pending)) });
-    this.record.pendingStories = (this.record.pendingStories ?? []).filter((pending) => !this.record.viewedStories!.includes(pending));
+    await this.persist({
+      pendingStories: (this.record.pendingStories ?? []).filter(
+        (pending) => !viewed.includes(pending),
+      ),
+    });
+    this.record.pendingStories = (this.record.pendingStories ?? []).filter(
+      (pending) => !this.record.viewedStories!.includes(pending),
+    );
     this.storageFailed = false;
     this.publish({
       viewedStories: [...this.record.viewedStories],
@@ -448,7 +474,9 @@ export class GameRuntime {
     this.record.save
       ? previewRobotRoute(this.record.save.factory as LocalFactory, id)
       : undefined;
-  private persist(storyPatch: Pick<Partial<LocalRecord>, "pendingStories"> = {}): Promise<void> {
+  private persist(
+    storyPatch: Pick<Partial<LocalRecord>, "pendingStories"> = {},
+  ): Promise<void> {
     const record = structuredClone({
       ...this.record,
       ...storyPatch,

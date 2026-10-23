@@ -14,23 +14,25 @@ export default function StoryMenu({
       <div className="controls-guide-content">
         <h3>剧情列表</h3>
         <ul>
-          {stories.filter((story) => unlocked.includes(story.id)).map((story) => (
-            <li key={story.id}>
-              <button
-                type="button"
-                onClick={(event) => {
-                  const details = event.currentTarget.closest("details");
-                  if (details) {
-                    details.open = false;
-                    details.querySelector("summary")?.focus();
-                  }
-                  onOpen(story.id);
-                }}
-              >
-                {story.title}
-              </button>
-            </li>
-          ))}
+          {stories
+            .filter((story) => unlocked.includes(story.id))
+            .map((story) => (
+              <li key={story.id}>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    const details = event.currentTarget.closest("details");
+                    if (details) {
+                      details.open = false;
+                      details.querySelector("summary")?.focus();
+                    }
+                    onOpen(story.id);
+                  }}
+                >
+                  {story.title}
+                </button>
+              </li>
+            ))}
         </ul>
       </div>
     </HudPopover>
