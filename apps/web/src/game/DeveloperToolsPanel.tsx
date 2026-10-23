@@ -1,8 +1,55 @@
+import { useState } from "react";
 import type { FactoryDetail } from "../api/client";
 import type { WorldAction } from "./local/world";
 import { orderRewardClaimed } from "./local/progression";
+import DiagnosticsPanel from "./DiagnosticsPanel";
+import type { LocalFactory } from "./local/state";
+import type { Observation } from "./local/observations";
 
 export default function DeveloperToolsPanel({
+  factory,
+  disabled,
+  act,
+  observation,
+  onLocate,
+}: {
+  factory: FactoryDetail;
+  disabled: boolean;
+  act?: (action: WorldAction) => void;
+  observation?: Observation;
+  onLocate?: (id: string) => void;
+}) {
+  const [tab, setTab] = useState<"features" | "diagnostics">("features");
+  return (
+    <section className="developer-console" aria-label="开发者工具">
+      <nav className="operations-tabs" aria-label="开发者工具分类">
+        <button
+          aria-pressed={tab === "features"}
+          onClick={() => setTab("features")}
+        >
+          功能测试
+        </button>
+        <button
+          aria-pressed={tab === "diagnostics"}
+          onClick={() => setTab("diagnostics")}
+        >
+          闭环诊断
+        </button>
+      </nav>
+      {tab === "features" ? (
+        <FeatureTests factory={factory} disabled={disabled} act={act} />
+      ) : (
+        <DiagnosticsPanel
+          factory={factory as LocalFactory}
+          observation={observation}
+          onLocate={onLocate}
+        />
+      )}
+    </section>
+  );
+}
+
+function FeatureTests({
   factory,
   disabled,
   act,

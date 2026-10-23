@@ -161,6 +161,9 @@ describe("robot map and management integration", () => {
     const initial = prepare(true);
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "机器人" }));
+    fireEvent.click(
+      screen.getByText("补能优先级与厂区授权", { selector: "summary" }),
+    );
     const zones = screen.getByLabelText("可作业厂区");
     expect(
       within(zones).getByRole("checkbox", { name: /冶炼场/ }),

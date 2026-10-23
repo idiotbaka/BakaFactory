@@ -72,14 +72,8 @@ export function projectFactory(root: LocalFactory): LocalFactory {
 export function initializeWorld(root: LocalFactory): LocalFactory {
   if (root.districts) return root;
   const user = { id: root.owner_id } as User;
-  const districts = [
-    "冶炼场",
-    "化工园",
-    "电力站",
-    "精密电子厂",
-    "机器人总装区",
-  ].map((name) => {
-    const f = createLocalFactory(user, name);
+  const districts = Array.from({ length: 5 }, (_, index) => {
+    const f = createLocalFactory(user, `未命名工厂 ${index + 2}`);
     f.simulation.tick = root.simulation.tick;
     delete f.simulation.industry;
     return f;

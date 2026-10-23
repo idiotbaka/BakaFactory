@@ -31,7 +31,7 @@ export default function RobotTaskForm({
     [repeat, setRepeat] = useState(true);
   const spec = catalog.robots!.find((d) => d.item === robot.item)!;
   if (!["carrier", "smart"].includes(spec.role) || !spec.capacity)
-    return <p>该机型请从“真实作业”选择当前厂的持续异常。</p>;
+    return <p>这款机型不负责运输，请在现场作业中选择要处理的设备。</p>;
   const zones = districts.filter((d) => robot.allowed_zones.includes(d.id)),
     sourceFactory = zones.find((d) => d.id === sourceZone) ?? zones[0],
     targetFactory = zones.find((d) => d.id === targetZone) ?? zones[0];
@@ -78,122 +78,145 @@ export default function RobotTaskForm({
     );
   if (busy)
     return (
-      <p>当前任务与携货状态见上方；先取消并实际返站，再指派新的取送路线。</p>
+      <p className="operations-notice">
+        机器人正在执行任务。要改路线，请先取消任务，等它回到补能站后再安排。
+      </p>
+    );
+  if (!spec.cross_district && factory.id !== robot.home_factory_id)
+    return (
+      <p className="operations-notice">
+        这台机器人只在归属厂区工作。请切到「
+        {districts.find((d) => d.id === robot.home_factory_id)?.name ??
+          "归属厂区"}
+        」，再选择当地设备作为取货和交货位置。
+      </p>
     );
   return (
-    <fieldset>
-      <legend>取货 → 交货</legend>
+    <fieldset className="robot-route-form">
+      <legend>安排运输 · 从哪里取，送到哪里</legend>
       <p>
-        每秒走一格空闲通道；到端点邻格装卸，跨区经 WH 行程 8
-        秒。出发前在归属站补满能量，满载或堵塞时保留货物。
+        设置取货和交货位置，再选运输物品。机器人会先在站旁补满能量，然后沿空地行走并在设备旁装卸。
       </p>
-      <small>
-        当前厂可选机器、箱罐与 WH；其他厂先选
-        WH。切到相应厂区可配置当地设备端点。WH
-        取货面须指定该物品输出，交货面须允许输入。
-      </small>
-      <label>
-        取货厂区
-        <select
-          disabled={disabled || busy}
-          value={sourceFactory?.id ?? ""}
-          onChange={(e) => {
-            setSourceZone(e.target.value);
-            setSourceID("");
-          }}
-        >
-          {zones.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        取货端点
-        <select
-          disabled={disabled || busy}
-          value={source?.id ?? ""}
-          onChange={(e) => setSourceID(e.target.value)}
-        >
-          {sources.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        交货厂区
-        <select
-          disabled={disabled || busy}
-          value={targetFactory?.id ?? ""}
-          onChange={(e) => {
-            setTargetZone(e.target.value);
-            setTargetID("");
-          }}
-        >
-          {zones.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        交货端点
-        <select
-          disabled={disabled || busy}
-          value={target?.id ?? ""}
-          onChange={(e) => setTargetID(e.target.value)}
-        >
-          {targets.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        运输物品
-        <select
-          disabled={disabled || busy}
-          value={item?.id ?? ""}
-          onChange={(e) => setItemID(e.target.value)}
-        >
-          {items.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        每趟数量 · 上限 {spec.capacity}
-        <input
-          aria-label="机器人运输数量"
-          disabled={disabled || busy}
-          type="number"
-          min={1}
-          max={spec.capacity}
-          step={1}
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-        />
-      </label>
-      <label>
-        交货用途
-        <select
-          disabled={disabled || busy}
-          value={channel}
-          onChange={(e) => setChannel(e.target.value as typeof channel)}
-        >
-          <option value="auto">按配方 / 燃料接收</option>
-          <option value="input">仅配方输入</option>
-          <option value="fuel">仅燃料</option>
-        </select>
-      </label>
-      <label>
+      <details className="operations-details">
+        <summary>仓库接口和路线要求</summary>
+        <p>
+          从 WH 取货时，把面向机器人的一面设为该物品“输出”；送入 WH
+          时，相应面应允许“输入”。
+        </p>
+        <p>
+          通道至少留一格空地，建筑和管线都会占格。跨区机型经过 WH
+          转运，区间行程需要 8 秒；其他厂区可先选
+          WH，要选当地设备则切到该厂配置。
+        </p>
+      </details>
+      <div className="robot-form-grid">
+        {spec.cross_district && (
+          <label>
+            取货厂区
+            <select
+              disabled={disabled || busy}
+              value={sourceFactory?.id ?? ""}
+              onChange={(e) => {
+                setSourceZone(e.target.value);
+                setSourceID("");
+              }}
+            >
+              {zones.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label>
+          取货位置
+          <select
+            disabled={disabled || busy}
+            value={source?.id ?? ""}
+            onChange={(e) => setSourceID(e.target.value)}
+          >
+            {sources.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        {spec.cross_district && (
+          <label>
+            交货厂区
+            <select
+              disabled={disabled || busy}
+              value={targetFactory?.id ?? ""}
+              onChange={(e) => {
+                setTargetZone(e.target.value);
+                setTargetID("");
+              }}
+            >
+              {zones.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label>
+          交货位置
+          <select
+            disabled={disabled || busy}
+            value={target?.id ?? ""}
+            onChange={(e) => setTargetID(e.target.value)}
+          >
+            {targets.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          运输物品
+          <select
+            disabled={disabled || busy}
+            value={item?.id ?? ""}
+            onChange={(e) => setItemID(e.target.value)}
+          >
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          每趟数量 · 上限 {spec.capacity}
+          <input
+            aria-label="机器人运输数量"
+            disabled={disabled || busy}
+            type="number"
+            min={1}
+            max={spec.capacity}
+            step={1}
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          放入目标的哪个位置
+          <select
+            disabled={disabled || busy}
+            value={channel}
+            onChange={(e) => setChannel(e.target.value as typeof channel)}
+          >
+            <option value="auto">按配方 / 燃料接收</option>
+            <option value="input">仅配方输入</option>
+            <option value="fuel">仅燃料</option>
+          </select>
+        </label>
+      </div>
+      <label className="robot-repeat">
         <input
           type="checkbox"
           disabled={disabled || busy}
@@ -230,11 +253,11 @@ export default function RobotTaskForm({
           })
         }
       >
-        实际返站后指派路线
+        安排运输任务
       </button>
       {busy && <small>须先取消当前任务并返站，再指派新路线。</small>}
       {spec.energy === "hydraulic" || spec.role === "smart" ? (
-        <small>支持密封载舱搬运单种整单位流体；禁止混液。</small>
+        <small>可运输固体，也可运输单一流体；一次不能混装不同流体。</small>
       ) : (
         <small>该机型运输固体物品。</small>
       )}

@@ -6,6 +6,7 @@ import RobotTaskForm from "./RobotTaskForm";
 import WorkPanel from "./WorkPanel";
 import AutonomyControls from "./AutonomyControls";
 import ConstructionForm from "./ConstructionForm";
+import RobotOverview, { robotAttention } from "./RobotOverview";
 import {
   requiredRobotZones,
   robotAtHome,
@@ -16,11 +17,17 @@ import {
 import type { components } from "../api/schema";
 
 const energyNames: Record<string, string> = {
-  shaft: "轴功",
+  shaft: "机械动力（传动轴）",
   hydraulic: "液压",
   electric: "电力",
 };
 const statuses = robotStatusNames;
+const roles: Record<string, string> = {
+  carrier: "搬运物品",
+  inspector: "检查设备",
+  repair: "清理积压",
+  smart: "运输 / 巡检 / 维护 / 施工",
+};
 export default function RobotPanel({
   factory,
   catalog,
@@ -48,9 +55,8 @@ export default function RobotPanel({
   const definitions = catalog.robots ?? [],
     robots = factory.robots ?? [],
     stage = factory.simulation?.industry?.stage ?? 1;
-  const definition =
-    definitions.find((d) => d.item === item) ??
-    definitions.find((d) => d.tier <= stage);
+  const unlocked = definitions.filter((d) => d.tier <= stage);
+  const definition = unlocked.find((d) => d.item === item) ?? unlocked[0];
   const stations = factory.buildings.filter((b) => {
     const d = buildingDefinitions.get(b.building_type);
     return d?.role === "station" && d.energy === definition?.energy;
@@ -69,15 +75,7 @@ export default function RobotPanel({
         r.transit?.to_factory_id === factory.id) &&
       (filter !== "attention" ||
         !r.enabled ||
-        [
-          "no_energy",
-          "no_path",
-          "congested",
-          "blocked",
-          "rejected",
-          "source_empty",
-          "range_exceeded",
-        ].includes(r.status)) &&
+        robotAttention.includes(r.status)) &&
       `${definitions.find((d) => d.item === r.item)?.name} ${r.id}`
         .toLowerCase()
         .includes(query.trim().toLowerCase()),
@@ -99,138 +97,190 @@ export default function RobotPanel({
   };
   return (
     <section className="robot-panel" aria-label="机器人管理">
-      <h3>机器人 · {robots.length} / 500</h3>
-      <p>
-        部署从当前厂区仓库消耗一本体，初始能量为零；补能站从真实网络蓄能，电动机器人充电效率
-        88%。运输、巡检和清理积压按实际路径与工时执行；现场作业产生可消费训练凭据。
-      </p>
-      <fieldset>
-        <legend>部署到当前厂区</legend>
-        <label>
-          机器人
-          <select
-            aria-label="部署机器人类型"
-            disabled={disabled}
-            value={definition?.item ?? ""}
-            onChange={(e) => setItem(e.target.value)}
-          >
-            {definitions.map((d) => (
-              <option key={d.item} value={d.item} disabled={d.tier > stage}>
-                {d.name} · P{d.tier} · 仓库{" "}
-                {factory.simulation?.warehouse[d.item] ?? 0}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          归属补能站
-          <select
-            aria-label="归属补能站"
-            disabled={disabled}
-            value={station?.id ?? ""}
-            onChange={(e) => setStationID(e.target.value)}
-          >
-            <option value="" disabled>
-              请选择兼容补能站
-            </option>
-            {stations.map((b) => (
-              <option key={b.id} value={b.id}>
-                {buildingDefinitions.get(b.building_type)?.name} ({b.x},{b.y})
-              </option>
-            ))}
-          </select>
-        </label>
-        {definition && (
-          <small>
-            {energyNames[definition.energy]} · 载重 {definition.capacity} u ·
-            储能 {definition.energy_capacity_kj} kJ ·{" "}
-            {definition.cross_district ? "可授权跨厂区" : "仅归属厂区"}
-          </small>
-        )}
-        <button
-          disabled={
-            disabled ||
-            !station ||
-            !definition ||
-            definition.tier > stage ||
-            !(factory.simulation?.warehouse[definition.item] ?? 0)
-          }
-          onClick={() =>
-            act({
-              type: "robot_deploy",
-              factory_id: factory.id,
-              station: station.id,
-              item: definition!.item,
-              id: crypto.randomUUID(),
-            })
-          }
-        >
-          消耗 1 本体并部署
-        </button>
-        {!stations.length && (
-          <small>需建兼容该能源的补能站，并在站旁留出未占用空格。</small>
-        )}
-      </fieldset>
-      <label>
-        查找机器人
-        <input
-          aria-label="查找机器人"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="机型或实体 ID"
-        />
-      </label>
-      <label>
-        显示范围
-        <select
-          aria-label="机器人显示范围"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option value="all">全部厂区</option>
-          <option value="current">当前厂区 / 正在前往</option>
-          <option value="attention">暂停 / 等待处理</option>
-        </select>
-      </label>
-      <p>
-        显示 {visible.length} / {robots.length} 台
-      </p>
-      <div className="robot-list" aria-label="已部署机器人">
-        {visible.map((r) => (
-          <button
-            key={r.id}
-            aria-pressed={selected?.id === r.id}
-            onClick={() => {
-              setSelectedID(r.id);
-              onSelectRobot?.(r.id);
-            }}
-          >
-            {definitions.find((d) => d.item === r.item)?.name} ·{" "}
-            {r.id.slice(0, 8)}
-            <small>
-              {r.transit
-                ? `前往${zoneName(r.transit.to_factory_id)}`
-                : zoneName(r.factory_id)}{" "}
-              ·{" "}
-              {disabled
-                ? "世界暂停"
-                : !r.enabled
-                  ? "机器人暂停"
-                  : (statuses[r.status] ?? r.status)}{" "}
-              · {r.energy_kj} kJ
-            </small>
-          </button>
-        ))}
-      </div>
-      <WorkPanel
+      <RobotOverview
         factory={factory}
-        robot={selected}
-        disabled={disabled}
-        act={act}
+        catalog={catalog}
+        item={definition?.item}
       />
+      {definition && (
+        <fieldset className="operations-card robot-deploy">
+          <legend>01 · 部署到「{factory.name}」</legend>
+          <div className="robot-form-grid">
+            <label>
+              机器人
+              <select
+                aria-label="部署机器人类型"
+                disabled={disabled}
+                value={definition?.item ?? ""}
+                onChange={(e) => setItem(e.target.value)}
+              >
+                {unlocked.map((d) => (
+                  <option key={d.item} value={d.item}>
+                    {d.name} · P{d.tier} · 总仓库{" "}
+                    {factory.simulation?.warehouse[d.item] ?? 0}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              补能站（机器人返回这里补能）
+              <select
+                aria-label="归属补能站"
+                disabled={disabled}
+                value={station?.id ?? ""}
+                onChange={(e) => setStationID(e.target.value)}
+              >
+                <option value="" disabled>
+                  请选择兼容补能站
+                </option>
+                {stations.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {buildingDefinitions.get(b.building_type)?.name} ({b.x},
+                    {b.y})
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {definition && (
+            <div className="robot-capabilities">
+              <span>{roles[definition.role]}</span>
+              <span>{energyNames[definition.energy]}</span>
+              {definition.capacity > 0 && (
+                <span>
+                  每趟最多 {definition.capacity}{" "}
+                  {definition.energy === "hydraulic" ||
+                  definition.role === "smart"
+                    ? "件 / u"
+                    : "件"}
+                </span>
+              )}
+              <span>
+                {definition.cross_district ? "支持跨厂区" : "只在本厂工作"}
+              </span>
+            </div>
+          )}
+          <button
+            className="operations-primary"
+            disabled={
+              disabled ||
+              !station ||
+              !definition ||
+              definition.tier > stage ||
+              !(factory.simulation?.warehouse[definition.item] ?? 0)
+            }
+            onClick={() =>
+              act({
+                type: "robot_deploy",
+                factory_id: factory.id,
+                station: station.id,
+                item: definition!.item,
+                id: crypto.randomUUID(),
+              })
+            }
+          >
+            部署 1 台机器人
+          </button>
+          {!stations.length && (
+            <p className="operations-notice">
+              本厂还没有这种机型可用的补能站。先按上方连接顺序建站，再回来部署。
+            </p>
+          )}
+          {!(factory.simulation?.warehouse[definition.item] ?? 0) && (
+            <p className="operations-notice">
+              总仓库还没有「{definition.name}
+              」。可到图鉴的物品分类查看制作来源。
+            </p>
+          )}
+          <details className="operations-details">
+            <summary>机型参数与补能规则</summary>
+            <p>
+              储能上限 {definition.energy_capacity_kj} kJ · 装卸 / 作业{" "}
+              {definition.action_ticks} 秒。
+            </p>
+            <p>
+              新部署的机器人没有能量，需要先在站旁补满。补能站本身也需要接上动力；电动机型的充电效率为
+              88%。
+            </p>
+          </details>
+        </fieldset>
+      )}
+      <section className="operations-section operations-card">
+        <header className="operations-section-heading">
+          <h4>02 · 已部署机队</h4>
+          <span>{robots.length} 台</span>
+        </header>
+        <div className="robot-filters">
+          <label>
+            查找机器人
+            <input
+              aria-label="查找机器人"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="机型或机器人编号"
+            />
+          </label>
+          <label>
+            显示范围
+            <select
+              aria-label="机器人显示范围"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">全部厂区</option>
+              <option value="current">当前厂区 / 正在前往</option>
+              <option value="attention">暂停 / 等待处理</option>
+            </select>
+          </label>
+        </div>
+        <p>
+          显示 {visible.length} / {robots.length} 台
+        </p>
+        <div className="robot-list" aria-label="已部署机器人">
+          {visible.map((r) => (
+            <button
+              key={r.id}
+              aria-pressed={selected?.id === r.id}
+              onClick={() => {
+                setSelectedID(r.id);
+                onSelectRobot?.(r.id);
+              }}
+            >
+              <strong>
+                {definitions.find((d) => d.item === r.item)?.name} ·{" "}
+                {r.id.slice(0, 8)}
+              </strong>
+              <small>
+                {r.transit
+                  ? `前往${zoneName(r.transit.to_factory_id)}`
+                  : zoneName(r.factory_id)}{" "}
+                ·{" "}
+                {disabled
+                  ? "世界暂停"
+                  : !r.enabled
+                    ? "机器人暂停"
+                    : (statuses[r.status] ?? r.status)}{" "}
+                · {r.energy_kj} kJ
+              </small>
+            </button>
+          ))}
+        </div>
+        {!visible.length && (
+          <div className="operations-empty">
+            <strong>
+              {robots.length ? "没有匹配的机器人" : "还没有机器人上岗"}
+            </strong>
+            <p>
+              {robots.length
+                ? "试试清空搜索，或把显示范围改为全部厂区。"
+                : "准备本体和补能站后，在上方部署第一台。部署后会在这里显示能量和任务。"}
+            </p>
+          </div>
+        )}
+      </section>
       {selected && spec && (
-        <fieldset>
-          <legend>{spec.name}</legend>
+        <fieldset className="operations-card robot-control">
+          <legend>03 · {spec.name} · 任务控制</legend>
           <p role="status">{robotStateHint(selected, disabled)}</p>
           {onLocateRobot && (
             <button onClick={() => onLocateRobot(selected)}>
@@ -238,29 +288,53 @@ export default function RobotPanel({
             </button>
           )}
           {spec.role === "smart" && (
-            <AutonomyControls robot={selected} disabled={disabled} act={act} />
+            <details className="operations-details">
+              <summary>智能调度 · 自动寻找任务</summary>
+              <AutonomyControls
+                robot={selected}
+                disabled={disabled}
+                act={act}
+              />
+            </details>
           )}
+          <dl className="operations-facts">
+            <div>
+              <dt>当前状态</dt>
+              <dd>
+                {disabled
+                  ? "世界暂停"
+                  : !selected.enabled
+                    ? "机器人暂停"
+                    : statuses[selected.status]}
+              </dd>
+            </div>
+            <div>
+              <dt>可用能量</dt>
+              <dd>
+                {selected.energy_kj} / {spec.energy_capacity_kj} kJ
+              </dd>
+            </div>
+            <div>
+              <dt>归属补能站所在厂区</dt>
+              <dd>{zoneName(selected.home_factory_id)}</dd>
+            </div>
+            <div>
+              <dt>当前位置</dt>
+              <dd>
+                {selected.transit
+                  ? `前往${zoneName(selected.transit.to_factory_id)}，剩余 ${selected.transit.remaining_ticks} 秒`
+                  : `${zoneName(selected.factory_id)} (${selected.x},${selected.y})`}
+              </dd>
+            </div>
+          </dl>
           <p>
-            归属：{zoneName(selected.home_factory_id)} ·{" "}
-            {selected.transit
-              ? `前往${zoneName(selected.transit.to_factory_id)}，剩余 ${selected.transit.remaining_ticks} 秒`
-              : `${zoneName(selected.factory_id)} (${selected.x},${selected.y})`}
-            <br />
-            {disabled
-              ? "世界暂停"
-              : !selected.enabled
-                ? "机器人暂停"
-                : statuses[selected.status]}{" "}
-            · {selected.energy_kj} / {spec.energy_capacity_kj} kJ
-          </p>
-          <p>
-            完成运输 {selected.completed_tasks ?? 0} 趟 ·{" "}
+            已完成运输 {selected.completed_tasks ?? 0} 趟 ·{" "}
             {selected.construction ? "施工工时" : "作业工时"}{" "}
             {selected.work_progress ?? 0} /{" "}
             {selected.construction ? 10 : spec.action_ticks} 秒
           </p>
           {selected.task && (
-            <p>
+            <p className="robot-mission">
               {endpointName(selected.task.source)} →{" "}
               {endpointName(selected.task.target)} ·{" "}
               {catalog.items.find((i) => i.id === selected.task!.item)?.name} ·{" "}
@@ -271,7 +345,7 @@ export default function RobotPanel({
           )}
           {selected.cargo && (
             <p>
-              实际携货：
+              正在携带：
               {
                 catalog.items.find((i) => i.id === selected.cargo!.item)?.name
               } × {selected.cargo.count}
@@ -292,11 +366,13 @@ export default function RobotPanel({
                   ?.name
               }{" "}
               ({selected.construction.x},{selected.construction.y}) ·{" "}
-              {selected.returning ? "已中止，实际回收中" : "格位已预留"}
+              {selected.returning
+                ? "已取消，设备正在运回仓库"
+                : "施工位置已保留"}
             </p>
           )}
           {selected.returning && (
-            <p>返站途中；携货先送回归属厂 WH，再停靠补能站。</p>
+            <p>正在返站；先把携带物品送回仓库，再回补能站。</p>
           )}
           <button
             disabled={disabled}
@@ -310,66 +386,75 @@ export default function RobotPanel({
           >
             {selected.enabled ? "暂停机器人" : "启用机器人"}
           </button>
-          <label>
-            补能 / 任务优先级
-            <select
-              aria-label="机器人优先级"
-              disabled={disabled}
-              value={selected.priority}
-              onChange={(e) =>
-                act({
-                  type: "robot_config",
-                  id: selected.id,
-                  priority: Number(e.target.value),
-                })
-              }
-            >
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                  {n === 1 ? " · 最高" : ""}
-                </option>
+          <details className="operations-details">
+            <summary>补能优先级与厂区授权</summary>
+            <p>
+              优先级 1
+              最高，补能或调度资源不足时优先处理。跨区机型只能进入已勾选的厂区。
+            </p>
+            <label>
+              补能 / 任务优先级
+              <select
+                aria-label="机器人优先级"
+                disabled={disabled}
+                value={selected.priority}
+                onChange={(e) =>
+                  act({
+                    type: "robot_config",
+                    id: selected.id,
+                    priority: Number(e.target.value),
+                  })
+                }
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                    {n === 1 ? " · 最高" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="robot-zones" aria-label="可作业厂区">
+              {districts.map((d) => (
+                <label key={d.id}>
+                  <input
+                    type="checkbox"
+                    disabled={
+                      disabled ||
+                      (selected.allowed_zones.includes(d.id) &&
+                        lockedZones.has(d.id)) ||
+                      !spec.cross_district
+                    }
+                    title={
+                      lockedZones.has(d.id)
+                        ? "归属、当前、任务或过境仍使用此厂区，完成返站后才能撤销"
+                        : "授权此机器人使用该厂区"
+                    }
+                    checked={selected.allowed_zones.includes(d.id)}
+                    onChange={(e) =>
+                      act({
+                        type: "robot_config",
+                        id: selected.id,
+                        allowed_zones: e.target.checked
+                          ? [...selected.allowed_zones, d.id]
+                          : selected.allowed_zones.filter((id) => id !== d.id),
+                      })
+                    }
+                  />
+                  {d.name}
+                  {d.id === selected.home_factory_id ? "（归属）" : ""}
+                  {d.id !== selected.home_factory_id && lockedZones.has(d.id)
+                    ? "（任务使用中）"
+                    : ""}
+                </label>
               ))}
-            </select>
-          </label>
-          <div className="robot-zones" aria-label="可作业厂区">
-            {districts.map((d) => (
-              <label key={d.id}>
-                <input
-                  type="checkbox"
-                  disabled={
-                    disabled ||
-                    (selected.allowed_zones.includes(d.id) &&
-                      lockedZones.has(d.id)) ||
-                    !spec.cross_district
-                  }
-                  title={
-                    lockedZones.has(d.id)
-                      ? "归属、当前、任务或过境仍使用此厂区，完成返站后才能撤销"
-                      : "授权此机器人使用该厂区"
-                  }
-                  checked={selected.allowed_zones.includes(d.id)}
-                  onChange={(e) =>
-                    act({
-                      type: "robot_config",
-                      id: selected.id,
-                      allowed_zones: e.target.checked
-                        ? [...selected.allowed_zones, d.id]
-                        : selected.allowed_zones.filter((id) => id !== d.id),
-                    })
-                  }
-                />
-                {d.name}
-                {d.id === selected.home_factory_id ? "（归属）" : ""}
-                {d.id !== selected.home_factory_id && lockedZones.has(d.id)
-                  ? "（任务使用中）"
-                  : ""}
-              </label>
-            ))}
-          </div>
-          <small>
-            当前所在、任务端点或过境涉及的厂区，须取消任务并实际返站后再撤销授权。
-          </small>
+            </div>
+            <small>
+              {spec.cross_district
+                ? "正在使用的厂区暂时不能取消授权。先取消任务，等机器人回站后再调整。"
+                : "这款机型只在归属厂区工作，无需设置跨区权限。"}
+            </small>
+          </details>
           <button
             disabled={
               disabled ||
@@ -386,51 +471,89 @@ export default function RobotPanel({
           >
             取消任务并携货返站
           </button>
-          <RobotTaskForm
-            key={`${factory.id}:${selected.id}`}
-            factory={factory}
-            catalog={catalog}
-            robot={selected}
-            districts={districts}
-            disabled={disabled}
-            act={act}
-          />
-          {spec.role === "smart" && (
-            <ConstructionForm
-              key={`build:${factory.id}:${selected.id}`}
+          {["carrier", "smart"].includes(spec.role) && (
+            <RobotTaskForm
+              key={`${factory.id}:${selected.id}`}
               factory={factory}
               catalog={catalog}
+              robot={selected}
+              districts={districts}
+              disabled={disabled}
+              act={act}
+            />
+          )}
+          {["inspector", "repair"].includes(spec.role) && (
+            <WorkPanel
+              factory={factory}
               robot={selected}
               disabled={disabled}
               act={act}
             />
           )}
-          <button
-            disabled={
-              disabled ||
-              !robotAtHome(selected, factory) ||
-              !!(
-                selected.task ||
-                selected.service ||
-                selected.construction ||
-                selected.cargo ||
-                selected.transit ||
-                selected.returning
-              )
-            }
-            onClick={() => act({ type: "robot_recall", id: selected.id })}
-          >
-            返还本体至归属厂仓库
-          </button>
-          <small>
-            {factory.id !== selected.home_factory_id
-              ? "请先定位到归属厂检视停靠状态，再召回本体。"
-              : robotBusy(selected)
-                ? "当前仍有任务 / 携货，先取消并实际返站。"
-                : "须实际停靠归属站；召回散失已储能量，再部署从零补能。"}
-          </small>
+          {stage >= 3 && ["carrier", "smart"].includes(spec.role) && (
+            <details className="operations-details">
+              <summary>作业记录与训练</summary>
+              <WorkPanel
+                factory={factory}
+                robot={selected}
+                disabled={disabled}
+                act={act}
+              />
+            </details>
+          )}
+          {spec.role === "smart" && (
+            <details className="operations-details">
+              <summary>蓝图施工 · 安装设备</summary>
+              <ConstructionForm
+                key={`build:${factory.id}:${selected.id}`}
+                factory={factory}
+                catalog={catalog}
+                robot={selected}
+                disabled={disabled}
+                act={act}
+              />
+            </details>
+          )}
+          <details className="operations-details">
+            <summary>召回与运行参数</summary>
+            <button
+              disabled={
+                disabled ||
+                !robotAtHome(selected, factory) ||
+                !!(
+                  selected.task ||
+                  selected.service ||
+                  selected.construction ||
+                  selected.cargo ||
+                  selected.transit ||
+                  selected.returning
+                )
+              }
+              onClick={() => act({ type: "robot_recall", id: selected.id })}
+            >
+              召回机器人到总仓库
+            </button>
+            <small>
+              {factory.id !== selected.home_factory_id
+                ? "请先定位到归属厂检视停靠状态，再召回本体。"
+                : robotBusy(selected)
+                  ? "当前仍有任务 / 携货，先取消并实际返站。"
+                  : "停靠补能站后可召回。机器人本体会返还总仓库，已储存的能量不会保留。"}
+            </small>
+          </details>
         </fieldset>
       )}
+      <details className="operations-details">
+        <summary>后续机型与用途</summary>
+        <ul className="operations-steps">
+          <li>P2：发条搬运车，本厂短途固体运输。</li>
+          <li>
+            P3：液压搬运机器人可运流体并跨区作业；管线巡检机器人负责检查设备。
+          </li>
+          <li>P4～P5：电动物流、分拣和维修机型，提高吞吐并清理产物积压。</li>
+          <li>P6：智能机器人可自动补料、巡检、维护和安装蓝图设备。</li>
+        </ul>
+      </details>
     </section>
   );
 }

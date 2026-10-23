@@ -440,6 +440,16 @@ for (const q of quests.filter(
   for (const r of recipes)
     if (r.outputs[q.goal.target])
       r.description = `P${q.tier} 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P${q.tier + 1}，不额外消耗本体。`;
+// Short narrative goals replace the source's technical roadmap in the HUD.
+// Unlock rules remain on quest cards and in the progression runtime.
+const stageGoals = [
+  "垃圾山给你发来一份「零件组装地狱」体验券。搓出流水线机械手，让夹爪先喘口气吧~",
+  "机械手刚学会拧螺丝，大机器就端着空碗来了。喂饱基础零件产线，把液压工业许可包也端上桌吧~",
+  "工厂点了一杯「加油不加糖」，还要自带循环管路。调好油液与化工产线，打包一份电气化建设包吧~",
+  "恭喜，工厂开始按电费表达食欲了！接好电网、照顾机器人电量，再领一张微电子实验许可证吧~",
+  "芯片小小一片，工厂胃口又大一圈。让精密机器人学会照顾产线，把认知系统项目包准备好吧~",
+  "零件、芯片和作业经历都齐了，就差一位会自己想办法的同事。造出智能机器人，看看它会先拯救工厂，还是先研究摸鱼吧~",
+];
 const base = {
   version: 2,
   quests,
@@ -449,10 +459,7 @@ const base = {
   stages: d.stages.map((s) => ({
     tier: s.tier,
     name: s.name,
-    goal:
-      s.tier === 1
-        ? "搭成首条可持续回收—熔炼—装配线，制造流水线机械手并领取任务奖励"
-        : displayName(s.goal),
+    goal: stageGoals[s.tier - 1] ?? displayName(s.goal),
     milestone_item: item(s.milestone_item.split(":")[0]),
   })),
   items: [

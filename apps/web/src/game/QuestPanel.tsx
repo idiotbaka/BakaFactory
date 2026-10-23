@@ -39,9 +39,6 @@ export default function QuestPanel({
   return (
     <ItemInfoProvider catalog={catalog} industry={p}>
       <section className="quest-panel" aria-label="阶段任务">
-        <p>
-          任务无需接受，可按任意顺序完成；列表按推荐顺序排列。奖励存入所有厂区共用的总仓库。
-        </p>
         {requirement && (
           <p className="quest-final-hint">
             阶段终局任务将在完成本阶段其他任务的至少一半后出现：

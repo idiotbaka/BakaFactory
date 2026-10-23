@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import IndustryViews from "./IndustryViews";
 import { createWorld, actWorld } from "./local/world";
 import { catalog } from "./local/catalog";
+import { newMachine } from "./local/state";
 
 const user = {
   id: "developer-ui",
@@ -12,7 +13,55 @@ const user = {
   last_login_at: "now",
 };
 describe("developer tools", () => {
-  it("places the tab after diagnostics and controls the persisted switch through a world action", () => {
+  it("preserves diagnostic observations and locate actions inside the diagnostics subpage without changing the world", () => {
+    const factory = createWorld(user, "诊断子页"),
+      world = vi.fn(),
+      onLocateBuilding = vi.fn();
+    factory.buildings.push({
+      id: "machine",
+      factory_id: factory.id,
+      building_type: "m03",
+      x: 2,
+      y: 0,
+      rotation: 0,
+      configuration: { recipe_id: "r1007" },
+    });
+    factory.simulation.buildings.machine = newMachine();
+    const before = structuredClone(factory);
+    render(
+      <IndustryViews
+        factory={factory}
+        catalog={catalog}
+        disabled
+        act={vi.fn()}
+        world={world}
+        view="developer"
+        onViewChange={vi.fn()}
+        onLocateBuilding={onLocateBuilding}
+        observation={{
+          ticks: 7,
+          produced: {},
+          solid: 12,
+          fluid: 3,
+          freight: 2,
+        }}
+      >
+        {null}
+      </IndustryViews>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "闭环诊断" }));
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /最近 7 个运行 tick/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /\(2,0\)/ }));
+    expect(onLocateBuilding).toHaveBeenCalledWith("machine");
+    fireEvent.click(screen.getByRole("button", { name: "功能测试" }));
+    expect(screen.getByRole("switch")).toBeDisabled();
+    expect(world).not.toHaveBeenCalled();
+    expect(factory).toEqual(before);
+  });
+  it("places feature testing under developer tools and controls the persisted switch through a world action", () => {
     const factory = createWorld(user, "开发"),
       world = vi.fn(),
       onViewChange = vi.fn();
@@ -30,10 +79,14 @@ describe("developer tools", () => {
     const tabs = within(
       screen.getByRole("navigation", { name: "工厂视图" }),
     ).getAllByRole("button");
-    const index = tabs.findIndex((b) => b.textContent === "诊断");
-    expect(tabs[index + 1]).toHaveTextContent("开发者工具");
-    fireEvent.click(tabs[index + 1]);
+    expect(tabs.some((b) => b.textContent === "诊断")).toBe(false);
+    expect(tabs.at(-1)).toHaveTextContent("开发者工具");
+    fireEvent.click(tabs.at(-1)!);
     expect(onViewChange).toHaveBeenCalledWith("developer");
+    expect(screen.getByRole("button", { name: "功能测试" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(screen.queryByLabelText("搜索工作室或仓库")).not.toBeInTheDocument();
     const toggle = screen.getByRole("switch", { name: /仓库下单始终可用/ });
     expect(toggle).not.toBeChecked();

@@ -12,7 +12,6 @@ import DefinitionIcon from "./DefinitionIcon";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
-import DiagnosticsPanel from "./DiagnosticsPanel";
 import DeveloperToolsPanel from "./DeveloperToolsPanel";
 import QuestPanel from "./QuestPanel";
 import { ItemInfoProvider, ItemName } from "./ItemInfo";
@@ -23,7 +22,6 @@ import { ordersUnlocked } from "./local/progression";
 import { questVisible } from "./local/questRules";
 import { orderRecipes } from "./local/orders";
 import type { Observation } from "./local/observations";
-import type { LocalFactory } from "./local/state";
 import type { DistrictSummary, WorldAction } from "./local/world";
 
 export type IndustryView =
@@ -34,7 +32,6 @@ export type IndustryView =
   | "power"
   | "world"
   | "robots"
-  | "diagnostics"
   | "developer";
 export default function IndustryViews({
   factory,
@@ -93,8 +90,6 @@ export default function IndustryViews({
       (r.tier ?? 1) <= (p?.stage ?? 1) &&
       `${r.id}${r.name}`.toLowerCase().includes(query.toLowerCase()),
   );
-  const name = (id: string) =>
-    catalog.items.find((i) => i.id === id)?.name ?? id;
   const ingredients = (values: Record<string, number>, input: boolean) => (
     <section
       className="workshop-material-group"
@@ -139,7 +134,6 @@ export default function IndustryViews({
             ["power", "能源"],
             ["world", "厂区"],
             ["robots", "机器人"],
-            ["diagnostics", "诊断"],
             ["developer", "开发者工具"],
           ] as const
         ).map(([id, label]) => (
@@ -187,24 +181,21 @@ export default function IndustryViews({
                   ? "阶段任务"
                   : view === "developer"
                     ? "开发者工具"
-                    : view === "diagnostics"
-                      ? "闭环诊断"
-                      : view === "workshop"
-                        ? "拾荒工作室"
-                        : view === "robots"
-                          ? "机器人调度"
-                          : view === "world"
-                            ? "厂区管理"
-                            : view === "power"
-                              ? "能量网络"
-                              : "物料仓库"}
+                    : view === "workshop"
+                      ? "拾荒工作室"
+                      : view === "robots"
+                        ? "机器人调度"
+                        : view === "world"
+                          ? "厂区管理"
+                          : view === "power"
+                            ? "能量网络"
+                            : "物料仓库"}
               </h3>
               {view !== "power" &&
                 view !== "quests" &&
                 view !== "world" &&
                 view !== "robots" &&
-                view !== "developer" &&
-                view !== "diagnostics" && (
+                view !== "developer" && (
                   <input
                     aria-label="搜索工作室或仓库"
                     placeholder="搜索名称或编号"
@@ -213,19 +204,21 @@ export default function IndustryViews({
                   />
                 )}
             </div>
-            <p className="industry-goal" hidden={view === "developer"}>
+            <p
+              className="industry-goal"
+              hidden={
+                view === "developer" || view === "robots" || view === "power"
+              }
+            >
               {stage?.goal}
-              <br />
-              阶段成果：{stage && name(stage.milestone_item)}。
-              {(p?.stage ?? 1) < 6
-                ? "完成本阶段其他任务的至少一半后开放终局任务；完成并领取终局奖励后永久解锁下一阶段。"
-                : "首次制造智能机器人，达成六阶段主目标。"}
             </p>
             {view === "developer" ? (
               <DeveloperToolsPanel
                 factory={factory}
                 disabled={disabled}
                 act={world}
+                observation={observation}
+                onLocate={onLocateBuilding}
               />
             ) : view === "quests" ? (
               <QuestPanel
@@ -233,12 +226,6 @@ export default function IndustryViews({
                 catalog={catalog}
                 disabled={disabled}
                 act={world}
-              />
-            ) : view === "diagnostics" ? (
-              <DiagnosticsPanel
-                factory={factory as LocalFactory}
-                observation={observation}
-                onLocate={onLocateBuilding}
               />
             ) : view === "robots" && world ? (
               <RobotPanel
@@ -265,10 +252,7 @@ export default function IndustryViews({
                 <div className="scavenge-box">
                   <div>
                     <strong>无尽垃圾堆</strong>
-                    <p>
-                      先拾取 12
-                      包垃圾，选择基础分拣。手工设备共用一条队列；工厂地图上的设备独立生产。
-                    </p>
+                    <p>从拾取 12 包垃圾并分拣开始吧~</p>
                   </div>
                   <button
                     disabled={disabled}

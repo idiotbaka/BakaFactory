@@ -39,30 +39,29 @@ export const robotStatusNames: Record<string, string> = {
   charging: "正在补能",
   paused: "机器人已暂停",
   charged: "能量充足",
-  no_energy: "等待实际能源",
-  moving: "逐格移动",
-  in_transit: "跨区行程",
-  no_path: "通路不可达",
-  congested: "机器人占格等待",
+  no_energy: "等待补能",
+  moving: "前往目标",
+  in_transit: "跨区运输",
+  no_path: "没有可走通道",
+  congested: "通道被其他机器人占用",
   loading: "装货中",
   unloading: "卸货中",
   source_empty: "等待来源库存",
   blocked: "接收容量不足",
   rejected: "端口 / 物品拒收",
-  waiting_charge: "等待归属站补满",
-  range_exceeded: "路线超出储能范围",
+  waiting_charge: "等待补满能量",
+  range_exceeded: "路线太长，能量不足",
   returning: "返站中",
   inspecting: "现场巡检",
   maintaining: "清理积压",
   constructing: "现场施工",
 };
 export function robotStateHint(r: Robot, paused = false): string {
-  if (paused)
-    return "世界已暂停；位置、携货、工时和过境余秒保留，恢复在线后继续。";
+  if (paused) return "世界已暂停；位置、携货和任务进度会保留，恢复在线后继续。";
   if (!r.enabled)
     return r.returning
-      ? "机器人已暂停；启用后继续实际返仓 / 返站。"
-      : "机器人已暂停；启用后继续当前任务，自主派单开关不替代机器人启停。";
+      ? "机器人已暂停；启用后继续把物品送回仓库，再回补能站。"
+      : "机器人已暂停；启用后继续当前任务。";
   if (r.returning) {
     const reason = {
       cancelled: "任务已取消",
@@ -77,16 +76,28 @@ export function robotStateHint(r: Robot, paused = false): string {
     (
       {
         no_path:
-          "保留物品与工时；检查建筑、蓝图、WH 邻格和工作点是否留有空地。",
+          "找不到可走的通道。建筑、管线和施工位置都会占格，请给补能站和目标设备旁留出空地。",
         congested:
-          "通路存在，当前被其他机器人占用；等待不耗行动能量，可调整站口和通道。",
-        source_empty: "实际来源库存不足；保留已取货物，补货或取消任务。",
-        blocked: "目标缓存 / 容器 / 仓库无法接收；腾空后继续，携货不会丢弃。",
-        rejected: "检查物品白名单、配方、燃料用途及 WH 输入 / 输出面设置。",
-        waiting_charge: "在归属补能站等待补满；需要真实供能和站内已付能量。",
-        range_exceeded: "完整行程无法在储能范围内完成；调整路线或取消后改派。",
-        no_energy: "需要真实补能；不会免费救援或瞬移货物。",
+          "通道暂时被其他机器人占用，正在等待。经常拥堵时，可加宽站口和通道。",
+        source_empty: "取货位置的物料不足。补充库存后会继续，也可以取消任务。",
+        blocked:
+          "目标位置装不下了。运走积压物料后会继续，机器人会保留手里的货。",
+        rejected:
+          "目标不接收这种物品。检查所选配方、原料 / 燃料用途和 WH 接口设置。",
+        waiting_charge:
+          "正在补能站等待充满。请检查站旁动力线路和动力源的燃料。",
+        range_exceeded:
+          "现有储能无法完成整条路线。请缩短路线，或换用储能更多的机型。",
+        no_energy:
+          "能量不足。请先检查归属补能站是否已接上动力，并为动力源补充燃料。",
+        idle: "正在待命。可以在下方安排运输或现场作业。",
+        charged: "能量充足，可以安排任务。",
+        charging: "正在补能，充满后会继续已安排的任务。",
+        moving: "正在沿通道前往目标设备。",
+        loading: "正在取货，请等待装货完成。",
+        unloading: "正在交货，请等待卸货完成。",
+        in_transit: "正在前往另一厂区，抵达后继续任务。",
       } as Record<string, string>
-    )[r.status] ?? "按确认的 1 秒游戏刻行动；路线预览不预留库存或保证未来通行。"
+    )[r.status] ?? "正在执行已安排的任务，当前位置和进度见下方。"
   );
 }

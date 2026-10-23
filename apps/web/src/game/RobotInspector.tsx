@@ -39,10 +39,10 @@ export default function RobotInspector({
   const routeLabel = {
     idle: "当前无任务路段",
     transit: "跨区途中，落地后重新规划",
-    missing: "目标已失效，下一有效 tick 处理返站",
-    congested: "通路存在，等待其他机器人让位",
-    no_path: "当前路段不可达",
-    ready: "当前路段预览",
+    missing: "目标已不存在，机器人将返站",
+    congested: "通道被占用，正在等待其他机器人让位",
+    no_path: "当前没有可走通道",
+    ready: "当前行走路线",
   };
   return (
     <section className="robot-inspector" aria-label="机器人检视">
@@ -81,7 +81,7 @@ export default function RobotInspector({
       </p>
       {robot.cargo && (
         <p>
-          实际携货：{itemDefinitions.get(robot.cargo.item)?.name} ×{" "}
+          正在携带：{itemDefinitions.get(robot.cargo.item)?.name} ×{" "}
           {robot.cargo.count}
         </p>
       )}
@@ -98,8 +98,8 @@ export default function RobotInspector({
         </p>
       )}
       <small>
-        虚线仅预览当前路段；不保证未来通行，不结算物料。跨区只显示当前 WH
-        路段或确认落点。
+        虚线显示当前前往目标的路线。跨区时先显示到 WH
+        的路段，抵达后再显示下一段。
       </small>
       <div className="machine-actions">
         <button onClick={onLocate}>定位机器人 / 落点</button>
@@ -122,7 +122,7 @@ export default function RobotInspector({
           disabled={paused || robotBusy(robot) || !robotAtHome(robot, factory)}
           onClick={() => act({ type: "robot_recall", id: robot.id })}
         >
-          返还本体至归属仓
+          召回机器人到总仓库
         </button>
       </div>
     </section>
