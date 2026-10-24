@@ -1,3 +1,4 @@
+import { containsCell, isAdjacent, validSize, inBounds } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import { buildingDefinitions, catalog, recipeDefinitions } from "./catalog";
@@ -51,6 +52,7 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
           "y",
           "rotation",
           "recipe_id",
+          "size",
         ].includes(k),
     ) ||
     catalog.robots?.find((d) => d.item === r.item)?.role !== "smart" ||
@@ -72,6 +74,8 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
   if (
     !f ||
     !d?.item ||
+    !validSize(d, c.size) ||
+    !inBounds(c) ||
     d.fixed ||
     d.legacy ||
     (d.tier ?? 1) > (root.simulation.industry?.stage ?? 1)
@@ -122,11 +126,9 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
         (other) =>
           (!other.transit &&
             other.factory_id === f.id &&
-            other.x === c.x &&
-            other.y === c.y) ||
+            containsCell(c, other)) ||
           (other.transit?.to_factory_id === f.id &&
-            other.transit.x === c.x &&
-            other.transit.y === c.y),
+            containsCell(c, other.transit)),
       )
     )
       return false;
@@ -200,12 +202,7 @@ export function finishConstruction(root: LocalFactory, r: Robot): boolean {
   if (!constructionValid(root, r)) return false;
   const c = r.construction!,
     f = worldFactories(root).find((f) => f.id === c.factory_id)!;
-  if (
-    r.transit ||
-    r.factory_id !== f.id ||
-    Math.abs(r.x - c.x) + Math.abs(r.y - c.y) !== 1
-  )
-    return false;
+  if (r.transit || r.factory_id !== f.id || !isAdjacent(c, r)) return false;
   // Replace the building array: stepWorld shares the old immutable layout.
   f.buildings = [
     ...f.buildings,
@@ -216,6 +213,7 @@ export function finishConstruction(root: LocalFactory, r: Robot): boolean {
       x: c.x,
       y: c.y,
       rotation: c.rotation,
+      size: c.size,
       configuration: c.recipe_id ? { recipe_id: c.recipe_id } : {},
     },
   ];

@@ -1,5 +1,7 @@
 # 当前架构
 
+机器可选占地：36 台复杂配方机器的目录增加 supported_sizes=[1,2]；实例 / 放置 / 蓝图的可选 size 缺省 1，2×2 坐标为左上角。前后端存档校验完整占格，Worker 的放置、物流、能源、机器人路径与蓝图共用对应几何；不改变实例数、安装道具数、缓存、配方工时、物料或产能。旧存档保留原单格，不需迁移，完整设计见 [machine-footprints.md](machine-footprints.md)。
+
 工厂入口新增静态资源门槛：useLocalGame 订阅页面内共享的 AssetPreloader，等待同源 Fusion Pixel 字体的实际 FontFace 与全部物品 / 建筑图标读取解码完成，再创建 GameRuntime、读取账号存档锁 / IndexedDB、校验在线与云备份、启动 Worker。进度按真实完成项计算，最后一项为原存档 / 在线初始化；失败保留进度重试。卸载 / 退出后的迟到预热不会启动旧玩家运行层，公开静态缓存不包含账号数据，不改服务端、持久化或生产规则。详见 [fonts-and-loading.md](fonts-and-loading.md)。
 
 建筑 / 物流美术属于客户端显示层：78 张 128px PNG 与 12 个代码连接定义覆盖全部 90 个目录 ID。DefinitionIcon / BuildingSprite 提供 GUI，BuildingVisual 提供地图与预览；buildingConnections 复用原方向邻接选择，routeGeometry 缓存整数 SVG。贴图索引和几何独立分包，图片以外部 URL 缓存；颜色 / 端口 / 液位只读目录、布局与确认状态，不增加 Worker、API、数据库迁移或存档字段。详见 [building-art.md](building-art.md)。
@@ -56,7 +58,7 @@ GameSave 保持 format_version=1，写 rules_version=3。客户端读取 1/2 时
 
 ## 蓝图施工（E2d2）
 
-`construction.ts` 在世界动作克隆中预留一张单格蓝图，并从归属 WH 扣 1 实际设备存入机器人唯一 cargo。复用 `placement.ts` 安装约束和 `robotRoutes.ts` 空地 / 跨区路径；蓝图为派生占格，不创建提前工作的建筑或模拟缓存。新增蓝图须可达、预留返程能量且不能堵断其他机器人的安全返程；编辑、部署和过境落点也避让蓝图。
+`construction.ts` 在世界动作克隆中预留一台设备的完整占格蓝图，并从归属 WH 扣 1 实际设备存入机器人唯一 cargo。复用 `placement.ts` 安装约束和 `robotRoutes.ts` 空地 / 跨区路径；蓝图为派生占格，不创建提前工作的建筑或模拟缓存。新增蓝图须可达、预留返程能量且不能堵断其他机器人的安全返程；编辑、部署和过境落点也避让蓝图。
 
 `robotFreight.ts` 在生产 / 物流之后推进现场 10 tick 工作，完成时同时移除 cargo / construction、替换目标厂 buildings 数组并创建空 MachineState。既有布局快照不会被原地追加，设备从下一 tick 参与生产。中止保留 construction 和 cargo、释放预留格，实际归属 WH 交货后再回补能站清除任务；无新增作业凭据。OpenAPI RobotConstruction 与 Go `construction.go` 检查类型 / 阶段 / 配方 / 许可 / 实物与预留冲突，兼容旧无施工字段存档，无数据库迁移。多台可并行，每台只有一个在建蓝图，批量多格排程不在本阶段范围。
 

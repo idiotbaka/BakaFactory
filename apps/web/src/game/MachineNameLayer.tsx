@@ -21,6 +21,7 @@ function MachineNameLayer({
     cell: Cell | null;
     instanceID?: string;
     invalid: boolean;
+    size?: 1 | 2;
   };
 }) {
   const definitions = useMemo(
@@ -32,7 +33,7 @@ function MachineNameLayer({
   const target = preview?.cell;
   const render = (
     definition: BuildingDefinition | undefined,
-    cell: Cell,
+    cell: Cell & { size?: 1 | 2 },
     id: string,
     invalid = false,
   ) => {
@@ -73,7 +74,7 @@ function MachineNameLayer({
         targetInGrid &&
         render(
           preview.definition,
-          target,
+          { ...target, size: preview.size },
           "placement-preview",
           preview.invalid,
         )}

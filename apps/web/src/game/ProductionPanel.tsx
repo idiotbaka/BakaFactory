@@ -1,3 +1,4 @@
+import { containsCell } from "./footprint";
 import type {
   BuildingDefinition,
   BuildingInstance,
@@ -138,7 +139,7 @@ export function ProductionInspector({
     const neighbor = (offset: number) => {
       const x = instance.x + delta[0] * offset,
         y = instance.y + delta[1] * offset;
-      const target = factory.buildings.find((b) => b.x === x && b.y === y);
+      const target = factory.buildings.find((b) => containsCell(b, { x, y }));
       return `${target ? catalog.buildings.find((d) => d.id === target.building_type)?.name : "空格"} (${x}, ${y})`;
     };
     route = (

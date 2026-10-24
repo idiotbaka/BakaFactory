@@ -1,3 +1,4 @@
+import { isAdjacent, type Footprint } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import {
@@ -192,10 +193,8 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
   }
   return true;
 }
-const at = (r: Robot, b: { x: number; y: number }, factoryID: string) =>
-  !r.transit &&
-  r.factory_id === factoryID &&
-  Math.abs(r.x - b.x) + Math.abs(r.y - b.y) === 1;
+const at = (r: Robot, b: Footprint, factoryID: string) =>
+  !r.transit && r.factory_id === factoryID && isAdjacent(b, r);
 function beginReturn(r: Robot, reason: NonNullable<Robot["returning"]>) {
   r.returning = reason;
   r.work_progress = 0;

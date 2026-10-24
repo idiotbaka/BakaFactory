@@ -1,4 +1,10 @@
 import {
+  occupancy,
+  footprintSize,
+  containsCell,
+  supportsLargeSize,
+} from "./footprint";
+import {
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -49,6 +55,7 @@ type Props = {
   catalog: Catalog;
   selectedID: string | null;
   placementType: string | null;
+  placementSize?: 1 | 2;
   onExitPlacement: () => void;
   onSelect: (building: BuildingInstance | null) => void;
   onChange: (factory: FactoryDetail, selectedID: string | null) => void;
@@ -62,11 +69,13 @@ export type RobotFocus = {
 };
 type Pointer = { clientX: number; clientY: number; cell: Cell | null };
 type Preview = Pointer & {
+  size: 1 | 2;
   definition: BuildingDefinition;
   instanceID?: string;
   rotation: BuildingPlacement["rotation"];
 };
 type Drag = Preview & {
+  offset: Cell;
   pointerID: number;
   active: boolean;
   capture: HTMLElement;
@@ -122,7 +131,12 @@ export default function FactoryEditor(props: Props) {
   const preview: Preview | null =
     dragPreview ??
     (placementDefinition && pointer?.cell
-      ? { ...pointer, definition: placementDefinition, rotation }
+      ? {
+          ...pointer,
+          definition: placementDefinition,
+          rotation,
+          size: props.placementSize ?? 1,
+        }
       : null);
 
   function moveCamera(next: Camera) {
@@ -224,6 +238,11 @@ export default function FactoryEditor(props: Props) {
     props.onSelect(instance);
     const p: Drag = {
       definition,
+      size: footprintSize(instance),
+      offset: (() => {
+        const at = hit(event.clientX, event.clientY) ?? instance;
+        return { x: at.x - instance.x, y: at.y - instance.y };
+      })(),
       instanceID: instance.id,
       rotation: instance.rotation,
       pointerID: event.pointerId,
@@ -231,7 +250,7 @@ export default function FactoryEditor(props: Props) {
       capture: event.currentTarget,
       clientX: event.clientX,
       clientY: event.clientY,
-      cell: hit(event.clientX, event.clientY),
+      cell: { x: instance.x, y: instance.y },
     };
     drag.current = p;
     try {
@@ -292,9 +311,13 @@ export default function FactoryEditor(props: Props) {
       cancel();
       return;
     }
-    p.cell = hit(clientX, clientY);
+    const cellHit = hit(clientX, clientY);
+    p.cell = cellHit && {
+      x: cellHit.x - p.offset.x,
+      y: cellHit.y - p.offset.y,
+    };
     const f = latest.current.factory,
-      issue = placementIssue(f, p.cell, p.instanceID, p.definition.id);
+      issue = placementIssue(f, p.cell, p.instanceID, p.definition.id, p.size);
     cancel();
     if (issue) {
       latest.current.onError(new Error(issue));
@@ -313,6 +336,7 @@ export default function FactoryEditor(props: Props) {
         latest.current.commands.updateBuilding(f.id, p.instanceID!, {
           ...cell,
           rotation: p.rotation,
+          ...(p.size === 2 ? { size: p.size } : {}),
         }),
       () => p.instanceID!,
     );
@@ -369,6 +393,7 @@ export default function FactoryEditor(props: Props) {
         cell,
         undefined,
         placementDefinition.id,
+        props.placementSize ?? 1,
       );
       if (issue) {
         props.onError(new Error(issue));
@@ -379,6 +404,7 @@ export default function FactoryEditor(props: Props) {
         () =>
           latest.current.commands.placeBuilding(f.id, placementDefinition.id, {
             ...cell,
+            ...(props.placementSize === 2 ? { size: props.placementSize } : {}),
             rotation,
           }),
         (snapshot) =>
@@ -394,8 +420,7 @@ export default function FactoryEditor(props: Props) {
             r.y === cell.y) ||
           (!r.returning &&
             r.construction?.factory_id === factory.id &&
-            r.construction.x === cell.x &&
-            r.construction.y === cell.y),
+            containsCell(r.construction, cell)),
       );
       if (robot && props.onSelectRobot) {
         props.onSelectRobot(robot.id);
@@ -486,7 +511,8 @@ export default function FactoryEditor(props: Props) {
       if (p?.pointerID === event.pointerId) {
         p.clientX = event.clientX;
         p.clientY = event.clientY;
-        p.cell = actions.current.hit(event.clientX, event.clientY);
+        const at = actions.current.hit(event.clientX, event.clientY);
+        p.cell = at && { x: at.x - p.offset.x, y: at.y - p.offset.y };
         if (p.active) show(p);
         if (event.pointerType === "mouse" && (event.buttons & 1) === 0)
           actions.current.finish(event.clientX, event.clientY);
@@ -676,10 +702,11 @@ export default function FactoryEditor(props: Props) {
         preview.cell,
         preview.instanceID,
         preview.definition.id,
+        preview.size,
       )
     : null;
   const buildings = useMemo(
-    () => new Map(factory.buildings.map((b) => [`${b.x},${b.y}`, b])),
+    () => occupancy(factory.buildings),
     [factory.buildings],
   );
   const buildingDefinitions = useMemo(
@@ -703,10 +730,7 @@ export default function FactoryEditor(props: Props) {
           .filter(
             (r) => !r.returning && r.construction?.factory_id === factory.id,
           )
-          .map((r) => [
-            `${r.construction!.x},${r.construction!.y}`,
-            r.construction!,
-          ]),
+          .flatMap((r) => [...occupancy([r.construction!])]),
       ),
     [factory.robots, factory.id],
   );
@@ -758,7 +782,7 @@ export default function FactoryEditor(props: Props) {
           {dragPreview
             ? "移动建筑 · 右键旋转 · 松开左键确认"
             : placementDefinition
-              ? `连续放置 ${placementDefinition.name} · ${rotation}° · 左键建造 / 右键旋转 / Esc 退出`
+              ? `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
               : selected
                 ? fixed
                   ? "工厂仓库固定，无法编辑"
@@ -912,8 +936,14 @@ export default function FactoryEditor(props: Props) {
                 const instance = buildings.get(`${x},${y}`),
                   d =
                     instance && buildingDefinitions.get(instance.building_type);
-                const target = preview?.cell?.x === x && preview?.cell?.y === y,
-                  highlight = instance?.id === selectedID;
+                const target =
+                    preview?.cell &&
+                    containsCell(
+                      { ...preview.cell, size: preview.size },
+                      { x, y },
+                    ),
+                  anchor = instance?.x === x && instance?.y === y,
+                  highlight = anchor && instance?.id === selectedID;
                 const runtime =
                   instance && factory.simulation?.buildings[instance.id];
                 return (
@@ -923,6 +953,12 @@ export default function FactoryEditor(props: Props) {
                     title={`(${x}, ${y})${y === Math.floor(factory.height / 2) ? " · 垃圾堆" : ""}${d ? ` · ${d.name}` : ""}`}
                     data-x={x}
                     data-y={y}
+                    style={
+                      {
+                        "--footprint-size":
+                          anchor && instance ? footprintSize(instance) : 1,
+                      } as CSSProperties
+                    }
                   >
                     {blueprints.has(`${x},${y}`) && (
                       <span
@@ -985,25 +1021,43 @@ export default function FactoryEditor(props: Props) {
                       <button
                         className="building-art-button"
                         aria-label={`${d.name} ${d.code} (${x},${y})`}
-                        aria-pressed={highlight}
+                        aria-pressed={instance.id === selectedID}
+                        tabIndex={anchor ? 0 : -1}
                         disabled={saving}
                         onPointerDown={(event) => begin(event, d, instance)}
-                        onClick={() => clickCell({ x, y }, instance)}
+                        onClick={(event) =>
+                          clickCell(
+                            hit(event.clientX, event.clientY) ?? { x, y },
+                            instance,
+                          )
+                        }
                         onContextMenu={(event) => openMenu(event, instance)}
                         style={
-                          { "--entity-color": entityColor(d) } as CSSProperties
+                          {
+                            "--entity-color": entityColor(d),
+                            width: anchor
+                              ? TILE_SIZE * footprintSize(instance)
+                              : TILE_SIZE,
+                            height: anchor
+                              ? TILE_SIZE * footprintSize(instance)
+                              : TILE_SIZE,
+                            zIndex: anchor ? 2 : 0,
+                          } as CSSProperties
                         }
                       >
-                        <BuildingVisual
-                          definition={d}
-                          x={x}
-                          y={y}
-                          rotation={instance.rotation}
-                          buildings={buildings}
-                          instanceID={instance.id}
-                          machine={runtime}
-                        />
-                        {(d.category === "machine" || d.role === "source") &&
+                        {anchor && (
+                          <BuildingVisual
+                            definition={d}
+                            x={x}
+                            y={y}
+                            rotation={instance.rotation}
+                            buildings={buildings}
+                            instanceID={instance.id}
+                            machine={runtime}
+                          />
+                        )}
+                        {anchor &&
+                          (d.category === "machine" || d.role === "source") &&
                           runtime && (
                             <>
                               <span
@@ -1027,18 +1081,28 @@ export default function FactoryEditor(props: Props) {
                         <span className="tile-point" />
                       </button>
                     )}
-                    {target && preview && (
-                      <span className="tile-preview" aria-hidden="true">
-                        <BuildingVisual
-                          definition={preview.definition}
-                          x={x}
-                          y={y}
-                          rotation={preview.rotation}
-                          buildings={buildings}
-                          instanceID={preview.instanceID}
-                        />
-                      </span>
-                    )}
+                    {target &&
+                      preview &&
+                      preview.cell?.x === x &&
+                      preview.cell?.y === y && (
+                        <span
+                          className="tile-preview"
+                          style={{
+                            width: TILE_SIZE * preview.size,
+                            height: TILE_SIZE * preview.size,
+                          }}
+                          aria-hidden="true"
+                        >
+                          <BuildingVisual
+                            definition={preview.definition}
+                            x={x}
+                            y={y}
+                            rotation={preview.rotation}
+                            buildings={buildings}
+                            instanceID={preview.instanceID}
+                          />
+                        </span>
+                      )}
                   </div>
                 );
               },
@@ -1082,8 +1146,14 @@ export default function FactoryEditor(props: Props) {
           <div
             className={`drag-ghost ${issue ? "invalid" : "valid"}`}
             style={{
-              left: Math.min(preview.clientX + 14, window.innerWidth - 180),
-              top: Math.min(preview.clientY + 14, window.innerHeight - 76),
+              left: Math.max(
+                8,
+                Math.min(preview.clientX + 14, window.innerWidth - 300),
+              ),
+              top: Math.max(
+                8,
+                Math.min(preview.clientY + 14, window.innerHeight - 112),
+              ),
             }}
             aria-hidden="true"
           >
@@ -1091,8 +1161,18 @@ export default function FactoryEditor(props: Props) {
               definition={preview.definition}
               rotation={preview.rotation}
             />
-            <span>
-              {preview.definition.name} · {preview.rotation}°
+            <span className="drag-ghost-details">
+              <span>
+                {preview.definition.name} · {preview.rotation}°
+              </span>
+              <span>
+                当前尺寸：{preview.size}×{preview.size}
+              </span>
+              {!dragPreview && supportsLargeSize(preview.definition) && (
+                <span>
+                  <kbd>E</kbd> 键切换尺寸
+                </span>
+              )}
             </span>
           </div>,
           document.body,

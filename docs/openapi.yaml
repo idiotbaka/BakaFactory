@@ -253,6 +253,12 @@ components:
       properties:
         x: { type: integer }
         y: { type: integer }
+        size:
+          {
+            type: integer,
+            enum: [1, 2],
+            description: "正方形占地边长，缺省 1；坐标为左上角",
+          }
         rotation: { type: integer, enum: [0, 90, 180, 270] }
     Factory:
       type: object
@@ -274,6 +280,12 @@ components:
         building_type: { type: string }
         x: { type: integer }
         y: { type: integer }
+        size:
+          {
+            type: integer,
+            enum: [1, 2],
+            description: "正方形占地边长，缺省 1；坐标为左上角",
+          }
         rotation: { type: integer, enum: [0, 90, 180, 270] }
         configuration: { type: object, additionalProperties: true }
     FactoryDetail:
@@ -319,6 +331,10 @@ components:
         - type: object
           required: [category, fixed]
           properties:
+            supported_sizes:
+              type: array
+              items: { type: integer, enum: [1, 2] }
+              description: "可选占地边长，缺省仅支持 1"
             category: { type: string, enum: [machine, logistics] }
             fixed: { type: boolean }
             input_slots: { type: integer, minimum: 1, maximum: 12 }
@@ -601,6 +617,12 @@ components:
         building_type: { type: string }
         x: { type: integer, minimum: -10, maximum: 10 }
         y: { type: integer, minimum: -10, maximum: 10 }
+        size:
+          {
+            type: integer,
+            enum: [1, 2],
+            description: "正方形占地边长，缺省 1；坐标为左上角",
+          }
         rotation: { type: integer, enum: [0, 90, 180, 270] }
         recipe_id: { type: string }
     RobotEndpoint:

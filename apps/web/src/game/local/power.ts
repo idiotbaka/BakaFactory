@@ -1,3 +1,4 @@
+import { occupancy, edgeCells } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
@@ -67,7 +68,7 @@ export function powerPriority(b: BuildingInstance) {
 // Only conductor tiles connect a grid. A machine touching separate grids uses
 // one explicit/first cardinal side; it never silently bridges those grids.
 function groupsFor(ordered: BuildingInstance[]) {
-  const positions = new Map(ordered.map((b) => [`${b.x},${b.y}`, b]));
+  const positions = occupancy(ordered);
   const groups: Group[] = [];
   for (const kind of kinds) {
     const membership = new Map<string, Group>();
@@ -122,9 +123,11 @@ function groupsFor(ordered: BuildingInstance[]) {
           : rotations;
       let group: Group | undefined;
       for (const r of side) {
-        const [dx, dy] = direction(r),
-          next = positions.get(`${b.x + dx},${b.y + dy}`);
-        group = next && membership.get(next.id);
+        for (const p of edgeCells(b, r)) {
+          const next = positions.get(`${p.x},${p.y}`);
+          group = next && membership.get(next.id);
+          if (group) break;
+        }
         if (group) break;
       }
       if (!group && b.building_type === "m21" && kind === "hydraulic") {

@@ -200,6 +200,11 @@ export interface components {
         BuildingPlacement: {
             x: number;
             y: number;
+            /**
+             * @description 正方形占地边长，缺省 1；坐标为左上角
+             * @enum {integer}
+             */
+            size?: 1 | 2;
             /** @enum {integer} */
             rotation: 0 | 90 | 180 | 270;
         };
@@ -220,6 +225,11 @@ export interface components {
             building_type: string;
             x: number;
             y: number;
+            /**
+             * @description 正方形占地边长，缺省 1；坐标为左上角
+             * @enum {integer}
+             */
+            size?: 1 | 2;
             /** @enum {integer} */
             rotation: 0 | 90 | 180 | 270;
             configuration: {
@@ -248,6 +258,8 @@ export interface components {
             description: string;
         };
         BuildingDefinition: components["schemas"]["Definition"] & {
+            /** @description 可选占地边长，缺省仅支持 1 */
+            supported_sizes?: (1 | 2)[];
             /** @enum {string} */
             category: "machine" | "logistics";
             fixed: boolean;
@@ -432,6 +444,11 @@ export interface components {
             building_type: string;
             x: number;
             y: number;
+            /**
+             * @description 正方形占地边长，缺省 1；坐标为左上角
+             * @enum {integer}
+             */
+            size?: 1 | 2;
             /** @enum {integer} */
             rotation: 0 | 90 | 180 | 270;
             recipe_id?: string;

@@ -1,3 +1,4 @@
+import { containsCell } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import { buildingDefinitions, catalog } from "./catalog";
@@ -131,9 +132,7 @@ export function validRobotWorld(root: LocalFactory): boolean {
       sd.energy !== d.energy ||
       !(sd.station_capacity_kj ?? 0) ||
       (!r.transit &&
-        world
-          .get(r.factory_id)!
-          .buildings.some((b) => b.x === r.x && b.y === r.y))
+        world.get(r.factory_id)!.buildings.some((b) => containsCell(b, r)))
     )
       return false;
     if (
@@ -215,10 +214,8 @@ export function applyRobotAction(root: LocalFactory, action: RobotAction) {
         (p) =>
           Math.abs(p.x) <= 10 &&
           Math.abs(p.y) <= 10 &&
-          !home.buildings.some((b) => b.x === p.x && b.y === p.y) &&
-          !plannedBuildings(root, home.id).some(
-            (b) => b.x === p.x && b.y === p.y,
-          ) &&
+          !home.buildings.some((b) => containsCell(b, p)) &&
+          !plannedBuildings(root, home.id).some((b) => containsCell(b, p)) &&
           !robots.some(
             (r) =>
               r.transit?.to_factory_id === home.id &&

@@ -1,3 +1,4 @@
+import { supportsLargeSize } from "./footprint";
 import { useState } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { components } from "../api/schema";
@@ -18,6 +19,7 @@ export default function ConstructionForm({
   disabled: boolean;
   act: (a: WorldAction) => void;
 }) {
+  const [size, setSize] = useState<1 | 2>(1);
   const [type, setType] = useState(""),
     [x, setX] = useState(6),
     [y, setY] = useState(2),
@@ -28,6 +30,7 @@ export default function ConstructionForm({
     (d) => d.item && !d.fixed && !d.legacy && (d.tier ?? 1) <= stage,
   );
   const d = options.find((d) => d.id === type) ?? options[0];
+  const placementSize = d && supportsLargeSize(d) ? size : 1;
   const recipes = catalog.recipes.filter(
     (r) =>
       r.building_type === d?.id &&
@@ -47,14 +50,14 @@ export default function ConstructionForm({
   const issue =
     !Number.isInteger(x) || !Number.isInteger(y)
       ? "坐标须为整数"
-      : placementIssue(factory, { x, y }, undefined, d?.id);
+      : placementIssue(factory, { x, y }, undefined, d?.id, placementSize);
   const authorized = robot.allowed_zones.includes(factory.id);
   return (
     <fieldset>
       <legend>蓝图施工 · 当前厂区</legend>
       <p>
         先在仓库准备 1 个成品设备，再选安装位置。机器人补满能量后取货，到场施工
-        10 秒完成安装；每次施工一格。取消后会把设备运回仓库。
+        10 秒完成安装；每次施工一台。取消后会把设备运回仓库。
       </p>
       <label>
         安装设备
@@ -62,7 +65,10 @@ export default function ConstructionForm({
           aria-label="蓝图设备"
           disabled={disabled}
           value={d?.id ?? ""}
-          onChange={(e) => setType(e.target.value)}
+          onChange={(e) => {
+            setType(e.target.value);
+            setSize(1);
+          }}
         >
           {options.map((d) => (
             <option key={d.id} value={d.id}>
@@ -71,8 +77,22 @@ export default function ConstructionForm({
           ))}
         </select>
       </label>
+      {d && supportsLargeSize(d) && (
+        <label>
+          占地尺寸
+          <select
+            aria-label="蓝图占地尺寸"
+            value={placementSize}
+            disabled={disabled}
+            onChange={(e) => setSize(Number(e.target.value) as 1 | 2)}
+          >
+            <option value={1}>1×1</option>
+            <option value={2}>2×2</option>
+          </select>
+        </label>
+      )}
       <label>
-        X 坐标
+        左上角 X 坐标
         <input
           aria-label="蓝图 X 坐标"
           type="number"
@@ -85,7 +105,7 @@ export default function ConstructionForm({
         />
       </label>
       <label>
-        Y 坐标
+        左上角 Y 坐标
         <input
           aria-label="蓝图 Y 坐标"
           type="number"
@@ -161,6 +181,7 @@ export default function ConstructionForm({
               x,
               y,
               rotation,
+              size: placementSize,
               ...(recipe ? { recipe_id: recipe.id } : {}),
             },
           })

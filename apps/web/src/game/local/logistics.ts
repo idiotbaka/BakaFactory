@@ -1,3 +1,4 @@
+import { occupancy, contactCell } from "../footprint";
 import type {
   BuildingInstance,
   ItemTransfer,
@@ -45,11 +46,10 @@ type Move = Candidate & {
   payload: string;
   destination: "input" | "output" | "fuel" | "warehouse" | "belt";
 };
-const endpoint = (b: BuildingInstance) => ({
+const endpoint = (b: BuildingInstance, neighbor?: BuildingInstance) => ({
   id: b.id,
   building_type: b.building_type,
-  x: b.x,
-  y: b.y,
+  ...(neighbor ? contactCell(b, neighbor) : { x: b.x, y: b.y }),
   rotation: b.rotation,
 });
 export const poweredTransport = (b: BuildingInstance, m: MachineState) => {
@@ -114,7 +114,7 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
 export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
   const s = f.simulation;
   s.transfers ??= [];
-  const positions = new Map(ordered.map((b) => [`${b.x},${b.y}`, b]));
+  const positions = occupancy(ordered);
   const adjacent = (b: BuildingInstance, r: number, offset = 1) => {
     const [dx, dy] = direction(r);
     return positions.get(`${b.x + dx * offset},${b.y + dy * offset}`);
@@ -410,8 +410,8 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         item: t.item,
         count: t.quantity,
         tick: s.tick,
-        source: endpoint(t.source),
-        target: endpoint(t.target),
+        source: endpoint(t.source, t.via ?? t.target),
+        target: endpoint(t.target, t.via ?? t.source),
         ...(t.via ? { via: endpoint(t.via) } : {}),
       };
       s.transfers.push(event);

@@ -5277,6 +5277,7 @@
     },
     {
       "id": "m08",
+      "supported_sizes": [1, 2],
       "name": "手工装配台",
       "code": "M08",
       "icon": "assembler",
@@ -5431,6 +5432,7 @@
     },
     {
       "id": "m14",
+      "supported_sizes": [1, 2],
       "name": "蒸汽锅炉",
       "code": "M14",
       "icon": "furnace",
@@ -5451,6 +5453,7 @@
     },
     {
       "id": "m15",
+      "supported_sizes": [1, 2],
       "name": "机械装配线",
       "code": "M15",
       "icon": "assembler",
@@ -5575,6 +5578,7 @@
     },
     {
       "id": "m19",
+      "supported_sizes": [1, 2],
       "name": "废塑料裂解炉",
       "code": "M19",
       "icon": "furnace",
@@ -5603,6 +5607,7 @@
     },
     {
       "id": "m20",
+      "supported_sizes": [1, 2],
       "name": "分馏塔",
       "code": "M20",
       "icon": "assembler",
@@ -5623,6 +5628,7 @@
     },
     {
       "id": "m21",
+      "supported_sizes": [1, 2],
       "name": "液压动力站",
       "code": "M21",
       "icon": "generator",
@@ -5643,6 +5649,7 @@
     },
     {
       "id": "m22",
+      "supported_sizes": [1, 2],
       "name": "液压冲压机",
       "code": "M22",
       "icon": "assembler",
@@ -5663,6 +5670,7 @@
     },
     {
       "id": "m23",
+      "supported_sizes": [1, 2],
       "name": "化学反应釜",
       "code": "M23",
       "icon": "assembler",
@@ -5721,6 +5729,7 @@
     },
     {
       "id": "m25",
+      "supported_sizes": [1, 2],
       "name": "湿法浸出槽",
       "code": "M25",
       "icon": "assembler",
@@ -5770,6 +5779,7 @@
     },
     {
       "id": "m27",
+      "supported_sizes": [1, 2],
       "name": "液压机器人装配台",
       "code": "M27",
       "icon": "assembler",
@@ -5848,6 +5858,7 @@
     },
     {
       "id": "m29",
+      "supported_sizes": [1, 2],
       "name": "电解槽",
       "code": "M29",
       "icon": "assembler",
@@ -5888,6 +5899,7 @@
     },
     {
       "id": "m31",
+      "supported_sizes": [1, 2],
       "name": "电路板蚀刻机",
       "code": "M31",
       "icon": "assembler",
@@ -5908,6 +5920,7 @@
     },
     {
       "id": "m32",
+      "supported_sizes": [1, 2],
       "name": "电子焊接台",
       "code": "M32",
       "icon": "assembler",
@@ -5937,6 +5950,7 @@
     },
     {
       "id": "m33",
+      "supported_sizes": [1, 2],
       "name": "电机组装机",
       "code": "M33",
       "icon": "assembler",
@@ -5967,6 +5981,7 @@
     },
     {
       "id": "m34",
+      "supported_sizes": [1, 2],
       "name": "电池组装机",
       "code": "M34",
       "icon": "assembler",
@@ -5997,6 +6012,7 @@
     },
     {
       "id": "m35",
+      "supported_sizes": [1, 2],
       "name": "数控加工中心",
       "code": "M35",
       "icon": "assembler",
@@ -6027,6 +6043,7 @@
     },
     {
       "id": "m36",
+      "supported_sizes": [1, 2],
       "name": "电控自动装配线",
       "code": "M36",
       "icon": "assembler",
@@ -6080,6 +6097,7 @@
     },
     {
       "id": "m37",
+      "supported_sizes": [1, 2],
       "name": "物流中央控制台",
       "code": "M37",
       "icon": "assembler",
@@ -6116,6 +6134,7 @@
     },
     {
       "id": "m38",
+      "supported_sizes": [1, 2],
       "name": "高纯石英提纯炉",
       "code": "M38",
       "icon": "assembler",
@@ -6145,6 +6164,7 @@
     },
     {
       "id": "m39",
+      "supported_sizes": [1, 2],
       "name": "晶圆切割机",
       "code": "M39",
       "icon": "assembler",
@@ -6165,6 +6185,7 @@
     },
     {
       "id": "m40",
+      "supported_sizes": [1, 2],
       "name": "光刻机",
       "code": "M40",
       "icon": "assembler",
@@ -6185,6 +6206,7 @@
     },
     {
       "id": "m41",
+      "supported_sizes": [1, 2],
       "name": "薄膜沉积机",
       "code": "M41",
       "icon": "assembler",
@@ -6215,6 +6237,7 @@
     },
     {
       "id": "m42",
+      "supported_sizes": [1, 2],
       "name": "芯片封装机",
       "code": "M42",
       "icon": "assembler",
@@ -6248,6 +6271,7 @@
     },
     {
       "id": "m43",
+      "supported_sizes": [1, 2],
       "name": "光学标定台",
       "code": "M43",
       "icon": "assembler",
@@ -6281,6 +6305,7 @@
     },
     {
       "id": "m44",
+      "supported_sizes": [1, 2],
       "name": "伺服总装线",
       "code": "M44",
       "icon": "assembler",
@@ -6315,6 +6340,7 @@
     },
     {
       "id": "m45",
+      "supported_sizes": [1, 2],
       "name": "固件烧录台",
       "code": "M45",
       "icon": "assembler",
@@ -6344,6 +6370,7 @@
     },
     {
       "id": "m46",
+      "supported_sizes": [1, 2],
       "name": "多机协作站",
       "code": "M46",
       "icon": "assembler",
@@ -6405,6 +6432,7 @@
     },
     {
       "id": "m47",
+      "supported_sizes": [1, 2],
       "name": "超纯净化塔",
       "code": "M47",
       "icon": "assembler",
@@ -6439,6 +6467,7 @@
     },
     {
       "id": "m48",
+      "supported_sizes": [1, 2],
       "name": "纳米材料反应器",
       "code": "M48",
       "icon": "assembler",
@@ -6470,6 +6499,7 @@
     },
     {
       "id": "m49",
+      "supported_sizes": [1, 2],
       "name": "神经芯片封装线",
       "code": "M49",
       "icon": "assembler",
@@ -6501,6 +6531,7 @@
     },
     {
       "id": "m50",
+      "supported_sizes": [1, 2],
       "name": "高密度储能工厂",
       "code": "M50",
       "icon": "assembler",
@@ -6535,6 +6566,7 @@
     },
     {
       "id": "m51",
+      "supported_sizes": [1, 2],
       "name": "人工智能训练集群",
       "code": "M51",
       "icon": "assembler",
@@ -6567,6 +6599,7 @@
     },
     {
       "id": "m52",
+      "supported_sizes": [1, 2],
       "name": "仿生肢体装配站",
       "code": "M52",
       "icon": "assembler",
@@ -6601,6 +6634,7 @@
     },
     {
       "id": "m53",
+      "supported_sizes": [1, 2],
       "name": "智能机器人总装线",
       "code": "M53",
       "icon": "assembler",
@@ -6641,6 +6675,7 @@
     },
     {
       "id": "m54",
+      "supported_sizes": [1, 2],
       "name": "终端验收舱",
       "code": "M54",
       "icon": "assembler",
@@ -6674,6 +6709,7 @@
     },
     {
       "id": "m55",
+      "supported_sizes": [1, 2],
       "name": "回转煅烧窑",
       "code": "M55",
       "icon": "furnace",

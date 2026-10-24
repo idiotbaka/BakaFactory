@@ -1,3 +1,4 @@
+import { overlaps, containsCell } from "../footprint";
 import type { User } from "../../api/client";
 import {
   createLocalFactory,
@@ -10,7 +11,11 @@ import { buildingDefinitions, itemID } from "./catalog";
 import { store } from "./inventory";
 import { applyRobotAction, chargeRobots, type RobotAction } from "./robots";
 import { stepFreight } from "./robotFreight";
-import { routeEditsSafe, plannedBuildings } from "./robotRoutes";
+import {
+  routeEditsSafe,
+  plannedBuildings,
+  worldFactories,
+} from "./robotRoutes";
 import { constructionValid } from "./construction";
 import { syncIncidents } from "./incidents";
 import { dispatchRobots } from "./robotAutonomy";
@@ -167,24 +172,26 @@ export function editWorld(
   const id = target ?? current.active_district_id ?? current.id;
   if (id !== (current.active_district_id ?? current.id))
     throw new Error("厂区已切换，请重新操作");
-  if (
-    (edit.kind === "place" || edit.kind === "move") &&
-    plannedBuildings(current, id).some(
-      (b) => b.x === edit.placement.x && b.y === edit.placement.y,
-    )
-  )
+  const shape =
+    edit.kind === "place" || edit.kind === "move"
+      ? {
+          ...edit.placement,
+          size:
+            edit.kind === "move"
+              ? (worldFactories(current)
+                  .find((f) => f.id === id)
+                  ?.buildings.find((b) => b.id === edit.id)?.size ?? 1)
+              : edit.placement.size,
+        }
+      : undefined;
+  if (shape && plannedBuildings(current, id).some((b) => overlaps(b, shape)))
     throw new Error("该格已预留施工蓝图，请先取消施工");
   if (
-    (edit.kind === "place" || edit.kind === "move") &&
+    shape &&
     current.robots?.some(
       (r) =>
-        (!r.transit &&
-          r.factory_id === id &&
-          r.x === edit.placement.x &&
-          r.y === edit.placement.y) ||
-        (r.transit?.to_factory_id === id &&
-          r.transit.x === edit.placement.x &&
-          r.transit.y === edit.placement.y),
+        (!r.transit && r.factory_id === id && containsCell(shape, r)) ||
+        (r.transit?.to_factory_id === id && containsCell(shape, r.transit)),
     )
   )
     throw new Error("该格有机器人停靠，请先召回或移走机器人");

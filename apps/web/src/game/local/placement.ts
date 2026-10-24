@@ -1,3 +1,4 @@
+import { validSize, inBounds, overlaps } from "../footprint";
 import type { BuildingPlacement } from "../../api/client";
 import type { LocalFactory } from "./state";
 import { buildingDefinitions } from "./catalog";
@@ -13,14 +14,14 @@ export function validatePlacement(
   if (
     !Number.isInteger(p.x) ||
     !Number.isInteger(p.y) ||
-    Math.abs(p.x) > 10 ||
-    Math.abs(p.y) > 10 ||
+    !inBounds(p) ||
     !rotations.includes(p.rotation as (typeof rotations)[number])
   )
     throw new Error("建筑坐标或方向无效");
   if (!d || d.fixed || f.buildings.some((b) => b.id === id))
     throw new Error("无法建造该模组");
-  if (f.buildings.some((b) => b.x === p.x && b.y === p.y))
+  if (!validSize(d, p.size)) throw new Error("该机器不支持此占地尺寸");
+  if (f.buildings.some((b) => overlaps(b, p)))
     throw new Error("目标格子已被占用");
   if ((d.tier ?? 1) > stage) throw new Error("该设备所属阶段尚未解锁");
   if (d.role === "source") {

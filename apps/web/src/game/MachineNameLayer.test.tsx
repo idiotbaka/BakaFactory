@@ -147,3 +147,35 @@ it("moves the caption to its preview and avoids two labels on an occupied target
     container.querySelector('[data-label-for="placement-preview"]'),
   ).toBeNull();
 });
+
+it("centres one fixed-size caption in the full 2×2 footprint including previews", () => {
+  const camera = { x: 10, y: 20, zoom: 1.2 };
+  const large = { ...building("m08", 4, 4), size: 2 as const };
+  const floor = { width: 21, height: 21, buildings: [large] };
+  const { container, rerender } = render(
+    <MachineNameLayer factory={floor} catalog={catalog} camera={camera} />,
+  );
+  const name = container.querySelector<HTMLElement>(".machine-map-name")!;
+  const position = machineNamePosition(floor, camera, large);
+  expect(name.style.left).toBe(`${position.left}px`);
+  expect(name.style.top).toBe(`${position.top}px`);
+  expect(name.style.width).toBe(`${60 * 1.2 - 4}px`);
+  rerender(
+    <MachineNameLayer
+      factory={floor}
+      catalog={catalog}
+      camera={camera}
+      preview={{
+        definition: definition("m08"),
+        cell: { x: 4, y: 4 },
+        size: 2,
+        instanceID: large.id,
+        invalid: false,
+      }}
+    />,
+  );
+  expect(container.querySelectorAll(".machine-map-name")).toHaveLength(1);
+  expect(
+    container.querySelector<HTMLElement>(".machine-map-name")!.style.left,
+  ).toBe(name.style.left);
+});

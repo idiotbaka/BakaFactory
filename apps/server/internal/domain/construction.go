@@ -8,6 +8,7 @@ import (
 
 // One paid device is held in Cargo until installation or physical return.
 type RobotConstruction struct {
+	Size         *int    `json:"size,omitempty"`
 	ID           string  `json:"id"`
 	FactoryID    string  `json:"factory_id"`
 	BuildingType string  `json:"building_type"`
@@ -18,6 +19,9 @@ type RobotConstruction struct {
 }
 
 func (v *RobotConstruction) UnmarshalJSON(data []byte) error {
+	if err := rejectNullSize(data); err != nil {
+		return err
+	}
 	type plain RobotConstruction
 	var shape map[string]json.RawMessage
 	if err := json.Unmarshal(data, &shape); err != nil {
@@ -42,7 +46,7 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 		definitions[b.ID] = b
 	}
 	b, ok := definitions[v.BuildingType]
-	if !ok || b.Item == "" || b.Fixed || b.Legacy || b.Tier > root.Simulation.Industry.Stage {
+	if !ok || !validFootprintSize(b, v.Size) || !footprintInBounds(v.X, v.Y, v.Size) || b.Item == "" || b.Fixed || b.Legacy || b.Tier > root.Simulation.Industry.Stage {
 		return false
 	}
 	if v.RecipeID != nil {
@@ -73,7 +77,7 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 	sources := 0
 	for _, world := range factories {
 		for _, actual := range world.Buildings {
-			if actual.ID == v.ID || world.ID == f.ID && actual.X == v.X && actual.Y == v.Y {
+			if actual.ID == v.ID || world.ID == f.ID && footprintOverlaps(actual.X, actual.Y, actual.Size, v.X, v.Y, v.Size) {
 				return false
 			}
 			if world.ID == f.ID && definitions[actual.BuildingType].Role == "source" {
@@ -82,17 +86,17 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 		}
 	}
 	for _, other := range root.Robots {
-		if other.Transit == nil && other.FactoryID == f.ID && other.X == v.X && other.Y == v.Y {
+		if other.Transit == nil && other.FactoryID == f.ID && footprintContains(v.X, v.Y, v.Size, other.X, other.Y) {
 			return false
 		}
-		if t := other.Transit; t != nil && t.ToFactoryID == f.ID && t.X == v.X && t.Y == v.Y {
+		if t := other.Transit; t != nil && t.ToFactoryID == f.ID && footprintContains(v.X, v.Y, v.Size, t.X, t.Y) {
 			return false
 		}
 		p := other.Construction
 		if p == nil || other.Returning != "" {
 			continue
 		}
-		if other.ID != r.ID && (p.ID == v.ID || p.FactoryID == f.ID && p.X == v.X && p.Y == v.Y) {
+		if other.ID != r.ID && (p.ID == v.ID || p.FactoryID == f.ID && footprintOverlaps(p.X, p.Y, p.Size, v.X, v.Y, v.Size)) {
 			return false
 		}
 		if p.FactoryID == f.ID && definitions[p.BuildingType].Role == "source" {

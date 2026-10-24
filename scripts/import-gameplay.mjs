@@ -112,10 +112,51 @@ const energy = (mode) =>
           : mode === "电力"
             ? "electric"
             : "none";
+const multiSizeMachines = new Set([
+  "m08",
+  "m14",
+  "m15",
+  "m19",
+  "m20",
+  "m21",
+  "m22",
+  "m23",
+  "m25",
+  "m27",
+  "m29",
+  "m31",
+  "m32",
+  "m33",
+  "m34",
+  "m35",
+  "m36",
+  "m37",
+  "m38",
+  "m39",
+  "m40",
+  "m41",
+  "m42",
+  "m43",
+  "m44",
+  "m45",
+  "m46",
+  "m47",
+  "m48",
+  "m49",
+  "m50",
+  "m51",
+  "m52",
+  "m53",
+  "m54",
+  "m55",
+]);
 const buildings = d.machines.map((m) => {
   const rs = recipes.filter((r) => r.building_type === m.code.toLowerCase());
   return {
     id: m.code.toLowerCase(),
+    ...(multiSizeMachines.has(m.code.toLowerCase())
+      ? { supported_sizes: [1, 2] }
+      : {}),
     name: m.name,
     code: m.code,
     icon: ["M09", "M21", "M28"].includes(m.code)

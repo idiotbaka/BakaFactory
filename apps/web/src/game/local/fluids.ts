@@ -1,3 +1,4 @@
+import { occupancy } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { LocalFactory } from "./state";
 import { recordFluidReceipt, recordWarehouseDelivery } from "./quests";
@@ -49,7 +50,7 @@ export function activeFluidNode(f: LocalFactory, b: BuildingInstance) {
 // so completely full closed loops rest until a real consumer makes room.
 export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
   const s = f.simulation,
-    positions = new Map(ordered.map((b) => [`${b.x},${b.y}`, b]));
+    positions = occupancy(ordered);
   const adjacent = (b: BuildingInstance, r: number, offset = 1) => {
     const [dx, dy] = direction(r);
     return positions.get(`${b.x + dx * offset},${b.y + dy * offset}`);

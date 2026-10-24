@@ -1,3 +1,4 @@
+import { supportsLargeSize, footprintSize } from "./footprint";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   ApiError,
@@ -77,6 +78,7 @@ export default function FactoryWorkspace({
   }
   const syncError = game.message;
   const [tab, setTab] = useState<"building" | "logistics" | "item">("building");
+  const [placementSize, setPlacementSize] = useState<1 | 2>(1);
   const [placementType, setPlacementType] = useState<string | null>(null);
   const [selectedInstanceID, setSelectedInstanceID] = useState<string | null>(
     null,
@@ -160,6 +162,17 @@ export default function FactoryWorkspace({
           ))
       )
         return;
+      if (
+        event.key.toLowerCase() === "e" &&
+        placementType &&
+        supportsLargeSize(
+          paletteCatalog.buildings.find((d) => d.id === placementType),
+        )
+      ) {
+        event.preventDefault();
+        setPlacementSize((size) => (size === 1 ? 2 : 1));
+        return;
+      }
       if (event.key.toLowerCase() === "f") {
         event.preventDefault();
         setImmersive((value) => !value);
@@ -181,13 +194,14 @@ export default function FactoryWorkspace({
       setSelection({ kind: "building", id: definition.id });
       setSelectedInstanceID(null);
       setSelectedRobotID(null);
+      setPlacementSize(1);
       setPlacementType((previous) =>
         previous === definition.id ? null : definition.id,
       );
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [activeFactoryID, paletteCatalog, stage]);
+  }, [activeFactoryID, paletteCatalog, stage, placementType]);
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || workspace.kind !== "ready" || activeStoryID) return;
@@ -546,71 +560,96 @@ export default function FactoryWorkspace({
                     : 0;
                 const unknown = tab === "item" && !discoveredItems.has(d.id);
                 return (
-                  <button
-                    key={d.id}
-                    className={`catalog-entry${unknown ? " is-undiscovered" : ""}`}
-                    title={
-                      tab === "item"
-                        ? unknown
-                          ? "尚未获得，可查看物品资料"
-                          : "曾经获得"
-                        : undefined
-                    }
-                    style={
-                      {
-                        "--entity-color": unknown ? "#9699aa" : entityColor(d),
-                      } as CSSProperties
-                    }
-                    aria-keyshortcuts={
-                      shortcut > 0 && shortcut <= 6
-                        ? String(shortcut)
-                        : undefined
-                    }
-                    draggable={false}
-                    onDragStart={(event) => event.preventDefault()}
-                    aria-pressed={
-                      tab !== "item"
-                        ? placementType === d.id
-                        : selection.kind === tab && selection.id === d.id
-                    }
-                    onClick={() => {
-                      setSelection({
-                        kind: tab === "item" ? "item" : "building",
-                        id: d.id,
-                      });
-                      setSelectedRobotID(null);
-                      setSelectedInstanceID(null);
-                      setPlacementType(
-                        tab !== "item" && factory
+                  <div key={d.id} className="catalog-entry-wrap">
+                    <button
+                      className={`catalog-entry${unknown ? " is-undiscovered" : ""}`}
+                      title={
+                        tab === "item"
+                          ? unknown
+                            ? "尚未获得，可查看物品资料"
+                            : "曾经获得"
+                          : undefined
+                      }
+                      style={
+                        {
+                          "--entity-color": unknown
+                            ? "#9699aa"
+                            : entityColor(d),
+                        } as CSSProperties
+                      }
+                      aria-keyshortcuts={
+                        shortcut > 0 && shortcut <= 6
+                          ? String(shortcut)
+                          : undefined
+                      }
+                      draggable={false}
+                      onDragStart={(event) => event.preventDefault()}
+                      aria-pressed={
+                        tab !== "item"
                           ? placementType === d.id
-                            ? null
-                            : d.id
-                          : null,
-                      );
-                    }}
-                  >
-                    <DefinitionIcon definition={d} />
-                    <span>
-                      <strong>{d.name}</strong>
-                      <small>
-                        {d.code} /{" "}
-                        {tab !== "item"
-                          ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
-                          : unknown
-                            ? "尚未获得"
-                            : "已获得"}
-                      </small>
-                    </span>
-                    <span className="entry-arrow" aria-hidden="true">
-                      {placementType === d.id ? (
-                        "◆"
-                      ) : shortcut > 0 && shortcut <= 6 ? (
-                        <kbd>{shortcut}</kbd>
-                      ) : (
-                        "↗"
+                          : selection.kind === tab && selection.id === d.id
+                      }
+                      onClick={() => {
+                        setPlacementSize(1);
+                        setSelection({
+                          kind: tab === "item" ? "item" : "building",
+                          id: d.id,
+                        });
+                        setSelectedRobotID(null);
+                        setSelectedInstanceID(null);
+                        setPlacementType(
+                          tab !== "item" && factory
+                            ? placementType === d.id
+                              ? null
+                              : d.id
+                            : null,
+                        );
+                      }}
+                    >
+                      <DefinitionIcon definition={d} />
+                      <span>
+                        <strong>{d.name}</strong>
+                        <small>
+                          {d.code} /{" "}
+                          {tab !== "item"
+                            ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
+                            : unknown
+                              ? "尚未获得"
+                              : "已获得"}
+                        </small>
+                      </span>
+                      {tab !== "item" &&
+                        placementType !== d.id &&
+                        supportsLargeSize(d as (typeof placeable)[number]) && (
+                          <span className="multi-size-tag">多尺寸</span>
+                        )}
+                      <span className="entry-arrow" aria-hidden="true">
+                        {placementType === d.id ? (
+                          "◆"
+                        ) : shortcut > 0 && shortcut <= 6 ? (
+                          <kbd>{shortcut}</kbd>
+                        ) : (
+                          "↗"
+                        )}
+                      </span>
+                    </button>
+                    {tab !== "item" &&
+                      placementType === d.id &&
+                      supportsLargeSize(d as (typeof placeable)[number]) && (
+                        <button
+                          type="button"
+                          className="multi-size-tag catalog-size-toggle"
+                          aria-label={`切换 ${d.name} 占地尺寸`}
+                          aria-keyshortcuts="E"
+                          title={`当前尺寸：${placementSize}×${placementSize} · E 键切换尺寸`}
+                          onClick={() =>
+                            setPlacementSize((size) => (size === 1 ? 2 : 1))
+                          }
+                        >
+                          ⇄ 切换为{placementSize === 1 ? "2x2" : "1x1"}
+                        </button>
                       )}
-                    </span>
-                  </button>
+                  </div>
                 );
               })}
               {!definitions.length && (
@@ -705,6 +744,7 @@ export default function FactoryWorkspace({
                   factory={factory}
                   commands={game.runtime!.commands}
                   catalog={catalog}
+                  placementSize={placementSize}
                   placementType={placementType}
                   onExitPlacement={() => setPlacementType(null)}
                   selectedID={selectedInstanceID}
@@ -788,6 +828,25 @@ export default function FactoryWorkspace({
                           {buildingDefinition.fixed
                             ? "中心固定"
                             : "可连续放置 / 移动"}
+                        </dd>
+                      </div>
+                    )}
+                    {buildingDefinition && (
+                      <div>
+                        <dt>支持尺寸</dt>
+                        <dd>
+                          {supportsLargeSize(buildingDefinition)
+                            ? "1×1 / 2×2"
+                            : "1×1"}
+                        </dd>
+                      </div>
+                    )}
+                    {selectedInstance && (
+                      <div>
+                        <dt>当前占地</dt>
+                        <dd>
+                          {footprintSize(selectedInstance)}×
+                          {footprintSize(selectedInstance)}
                         </dd>
                       </div>
                     )}

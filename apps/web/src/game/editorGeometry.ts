@@ -1,3 +1,4 @@
+import { containsCell, overlaps, inBounds } from "./footprint";
 import type { BuildingPlacement, FactoryDetail } from "../api/client";
 export type Cell = { x: number; y: number };
 export type Camera = { x: number; y: number; zoom: number };
@@ -61,28 +62,25 @@ export function placementIssue(
   cell: Cell | null,
   excludeID?: string,
   buildingType?: string,
+  size: 1 | 2 = 1,
 ): string | null {
   if (!cell) return "请拖入工厂地图";
+  const shape = { ...cell, size };
   if (
     factory.robots?.some(
       (r) =>
         !r.returning &&
         r.construction?.factory_id === factory.id &&
-        r.construction.x === cell.x &&
-        r.construction.y === cell.y,
+        overlaps(r.construction, shape),
     )
   )
     return "该格已预留施工蓝图";
   if (
     factory.robots?.some(
       (r) =>
-        (!r.transit &&
-          r.factory_id === factory.id &&
-          r.x === cell.x &&
-          r.y === cell.y) ||
+        (!r.transit && r.factory_id === factory.id && containsCell(shape, r)) ||
         (r.transit?.to_factory_id === factory.id &&
-          r.transit.x === cell.x &&
-          r.transit.y === cell.y),
+          containsCell(shape, r.transit)),
     )
   )
     return "该格有机器人停靠";
@@ -91,16 +89,9 @@ export function placementIssue(
     cell.y !== Math.floor(factory.height / 2)
   )
     return "垃圾提取口必须安装在顶部垃圾堆";
-  if (
-    Math.abs(cell.x) > Math.floor(factory.width / 2) ||
-    Math.abs(cell.y) > Math.floor(factory.height / 2)
-  )
+  if (!inBounds(shape, factory.width, factory.height))
     return "坐标超出工厂边界";
-  if (
-    factory.buildings.some(
-      (b) => b.x === cell.x && b.y === cell.y && b.id !== excludeID,
-    )
-  )
+  if (factory.buildings.some((b) => overlaps(b, shape) && b.id !== excludeID))
     return "目标格子已被占用";
   return null;
 }

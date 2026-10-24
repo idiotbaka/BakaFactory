@@ -1,3 +1,9 @@
+import {
+  occupancy,
+  containsCell,
+  perimeterCells,
+  type Footprint,
+} from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import type { BuildingInstance } from "../../api/client";
@@ -55,6 +61,7 @@ export function plannedBuildings(
       x: r.construction!.x,
       y: r.construction!.y,
       rotation: r.construction!.rotation,
+      size: r.construction!.size,
       configuration: {},
     }));
 }
@@ -94,7 +101,7 @@ export function emptyCell(f: LocalFactory, p: { x: number; y: number }) {
   return (
     Math.abs(p.x) <= 10 &&
     Math.abs(p.y) <= 10 &&
-    !f.buildings.some((b) => b.x === p.x && b.y === p.y)
+    !f.buildings.some((b) => containsCell(b, p))
   );
 }
 // BFS uses empty ground only. An optional occupancy set handles live collision;
@@ -102,14 +109,14 @@ export function emptyCell(f: LocalFactory, p: { x: number; y: number }) {
 function path(
   f: LocalFactory,
   from: Point,
-  target: { x: number; y: number },
+  target: Footprint,
   occupied?: Set<string>,
   dock?: (p: { x: number; y: number }) => boolean,
 ) {
-  const blocked = new Set(f.buildings.map((b) => `${b.x},${b.y}`));
+  const blocked = new Set(occupancy(f.buildings).keys());
   const key = (p: { x: number; y: number }) => `${p.x},${p.y}`;
   const goals = new Set(
-    adjacentCells(target)
+    perimeterCells(target)
       .filter(
         (p) =>
           Math.abs(p.x) <= 10 &&
@@ -155,7 +162,7 @@ export function journey(
   target: Endpoint,
   occupied?: Set<string>,
   dock?: (p: { x: number; y: number }) => boolean,
-  site?: { x: number; y: number },
+  site?: Footprint,
 ): Journey | undefined {
   const sourceRaw = worldIndex(root).byID.get(from.factory_id),
     destRaw = worldIndex(root).byID.get(target.factory_id),

@@ -1,3 +1,4 @@
+import { footprintCells, inBounds, overlaps, validSize } from "../footprint";
 import type {
   BuildingInstance,
   BuildingPlacement,
@@ -164,9 +165,17 @@ export function validateSave(value: unknown, owner: string): LocalFactory {
       !object(b.configuration)
     )
       return fail();
-    const cell = `${b.x},${b.y}`;
-    if (cells.has(cell)) return fail();
-    cells.add(cell);
+    const shape = b as unknown as BuildingInstance;
+    if (
+      !validSize(buildingDefinitions.get(shape.building_type)!, b.size) ||
+      !inBounds(shape)
+    )
+      return fail();
+    for (const p of footprintCells(shape)) {
+      const cell = `${p.x},${p.y}`;
+      if (cells.has(cell)) return fail();
+      cells.add(cell);
+    }
     ids.add(b.id);
     if (b.building_type === "bus") {
       buses++;
@@ -508,8 +517,13 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
     if (
       f.buildings.some(
         (b) =>
-          b.x === p.x &&
-          b.y === p.y &&
+          overlaps(b, {
+            ...p,
+            size:
+              edit.kind === "move"
+                ? (f.buildings.find((b) => b.id === edit.id)?.size ?? 1)
+                : p.size,
+          }) &&
           (edit.kind === "place" || b.id !== edit.id),
       )
     )
@@ -537,6 +551,12 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
         edit.placement.y !== 10
       )
         throw new Error("垃圾提取口必须保持在地图顶部垃圾堆");
+      const size = b.size ?? 1;
+      if (
+        (edit.placement.size !== undefined && edit.placement.size !== size) ||
+        !inBounds({ ...edit.placement, size })
+      )
+        throw new Error("移动须保留尺寸且不得超出边界");
       Object.assign(b, edit.placement);
     } else {
       const m = f.simulation.buildings[b.id];

@@ -466,3 +466,83 @@ func TestCloudSaveInputOriginAndFormatBoundaries(t *testing.T) {
 		}
 	}
 }
+
+// Pure validation / JSON fixtures; no persistent database or live services.
+func TestMultiCellSaveValidation(t *testing.T) {
+	c, err := catalog.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	two := 2
+	makeSave := func() domain.GameSave {
+		s := sampleSave("footprint-owner")
+		s.Factory.Buildings = append(s.Factory.Buildings, domain.BuildingInstance{ID: "large", FactoryID: s.Factory.ID, BuildingType: "m08", X: 4, Y: 4, Size: &two, Configuration: json.RawMessage(`{}`)})
+		s.Factory.Simulation.Buildings["large"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle"}
+		return s
+	}
+	s := makeSave()
+	if err := s.Validate("footprint-owner", c); err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var roundTrip domain.GameSave
+	if err := json.Unmarshal(data, &roundTrip); err != nil {
+		t.Fatal(err)
+	}
+	if err := roundTrip.Validate("footprint-owner", c); err != nil {
+		t.Fatal(err)
+	}
+	if roundTrip.Factory.Buildings[1].Size == nil || *roundTrip.Factory.Buildings[1].Size != 2 {
+		t.Fatal("large footprint lost")
+	}
+	legacy := makeSave()
+	legacy.Factory.Buildings[1].Size = nil
+	if err := legacy.Validate("footprint-owner", c); err != nil {
+		t.Fatal(err)
+	}
+	for _, n := range []int{0, 3, -1} {
+		bad := makeSave()
+		bad.Factory.Buildings[1].Size = &n
+		if bad.Validate("footprint-owner", c) == nil {
+			t.Fatalf("accepted size %d", n)
+		}
+	}
+	for _, kind := range []string{"bus", "m03", "hand_belt"} {
+		bad := makeSave()
+		bad.Factory.Buildings[1].BuildingType = kind
+		if bad.Validate("footprint-owner", c) == nil {
+			t.Fatalf("accepted unsupported type %s", kind)
+		}
+	}
+	for _, pos := range [][2]int{{10, 4}, {4, -10}, {11, 4}, {4, -11}} {
+		bad := makeSave()
+		bad.Factory.Buildings[1].X = pos[0]
+		bad.Factory.Buildings[1].Y = pos[1]
+		if bad.Validate("footprint-owner", c) == nil {
+			t.Fatal("accepted partial out of bounds")
+		}
+	}
+	for _, pos := range [][2]int{{4, 4}, {5, 4}, {4, 3}, {5, 3}} {
+		for _, reverse := range []bool{false, true} {
+			bad := makeSave()
+			small := domain.BuildingInstance{ID: "overlap", FactoryID: bad.Factory.ID, BuildingType: "hand_belt", X: pos[0], Y: pos[1], Configuration: json.RawMessage(`{}`)}
+			bad.Factory.Buildings = append(bad.Factory.Buildings, small)
+			bad.Factory.Simulation.Buildings[small.ID] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle"}
+			if reverse {
+				bad.Factory.Buildings[1], bad.Factory.Buildings[2] = bad.Factory.Buildings[2], bad.Factory.Buildings[1]
+			}
+			if bad.Validate("footprint-owner", c) == nil {
+				t.Fatal("accepted covered footprint cell")
+			}
+		}
+	}
+	for _, replacement := range []string{`"size":null`, `"size":1.5`, `"size":2,"unknown_footprint":true`} {
+		var bad domain.GameSave
+		if json.Unmarshal([]byte(strings.Replace(string(data), `"size":2`, replacement, 1)), &bad) == nil {
+			t.Fatalf("accepted invalid JSON %s", replacement)
+		}
+	}
+}

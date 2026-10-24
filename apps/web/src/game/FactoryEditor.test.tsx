@@ -259,7 +259,13 @@ describe("factory editor interactions", () => {
     const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
     fireEvent.contextMenu(bus, { ...point(0, 0), button: 2 });
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-    expect(screen.getByText(/连续放置 采矿机 · 90°/)).toBeInTheDocument();
+    expect(screen.getByText(/连续放置 采矿机 · 1×1 · 90°/)).toBeInTheDocument();
+    expect(document.querySelector(".drag-ghost")).toHaveTextContent(
+      "当前尺寸：1×1",
+    );
+    expect(document.querySelector(".drag-ghost")).not.toHaveTextContent(
+      "E 键切换尺寸",
+    );
     fireEvent.click(bus);
     expect(placeBuilding).not.toHaveBeenCalled();
     expect(errors).toHaveBeenCalledWith(
@@ -509,5 +515,96 @@ describe("factory editor interactions", () => {
     expect(
       screen.queryByRole("button", { name: "采矿机 MIN (1,1)" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+it("previews four cells and places a 2×2 machine with the clicked top-left anchor", async () => {
+  placeBuilding.mockResolvedValue(original);
+  render(
+    <FactoryEditor
+      commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+      factory={original}
+      catalog={catalog}
+      selectedID={null}
+      placementType="m08"
+      placementSize={2}
+      onExitPlacement={vi.fn()}
+      onSelect={vi.fn()}
+      onChange={vi.fn()}
+      onError={vi.fn()}
+    />,
+  );
+  fireEvent.pointerMove(area(), point(4, 4));
+  expect(document.querySelectorAll(".drop-valid")).toHaveLength(4);
+  expect(
+    screen.getByText(/左键建造 \/ 右键旋转 \/ E 键切换尺寸 \/ Esc 退出/),
+  ).toBeInTheDocument();
+  expect(document.querySelector(".drag-ghost")).toHaveTextContent(
+    "当前尺寸：2×2",
+  );
+  expect(document.querySelector(".drag-ghost")).toHaveTextContent(
+    "E 键切换尺寸",
+  );
+  expect(
+    document.querySelector<HTMLElement>(".tile-preview")!.style.width,
+  ).toBe("60px");
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "空格 (4,4)" }));
+  });
+  expect(placeBuilding).toHaveBeenCalledWith(original.id, "m08", {
+    x: 4,
+    y: 4,
+    rotation: 0,
+    size: 2,
+  });
+});
+it("renders one facade and retains the grab offset when moving from a covered footprint cell", async () => {
+  vi.useFakeTimers();
+  const large = {
+    ...original,
+    buildings: [
+      ...original.buildings,
+      {
+        id: "large",
+        factory_id: original.id,
+        building_type: "m08",
+        x: 4,
+        y: 4,
+        size: 2 as const,
+        rotation: 0 as const,
+        configuration: { recipe_id: "r1036" },
+      },
+    ],
+  };
+  const onChange = vi.fn();
+  updateBuilding.mockResolvedValue(large);
+  render(
+    <FactoryEditor
+      commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+      factory={large}
+      catalog={catalog}
+      selectedID="large"
+      placementType={null}
+      onExitPlacement={vi.fn()}
+      onSelect={vi.fn()}
+      onChange={onChange}
+      onError={vi.fn()}
+    />,
+  );
+  expect(
+    document.querySelectorAll('.building-map-visual[data-building-id="m08"]'),
+  ).toHaveLength(1);
+  const covered = screen.getByRole("button", { name: "手工装配台 M08 (5,3)" });
+  fireEvent.pointerDown(covered, { ...point(5, 3), button: 0 });
+  act(() => vi.advanceTimersByTime(50));
+  fireEvent.pointerMove(window, point(7, 5));
+  await act(async () => {
+    fireEvent.pointerUp(window, { ...point(7, 5), button: 0, buttons: 0 });
+  });
+  expect(updateBuilding).toHaveBeenCalledWith(original.id, "large", {
+    x: 6,
+    y: 6,
+    rotation: 0,
+    size: 2,
   });
 });

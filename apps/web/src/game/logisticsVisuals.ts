@@ -1,3 +1,4 @@
+import { containsCell } from "./footprint";
 import type {
   BuildingInstance,
   FactoryDetail,
@@ -98,8 +99,7 @@ function matches(a: BuildingInstance | undefined, b: TransferEndpoint) {
   return (
     a?.id === b.id &&
     a.building_type === b.building_type &&
-    a.x === b.x &&
-    a.y === b.y &&
+    containsCell(a, b) &&
     a.rotation === b.rotation
   );
 }
@@ -147,8 +147,12 @@ export class LogisticsVisualStore {
       factory.buildings
         .filter(
           (b) =>
+            b.x !== oldBuildings.get(b.id)?.x ||
+            b.y !== oldBuildings.get(b.id)?.y ||
+            b.size !== oldBuildings.get(b.id)?.size ||
+            b.rotation !== oldBuildings.get(b.id)?.rotation ||
             JSON.stringify(b.configuration) !==
-            JSON.stringify(oldBuildings.get(b.id)?.configuration),
+              JSON.stringify(oldBuildings.get(b.id)?.configuration),
         )
         .map((b) => b.id),
     );

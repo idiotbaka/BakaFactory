@@ -7,19 +7,24 @@ import (
 )
 
 type BuildingPlacement struct {
-	X        int `json:"x"`
-	Y        int `json:"y"`
-	Rotation int `json:"rotation"`
+	Size     *int `json:"size,omitempty"`
+	X        int  `json:"x"`
+	Y        int  `json:"y"`
+	Rotation int  `json:"rotation"`
 }
 
 func (p BuildingPlacement) Validate() error {
+	if p.Size != nil && *p.Size != 1 && *p.Size != 2 {
+		return fmt.Errorf("%w: 占地尺寸必须为 1 或 2", ErrValidation)
+	}
 	if p.Rotation != 0 && p.Rotation != 90 && p.Rotation != 180 && p.Rotation != 270 {
 		return fmt.Errorf("%w: 旋转角度必须为 0、90、180 或 270", ErrValidation)
 	}
 	return nil
 }
 func (f Factory) Contains(p BuildingPlacement) bool {
-	return p.X >= -f.Width/2 && p.X <= f.Width/2 && p.Y >= -f.Height/2 && p.Y <= f.Height/2
+	n := footprintSize(p.Size)
+	return p.X >= -f.Width/2 && p.X <= f.Width/2-n+1 && p.Y >= -f.Height/2+n-1 && p.Y <= f.Height/2
 }
 
 const InitialFactorySize = 21
@@ -34,6 +39,7 @@ type Factory struct {
 	Revision  int64  `json:"revision"`
 }
 type BuildingInstance struct {
+	Size          *int            `json:"size,omitempty"`
 	ID            string          `json:"id"`
 	FactoryID     string          `json:"factory_id"`
 	BuildingType  string          `json:"building_type"`
@@ -67,8 +73,9 @@ type ItemDefinition struct {
 	UsedBy        []string `json:"used_by,omitempty"`
 }
 type BuildingDefinition struct {
-	StationCapacityKJ int `json:"station_capacity_kj,omitempty"`
-	StationTransferKW int `json:"station_transfer_kw,omitempty"`
+	SupportedSizes    []int `json:"supported_sizes,omitempty"`
+	StationCapacityKJ int   `json:"station_capacity_kj,omitempty"`
+	StationTransferKW int   `json:"station_transfer_kw,omitempty"`
 	Definition
 	Category       string   `json:"category"`
 	Fixed          bool     `json:"fixed"`
@@ -145,6 +152,9 @@ func (c Catalog) Validate() error {
 		items[d.ID] = true
 	}
 	for _, d := range c.Buildings {
+		if len(d.SupportedSizes) != 0 && (len(d.SupportedSizes) != 2 || d.SupportedSizes[0] != 1 || d.SupportedSizes[1] != 2 || d.Fixed || d.Category != "machine") {
+			return fmt.Errorf("invalid supported sizes: %s", d.ID)
+		}
 		if !validate(d.Definition) || buildings[d.ID] || (d.Category != "machine" && d.Category != "logistics") || d.Fixed != (d.ID == "bus") {
 			return fmt.Errorf("invalid or duplicate building: %s", d.ID)
 		}

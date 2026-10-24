@@ -140,7 +140,7 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 			return false
 		}
 		for _, b := range dest.Buildings {
-			if b.X == t.X && b.Y == t.Y {
+			if footprintContains(b.X, b.Y, b.Size, t.X, t.Y) {
 				return false
 			}
 		}

@@ -52,7 +52,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 	buses := 0
 	for _, b := range f.Buildings {
 		cell := [2]int{b.X, b.Y}
-		if b.ID == "" || len(b.ID) > 128 || ids[b.ID] || cells[cell] || b.FactoryID != f.ID || !definitions[b.BuildingType] || !f.Contains(BuildingPlacement{X: b.X, Y: b.Y}) || (b.Rotation != 0 && b.Rotation != 90 && b.Rotation != 180 && b.Rotation != 270) {
+		if b.ID == "" || len(b.ID) > 128 || ids[b.ID] || cells[cell] || b.FactoryID != f.ID || !definitions[b.BuildingType] || !validFootprintSize(limits[b.BuildingType], b.Size) || !footprintInBounds(b.X, b.Y, b.Size) || !f.Contains(BuildingPlacement{X: b.X, Y: b.Y}) || (b.Rotation != 0 && b.Rotation != 90 && b.Rotation != 180 && b.Rotation != 270) {
 			return bad()
 		}
 		if b.BuildingType == "bus" {
@@ -158,7 +158,15 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			return bad()
 		}
 		ids[b.ID] = true
-		cells[cell] = true
+		for dx := 0; dx < footprintSize(b.Size); dx++ {
+			for dy := 0; dy < footprintSize(b.Size); dy++ {
+				occupied := [2]int{b.X + dx, b.Y - dy}
+				if cells[occupied] {
+					return bad()
+				}
+				cells[occupied] = true
+			}
+		}
 	}
 	sim := f.Simulation
 	if buses != 1 || sim.TickRate != 1 || sim.Tick > MaxSafeInteger || len(sim.Buildings) != len(ids) || sim.Warehouse == nil || sim.Transfers == nil || len(sim.Transfers) > 3*len(ids) {

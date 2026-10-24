@@ -1,3 +1,4 @@
+import { footprintSize, type Footprint } from "./footprint";
 import type { BuildingDefinition, FactoryDetail } from "../api/client";
 import { isLogisticsBuilding } from "./catalogPresentation";
 import {
@@ -24,19 +25,21 @@ export function machineMapName(
 export function machineNamePosition(
   factory: Pick<FactoryDetail, "width" | "height">,
   camera: Camera,
-  cell: Cell,
+  cell: Cell & Partial<Footprint>,
 ) {
   return {
     left:
       camera.x +
       (GRID_INSET +
-        (cell.x + Math.floor(factory.width / 2) + 0.5) * TILE_SIZE) *
+        (cell.x + Math.floor(factory.width / 2) + footprintSize(cell) / 2) *
+          TILE_SIZE) *
         camera.zoom,
     top:
       camera.y +
       (GRID_INSET +
-        (Math.floor(factory.height / 2) - cell.y + 0.72) * TILE_SIZE) *
+        (Math.floor(factory.height / 2) - cell.y + footprintSize(cell) * 0.72) *
+          TILE_SIZE) *
         camera.zoom,
-    width: TILE_SIZE * camera.zoom - 4,
+    width: TILE_SIZE * footprintSize(cell) * camera.zoom - 4,
   };
 }
