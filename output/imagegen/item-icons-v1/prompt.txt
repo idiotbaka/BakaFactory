@@ -1,0 +1,27 @@
+Use case: stylized-concept
+Asset type: a SINGLE production inventory sprite atlas for BakaFactory, a Japanese RPG inspired vaporwave cyberpunk factory crafting game.
+Primary request: exactly SIXTEEN different identifiable inventory item sprites in a strict uniform 4 columns x 4 rows grid. No other objects. Transparent alpha background. The sheet is square, ideally 1024x1024, with each cell exactly one quarter the width and height. No grid lines, labels, typography, card panels, badges, frames, floor shadows, glow clouds, or watermarks.
+Style/medium: genuine low-resolution hand-placed 32x32 pixel art aesthetic, crisp chunky square pixels, SNES / Japanese RPG inventory sprite craftsmanship. Treat the whole sheet as a 128x128 logical pixel canvas scaled up by nearest-neighbor. Each logical 32x32 cell has 3 empty pixels on every edge; each object occupies at most 26x26 logical pixels. Large deliberate clusters and clear silhouette, not detailed high-resolution drawings passed through a pixel filter. No anti-aliasing, no smooth gradients, no blur. Consistent three-quarter view, upper-left highlights, 3 tone ramps, clean dark navy inner contours, physical material identity and colorful highlights.
+Palette: night navy #15162b shadows, steel lavender, pale cream highlights, vivid pink #ff62cb and bright cyan #46eff2 accents. Preserve distinct copper, dirty cloth, steel, glass, and circuit materials rather than tinting every object identically. Every object has a continuous thin stepped outline in its assigned stage color, following the OBJECT silhouette, never a square border around the cell. Exact stage colors: P1 #ffc879, P2 #a5d4b2, P3 #74edce, P4 #46eff2, P5 #b69aff, P6 #ff72cf.
+Placement: every sprite centered in its own identical cell, full object visible, no overlap, transparent whitespace gutters at every cell boundary. Consistent large readable scale. Silhouette must work when reduced to 32x32.
+ROW 1, left to right (all P1 amber #ffc879 outlines):
+1. tied scavenged garbage bag: a bulky crumpled charcoal-purple sack, unmistakable tied neck, cyan scrap corner sticking out and a small pink patch; not a generic backpack.
+2. iron scrap fragments: three jagged irregular bent gray steel shards in a compact asymmetric pile, bright cyan cut edges, one rusty patch; unmistakably broken metal, not rock crystals.
+3. discarded copper wire: loose tangled open loops of warm copper wire with two stripped cyan/pink insulation ends; unmistakably wire coil, not a gear.
+4. simple gear: one chunky brass and dark steel cog, six to eight big square teeth, clearly open circular axle hole, pink/cyan glints; not a disc.
+ROW 2, left to right:
+5. P2 #a5d4b2 steam pressure gauge: round ivory gauge face with a clearly angled red needle, brass rim and short threaded pipe stem, no readable numbers.
+6. P2 #a5d4b2 clockwork hauling cart: squat tiny industrial four-wheel brass delivery cart, open cargo tray, conspicuous winding key, cyan lamps, pink trim; not a humanoid.
+7. P3 #74edce hydraulic working fluid: a squat angular clear glass oil flask with a narrow sealed neck, blue-purple liquid visibly contained and a small pink mechanical cap; the flask is solely an inventory symbol, no text.
+8. P3 #74edce hydraulic cylinder: diagonal steel piston cylinder, distinct long polished rod and round eyelet at each end, cyan body and pink seal.
+ROW 3, left to right:
+9. P4 #46eff2 insulated cable: a thick coiled magenta insulated power cable with a separate conspicuous blue industrial plug and copper contact tips, clearly different from row1 copper scrap.
+10. P4 #46eff2 battery module: upright rectangular compact battery with two raised terminals, divided cyan cell windows and a bright pink lightning-shaped marking drawn as a symbol.
+11. P5 #b69aff silicon wafer: a single tilted reflective lavender circular silicon wafer with flat notch and big cyan-magenta rectilinear die grid, no holder.
+12. P5 #b69aff general processor: a square navy CPU chip at three-quarter angle, large visible silver pin combs on four sides, vivid pink core with cyan traces, visually different from the round wafer.
+ROW 4, left to right (all P6 pink #ff72cf outlines):
+13. deployable cognitive core: a faceted transparent cyan prism capsule with a luminous magenta neural lattice inside, small dark mechanical cradle, clear diamond-like silhouette.
+14. dexterous robotic hand: one upright five-finger articulated silver cybernetic hand with separated fingers, cyan joint highlights and pink palm circuit, short wrist connector; no human skin.
+15. humanoid robotic head component: detached white/lavender rounded rectangular android head with cyan visor, two simple pink pixels for eyes, dark side earpieces and visible short neck plug.
+16. intelligent robot: complete small friendly upright biped robot, white armor, cyan visor, pink chest core, clear separated arms and feet, unmistakable whole body silhouette rather than another head.
+Constraints: EXACTLY 4x4 sprites in this exact reading order. Pixel art only. No lettering anywhere. Use genuine transparent alpha and leave all space between objects empty. No cast shadows. Design all sixteen with strong different shapes.

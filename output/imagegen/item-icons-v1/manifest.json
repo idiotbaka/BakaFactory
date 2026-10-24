@@ -1,0 +1,196 @@
+{
+  "status": "sample-awaiting-user-review",
+  "generator": "built-in image_gen",
+  "source": "source-sheet.png",
+  "prompt": "prompt.txt",
+  "size": [32, 32],
+  "atlas": "atlas-32.png",
+  "grid": [4, 4],
+  "items": [
+    {
+      "id": "i0001",
+      "name": "垃圾包",
+      "stage": 1,
+      "outline": "#ffc879",
+      "file": "icons32/i0001.png",
+      "row": 0,
+      "column": 0,
+      "source_cell": [0, 0, 314, 314],
+      "source_content_bounds": [38, 39, 290, 291]
+    },
+    {
+      "id": "i0002",
+      "name": "铁质碎片",
+      "stage": 1,
+      "outline": "#ffc879",
+      "file": "icons32/i0002.png",
+      "row": 0,
+      "column": 1,
+      "source_cell": [314, 0, 627, 314],
+      "source_content_bounds": [34, 73, 292, 286]
+    },
+    {
+      "id": "i0004",
+      "name": "废铜线",
+      "stage": 1,
+      "outline": "#ffc879",
+      "file": "icons32/i0004.png",
+      "row": 0,
+      "column": 2,
+      "source_cell": [627, 0, 940, 314],
+      "source_content_bounds": [19, 70, 289, 287]
+    },
+    {
+      "id": "i0049",
+      "name": "简易齿轮",
+      "stage": 1,
+      "outline": "#ffc879",
+      "file": "icons32/i0049.png",
+      "row": 0,
+      "column": 3,
+      "source_cell": [940, 0, 1254, 314],
+      "source_content_bounds": [35, 48, 277, 287]
+    },
+    {
+      "id": "i0110",
+      "name": "蒸汽压力表",
+      "stage": 2,
+      "outline": "#a5d4b2",
+      "file": "icons32/i0110.png",
+      "row": 1,
+      "column": 0,
+      "source_cell": [0, 314, 314, 627],
+      "source_content_bounds": [59, 24, 267, 295]
+    },
+    {
+      "id": "i0108",
+      "name": "发条搬运车",
+      "stage": 2,
+      "outline": "#a5d4b2",
+      "file": "icons32/i0108.png",
+      "row": 1,
+      "column": 1,
+      "source_cell": [314, 314, 627, 627],
+      "source_content_bounds": [20, 17, 312, 291]
+    },
+    {
+      "id": "i0139",
+      "name": "液压工作液",
+      "stage": 3,
+      "outline": "#74edce",
+      "file": "icons32/i0139.png",
+      "row": 1,
+      "column": 2,
+      "source_cell": [627, 314, 940, 627],
+      "source_content_bounds": [46, 22, 255, 293]
+    },
+    {
+      "id": "i0146",
+      "name": "液压缸",
+      "stage": 3,
+      "outline": "#74edce",
+      "file": "icons32/i0146.png",
+      "row": 1,
+      "column": 3,
+      "source_cell": [940, 314, 1254, 627],
+      "source_content_bounds": [13, 19, 285, 291]
+    },
+    {
+      "id": "i0192",
+      "name": "绝缘线缆",
+      "stage": 4,
+      "outline": "#46eff2",
+      "file": "icons32/i0192.png",
+      "row": 2,
+      "column": 0,
+      "source_cell": [0, 627, 314, 940],
+      "source_content_bounds": [28, 32, 310, 279]
+    },
+    {
+      "id": "i0213",
+      "name": "电池模组",
+      "stage": 4,
+      "outline": "#46eff2",
+      "file": "icons32/i0213.png",
+      "row": 2,
+      "column": 1,
+      "source_cell": [314, 627, 627, 940],
+      "source_content_bounds": [55, 15, 266, 279]
+    },
+    {
+      "id": "i0248",
+      "name": "硅晶圆",
+      "stage": 5,
+      "outline": "#b69aff",
+      "file": "icons32/i0248.png",
+      "row": 2,
+      "column": 2,
+      "source_cell": [627, 627, 940, 940],
+      "source_content_bounds": [16, 30, 284, 275]
+    },
+    {
+      "id": "i0264",
+      "name": "通用处理器",
+      "stage": 5,
+      "outline": "#b69aff",
+      "file": "icons32/i0264.png",
+      "row": 2,
+      "column": 3,
+      "source_cell": [940, 627, 1254, 940],
+      "source_content_bounds": [11, 20, 289, 267]
+    },
+    {
+      "id": "i0328",
+      "name": "可部署认知核心",
+      "stage": 6,
+      "outline": "#ff72cf",
+      "file": "icons32/i0328.png",
+      "row": 3,
+      "column": 0,
+      "source_cell": [0, 940, 314, 1254],
+      "source_content_bounds": [54, 0, 282, 276]
+    },
+    {
+      "id": "i0331",
+      "name": "灵巧操作手",
+      "stage": 6,
+      "outline": "#ff72cf",
+      "file": "icons32/i0331.png",
+      "row": 3,
+      "column": 1,
+      "source_cell": [314, 940, 627, 1254],
+      "source_content_bounds": [43, 0, 253, 276]
+    },
+    {
+      "id": "i0334",
+      "name": "仿生头部组件",
+      "stage": 6,
+      "outline": "#ff72cf",
+      "file": "icons32/i0334.png",
+      "row": 3,
+      "column": 2,
+      "source_cell": [627, 940, 940, 1254],
+      "source_content_bounds": [19, 2, 279, 269]
+    },
+    {
+      "id": "i0341",
+      "name": "智能机器人",
+      "stage": 6,
+      "outline": "#ff72cf",
+      "file": "icons32/i0341.png",
+      "row": 3,
+      "column": 3,
+      "source_cell": [940, 940, 1254, 1254],
+      "source_content_bounds": [35, 0, 265, 276]
+    }
+  ],
+  "processing": {
+    "source_alpha_threshold": 220,
+    "fit_body_max": 26,
+    "sampling": "BOX then 24-color quantization, no dithering",
+    "final_alpha": [0, 255],
+    "outline_width_px": 1,
+    "outline_source": "item.color from catalog; outline follows silhouette",
+    "preview_upscale": "nearest-neighbor"
+  }
+}

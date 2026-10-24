@@ -18,6 +18,8 @@ import {
 import { useSimulationFrame } from "./SimulationAnimation";
 import { entityColor } from "./entityTheme";
 import { beltTicks } from "./local/catalog";
+import ItemSprite from "./ItemSprite";
+import { itemSpriteURL } from "./itemSprites";
 
 type Track = Motion & {
   building: TransferEndpoint;
@@ -41,6 +43,7 @@ function ItemVisual({
   const element = useRef<HTMLSpanElement>(null);
   const track = useRef<Track | null>(null);
   const item = catalog.items.find((d) => d.id === visual.item);
+  const sprite = itemSpriteURL(visual.item);
   const { belt, transfer } = visual;
   const building = belt?.building ?? transfer!.source;
   const ends = beltEnds(building, width, height);
@@ -143,7 +146,7 @@ function ItemVisual({
   return (
     <span
       ref={element}
-      className="conveyor-payload"
+      className={`conveyor-payload${sprite ? " has-item-sprite" : ""}`}
       aria-hidden="true"
       style={
         {
@@ -152,17 +155,21 @@ function ItemVisual({
         } as CSSProperties
       }
     >
-      <svg viewBox="0 0 12 10" aria-hidden="true">
-        <path
-          d={
-            visual.item === "iron_plate"
-              ? "M2 3 7 1l3 2-5 2zM2 5l3 2 5-2M2 7l3 2 5-2"
-              : visual.item === "gear"
-                ? "m4 1 4 0 3 4-3 4H4L1 5zM6 3v4M4 5h4"
-                : "m2 7 1-5 4-1 3 5-4 3zM3 2l3 3 4 1M6 5v4"
-          }
-        />
-      </svg>
+      {sprite ? (
+        <ItemSprite id={visual.item} />
+      ) : (
+        <svg viewBox="0 0 12 10" aria-hidden="true">
+          <path
+            d={
+              visual.item === "iron_plate"
+                ? "M2 3 7 1l3 2-5 2zM2 5l3 2 5-2M2 7l3 2 5-2"
+                : visual.item === "gear"
+                  ? "m4 1 4 0 3 4-3 4H4L1 5zM6 3v4M4 5h4"
+                  : "m2 7 1-5 4-1 3 5-4 3zM3 2l3 3 4 1M6 5v4"
+            }
+          />
+        </svg>
+      )}
     </span>
   );
 }

@@ -1,0 +1,71 @@
+Create ONE sprite atlas for BakaFactory in authentic 1990s SEGA Mega Drive / Super Famicom Japanese RPG inventory pixel art, matching the supplied visual STYLE REFERENCE only.
+CRITICAL COMPOSITION: EXACTLY EIGHT columns and EIGHT rows, 64 equal square cells. Prefer 2048x2048 output. Treat the sheet as a REAL 256x256 LOGICAL PIXEL canvas enlarged with nearest neighbor. Every cell is 32x32 logical pixels; each sprite fits in its central 24x24 pixels with FOUR empty logical pixels on every side. All 64 cell centers are on a perfectly regular grid. No item may overlap its cell or neighbor. Unused cells MUST stay completely EMPTY.
+Each object must be drawn as a genuine tiny 16-bit console sprite: big solid square pixels, consistent pixel grid, simple unique silhouette, broad flat color clusters, maximum 6-12 colors per item, two shadows per material, one crisp dark navy/black pixel contour. NO tiny lines or microdetails. No fine circuit grids, no dozens of bolts, no realistic glints, no gradients, no smooth lighting, no painterly texture, no anti-aliasing, no bloom, no blur, no dithering. The asset must remain readable at native 32x32. Radically simplify.
+Palette: dark navy/black contours, slate/lavender metal, warm cream highlights, vivid pink and bright cyan accents. Copper remains warm orange; glass/liquid identifiable by shape. Different items need different shapes and features, NOT identical templates recolored.
+ALL background and gutters TRANSPARENT alpha. NO stage-colored outlines, NO halos, NO floor shadows. NO labels, NO numbers, NO letters, NO text, NO UI panels, NO cell borders or guide lines. Reference is for pixel style and material treatment, NOT for repeating the same objects. Use the exact new object list below. Each listed item appears ONCE in its specified cell.
+
+OBJECTS IN STRICT ROW-MAJOR ORDER:
+Row 1, column 1: industrial mechanical screening machine with mesh tray.
+Row 1, column 2: pile of rich green circuit board fragments.
+Row 1, column 3: white quartz sand mound with cyan grains.
+Row 1, column 4: compact mechanical stamping press with upper die.
+Row 1, column 5: three clean flat steel plates.
+Row 1, column 6: small triangular metal offcuts.
+Row 1, column 7: pale blue aluminum alloy plate.
+Row 1, column 8: rolled warm copper foil ribbon.
+Row 2, column 1: three hexagonal bolts and nuts.
+Row 2, column 2: sealed square steel housing with rim.
+Row 2, column 3: compact mechanical lathe with spindle.
+Row 2, column 4: polished stepped drive shaft.
+Row 2, column 5: round bearing with visible inner ring.
+Row 2, column 6: bolted triangular frame connector bracket.
+Row 2, column 7: small terminal block with three copper posts.
+Row 2, column 8: precise steel gear with many clear teeth.
+Row 3, column 1: small high-temperature casting furnace with crucible.
+Row 3, column 2: rectangular dark alloy steel billet.
+Row 3, column 3: warm copper-aluminum alloy billet.
+Row 3, column 4: glossy cyan high-temperature glass slab.
+Row 3, column 5: gray slag cement sack with simple block emblem.
+Row 3, column 6: compact steam boiler with smokestack and pipe.
+Row 3, column 7: clear blue water flask.
+Row 3, column 8: small brown filter cake.
+Row 4, column 1: white steam puff with cyan curls.
+Row 4, column 2: mechanical assembly line bench with paired arms.
+Row 4, column 3: thick dark industrial steel plate.
+Row 4, column 4: pair of meshing standard gears.
+Row 4, column 5: rounded pressure vessel with two pipe stubs.
+Row 4, column 6: lightweight four-wheel empty chassis.
+Row 4, column 7: rough tan insulation panel.
+Row 4, column 8: short brass pneumatic cylinder with hose.
+Row 5, column 1: compact twin-gear pulverizer.
+Row 5, column 2: small mound of bright white quartz powder.
+Row 5, column 3: coarse brown tailings mound.
+Row 5, column 4: cool slate nickel-cobalt powder pile.
+Row 5, column 5: soft silver tin-lead powder pile.
+Row 5, column 6: irregular dark impurity clump.
+Row 5, column 7: warm orange copper powder mound.
+Row 5, column 8: purple metallic electronic dust.
+Row 6, column 1: small mound of purple cathode powder.
+Row 6, column 2: black negative-electrode carbon powder mound.
+Row 6, column 3: T-shaped mechanical conveyor splitter.
+Row 6, column 4: small brass robot charging dock with winding post.
+Row 6, column 5: squat wind-up hauling cart with cargo tray.
+Row 6, column 6: small red mechanical alarm bell with gear.
+Row 6, column 7: round steam pressure gauge with clear needle.
+Row 6, column 8: short blue steam pressure tank with valve.
+Row 7, column 1: closed hydraulic industrial kit case with pipe emblem.
+Row 7, column 2: small rotary kiln drum with short furnace.
+Row 7, column 3: brick-red calcined mineral powder.
+Row 7, column 4: gray exhaust gas cloud with two curls.
+Row 7, column 5: porous activated black carbon residue.
+Row 7, column 6: square ivory ceramic substrate.
+Row 7, column 7: small pile of pale heat-resistant packing rings.
+Row 7, column 8: solid gray building block with two holes.
+Row 8, column 1: short industrial mechanical conveyor belt segment.
+Row 8, column 2: long precision high-speed shaft with two collars.
+Row 8, column 3: mechanical dosing gate with sliding shutter.
+Row 8, column 4: small vertical freight elevator mast and platform.
+Row 8, column 5: square logistics buffer bin with opening.
+Row 8, column 6: L-shaped cyan fluid pipe with two flanges.
+Row 8, column 7: EMPTY transparent cell, no object.
+Row 8, column 8: EMPTY transparent cell, no object.

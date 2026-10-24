@@ -1,0 +1,2525 @@
+{
+  "version": 3,
+  "export_size": 128,
+  "logical_size": 32,
+  "black_outline_logical_px": 1,
+  "batches": [
+    {
+      "stage": 1,
+      "source": "p1-source.png",
+      "prompt": "p1-prompt.txt",
+      "items": [
+        {
+          "id": "i0001",
+          "name": "垃圾包",
+          "tier": 1,
+          "brief": "tied dark garbage sack with a pink patch",
+          "slot": 0
+        },
+        {
+          "id": "i0002",
+          "name": "铁质碎片",
+          "tier": 1,
+          "brief": "three jagged broken steel shards",
+          "slot": 1
+        },
+        {
+          "id": "i0003",
+          "name": "混合塑料",
+          "tier": 1,
+          "brief": "pile of cyan and pink broken plastic shells",
+          "slot": 2
+        },
+        {
+          "id": "i0004",
+          "name": "废铜线",
+          "tier": 1,
+          "brief": "loose copper wire loops with stripped blue tip",
+          "slot": 3
+        },
+        {
+          "id": "i0005",
+          "name": "玻璃陶瓷碎片",
+          "tier": 1,
+          "brief": "sharp cyan glass and cream ceramic shards",
+          "slot": 4
+        },
+        {
+          "id": "i0006",
+          "name": "湿有机物",
+          "tier": 1,
+          "brief": "soggy green organic clump with a leaf",
+          "slot": 5
+        },
+        {
+          "id": "i0007",
+          "name": "电子废件",
+          "tier": 1,
+          "brief": "broken tiny electronic parts and plugs",
+          "slot": 6
+        },
+        {
+          "id": "i0008",
+          "name": "废铝片",
+          "tier": 1,
+          "brief": "crumpled thin silver foil scraps",
+          "slot": 7
+        },
+        {
+          "id": "i0009",
+          "name": "橡胶碎屑",
+          "tier": 1,
+          "brief": "black rubber curls and crumbs",
+          "slot": 8
+        },
+        {
+          "id": "i0010",
+          "name": "砂土灰渣",
+          "tier": 1,
+          "brief": "small gray sand and ash mound",
+          "slot": 9
+        },
+        {
+          "id": "i0011",
+          "name": "可用铁屑",
+          "tier": 1,
+          "brief": "short curled iron machining shavings",
+          "slot": 10
+        },
+        {
+          "id": "i0012",
+          "name": "铁锈粉",
+          "tier": 1,
+          "brief": "rust red powder mound",
+          "slot": 11
+        },
+        {
+          "id": "i0013",
+          "name": "干燥生物质",
+          "tier": 1,
+          "brief": "bundle of dry pale twigs and leaves",
+          "slot": 12
+        },
+        {
+          "id": "i0014",
+          "name": "浑浊水",
+          "tier": 1,
+          "brief": "squat bottle of murky gray-blue water",
+          "slot": 13
+        },
+        {
+          "id": "i0015",
+          "name": "粗铁片",
+          "tier": 1,
+          "brief": "one uneven rough gray iron sheet",
+          "slot": 14
+        },
+        {
+          "id": "i0016",
+          "name": "简易支架",
+          "tier": 1,
+          "brief": "simple L-shaped bolted metal support",
+          "slot": 15
+        },
+        {
+          "id": "i0017",
+          "name": "设备·简易拆解台",
+          "tier": 1,
+          "brief": "small dismantling workbench with wrench",
+          "slot": 16
+        },
+        {
+          "id": "i0018",
+          "name": "粗铜丝",
+          "tier": 1,
+          "brief": "spool of rough copper wire",
+          "slot": 17
+        },
+        {
+          "id": "i0019",
+          "name": "绝缘碎料",
+          "tier": 1,
+          "brief": "ragged pink insulating sheet scraps",
+          "slot": 18
+        },
+        {
+          "id": "i0020",
+          "name": "废电路板",
+          "tier": 1,
+          "brief": "broken green circuit board with missing corner",
+          "slot": 19
+        },
+        {
+          "id": "i0021",
+          "name": "废电池",
+          "tier": 1,
+          "brief": "dented old battery with two terminals",
+          "slot": 20
+        },
+        {
+          "id": "i0022",
+          "name": "杂合金片",
+          "tier": 1,
+          "brief": "three mismatched metal alloy plates",
+          "slot": 21
+        },
+        {
+          "id": "i0023",
+          "name": "铝碎料",
+          "tier": 1,
+          "brief": "crushed small silver aluminum nuggets",
+          "slot": 22
+        },
+        {
+          "id": "i0024",
+          "name": "可回收塑料",
+          "tier": 1,
+          "brief": "stack of reusable colorful plastic pieces",
+          "slot": 23
+        },
+        {
+          "id": "i0025",
+          "name": "污染残渣",
+          "tier": 1,
+          "brief": "purple contaminated sludge clump",
+          "slot": 24
+        },
+        {
+          "id": "i0026",
+          "name": "设备·手摇破碎机",
+          "tier": 1,
+          "brief": "compact hand-cranked jaw crusher",
+          "slot": 25
+        },
+        {
+          "id": "i0027",
+          "name": "玻璃砂",
+          "tier": 1,
+          "brief": "pile of sparkling pale glass sand",
+          "slot": 26
+        },
+        {
+          "id": "i0028",
+          "name": "陶瓷粉",
+          "tier": 1,
+          "brief": "cream ceramic powder mound",
+          "slot": 27
+        },
+        {
+          "id": "i0029",
+          "name": "塑料碎粒",
+          "tier": 1,
+          "brief": "pink and cyan plastic pellets",
+          "slot": 28
+        },
+        {
+          "id": "i0030",
+          "name": "砂粒",
+          "tier": 1,
+          "brief": "small warm tan sand pile",
+          "slot": 29
+        },
+        {
+          "id": "i0031",
+          "name": "灰粉",
+          "tier": 1,
+          "brief": "small dark gray ash powder pile",
+          "slot": 30
+        },
+        {
+          "id": "i0032",
+          "name": "含铁矿粉",
+          "tier": 1,
+          "brief": "iron-bearing brown mineral powder",
+          "slot": 31
+        },
+        {
+          "id": "i0033",
+          "name": "设备·炭化炉",
+          "tier": 1,
+          "brief": "stubby charcoal kiln with short chimney",
+          "slot": 32
+        },
+        {
+          "id": "i0034",
+          "name": "生物炭",
+          "tier": 1,
+          "brief": "three irregular black biochar chunks",
+          "slot": 33
+        },
+        {
+          "id": "i0035",
+          "name": "焦油渣",
+          "tier": 1,
+          "brief": "thick dark purple tar lump",
+          "slot": 34
+        },
+        {
+          "id": "i0036",
+          "name": "固体燃料块",
+          "tier": 1,
+          "brief": "stack of two solid black fuel briquettes",
+          "slot": 35
+        },
+        {
+          "id": "i0037",
+          "name": "设备·简易熔炼炉",
+          "tier": 1,
+          "brief": "small brick melting furnace with orange opening",
+          "slot": 36
+        },
+        {
+          "id": "i0038",
+          "name": "粗铁锭",
+          "tier": 1,
+          "brief": "rough rectangular gray iron ingot",
+          "slot": 37
+        },
+        {
+          "id": "i0039",
+          "name": "熔炉渣",
+          "tier": 1,
+          "brief": "crusty dark furnace slag lump",
+          "slot": 38
+        },
+        {
+          "id": "i0040",
+          "name": "粗铜锭",
+          "tier": 1,
+          "brief": "rough warm copper ingot",
+          "slot": 39
+        },
+        {
+          "id": "i0041",
+          "name": "粗铝锭",
+          "tier": 1,
+          "brief": "rough pale silver aluminum ingot",
+          "slot": 40
+        },
+        {
+          "id": "i0042",
+          "name": "再生玻璃块",
+          "tier": 1,
+          "brief": "solid cyan recycled glass brick",
+          "slot": 41
+        },
+        {
+          "id": "i0043",
+          "name": "玻璃废屑",
+          "tier": 1,
+          "brief": "small sharp transparent glass chips",
+          "slot": 42
+        },
+        {
+          "id": "i0044",
+          "name": "耐火砖",
+          "tier": 1,
+          "brief": "two orange refractory bricks",
+          "slot": 43
+        },
+        {
+          "id": "i0045",
+          "name": "基础铁板",
+          "tier": 1,
+          "brief": "stack of flat basic iron plates",
+          "slot": 44
+        },
+        {
+          "id": "i0046",
+          "name": "铜条",
+          "tier": 1,
+          "brief": "long thick copper bar",
+          "slot": 45
+        },
+        {
+          "id": "i0047",
+          "name": "铝框架",
+          "tier": 1,
+          "brief": "hollow square aluminum frame",
+          "slot": 46
+        },
+        {
+          "id": "i0048",
+          "name": "铁铆钉",
+          "tier": 1,
+          "brief": "three large round-head iron rivets",
+          "slot": 47
+        },
+        {
+          "id": "i0049",
+          "name": "简易齿轮",
+          "tier": 1,
+          "brief": "simple eight-tooth metal gear with open hole",
+          "slot": 48
+        },
+        {
+          "id": "i0050",
+          "name": "粗密封圈",
+          "tier": 1,
+          "brief": "thick black rubber sealing ring",
+          "slot": 49
+        },
+        {
+          "id": "i0051",
+          "name": "设备·铁砧锻台",
+          "tier": 1,
+          "brief": "small anvil on a wooden stump",
+          "slot": 50
+        },
+        {
+          "id": "i0052",
+          "name": "设备·手工装配台",
+          "tier": 1,
+          "brief": "small manual assembly bench with vise",
+          "slot": 51
+        },
+        {
+          "id": "i0053",
+          "name": "手摇传送带",
+          "tier": 1,
+          "brief": "short hand-cranked conveyor belt segment",
+          "slot": 52
+        },
+        {
+          "id": "i0054",
+          "name": "分拣料箱",
+          "tier": 1,
+          "brief": "open sorting crate with two compartments",
+          "slot": 53
+        },
+        {
+          "id": "i0055",
+          "name": "机械抓取爪",
+          "tier": 1,
+          "brief": "mechanical two-finger grabber claw",
+          "slot": 54
+        },
+        {
+          "id": "i0056",
+          "name": "设备·固燃传动机",
+          "tier": 1,
+          "brief": "small solid-fuel engine with flywheel",
+          "slot": 55
+        },
+        {
+          "id": "i0057",
+          "name": "低速传动轴",
+          "tier": 1,
+          "brief": "short plain low-speed drive shaft",
+          "slot": 56
+        },
+        {
+          "id": "i0058",
+          "name": "机械计数器",
+          "tier": 1,
+          "brief": "tiny mechanical counter with three blank rollers",
+          "slot": 57
+        },
+        {
+          "id": "i0059",
+          "name": "初阶自动投料机",
+          "tier": 1,
+          "brief": "small hopper feeder with crank",
+          "slot": 58
+        },
+        {
+          "id": "i0060",
+          "name": "流水线机械手",
+          "tier": 1,
+          "brief": "jointed small production robot arm and claw",
+          "slot": 59
+        },
+        {
+          "id": "i0061",
+          "name": "设备·手动分拣台",
+          "tier": 1,
+          "brief": "small manual sorting table with trays",
+          "slot": 60
+        },
+        {
+          "id": "i0062",
+          "name": "设备·手工工作台",
+          "tier": 1,
+          "brief": "simple hand crafting workbench with hammer",
+          "slot": 61
+        },
+        {
+          "id": "i0063",
+          "name": "固化残渣",
+          "tier": 1,
+          "brief": "hardened gray waste residue brick",
+          "slot": 62
+        },
+        {
+          "id": "iron_ore",
+          "name": "铁矿石",
+          "tier": 1,
+          "brief": "rough chunky iron ore rock with two pale cyan mineral facets",
+          "slot": 63
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "source": "p2-source.png",
+      "prompt": "p2-prompt.txt",
+      "items": [
+        {
+          "id": "i0064",
+          "name": "设备·机械筛分器",
+          "tier": 2,
+          "brief": "industrial mechanical screening machine with mesh tray",
+          "slot": 0
+        },
+        {
+          "id": "i0065",
+          "name": "高品位电路废料",
+          "tier": 2,
+          "brief": "pile of rich green circuit board fragments",
+          "slot": 1
+        },
+        {
+          "id": "i0066",
+          "name": "石英砂",
+          "tier": 2,
+          "brief": "white quartz sand mound with cyan grains",
+          "slot": 2
+        },
+        {
+          "id": "i0067",
+          "name": "设备·冲压机",
+          "tier": 2,
+          "brief": "compact mechanical stamping press with upper die",
+          "slot": 3
+        },
+        {
+          "id": "i0068",
+          "name": "标准钢板",
+          "tier": 2,
+          "brief": "three clean flat steel plates",
+          "slot": 4
+        },
+        {
+          "id": "i0069",
+          "name": "金属边角料",
+          "tier": 2,
+          "brief": "small triangular metal offcuts",
+          "slot": 5
+        },
+        {
+          "id": "i0070",
+          "name": "铝合金板",
+          "tier": 2,
+          "brief": "pale blue aluminum alloy plate",
+          "slot": 6
+        },
+        {
+          "id": "i0071",
+          "name": "铜箔卷",
+          "tier": 2,
+          "brief": "rolled warm copper foil ribbon",
+          "slot": 7
+        },
+        {
+          "id": "i0072",
+          "name": "标准紧固件",
+          "tier": 2,
+          "brief": "three hexagonal bolts and nuts",
+          "slot": 8
+        },
+        {
+          "id": "i0073",
+          "name": "密封壳体",
+          "tier": 2,
+          "brief": "sealed square steel housing with rim",
+          "slot": 9
+        },
+        {
+          "id": "i0074",
+          "name": "设备·机械车床",
+          "tier": 2,
+          "brief": "compact mechanical lathe with spindle",
+          "slot": 10
+        },
+        {
+          "id": "i0075",
+          "name": "精制传动轴",
+          "tier": 2,
+          "brief": "polished stepped drive shaft",
+          "slot": 11
+        },
+        {
+          "id": "i0076",
+          "name": "轴承组件",
+          "tier": 2,
+          "brief": "round bearing with visible inner ring",
+          "slot": 12
+        },
+        {
+          "id": "i0077",
+          "name": "机架连接座",
+          "tier": 2,
+          "brief": "bolted triangular frame connector bracket",
+          "slot": 13
+        },
+        {
+          "id": "i0078",
+          "name": "接线端子",
+          "tier": 2,
+          "brief": "small terminal block with three copper posts",
+          "slot": 14
+        },
+        {
+          "id": "i0079",
+          "name": "精制齿轮",
+          "tier": 2,
+          "brief": "precise steel gear with many clear teeth",
+          "slot": 15
+        },
+        {
+          "id": "i0080",
+          "name": "设备·高温铸造炉",
+          "tier": 2,
+          "brief": "small high-temperature casting furnace with crucible",
+          "slot": 16
+        },
+        {
+          "id": "i0081",
+          "name": "合金钢坯",
+          "tier": 2,
+          "brief": "rectangular dark alloy steel billet",
+          "slot": 17
+        },
+        {
+          "id": "i0082",
+          "name": "铜铝合金坯",
+          "tier": 2,
+          "brief": "warm copper-aluminum alloy billet",
+          "slot": 18
+        },
+        {
+          "id": "i0083",
+          "name": "高温玻璃",
+          "tier": 2,
+          "brief": "glossy cyan high-temperature glass slab",
+          "slot": 19
+        },
+        {
+          "id": "i0084",
+          "name": "矿渣水泥",
+          "tier": 2,
+          "brief": "gray slag cement sack with simple block emblem",
+          "slot": 20
+        },
+        {
+          "id": "i0085",
+          "name": "设备·蒸汽锅炉",
+          "tier": 2,
+          "brief": "compact steam boiler with smokestack and pipe",
+          "slot": 21
+        },
+        {
+          "id": "i0086",
+          "name": "净化水",
+          "tier": 2,
+          "brief": "clear blue water flask",
+          "slot": 22
+        },
+        {
+          "id": "i0087",
+          "name": "滤渣",
+          "tier": 2,
+          "brief": "small brown filter cake",
+          "slot": 23
+        },
+        {
+          "id": "i0088",
+          "name": "高压蒸汽",
+          "tier": 2,
+          "brief": "white steam puff with cyan curls",
+          "slot": 24
+        },
+        {
+          "id": "i0089",
+          "name": "设备·机械装配线",
+          "tier": 2,
+          "brief": "mechanical assembly line bench with paired arms",
+          "slot": 25
+        },
+        {
+          "id": "i0090",
+          "name": "工业钢板",
+          "tier": 2,
+          "brief": "thick dark industrial steel plate",
+          "slot": 26
+        },
+        {
+          "id": "i0091",
+          "name": "标准齿轮组",
+          "tier": 2,
+          "brief": "pair of meshing standard gears",
+          "slot": 27
+        },
+        {
+          "id": "i0092",
+          "name": "压力容器",
+          "tier": 2,
+          "brief": "rounded pressure vessel with two pipe stubs",
+          "slot": 28
+        },
+        {
+          "id": "i0093",
+          "name": "轻量化底盘",
+          "tier": 2,
+          "brief": "lightweight four-wheel empty chassis",
+          "slot": 29
+        },
+        {
+          "id": "i0094",
+          "name": "粗绝缘板",
+          "tier": 2,
+          "brief": "rough tan insulation panel",
+          "slot": 30
+        },
+        {
+          "id": "i0095",
+          "name": "气动执行器",
+          "tier": 2,
+          "brief": "short brass pneumatic cylinder with hose",
+          "slot": 31
+        },
+        {
+          "id": "i0096",
+          "name": "设备·齿轮粉碎机",
+          "tier": 2,
+          "brief": "compact twin-gear pulverizer",
+          "slot": 32
+        },
+        {
+          "id": "i0097",
+          "name": "高纯石英粉",
+          "tier": 2,
+          "brief": "small mound of bright white quartz powder",
+          "slot": 33
+        },
+        {
+          "id": "i0098",
+          "name": "尾砂",
+          "tier": 2,
+          "brief": "coarse brown tailings mound",
+          "slot": 34
+        },
+        {
+          "id": "i0099",
+          "name": "镍钴混合粉",
+          "tier": 2,
+          "brief": "cool slate nickel-cobalt powder pile",
+          "slot": 35
+        },
+        {
+          "id": "i0100",
+          "name": "锡铅混合粉",
+          "tier": 2,
+          "brief": "soft silver tin-lead powder pile",
+          "slot": 36
+        },
+        {
+          "id": "i0101",
+          "name": "杂质",
+          "tier": 2,
+          "brief": "irregular dark impurity clump",
+          "slot": 37
+        },
+        {
+          "id": "i0102",
+          "name": "铜粉",
+          "tier": 2,
+          "brief": "warm orange copper powder mound",
+          "slot": 38
+        },
+        {
+          "id": "i0103",
+          "name": "电子粉尘",
+          "tier": 2,
+          "brief": "purple metallic electronic dust",
+          "slot": 39
+        },
+        {
+          "id": "i0104",
+          "name": "废正极粉",
+          "tier": 2,
+          "brief": "small mound of purple cathode powder",
+          "slot": 40
+        },
+        {
+          "id": "i0105",
+          "name": "废负极碳粉",
+          "tier": 2,
+          "brief": "black negative-electrode carbon powder mound",
+          "slot": 41
+        },
+        {
+          "id": "i0106",
+          "name": "设备·机械分流器",
+          "tier": 2,
+          "brief": "T-shaped mechanical conveyor splitter",
+          "slot": 42
+        },
+        {
+          "id": "i0107",
+          "name": "设备·初级搬运站",
+          "tier": 2,
+          "brief": "small brass robot charging dock with winding post",
+          "slot": 43
+        },
+        {
+          "id": "i0108",
+          "name": "发条搬运车",
+          "tier": 2,
+          "brief": "squat wind-up hauling cart with cargo tray",
+          "slot": 44
+        },
+        {
+          "id": "i0109",
+          "name": "机械故障报警器",
+          "tier": 2,
+          "brief": "small red mechanical alarm bell with gear",
+          "slot": 45
+        },
+        {
+          "id": "i0110",
+          "name": "蒸汽压力表",
+          "tier": 2,
+          "brief": "round steam pressure gauge with clear needle",
+          "slot": 46
+        },
+        {
+          "id": "i0111",
+          "name": "蒸汽储压包",
+          "tier": 2,
+          "brief": "short blue steam pressure tank with valve",
+          "slot": 47
+        },
+        {
+          "id": "i0112",
+          "name": "液压工业许可包",
+          "tier": 2,
+          "brief": "closed hydraulic industrial kit case with pipe emblem",
+          "slot": 48
+        },
+        {
+          "id": "i0113",
+          "name": "设备·回转煅烧窑",
+          "tier": 2,
+          "brief": "small rotary kiln drum with short furnace",
+          "slot": 49
+        },
+        {
+          "id": "i0114",
+          "name": "煅烧矿粉",
+          "tier": 2,
+          "brief": "brick-red calcined mineral powder",
+          "slot": 50
+        },
+        {
+          "id": "i0115",
+          "name": "废气",
+          "tier": 2,
+          "brief": "gray exhaust gas cloud with two curls",
+          "slot": 51
+        },
+        {
+          "id": "i0116",
+          "name": "活化碳渣",
+          "tier": 2,
+          "brief": "porous activated black carbon residue",
+          "slot": 52
+        },
+        {
+          "id": "i0117",
+          "name": "陶瓷基片",
+          "tier": 2,
+          "brief": "square ivory ceramic substrate",
+          "slot": 53
+        },
+        {
+          "id": "i0118",
+          "name": "耐高温填料",
+          "tier": 2,
+          "brief": "small pile of pale heat-resistant packing rings",
+          "slot": 54
+        },
+        {
+          "id": "i0119",
+          "name": "固化建材",
+          "tier": 2,
+          "brief": "solid gray building block with two holes",
+          "slot": 55
+        },
+        {
+          "id": "i0120",
+          "name": "机械传送带",
+          "tier": 2,
+          "brief": "short industrial mechanical conveyor belt segment",
+          "slot": 56
+        },
+        {
+          "id": "i0121",
+          "name": "高速传动轴",
+          "tier": 2,
+          "brief": "long precision high-speed shaft with two collars",
+          "slot": 57
+        },
+        {
+          "id": "i0122",
+          "name": "定量机械闸门",
+          "tier": 2,
+          "brief": "mechanical dosing gate with sliding shutter",
+          "slot": 58
+        },
+        {
+          "id": "i0123",
+          "name": "立体物流提升机",
+          "tier": 2,
+          "brief": "small vertical freight elevator mast and platform",
+          "slot": 59
+        },
+        {
+          "id": "i0124",
+          "name": "物流缓冲仓",
+          "tier": 2,
+          "brief": "square logistics buffer bin with opening",
+          "slot": 60
+        },
+        {
+          "id": "i0170",
+          "name": "流体管道",
+          "tier": 2,
+          "brief": "L-shaped cyan fluid pipe with two flanges",
+          "slot": 61
+        }
+      ]
+    },
+    {
+      "stage": 3,
+      "source": "p3-source.png",
+      "prompt": "p3-prompt.txt",
+      "items": [
+        {
+          "id": "i0125",
+          "name": "设备·废塑料裂解炉",
+          "tier": 3,
+          "brief": "plastic pyrolysis furnace with angled hopper",
+          "slot": 0
+        },
+        {
+          "id": "i0126",
+          "name": "粗裂解油",
+          "tier": 3,
+          "brief": "flask of dark purple crude pyrolysis oil",
+          "slot": 1
+        },
+        {
+          "id": "i0127",
+          "name": "炭黑",
+          "tier": 3,
+          "brief": "small mound of jet-black carbon black powder",
+          "slot": 2
+        },
+        {
+          "id": "i0128",
+          "name": "酸性残渣",
+          "tier": 3,
+          "brief": "crusty yellow-green acid residue lump",
+          "slot": 3
+        },
+        {
+          "id": "i0129",
+          "name": "工业碳粉",
+          "tier": 3,
+          "brief": "small mound of dark graphite industrial carbon",
+          "slot": 4
+        },
+        {
+          "id": "i0130",
+          "name": "设备·分馏塔",
+          "tier": 3,
+          "brief": "slim distillation column with side pipe loops",
+          "slot": 5
+        },
+        {
+          "id": "i0131",
+          "name": "轻质烃",
+          "tier": 3,
+          "brief": "short flask of pale pink light hydrocarbons",
+          "slot": 6
+        },
+        {
+          "id": "i0132",
+          "name": "液体燃料",
+          "tier": 3,
+          "brief": "jerrycan of vivid pink liquid fuel",
+          "slot": 7
+        },
+        {
+          "id": "i0133",
+          "name": "重油",
+          "tier": 3,
+          "brief": "short dark heavy-oil barrel with cyan rim",
+          "slot": 8
+        },
+        {
+          "id": "i0134",
+          "name": "油泥",
+          "tier": 3,
+          "brief": "glossy dark oil sludge clump",
+          "slot": 9
+        },
+        {
+          "id": "i0135",
+          "name": "工业蜡",
+          "tier": 3,
+          "brief": "ivory industrial wax block with a drip",
+          "slot": 10
+        },
+        {
+          "id": "i0136",
+          "name": "溶剂",
+          "tier": 3,
+          "brief": "small lavender solvent flask",
+          "slot": 11
+        },
+        {
+          "id": "i0137",
+          "name": "污水",
+          "tier": 3,
+          "brief": "bottle of dark murky wastewater",
+          "slot": 12
+        },
+        {
+          "id": "i0138",
+          "name": "设备·液压动力站",
+          "tier": 3,
+          "brief": "hydraulic power station with tank and pump",
+          "slot": 13
+        },
+        {
+          "id": "i0139",
+          "name": "液压工作液",
+          "tier": 3,
+          "brief": "squat flask of purple hydraulic working fluid",
+          "slot": 14
+        },
+        {
+          "id": "i0140",
+          "name": "高压工作液",
+          "tier": 3,
+          "brief": "reinforced pressure bottle of cyan working fluid",
+          "slot": 15
+        },
+        {
+          "id": "i0141",
+          "name": "设备·液压冲压机",
+          "tier": 3,
+          "brief": "small hydraulic press with twin cylinders",
+          "slot": 16
+        },
+        {
+          "id": "i0142",
+          "name": "高强钢板",
+          "tier": 3,
+          "brief": "thick clean high-strength steel slab",
+          "slot": 17
+        },
+        {
+          "id": "i0143",
+          "name": "污工作液",
+          "tier": 3,
+          "brief": "bottle of dirty brown-purple working fluid",
+          "slot": 18
+        },
+        {
+          "id": "i0144",
+          "name": "耐蚀铝板",
+          "tier": 3,
+          "brief": "flat pale corrosion-resistant aluminum plate",
+          "slot": 19
+        },
+        {
+          "id": "i0145",
+          "name": "精密接头",
+          "tier": 3,
+          "brief": "pair of precise metal pipe couplings",
+          "slot": 20
+        },
+        {
+          "id": "i0146",
+          "name": "液压缸",
+          "tier": 3,
+          "brief": "long diagonal hydraulic piston with eyelets",
+          "slot": 21
+        },
+        {
+          "id": "i0147",
+          "name": "设备·化学反应釜",
+          "tier": 3,
+          "brief": "chemical reactor pot with domed lid and mixer",
+          "slot": 22
+        },
+        {
+          "id": "i0148",
+          "name": "低浓度酸液",
+          "tier": 3,
+          "brief": "flask of dilute yellow acid",
+          "slot": 23
+        },
+        {
+          "id": "i0149",
+          "name": "聚合物树脂",
+          "tier": 3,
+          "brief": "glossy pink polymer resin beads",
+          "slot": 24
+        },
+        {
+          "id": "i0150",
+          "name": "有机溶剂",
+          "tier": 3,
+          "brief": "small round bottle of violet organic solvent",
+          "slot": 25
+        },
+        {
+          "id": "i0151",
+          "name": "绝缘胶",
+          "tier": 3,
+          "brief": "small roll of dark insulating adhesive",
+          "slot": 26
+        },
+        {
+          "id": "i0152",
+          "name": "蚀刻液",
+          "tier": 3,
+          "brief": "short bottle of cyan etching solution",
+          "slot": 27
+        },
+        {
+          "id": "i0153",
+          "name": "设备·离心分离机",
+          "tier": 3,
+          "brief": "compact centrifuge with round covered bowl",
+          "slot": 28
+        },
+        {
+          "id": "i0154",
+          "name": "设备·湿法浸出槽",
+          "tier": 3,
+          "brief": "rectangular wet-leaching bath with pipe",
+          "slot": 29
+        },
+        {
+          "id": "i0155",
+          "name": "贵金属浸出液",
+          "tier": 3,
+          "brief": "bottle of golden precious-metal solution",
+          "slot": 30
+        },
+        {
+          "id": "i0156",
+          "name": "废酸液",
+          "tier": 3,
+          "brief": "bottle of greenish spent acid",
+          "slot": 31
+        },
+        {
+          "id": "i0157",
+          "name": "镍钴溶液",
+          "tier": 3,
+          "brief": "flask of violet nickel-cobalt solution",
+          "slot": 32
+        },
+        {
+          "id": "i0158",
+          "name": "稀土浸出液",
+          "tier": 3,
+          "brief": "flask of pale mint rare-earth solution",
+          "slot": 33
+        },
+        {
+          "id": "i0159",
+          "name": "中性盐水",
+          "tier": 3,
+          "brief": "clear brine bottle with salt crystal emblem",
+          "slot": 34
+        },
+        {
+          "id": "i0160",
+          "name": "安全污泥",
+          "tier": 3,
+          "brief": "sealed cake of safe gray sludge",
+          "slot": 35
+        },
+        {
+          "id": "i0161",
+          "name": "设备·合金熔炼炉",
+          "tier": 3,
+          "brief": "alloy smelting furnace with tilted crucible",
+          "slot": 36
+        },
+        {
+          "id": "i0162",
+          "name": "耐热合金锭",
+          "tier": 3,
+          "brief": "warm gold heat-resistant alloy ingot",
+          "slot": 37
+        },
+        {
+          "id": "i0163",
+          "name": "导热合金锭",
+          "tier": 3,
+          "brief": "cool silver heat-conducting alloy ingot",
+          "slot": 38
+        },
+        {
+          "id": "i0164",
+          "name": "硅酸盐玻璃",
+          "tier": 3,
+          "brief": "clear pale blue silicate glass plate",
+          "slot": 39
+        },
+        {
+          "id": "i0165",
+          "name": "贵金属粉",
+          "tier": 3,
+          "brief": "small mound of shining gold metal powder",
+          "slot": 40
+        },
+        {
+          "id": "i0166",
+          "name": "稀土混合氧化物",
+          "tier": 3,
+          "brief": "pale lavender rare-earth oxide powder",
+          "slot": 41
+        },
+        {
+          "id": "i0167",
+          "name": "设备·液压机器人装配台",
+          "tier": 3,
+          "brief": "hydraulic robot assembly table with piston arm",
+          "slot": 42
+        },
+        {
+          "id": "i0168",
+          "name": "液压搬运机器人",
+          "tier": 3,
+          "brief": "small hydraulic hauling robot with treads",
+          "slot": 43
+        },
+        {
+          "id": "i0169",
+          "name": "管线巡检机器人",
+          "tier": 3,
+          "brief": "slim pipe-inspection robot with probe eye",
+          "slot": 44
+        },
+        {
+          "id": "i0171",
+          "name": "压力调节阀",
+          "tier": 3,
+          "brief": "metal pressure regulating valve with pink handwheel",
+          "slot": 45
+        },
+        {
+          "id": "i0172",
+          "name": "板式换热器",
+          "tier": 3,
+          "brief": "stacked plate heat exchanger with pipe sockets",
+          "slot": 46
+        },
+        {
+          "id": "i0173",
+          "name": "液压工业示范机组",
+          "tier": 3,
+          "brief": "hydraulic demonstration skid with paired tanks",
+          "slot": 47
+        },
+        {
+          "id": "i0174",
+          "name": "电气化建设包",
+          "tier": 3,
+          "brief": "closed electrification kit case with lightning emblem",
+          "slot": 48
+        },
+        {
+          "id": "i0175",
+          "name": "工业盐",
+          "tier": 3,
+          "brief": "small pile of white industrial salt crystals",
+          "slot": 49
+        },
+        {
+          "id": "i0176",
+          "name": "环保封存砖",
+          "tier": 3,
+          "brief": "greenish environmental storage brick",
+          "slot": 50
+        },
+        {
+          "id": "i0177",
+          "name": "吸附尾气泥",
+          "tier": 3,
+          "brief": "dark gas-adsorbing sludge cake",
+          "slot": 51
+        },
+        {
+          "id": "i0178",
+          "name": "流体储罐",
+          "tier": 3,
+          "brief": "upright fluid tank with side level window",
+          "slot": 52
+        },
+        {
+          "id": "i0179",
+          "name": "分液阀",
+          "tier": 3,
+          "brief": "three-way liquid valve with blue handle",
+          "slot": 53
+        },
+        {
+          "id": "i0180",
+          "name": "液压输送带",
+          "tier": 3,
+          "brief": "short cyan hydraulic conveyor belt segment",
+          "slot": 54
+        },
+        {
+          "id": "i0181",
+          "name": "化工自动投料泵",
+          "tier": 3,
+          "brief": "chemical automatic dosing pump with hose",
+          "slot": 55
+        },
+        {
+          "id": "i0182",
+          "name": "回流管路",
+          "tier": 3,
+          "brief": "U-shaped return fluid pipe with two flanges",
+          "slot": 56
+        }
+      ]
+    },
+    {
+      "stage": 4,
+      "source": "p4-source.png",
+      "prompt": "p4-prompt.txt",
+      "items": [
+        {
+          "id": "i0183",
+          "name": "设备·液体燃料发电机",
+          "tier": 4,
+          "brief": "small liquid-fuel generator with exhaust and pink tank",
+          "slot": 0
+        },
+        {
+          "id": "i0184",
+          "name": "设备·电解槽",
+          "tier": 4,
+          "brief": "electrolysis bath with two upright electrodes",
+          "slot": 1
+        },
+        {
+          "id": "i0185",
+          "name": "氢气",
+          "tier": 4,
+          "brief": "light cyan hydrogen gas bubble cluster",
+          "slot": 2
+        },
+        {
+          "id": "i0186",
+          "name": "氧气",
+          "tier": 4,
+          "brief": "pale blue oxygen gas cloud with paired round bubbles",
+          "slot": 3
+        },
+        {
+          "id": "i0187",
+          "name": "电解盐液",
+          "tier": 4,
+          "brief": "bottle of cyan electrolyte brine",
+          "slot": 4
+        },
+        {
+          "id": "i0188",
+          "name": "高纯镍钴盐",
+          "tier": 4,
+          "brief": "small pile of violet nickel-cobalt salt crystals",
+          "slot": 5
+        },
+        {
+          "id": "i0189",
+          "name": "稀土磁粉",
+          "tier": 4,
+          "brief": "small mound of dark magnetic rare-earth powder",
+          "slot": 6
+        },
+        {
+          "id": "i0190",
+          "name": "设备·线缆挤出机",
+          "tier": 4,
+          "brief": "cable extrusion machine with reel",
+          "slot": 7
+        },
+        {
+          "id": "i0191",
+          "name": "高纯铜线",
+          "tier": 4,
+          "brief": "neat thin bright copper wire coil",
+          "slot": 8
+        },
+        {
+          "id": "i0192",
+          "name": "绝缘线缆",
+          "tier": 4,
+          "brief": "thick coiled pink insulated power cable with cyan plug",
+          "slot": 9
+        },
+        {
+          "id": "i0193",
+          "name": "漆包绕组线",
+          "tier": 4,
+          "brief": "spool of pink enamel winding wire",
+          "slot": 10
+        },
+        {
+          "id": "i0194",
+          "name": "工业线束",
+          "tier": 4,
+          "brief": "three bundled industrial cables with connector ends",
+          "slot": 11
+        },
+        {
+          "id": "i0195",
+          "name": "设备·电路板蚀刻机",
+          "tier": 4,
+          "brief": "circuit etching machine with shallow tray",
+          "slot": 12
+        },
+        {
+          "id": "i0196",
+          "name": "初级PCB",
+          "tier": 4,
+          "brief": "simple cyan circuit board with three large copper pads",
+          "slot": 13
+        },
+        {
+          "id": "i0197",
+          "name": "废蚀刻液",
+          "tier": 4,
+          "brief": "bottle of dark used etching fluid",
+          "slot": 14
+        },
+        {
+          "id": "i0198",
+          "name": "玻纤覆铜板",
+          "tier": 4,
+          "brief": "plain copper-clad fiberglass board with tan edge",
+          "slot": 15
+        },
+        {
+          "id": "i0199",
+          "name": "多层PCB",
+          "tier": 4,
+          "brief": "stack of three purple circuit boards",
+          "slot": 16
+        },
+        {
+          "id": "i0200",
+          "name": "设备·电子焊接台",
+          "tier": 4,
+          "brief": "small soldering bench with iron and stand",
+          "slot": 17
+        },
+        {
+          "id": "i0201",
+          "name": "可复用被动元件",
+          "tier": 4,
+          "brief": "three salvaged tiny capacitors and resistor blocks",
+          "slot": 18
+        },
+        {
+          "id": "i0202",
+          "name": "工业焊料",
+          "tier": 4,
+          "brief": "silver solder wire spool",
+          "slot": 19
+        },
+        {
+          "id": "i0203",
+          "name": "标准阻容包",
+          "tier": 4,
+          "brief": "small bag of resistor and capacitor blocks",
+          "slot": 20
+        },
+        {
+          "id": "i0204",
+          "name": "简单逻辑板",
+          "tier": 4,
+          "brief": "simple logic board with one central chip",
+          "slot": 21
+        },
+        {
+          "id": "i0205",
+          "name": "工业控制板",
+          "tier": 4,
+          "brief": "industrial controller board with chip and socket",
+          "slot": 22
+        },
+        {
+          "id": "i0206",
+          "name": "设备·电机组装机",
+          "tier": 4,
+          "brief": "motor assembly bench with rotor",
+          "slot": 23
+        },
+        {
+          "id": "i0207",
+          "name": "直流电机",
+          "tier": 4,
+          "brief": "small DC motor with simple shaft",
+          "slot": 24
+        },
+        {
+          "id": "i0208",
+          "name": "工业电机",
+          "tier": 4,
+          "brief": "large industrial motor with ribbed shell",
+          "slot": 25
+        },
+        {
+          "id": "i0209",
+          "name": "电机驱动模块",
+          "tier": 4,
+          "brief": "motor driver block with heatsink",
+          "slot": 26
+        },
+        {
+          "id": "i0210",
+          "name": "发电绕组总成",
+          "tier": 4,
+          "brief": "copper winding stator assembly",
+          "slot": 27
+        },
+        {
+          "id": "i0211",
+          "name": "设备·电池组装机",
+          "tier": 4,
+          "brief": "battery assembly machine with cell holder",
+          "slot": 28
+        },
+        {
+          "id": "i0212",
+          "name": "充电电芯",
+          "tier": 4,
+          "brief": "one cylindrical rechargeable cell",
+          "slot": 29
+        },
+        {
+          "id": "i0213",
+          "name": "电池模组",
+          "tier": 4,
+          "brief": "rectangular cyan battery module with pink lightning",
+          "slot": 30
+        },
+        {
+          "id": "i0214",
+          "name": "储能箱",
+          "tier": 4,
+          "brief": "large energy storage box with three cell windows",
+          "slot": 31
+        },
+        {
+          "id": "i0215",
+          "name": "机器人电池包",
+          "tier": 4,
+          "brief": "compact paired robot battery pack",
+          "slot": 32
+        },
+        {
+          "id": "i0216",
+          "name": "设备·数控加工中心",
+          "tier": 4,
+          "brief": "small enclosed CNC machining center",
+          "slot": 33
+        },
+        {
+          "id": "i0217",
+          "name": "精密金属机架",
+          "tier": 4,
+          "brief": "rectangular precision metal frame",
+          "slot": 34
+        },
+        {
+          "id": "i0218",
+          "name": "轻质机身壳",
+          "tier": 4,
+          "brief": "curved lightweight torso shell",
+          "slot": 35
+        },
+        {
+          "id": "i0219",
+          "name": "散热翅片",
+          "tier": 4,
+          "brief": "stack of silver heat dissipation fins",
+          "slot": 36
+        },
+        {
+          "id": "i0220",
+          "name": "精密传动模组",
+          "tier": 4,
+          "brief": "compact precision gearbox module",
+          "slot": 37
+        },
+        {
+          "id": "i0221",
+          "name": "工业插接器",
+          "tier": 4,
+          "brief": "industrial multi-pin plug connector",
+          "slot": 38
+        },
+        {
+          "id": "i0222",
+          "name": "设备·电控自动装配线",
+          "tier": 4,
+          "brief": "small electrical automatic assembly line with screen",
+          "slot": 39
+        },
+        {
+          "id": "i0223",
+          "name": "电控执行器",
+          "tier": 4,
+          "brief": "short electric actuator with shaft",
+          "slot": 40
+        },
+        {
+          "id": "i0224",
+          "name": "通用机械臂",
+          "tier": 4,
+          "brief": "three-joint general-purpose robotic arm",
+          "slot": 41
+        },
+        {
+          "id": "i0225",
+          "name": "传感控制箱",
+          "tier": 4,
+          "brief": "sensor control box with two probe leads",
+          "slot": 42
+        },
+        {
+          "id": "i0226",
+          "name": "电动物流机器人",
+          "tier": 4,
+          "brief": "small wheeled electric logistics robot with cargo",
+          "slot": 43
+        },
+        {
+          "id": "i0227",
+          "name": "自动分拣机器人",
+          "tier": 4,
+          "brief": "compact sorting robot with twin claws",
+          "slot": 44
+        },
+        {
+          "id": "i0228",
+          "name": "设备·物流中央控制台",
+          "tier": 4,
+          "brief": "small logistics central console with cyan screen",
+          "slot": 45
+        },
+        {
+          "id": "i0229",
+          "name": "物流地址节点",
+          "tier": 4,
+          "brief": "small beacon-like logistics address node",
+          "slot": 46
+        },
+        {
+          "id": "i0230",
+          "name": "区域路由控制器",
+          "tier": 4,
+          "brief": "compact router box with three antenna stubs",
+          "slot": 47
+        },
+        {
+          "id": "i0231",
+          "name": "机器人换电站",
+          "tier": 4,
+          "brief": "robot battery-swap dock with spare pack",
+          "slot": 48
+        },
+        {
+          "id": "i0232",
+          "name": "智能物流试运行单元",
+          "tier": 4,
+          "brief": "smart logistics demonstration unit with two linked carts",
+          "slot": 49
+        },
+        {
+          "id": "i0233",
+          "name": "微电子实验许可证",
+          "tier": 4,
+          "brief": "microelectronics permit card with chip emblem",
+          "slot": 50
+        },
+        {
+          "id": "i0234",
+          "name": "耐热PCB",
+          "tier": 4,
+          "brief": "red-purple heat-resistant circuit board",
+          "slot": 51
+        },
+        {
+          "id": "i0235",
+          "name": "高温伺服驱动器",
+          "tier": 4,
+          "brief": "heat-rated servo driver with copper heatsink",
+          "slot": 52
+        },
+        {
+          "id": "i0236",
+          "name": "电动传送带",
+          "tier": 4,
+          "brief": "short electric conveyor belt segment with side motor",
+          "slot": 53
+        },
+        {
+          "id": "i0237",
+          "name": "智能分拣闸门",
+          "tier": 4,
+          "brief": "smart sorting gate with sensor arch",
+          "slot": 54
+        },
+        {
+          "id": "i0238",
+          "name": "机器人导航信标",
+          "tier": 4,
+          "brief": "robot navigation beacon with cyan diamond lamp",
+          "slot": 55
+        },
+        {
+          "id": "i0239",
+          "name": "不间断电源",
+          "tier": 4,
+          "brief": "compact uninterruptible power unit with battery and plug",
+          "slot": 56
+        }
+      ]
+    },
+    {
+      "stage": 5,
+      "source": "p5-source.png",
+      "prompt": "p5-prompt.txt",
+      "items": [
+        {
+          "id": "i0240",
+          "name": "设备·高纯石英提纯炉",
+          "tier": 5,
+          "brief": "quartz purification furnace with crystal chamber",
+          "slot": 0
+        },
+        {
+          "id": "i0241",
+          "name": "多晶硅料",
+          "tier": 5,
+          "brief": "rough pale blue polysilicon chunks",
+          "slot": 1
+        },
+        {
+          "id": "i0242",
+          "name": "一氧化碳尾气",
+          "tier": 5,
+          "brief": "small gray carbon-monoxide exhaust cloud",
+          "slot": 2
+        },
+        {
+          "id": "i0243",
+          "name": "高纯硅棒",
+          "tier": 5,
+          "brief": "long smooth silver-blue high-purity silicon rod",
+          "slot": 3
+        },
+        {
+          "id": "i0244",
+          "name": "废溶剂",
+          "tier": 5,
+          "brief": "bottle of cloudy waste solvent",
+          "slot": 4
+        },
+        {
+          "id": "i0245",
+          "name": "光学玻璃坯",
+          "tier": 5,
+          "brief": "clear pale optical glass blank",
+          "slot": 5
+        },
+        {
+          "id": "i0246",
+          "name": "高性能磁材",
+          "tier": 5,
+          "brief": "three dark magnet blocks with pink poles",
+          "slot": 6
+        },
+        {
+          "id": "i0247",
+          "name": "设备·晶圆切割机",
+          "tier": 5,
+          "brief": "wafer cutting machine with visible saw wheel",
+          "slot": 7
+        },
+        {
+          "id": "i0248",
+          "name": "硅晶圆",
+          "tier": 5,
+          "brief": "round lavender silicon wafer with notch and four colored blocks",
+          "slot": 8
+        },
+        {
+          "id": "i0249",
+          "name": "硅边角料",
+          "tier": 5,
+          "brief": "small irregular silicon wafer offcuts",
+          "slot": 9
+        },
+        {
+          "id": "i0250",
+          "name": "抛光硅晶圆",
+          "tier": 5,
+          "brief": "smooth reflective pale polished silicon wafer",
+          "slot": 10
+        },
+        {
+          "id": "i0251",
+          "name": "光学透镜",
+          "tier": 5,
+          "brief": "clear round convex optical lens",
+          "slot": 11
+        },
+        {
+          "id": "i0252",
+          "name": "设备·光刻机",
+          "tier": 5,
+          "brief": "small photolithography machine with optical chamber",
+          "slot": 12
+        },
+        {
+          "id": "i0253",
+          "name": "光敏胶",
+          "tier": 5,
+          "brief": "small amber bottle of pink photoresist",
+          "slot": 13
+        },
+        {
+          "id": "i0254",
+          "name": "初次曝光晶圆",
+          "tier": 5,
+          "brief": "wafer with one large cyan exposure cross",
+          "slot": 14
+        },
+        {
+          "id": "i0255",
+          "name": "多层曝光晶圆",
+          "tier": 5,
+          "brief": "wafer with three broad magenta exposure stripes",
+          "slot": 15
+        },
+        {
+          "id": "i0256",
+          "name": "微光学元件",
+          "tier": 5,
+          "brief": "pair of tiny cyan optical prisms",
+          "slot": 16
+        },
+        {
+          "id": "i0257",
+          "name": "设备·薄膜沉积机",
+          "tier": 5,
+          "brief": "thin-film deposition chamber with dome",
+          "slot": 17
+        },
+        {
+          "id": "i0258",
+          "name": "逻辑芯片晶粒",
+          "tier": 5,
+          "brief": "small dark logic die with pink central square",
+          "slot": 18
+        },
+        {
+          "id": "i0259",
+          "name": "存储晶粒",
+          "tier": 5,
+          "brief": "small memory die with three pale bars",
+          "slot": 19
+        },
+        {
+          "id": "i0260",
+          "name": "功率晶粒",
+          "tier": 5,
+          "brief": "small power die with gold cross",
+          "slot": 20
+        },
+        {
+          "id": "i0261",
+          "name": "传感晶粒",
+          "tier": 5,
+          "brief": "small sensor die with cyan eye dot",
+          "slot": 21
+        },
+        {
+          "id": "i0262",
+          "name": "柔性传感膜",
+          "tier": 5,
+          "brief": "rolled flexible pink sensing film",
+          "slot": 22
+        },
+        {
+          "id": "i0263",
+          "name": "设备·芯片封装机",
+          "tier": 5,
+          "brief": "chip packaging machine with square socket",
+          "slot": 23
+        },
+        {
+          "id": "i0264",
+          "name": "通用处理器",
+          "tier": 5,
+          "brief": "square processor with pink core and three pins per side",
+          "slot": 24
+        },
+        {
+          "id": "i0265",
+          "name": "存储芯片",
+          "tier": 5,
+          "brief": "long memory chip with three magenta windows",
+          "slot": 25
+        },
+        {
+          "id": "i0266",
+          "name": "功率控制芯片",
+          "tier": 5,
+          "brief": "square power controller chip with gold connector bar",
+          "slot": 26
+        },
+        {
+          "id": "i0267",
+          "name": "视觉处理芯片",
+          "tier": 5,
+          "brief": "square vision chip with cyan camera-eye symbol",
+          "slot": 27
+        },
+        {
+          "id": "i0268",
+          "name": "嵌入式计算模块",
+          "tier": 5,
+          "brief": "small embedded compute board with chip and connector",
+          "slot": 28
+        },
+        {
+          "id": "i0269",
+          "name": "设备·光学标定台",
+          "tier": 5,
+          "brief": "optical calibration bench with target lens",
+          "slot": 29
+        },
+        {
+          "id": "i0270",
+          "name": "摄像头组件",
+          "tier": 5,
+          "brief": "camera module with large cyan lens",
+          "slot": 30
+        },
+        {
+          "id": "i0271",
+          "name": "测距雷达组件",
+          "tier": 5,
+          "brief": "small round ranging radar with side plug",
+          "slot": 31
+        },
+        {
+          "id": "i0272",
+          "name": "压力触觉组件",
+          "tier": 5,
+          "brief": "round pressure-touch sensor with pink contact pad",
+          "slot": 32
+        },
+        {
+          "id": "i0273",
+          "name": "环境监测组件",
+          "tier": 5,
+          "brief": "small environmental sensor with three probe prongs",
+          "slot": 33
+        },
+        {
+          "id": "i0274",
+          "name": "多传感融合组件",
+          "tier": 5,
+          "brief": "multi-sensor board with lens and two probe posts",
+          "slot": 34
+        },
+        {
+          "id": "i0275",
+          "name": "设备·伺服总装线",
+          "tier": 5,
+          "brief": "servo assembly line with motor and arm",
+          "slot": 35
+        },
+        {
+          "id": "i0276",
+          "name": "伺服电机",
+          "tier": 5,
+          "brief": "compact servo motor with square flange",
+          "slot": 36
+        },
+        {
+          "id": "i0277",
+          "name": "精密关节",
+          "tier": 5,
+          "brief": "precision robot rotary joint with central bolt",
+          "slot": 37
+        },
+        {
+          "id": "i0278",
+          "name": "精密机械臂",
+          "tier": 5,
+          "brief": "slender precision robotic arm with small gripper",
+          "slot": 38
+        },
+        {
+          "id": "i0279",
+          "name": "高速分拣机器人",
+          "tier": 5,
+          "brief": "small high-speed sorter robot with paired wide claws",
+          "slot": 39
+        },
+        {
+          "id": "i0280",
+          "name": "自动维修机器人",
+          "tier": 5,
+          "brief": "small repair robot with wrench arm",
+          "slot": 40
+        },
+        {
+          "id": "i0281",
+          "name": "设备·固件烧录台",
+          "tier": 5,
+          "brief": "firmware programming station with chip socket",
+          "slot": 41
+        },
+        {
+          "id": "i0282",
+          "name": "路径规划固件",
+          "tier": 5,
+          "brief": "path-planning firmware cartridge with three route dots",
+          "slot": 42
+        },
+        {
+          "id": "i0283",
+          "name": "预防维护固件",
+          "tier": 5,
+          "brief": "maintenance firmware cartridge with wrench symbol",
+          "slot": 43
+        },
+        {
+          "id": "i0284",
+          "name": "协作调度固件",
+          "tier": 5,
+          "brief": "collaborative scheduling cartridge with three linked blocks",
+          "slot": 44
+        },
+        {
+          "id": "i0285",
+          "name": "视觉识别固件",
+          "tier": 5,
+          "brief": "vision firmware cartridge with camera-eye symbol",
+          "slot": 45
+        },
+        {
+          "id": "i0286",
+          "name": "设备·多机协作站",
+          "tier": 5,
+          "brief": "multi-robot coordination dock with three posts",
+          "slot": 46
+        },
+        {
+          "id": "i0287",
+          "name": "分拣机器人升级包",
+          "tier": 5,
+          "brief": "sorting robot upgrade kit with claw module",
+          "slot": 47
+        },
+        {
+          "id": "i0288",
+          "name": "维护机器人升级包",
+          "tier": 5,
+          "brief": "repair robot upgrade kit with wrench and spare joint",
+          "slot": 48
+        },
+        {
+          "id": "i0289",
+          "name": "搬运轨迹样本",
+          "tier": 5,
+          "brief": "route sample tile with bent path and three bright dots",
+          "slot": 49
+        },
+        {
+          "id": "i0290",
+          "name": "巡检日志样本",
+          "tier": 5,
+          "brief": "inspection log data scroll with three cyan marks",
+          "slot": 50
+        },
+        {
+          "id": "i0291",
+          "name": "视觉训练样本",
+          "tier": 5,
+          "brief": "vision training sample slide with eye and pixel blocks",
+          "slot": 51
+        },
+        {
+          "id": "i0292",
+          "name": "无人化示范系统",
+          "tier": 5,
+          "brief": "unmanned demonstration system console with two robot heads",
+          "slot": 52
+        },
+        {
+          "id": "i0293",
+          "name": "认知系统项目包",
+          "tier": 5,
+          "brief": "cognitive project kit case with neural diamond emblem",
+          "slot": 53
+        },
+        {
+          "id": "i0294",
+          "name": "高温控制模块",
+          "tier": 5,
+          "brief": "heat-resistant control module with large gold heatsink",
+          "slot": 54
+        },
+        {
+          "id": "i0295",
+          "name": "高温维修机器人",
+          "tier": 5,
+          "brief": "heat-rated repair robot with shielded wrench arm",
+          "slot": 55
+        },
+        {
+          "id": "i0296",
+          "name": "高速精密传送带",
+          "tier": 5,
+          "brief": "short high-speed precision conveyor with twin drive rollers",
+          "slot": 56
+        },
+        {
+          "id": "i0297",
+          "name": "智能路由节点",
+          "tier": 5,
+          "brief": "smart routing node with four connected bright dots",
+          "slot": 57
+        },
+        {
+          "id": "i0298",
+          "name": "维修备件箱",
+          "tier": 5,
+          "brief": "open repair spares toolbox with gear and wrench",
+          "slot": 58
+        }
+      ]
+    },
+    {
+      "stage": 6,
+      "source": "p6-source.png",
+      "prompt": "p6-prompt.txt",
+      "items": [
+        {
+          "id": "i0299",
+          "name": "设备·超纯净化塔",
+          "tier": 6,
+          "brief": "ultrapure purification tower with layered clean chamber",
+          "slot": 0
+        },
+        {
+          "id": "i0300",
+          "name": "电子级硅料",
+          "tier": 6,
+          "brief": "bright pale electronic-grade silicon crystal chunks",
+          "slot": 1
+        },
+        {
+          "id": "i0301",
+          "name": "高纯稀土盐",
+          "tier": 6,
+          "brief": "small pile of pale green rare-earth salt crystals",
+          "slot": 2
+        },
+        {
+          "id": "i0302",
+          "name": "超纯贵金属",
+          "tier": 6,
+          "brief": "one bright pale gold ultrapure precious metal ingot",
+          "slot": 3
+        },
+        {
+          "id": "i0303",
+          "name": "超纯电解质",
+          "tier": 6,
+          "brief": "clear bright cyan ultrapure electrolyte bottle",
+          "slot": 4
+        },
+        {
+          "id": "i0304",
+          "name": "超纯石英粉",
+          "tier": 6,
+          "brief": "small bright ivory ultrapure quartz powder mound",
+          "slot": 5
+        },
+        {
+          "id": "i0305",
+          "name": "设备·纳米材料反应器",
+          "tier": 6,
+          "brief": "nanomaterial reactor with round chamber and three pipes",
+          "slot": 6
+        },
+        {
+          "id": "i0306",
+          "name": "石墨烯导电膜",
+          "tier": 6,
+          "brief": "folded dark graphene conductive sheet with cyan edge",
+          "slot": 7
+        },
+        {
+          "id": "i0307",
+          "name": "纳米光敏材料",
+          "tier": 6,
+          "brief": "small bottle of vivid pink nanoscale photo material",
+          "slot": 8
+        },
+        {
+          "id": "i0308",
+          "name": "柔性神经导线",
+          "tier": 6,
+          "brief": "three thin flexible magenta neural wires",
+          "slot": 9
+        },
+        {
+          "id": "i0309",
+          "name": "高密度触觉网",
+          "tier": 6,
+          "brief": "flexible cyan tactile mesh with four large nodes",
+          "slot": 10
+        },
+        {
+          "id": "i0310",
+          "name": "超精密磁致动材料",
+          "tier": 6,
+          "brief": "small magnetic actuator material block with pink poles",
+          "slot": 11
+        },
+        {
+          "id": "i0311",
+          "name": "设备·神经芯片封装线",
+          "tier": 6,
+          "brief": "neural chip packaging line with glowing diamond socket",
+          "slot": 12
+        },
+        {
+          "id": "i0312",
+          "name": "神经计算晶粒",
+          "tier": 6,
+          "brief": "neural computation die with three connected magenta nodes",
+          "slot": 13
+        },
+        {
+          "id": "i0313",
+          "name": "高带宽存储晶粒",
+          "tier": 6,
+          "brief": "wide memory die with four cyan segments",
+          "slot": 14
+        },
+        {
+          "id": "i0314",
+          "name": "神经运算模组",
+          "tier": 6,
+          "brief": "neural compute module with large pink diamond",
+          "slot": 15
+        },
+        {
+          "id": "i0315",
+          "name": "长期记忆模组",
+          "tier": 6,
+          "brief": "long-term memory module with paired lavender storage blocks",
+          "slot": 16
+        },
+        {
+          "id": "i0316",
+          "name": "多模态感知模组",
+          "tier": 6,
+          "brief": "multimodal perception module with lens and side prongs",
+          "slot": 17
+        },
+        {
+          "id": "i0317",
+          "name": "设备·高密度储能工厂",
+          "tier": 6,
+          "brief": "high-density energy cell production machine",
+          "slot": 18
+        },
+        {
+          "id": "i0318",
+          "name": "高循环电芯",
+          "tier": 6,
+          "brief": "single reinforced high-cycle rechargeable cell",
+          "slot": 19
+        },
+        {
+          "id": "i0319",
+          "name": "高密度电池组",
+          "tier": 6,
+          "brief": "three bundled high-density battery cells",
+          "slot": 20
+        },
+        {
+          "id": "i0320",
+          "name": "能源管理模组",
+          "tier": 6,
+          "brief": "energy management board with pink power node",
+          "slot": 21
+        },
+        {
+          "id": "i0321",
+          "name": "冗余供电模块",
+          "tier": 6,
+          "brief": "paired redundant power modules with separate plugs",
+          "slot": 22
+        },
+        {
+          "id": "i0322",
+          "name": "设备·人工智能训练集群",
+          "tier": 6,
+          "brief": "small AI training cluster of three server blocks",
+          "slot": 23
+        },
+        {
+          "id": "i0323",
+          "name": "多模态训练数据集",
+          "tier": 6,
+          "brief": "multimodal dataset cartridge with eye and waveform symbols",
+          "slot": 24
+        },
+        {
+          "id": "i0324",
+          "name": "基础认知模型",
+          "tier": 6,
+          "brief": "basic cognitive model capsule with one pink node",
+          "slot": 25
+        },
+        {
+          "id": "i0325",
+          "name": "训练误差报告",
+          "tier": 6,
+          "brief": "training error report sheet with jagged red graph and no text",
+          "slot": 26
+        },
+        {
+          "id": "i0326",
+          "name": "感知与规划模型",
+          "tier": 6,
+          "brief": "perception-planning model tile with eye and route arrow",
+          "slot": 27
+        },
+        {
+          "id": "i0327",
+          "name": "安全决策模型",
+          "tier": 6,
+          "brief": "safety decision model tile with shield and check symbol",
+          "slot": 28
+        },
+        {
+          "id": "i0328",
+          "name": "可部署认知核心",
+          "tier": 6,
+          "brief": "cyan diamond cognitive core capsule with pink central node",
+          "slot": 29
+        },
+        {
+          "id": "i0329",
+          "name": "设备·仿生肢体装配站",
+          "tier": 6,
+          "brief": "bionic limb assembly station with robotic leg",
+          "slot": 30
+        },
+        {
+          "id": "i0330",
+          "name": "仿生驱动关节",
+          "tier": 6,
+          "brief": "round bionic drive joint with visible central hub",
+          "slot": 31
+        },
+        {
+          "id": "i0331",
+          "name": "灵巧操作手",
+          "tier": 6,
+          "brief": "upright five-finger articulated white robotic hand",
+          "slot": 32
+        },
+        {
+          "id": "i0332",
+          "name": "双足移动底盘",
+          "tier": 6,
+          "brief": "pair of small biped robot legs on hip frame",
+          "slot": 33
+        },
+        {
+          "id": "i0333",
+          "name": "仿生躯干框架",
+          "tier": 6,
+          "brief": "hollow white bionic torso frame with pink center socket",
+          "slot": 34
+        },
+        {
+          "id": "i0334",
+          "name": "仿生头部组件",
+          "tier": 6,
+          "brief": "detached white robot head with cyan visor and pink eyes",
+          "slot": 35
+        },
+        {
+          "id": "i0335",
+          "name": "仿生上肢组",
+          "tier": 6,
+          "brief": "paired white bionic arm assemblies",
+          "slot": 36
+        },
+        {
+          "id": "i0336",
+          "name": "设备·智能机器人总装线",
+          "tier": 6,
+          "brief": "smart robot assembly line with upright robot silhouette",
+          "slot": 37
+        },
+        {
+          "id": "i0337",
+          "name": "未配置机器人机体",
+          "tier": 6,
+          "brief": "plain unconfigured robot body with dark empty chest",
+          "slot": 38
+        },
+        {
+          "id": "i0338",
+          "name": "完整人工智能核心",
+          "tier": 6,
+          "brief": "complete AI core with pink diamond and cyan cradle",
+          "slot": 39
+        },
+        {
+          "id": "i0339",
+          "name": "待验收智能机器人",
+          "tier": 6,
+          "brief": "upright robot waiting in small testing frame",
+          "slot": 40
+        },
+        {
+          "id": "i0340",
+          "name": "设备·终端验收舱",
+          "tier": 6,
+          "brief": "terminal acceptance pod with robot-sized opening",
+          "slot": 41
+        },
+        {
+          "id": "i0341",
+          "name": "智能机器人",
+          "tier": 6,
+          "brief": "complete friendly white intelligent biped robot",
+          "slot": 42
+        },
+        {
+          "id": "i0342",
+          "name": "验收合格凭证",
+          "tier": 6,
+          "brief": "acceptance certificate plate with simple cyan check badge",
+          "slot": 43
+        },
+        {
+          "id": "i0343",
+          "name": "维修型智能机器人",
+          "tier": 6,
+          "brief": "intelligent repair robot with wrench forearm",
+          "slot": 44
+        },
+        {
+          "id": "i0344",
+          "name": "物流型智能机器人",
+          "tier": 6,
+          "brief": "intelligent logistics robot with small cargo pack",
+          "slot": 45
+        },
+        {
+          "id": "i0345",
+          "name": "精密装配型智能机器人",
+          "tier": 6,
+          "brief": "precision assembly robot with narrow twin-finger grippers",
+          "slot": 46
+        },
+        {
+          "id": "i0346",
+          "name": "可扩展智能工厂许可证",
+          "tier": 6,
+          "brief": "expandable factory license card with factory silhouette",
+          "slot": 47
+        },
+        {
+          "id": "i0347",
+          "name": "封存碳酸盐",
+          "tier": 6,
+          "brief": "sealed ivory carbonate storage block",
+          "slot": 48
+        },
+        {
+          "id": "i0348",
+          "name": "永久封存建材",
+          "tier": 6,
+          "brief": "large permanent dark storage building brick",
+          "slot": 49
+        },
+        {
+          "id": "i0349",
+          "name": "极端工况智能维修机器人",
+          "tier": 6,
+          "brief": "shielded extreme-duty repair robot with wrench and visor",
+          "slot": 50
+        },
+        {
+          "id": "i0350",
+          "name": "柔性立体输送带",
+          "tier": 6,
+          "brief": "short flexible three-dimensional conveyor with raised bend",
+          "slot": 51
+        },
+        {
+          "id": "i0351",
+          "name": "神经调度单元",
+          "tier": 6,
+          "brief": "neural dispatch node with pink hub and four cyan branches",
+          "slot": 52
+        },
+        {
+          "id": "i0352",
+          "name": "自修复生产模块",
+          "tier": 6,
+          "brief": "self-repair production module with gear and tiny wrench",
+          "slot": 53
+        }
+      ]
+    }
+  ],
+  "legacy_aliases": {
+    "iron_plate": "i0045",
+    "gear": "i0049"
+  }
+}

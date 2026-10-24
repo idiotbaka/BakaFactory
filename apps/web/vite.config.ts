@@ -8,6 +8,11 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("/internal/catalog/definitions.json"))
             return "game-catalog";
+          if (
+            id.includes("/assets/items/v3/") ||
+            id.endsWith("/game/itemSprites.ts")
+          )
+            return "item-sprites";
         },
       },
     },

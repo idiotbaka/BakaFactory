@@ -1,0 +1,3561 @@
+{
+  "count": 355,
+  "current_items": 352,
+  "legacy_items": 3,
+  "duplicates": [
+    ["i0045", "iron_plate"],
+    ["i0049", "gear"]
+  ],
+  "items": [
+    {
+      "id": "i0001",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 114,
+      "sha256": "1d8a0f7c14f69d9cd5137a2347fb4ac9e98aed1beaafb280edc9a7d67ccb5529"
+    },
+    {
+      "id": "i0002",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 146,
+      "sha256": "eea3e161a90acdb3a903a9a5a1b386f363fc2e2cc9082ecff7604cacd0846180"
+    },
+    {
+      "id": "i0003",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "98b15795f71dfc03bead433459489e062e32acd657b602ef3cc556c20ff1e06f"
+    },
+    {
+      "id": "i0004",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 146,
+      "sha256": "66ceca0b892253da66b9895b057d9560ce0eeb56d1c1469b2344afa63f32b439"
+    },
+    {
+      "id": "i0005",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 158,
+      "sha256": "ca3ad0991b425f53d172a9edeebe808840ac12cb2c19fbf4108b1d4ca0a9d588"
+    },
+    {
+      "id": "i0006",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 114,
+      "sha256": "8b1aaadd41666840bcbc70fcc06349807c40c5eb917c5ba601f7d8ec40108d47"
+    },
+    {
+      "id": "i0007",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 174,
+      "sha256": "e96c33c78ea52522305f98769c00142906e82d35e55348e1327887672396c42b"
+    },
+    {
+      "id": "i0008",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 106,
+      "sha256": "19549508b11b1d9bb24826fa111d6644e16a3393403f94dfb25ea2d0c9523f79"
+    },
+    {
+      "id": "i0009",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 192,
+      "sha256": "f61594e5761a85d8f4c55e2ef045f683b821aa38e55ce3731109c3b0a6a935b2"
+    },
+    {
+      "id": "i0010",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 25],
+      "black_pixels32": 88,
+      "sha256": "8acbe53744a77bedf769fadad2f7d717cb26284a8326408b33cbba2b4811a428"
+    },
+    {
+      "id": "i0011",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 114,
+      "sha256": "5edbe52091919b52d66c55fb9a05be78f35428256352f94d1cbd95fdfee2acd5"
+    },
+    {
+      "id": "i0012",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 101,
+      "sha256": "8516dcc947a78ccda25df6d56f8716ac7ac76731391ecb86408f9f00fa5e0969"
+    },
+    {
+      "id": "i0013",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 147,
+      "sha256": "c697ea4cd138d1af1aa39b6d6697a4443dd64ce8f2e6cc8d5373c742831ebb61"
+    },
+    {
+      "id": "i0014",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 94,
+      "sha256": "663fb9b4628cbe78c5ba9f534f7e05af8dc0a6d20e3efcae9929be4f375c7641"
+    },
+    {
+      "id": "i0015",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 104,
+      "sha256": "81e658a245ccb76cc36d5f4797d520b1951da0339185fe7ccdeeb5bb92fc9c41"
+    },
+    {
+      "id": "i0016",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 98,
+      "sha256": "16eb8a1911179a8bc4a3294226e566e14bac4286fe89fd644a165cffe280a0f1"
+    },
+    {
+      "id": "i0017",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 111,
+      "sha256": "f35efae4f844b6b68051249ee201af6752f6ba45ef61a27d46fb554635db11a7"
+    },
+    {
+      "id": "i0018",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 114,
+      "sha256": "4348e9353aea92509d77f277c913fcf96122eeefa4776873b7d9740868bfef3f"
+    },
+    {
+      "id": "i0019",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 112,
+      "sha256": "58cad6fb76ecd33f0d54e31d7818a54e04cc10b206217da23eb711caa7333c44"
+    },
+    {
+      "id": "i0020",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 116,
+      "sha256": "5c06cd230f8e68386b6e4402e2a244dc436e2f8edef06e13f6cb8ad43766d651"
+    },
+    {
+      "id": "i0021",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 112,
+      "sha256": "f4c94995eb386cd6d9fd182830a20a7b5a6d994b07aca9a37818184c16270492"
+    },
+    {
+      "id": "i0022",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 109,
+      "sha256": "4b8b385626665c08040dea24335742d19b06b787f6772304006f9420f81b8ac8"
+    },
+    {
+      "id": "i0023",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 102,
+      "sha256": "e46bff5ce51bff27e9a60208d1ab318ff81d7674a3dab4c7c676fd5edbf98d5d"
+    },
+    {
+      "id": "i0024",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 110,
+      "sha256": "e5eb3ffd9b525a7efba4491f55be96adc14e77e9d6f61b9438ca628127e94fd4"
+    },
+    {
+      "id": "i0025",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 103,
+      "sha256": "4a4c0a12a2dbb32d9d30651dd59c974b33754a719fa49a22ec436dcc177b7eac"
+    },
+    {
+      "id": "i0026",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 105,
+      "sha256": "335ec6c741cae01ada5246c1838b9565a4c221eb997bed60cb21abf75e8b89d8"
+    },
+    {
+      "id": "i0027",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 27],
+      "black_pixels32": 124,
+      "sha256": "f89ec54353de6aab697cf77e719ef829c9f26838f1304b6e45ea7bacfb496edf"
+    },
+    {
+      "id": "i0028",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "1390a10b548dc4fd425a9256737c69a501a6babe991184a11c74fc4c0fdf7254"
+    },
+    {
+      "id": "i0029",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 107,
+      "sha256": "43fa19176ccda512d83897dd1045374e6c14f8b9b05aae8835a0436e23124cde"
+    },
+    {
+      "id": "i0030",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "959d30deb6ea2bc7ec6429e12d8edf0861e78f5c6ac37a17d49181021ba7e5e1"
+    },
+    {
+      "id": "i0031",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 14,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 93,
+      "sha256": "58689893375411fab69eb253cfbb3364d2cb23d2feef0ec29d317688abaabc5e"
+    },
+    {
+      "id": "i0032",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 94,
+      "sha256": "df54d2a56f9a3f71775c71a86cbf107949af22baac34729be1171afb278e95c0"
+    },
+    {
+      "id": "i0033",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 100,
+      "sha256": "20c9e7ecc414e1dc4be3db6b868d1e3a5fd7fe7d8dfec58bf41e5299e065aa69"
+    },
+    {
+      "id": "i0034",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 14,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 123,
+      "sha256": "6264d023fd20e9931ddb3d515b782091da32f301dd7c62a9efdf8db13acd5f6b"
+    },
+    {
+      "id": "i0035",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "69bc10ae591a9c4eb5e287dd83b40a8d9d65e63c00816b87781fd01ff7b832a7"
+    },
+    {
+      "id": "i0036",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 110,
+      "sha256": "79df09c303808e1fb5b5854d66b874a458ac0ee67695a1be9055ebf5bf26ccba"
+    },
+    {
+      "id": "i0037",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 102,
+      "sha256": "aea82001523b2a3c56a4637444fdf74acec4f0568d84f1d2123db2b14408efad"
+    },
+    {
+      "id": "i0038",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "aed053a8ca647606a4b12d9a2e1a4f27878fe548112b771e0cafb549897c5a97"
+    },
+    {
+      "id": "i0039",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "a2c5a5aa868e799ec53ba243a876527a57ad8f47975639fb3e49b382adb53f60"
+    },
+    {
+      "id": "i0040",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "02d7d1a47c49e7408eaed7b23726f6f9db0971215f7476127dc20e3af3dd507e"
+    },
+    {
+      "id": "i0041",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "83f9e0bdaaf780aa7d11112197e3c0dd344aa01e2156663318cb38fd7b2e7f5d"
+    },
+    {
+      "id": "i0042",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "e8047ea6036e30053b9f87aef4411ce5cacff16be1528db669f8e964837dc5bb"
+    },
+    {
+      "id": "i0043",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 155,
+      "sha256": "ecf57443ef453b9a57bcf85d7254d030b23eff0a10bb59ececfdbe1f1c130c47"
+    },
+    {
+      "id": "i0044",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "e3c4b3e6cdd932c5c46f4da736facbc60fa07020231b38d1c24cc7a61ddf70cb"
+    },
+    {
+      "id": "i0045",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 99,
+      "sha256": "959c8a0b6bb26d384373bb3fa77ac565b07d15858111ca4de286c8087e6a129a"
+    },
+    {
+      "id": "i0046",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "3cdc750c28a675ce35d8279a8134b9ec6031bcc41203412d6252129453a22834"
+    },
+    {
+      "id": "i0047",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 123,
+      "sha256": "b35b4435053767b965dafde7c502208d9a89fefb3f173e863dbceab0a17993e6"
+    },
+    {
+      "id": "i0048",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 132,
+      "sha256": "0856cc9a742d4a6fdc88e7659c79c229f69d7f7d5df22dc28c0507afccdf2b1d"
+    },
+    {
+      "id": "i0049",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 157,
+      "sha256": "76a436b767f708a35b76050fbdeba48d4f0fe5a9911763edf74c5a299c4edc4d"
+    },
+    {
+      "id": "i0050",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 124,
+      "sha256": "75eb6b8898e7ed3b2fccf6da76d77f61acad8dc1b4f2408b02562f77536a1ee0"
+    },
+    {
+      "id": "i0051",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 124,
+      "sha256": "e5d3e3c1c8ba56466376564065e402ae6bd34f420e77a2924be498bd625677a8"
+    },
+    {
+      "id": "i0052",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 115,
+      "sha256": "ecba3c2a25121235afb44b1c4ca58c0391be84d76134bd8dacb62f0abf5d7e63"
+    },
+    {
+      "id": "i0053",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 112,
+      "sha256": "716281d285a28cde1fce74531d57469881cd42951853085ccf2997c6f81f8707"
+    },
+    {
+      "id": "i0054",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "9de0a5261d3183977f5f4f63c7772ab104f2a980bced10811c5b8b5b73997c9a"
+    },
+    {
+      "id": "i0055",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 133,
+      "sha256": "00ba9a3fe62767c4c7a0dcf920b8cc3c5f875a98198f707fde31c0922f66f962"
+    },
+    {
+      "id": "i0056",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 115,
+      "sha256": "89b9c24a76b04712ddfa1a49ae65aba472374d0e1a3253bb617ab206c0918c99"
+    },
+    {
+      "id": "i0057",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 24],
+      "black_pixels32": 93,
+      "sha256": "dfae203f1fe0da58fbd110ed66fcfc47b99884d699446fea07c5f9d3fe5c1184"
+    },
+    {
+      "id": "i0058",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 100,
+      "sha256": "d643ce42ea619c7b9a36668e3f9a94365f180208338565854afe72a342180dd4"
+    },
+    {
+      "id": "i0059",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 125,
+      "sha256": "20ec2f820bbb1142ccc53cd8d7641881881109ccfe65e9aeb2b2438b82b5f7eb"
+    },
+    {
+      "id": "i0060",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 150,
+      "sha256": "e9f101dced538b8c4fe3e64361bc29fe8e38e37967d1ffc6977e5aff35582086"
+    },
+    {
+      "id": "i0061",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 111,
+      "sha256": "7fa4b362756e2bff64de1c40e08081669bfaa448f5cb154a188c375279cbf78b"
+    },
+    {
+      "id": "i0062",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 123,
+      "sha256": "6c90cba5fde455448ae74cc4eb9ca9467d82c547765babc3132b866e88242094"
+    },
+    {
+      "id": "i0063",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "66561fa56c56f5853ff139164e753fc53972c46d3e6692a6e0ff6a61f58c3786"
+    },
+    {
+      "id": "iron_ore",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "b9b3e1b56cbb14f6150428ad0044fba8c7abf17716546332fdabe120b3710063"
+    },
+    {
+      "id": "i0064",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 109,
+      "sha256": "ec33e59858c6047febcafdd897fe10b159f3da1f159b7b13b8e1023f85327e5f"
+    },
+    {
+      "id": "i0065",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 115,
+      "sha256": "c2db67001e081f82856fc04a176b12e77941beeec9c1ae53ec67615d34e92f2e"
+    },
+    {
+      "id": "i0066",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "d1d048358524d22e79b42140cefa2e62a8597659a980aad8c3f88ed5e5bce403"
+    },
+    {
+      "id": "i0067",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 110,
+      "sha256": "a21fb6e86258b5cce91e25d15c19fb944cf6138361d9383ca62fa07a26988367"
+    },
+    {
+      "id": "i0068",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 104,
+      "sha256": "d8fcb6387780125309855d8337e5309544d7d3b396475e65a38235a92c8b94d7"
+    },
+    {
+      "id": "i0069",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 132,
+      "sha256": "8da5be9b004ba5f5dea441e641ebb0c4adcf266c8c596e2f8b96ecda0f7c2266"
+    },
+    {
+      "id": "i0070",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "e345ff5fc3c562e1967ba03fe8ac57810a9fa0b3206283e1bd4891b1b78c5449"
+    },
+    {
+      "id": "i0071",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "ddbb339f12756629f9c6df4dc964a42a587cabd72caec7d3435485e3e3f4077f"
+    },
+    {
+      "id": "i0072",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 167,
+      "sha256": "a236d1cdb59a71c1bf848acdb404ebdc46d959e4c84616c62207da3597bcb26e"
+    },
+    {
+      "id": "i0073",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "66c86c9956d1e18c31848c5ef3e0c8d70d96dc0a3942b20f01f268f57035c883"
+    },
+    {
+      "id": "i0074",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 114,
+      "sha256": "ef6286facdb33ef240ddcc946c4b958490989a4b58977d6964a2c8a554230913"
+    },
+    {
+      "id": "i0075",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 102,
+      "sha256": "f457036bd6b819f0cef34cace9bd51087de513bd3001edc74485f35d1aa7cb26"
+    },
+    {
+      "id": "i0076",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 122,
+      "sha256": "05207cd77ae32dba2fef5f60df1911aa5f980a6fd289b60e6dba92d20c7ae106"
+    },
+    {
+      "id": "i0077",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "c9d0706b48c8243e8d97034b2d93e2daff714d7b9e5bdb9eb60542dbd855b510"
+    },
+    {
+      "id": "i0078",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "64a9f90da065a3e3ddaa2a4cacf19852a591747b39be3b307aa2dd9b93abd4cf"
+    },
+    {
+      "id": "i0079",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 128,
+      "sha256": "773df08afd78c9ae08cc5f4090cf2cdf71e7bc173e609915b26199a98a3d6f82"
+    },
+    {
+      "id": "i0080",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 108,
+      "sha256": "87031b6e61349314affdf6a366c8fe4ac4afb57b3f7766a5807cbc89d2756da7"
+    },
+    {
+      "id": "i0081",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "496509be0825ececb99a7068037fbfeb03523da97c7af899223b70c2d57dee5e"
+    },
+    {
+      "id": "i0082",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "5186dc24c6d8e2d743be76abd3bddd8e7352dbc96be1376254e7e501e4faa23c"
+    },
+    {
+      "id": "i0083",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "c0088afee57150ca6c2b73ef349b4c57dafe6df7f0664f56cc6134e9cb58143b"
+    },
+    {
+      "id": "i0084",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 113,
+      "sha256": "f3edd4325b3b6e66b968a80e3e4700528bb5101aa75cc26957330b5688ddff8c"
+    },
+    {
+      "id": "i0085",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 126,
+      "sha256": "c1052d5640b1f90510fef09a34efca0e64d7aaa9fbd84a4f480a61022519126b"
+    },
+    {
+      "id": "i0086",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 98,
+      "sha256": "1199db29931c82dda88277bc52d1e36c3188adc87406bf99f794b4a80ba4f50d"
+    },
+    {
+      "id": "i0087",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "076310abdf32edcadcac6723d3eed73b4352051c194c6f64700de52ca8556f1e"
+    },
+    {
+      "id": "i0088",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 114,
+      "sha256": "9581bf161591509d3632d2f9724a6f6d167d3304934163658b704d8ec0ac7867"
+    },
+    {
+      "id": "i0089",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 156,
+      "sha256": "bdee72fe2f8e15035f12e61d2288440bd9a8843aa201b5b772bccd12c79cb61f"
+    },
+    {
+      "id": "i0090",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "a1b70f4c13558c8276b1d569c0f3e2ec5bf699aafcdc0c8d30894aa786248ccf"
+    },
+    {
+      "id": "i0091",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 110,
+      "sha256": "6f5ddbe8b93dd2d4508260ba39b53f75b4a26b2dcfca01378c878f8938f6c6d0"
+    },
+    {
+      "id": "i0092",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 116,
+      "sha256": "869568cc26be12631fe4ac23e485959b60a94cb01acaacc51c5225eb08be774b"
+    },
+    {
+      "id": "i0093",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 99,
+      "sha256": "d5b3c6ab04f1f7988e936470d4a28085b343c7749561745ede88fc8a524f97c1"
+    },
+    {
+      "id": "i0094",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "4bd176763fbad6505861de47e03e3442d44cfbc96a29f8c2ef9e851c1ba9e6fb"
+    },
+    {
+      "id": "i0095",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 148,
+      "sha256": "fd3151c8cbcda9c520a51df0f3a9911ded7f9a28badc91cf2d4c5f1914d0919e"
+    },
+    {
+      "id": "i0096",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 120,
+      "sha256": "7ec0f625a9ee781c3c6b190b0ec915dd3640af607ce451a218ddd85633211890"
+    },
+    {
+      "id": "i0097",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 95,
+      "sha256": "934e9d7d953e344ec39e17e4a96b5f52672c64994e1f691529fcd38d14c05e12"
+    },
+    {
+      "id": "i0098",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "3ab29afca2ee23d53087868b6d62e2ac9234a46be2b11b863e67219a1ae0e004"
+    },
+    {
+      "id": "i0099",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "a8a47fdf6cc020ad48d74792d7e6c8450ecac0aa7c55788ef64f0f27fa15efda"
+    },
+    {
+      "id": "i0100",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "ee103ceccb8464b43b044aa6417d8434f04d7f4959b0c9ae85c1108dc0ee5ccf"
+    },
+    {
+      "id": "i0101",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "2c1b8d85d334c3c4978f98766b7417ec98899deedfb3652a298e9b0c2932724b"
+    },
+    {
+      "id": "i0102",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "8282e90e066f008cc0a270faa595dba39a9a28dde551d6bd5176b9f256cd3336"
+    },
+    {
+      "id": "i0103",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "d9dee8b7630a35cfdaf62f3e90b3c7ee76344d43e42c36205fd1f38f00c0b520"
+    },
+    {
+      "id": "i0104",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "0371ec2fbfe7b9201276168139cd1ae27ee011d24009d990ea0b1cf7d787b746"
+    },
+    {
+      "id": "i0105",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 11,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "b61765a7279e9e127f890285a65a19a151122125d6939c1405e0d3fb4cc29c3d"
+    },
+    {
+      "id": "i0106",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 100,
+      "sha256": "b8893e6d3a64073161d7638c406e286e4d337dcd4f8ea9008f892c951841ad31"
+    },
+    {
+      "id": "i0107",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 125,
+      "sha256": "a5b18c9d00584e3c2b20c78cc243cb93b06b8fe367d2e138f28f7f93aad0fe80"
+    },
+    {
+      "id": "i0108",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 114,
+      "sha256": "9883bb878fa84c758db2cf1aa91fba06e02c0f3e910faa57d927918ffa34b670"
+    },
+    {
+      "id": "i0109",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 112,
+      "sha256": "4151c161e09d6fcfc442c53b13fa94b8d2258ef37cef0b1e26b0d9db6e7c6440"
+    },
+    {
+      "id": "i0110",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 98,
+      "sha256": "5e7d1fedb1a4ba2c102f77a305966c627a69c46be395428e72757bd7ba9e9702"
+    },
+    {
+      "id": "i0111",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 112,
+      "sha256": "9a3232870e822543ab77b2eec125cf146da1807be6f73eb4ec67d4af3b28fe57"
+    },
+    {
+      "id": "i0112",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "d4aee61256a411b3d7f0a772781d9deaa5bcb67335501e4c192ff0a53ee48a66"
+    },
+    {
+      "id": "i0113",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 100,
+      "sha256": "61e6bd60fe4d11f4eb5cef0b462f5983322ce21cd912d78e025a5b94f0f5808d"
+    },
+    {
+      "id": "i0114",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "ad6cba620f00754a1ddec8b205f5e173d5613741634d823918fa0220a46ed132"
+    },
+    {
+      "id": "i0115",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 106,
+      "sha256": "764cec302278d18ee470922ed3474de0311e828e64b24f082559bfc27f0a3567"
+    },
+    {
+      "id": "i0116",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 11,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 97,
+      "sha256": "4f3ecb58b5a93a89ecdffa0e5d68abc4abe31a6fb582bd70f1a88c55cfa3befa"
+    },
+    {
+      "id": "i0117",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "7576753b07aa18bbefab3a70aa4da88fba40c83e721d932f21c2454da7cf0edf"
+    },
+    {
+      "id": "i0118",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 101,
+      "sha256": "b7911aeb988be68cedcfc84672c588a2772d949da33cebfd9e10f8c4402d499e"
+    },
+    {
+      "id": "i0119",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "47601c2f40509b319202e3684dd49574948d24d1b74aac06641e646235dcf3e0"
+    },
+    {
+      "id": "i0120",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "255956fd904c60f2739b5c7fa57be66d66ee857d02b2b7cef889b7d904308ef4"
+    },
+    {
+      "id": "i0121",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 25],
+      "black_pixels32": 94,
+      "sha256": "e70f9f111b6c0119b220b1ad73c478eda33156eaa1beb10c824ed86d5c508b1b"
+    },
+    {
+      "id": "i0122",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 117,
+      "sha256": "5a5d6e561c7e3ec3d17e49a6908ac46ace714ffcbe2763a4a6df39aedba036c4"
+    },
+    {
+      "id": "i0123",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 106,
+      "sha256": "f98d664f16f63f282c223f6a905d1ffb0b0fda0e0f98b1a1600c63bda97ce93f"
+    },
+    {
+      "id": "i0124",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "800c077907c4b2761db4e07eb7fb601f0fba0d1e3c631faf7fae1bd817b672a4"
+    },
+    {
+      "id": "i0170",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 104,
+      "sha256": "7dc6b50e9e208531e1bf016d3c00ff2c0e960215edbe7323ffeeb8b7f5a79626"
+    },
+    {
+      "id": "i0125",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 120,
+      "sha256": "fade2b79c0c3f6a5599164bb74a5f4eb651aa578352b8faf6b0d5855efc4d76b"
+    },
+    {
+      "id": "i0126",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 104,
+      "sha256": "7c5949a63bd275ec00386ca8aad4283bf732e53fdc04d693ee608bd019373bd6"
+    },
+    {
+      "id": "i0127",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 12,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 117,
+      "sha256": "25a8b11c157cce8f7201b44c6a942a8b377b4f38274c9234d4e11312fe28b023"
+    },
+    {
+      "id": "i0128",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 96,
+      "sha256": "d017a2cb3d9eba1809cb7daaffe67f417dc06768051bbd91b71ce710217a93fd"
+    },
+    {
+      "id": "i0129",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 101,
+      "sha256": "7891c37799e14db8941cd07dd8c9f9596fbfe371c83c5f636d7e8cb9ceab5f4e"
+    },
+    {
+      "id": "i0130",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [7, 2, 25, 30],
+      "black_pixels32": 108,
+      "sha256": "7dac9a2bd2d2c3729eafdbfebe50d4327b2bf24df94fab57c860f31e91982c66"
+    },
+    {
+      "id": "i0131",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 102,
+      "sha256": "c7638a3bdbc7d0c9e7d2c47a6f03b14d5a94911eac1bbae714967087c2e59f8f"
+    },
+    {
+      "id": "i0132",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 111,
+      "sha256": "9b04c9104ec994144a0e8691fdd638fb0ac639c4784b02feb4fd58c72bd8a6ad"
+    },
+    {
+      "id": "i0133",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 102,
+      "sha256": "67dc85ac3cf0c23d485e58f34b97d7c8b31c017961162da29d8b0771949bb8c3"
+    },
+    {
+      "id": "i0134",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 97,
+      "sha256": "6b66a1b08bfb5f18b702f8486bae5ec7416c0378f6a0b291ccbe6435ec764e21"
+    },
+    {
+      "id": "i0135",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 102,
+      "sha256": "42fe61d42f7556a350b95b439d3ac6a6b8c1190e1528e1d15ee620da019c0e26"
+    },
+    {
+      "id": "i0136",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 102,
+      "sha256": "c034c784e35e6bd6cc9abcb1d2a87f1f03507a0092cff5e9d082cc2ac27c9e60"
+    },
+    {
+      "id": "i0137",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 90,
+      "sha256": "88e02e0309b67c479a185340e5803552a9031e4853fe27384e53d9f873c62bfd"
+    },
+    {
+      "id": "i0138",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "bb75bd2cb8a8a16703fb6211d1a683a0a09b24485549e9f7585deaf440cb1c3e"
+    },
+    {
+      "id": "i0139",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 106,
+      "sha256": "0abd836bbb70847c0e5f458d826d465cea6821147f3f2608e6bf3861a16558cd"
+    },
+    {
+      "id": "i0140",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 105,
+      "sha256": "de8f6e56a31ffe41a2ff9f7137f7bf49495cccc234bb1be6409ea43dd367be12"
+    },
+    {
+      "id": "i0141",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 149,
+      "sha256": "c7b292df4402f06ae49bd7343a9d53db1ea06b6e1155d8c8e7bd409776b35ee7"
+    },
+    {
+      "id": "i0142",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 90,
+      "sha256": "477336cb92aeaaefc7401e85673cb47bd823810ed5508bf659e25f0b8c22e7dd"
+    },
+    {
+      "id": "i0143",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 26, 30],
+      "black_pixels32": 92,
+      "sha256": "7975a4745734eed1f0b45c2c5b2fe6e4a4dd6d3ed6629968ed5fd1ffe1dfde0d"
+    },
+    {
+      "id": "i0144",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 25],
+      "black_pixels32": 88,
+      "sha256": "8cc1ce25a35a659d46ca5f96fe76cc9adc9597c2d6332929a404081feccd07aa"
+    },
+    {
+      "id": "i0145",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "b9193d508c7e55d5ce41c320ec6f4ceb85d710ca055d0878b1f4e02601c7203c"
+    },
+    {
+      "id": "i0146",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 110,
+      "sha256": "5322f58b9938cb7996a3118bab421749c5e9376e57caa142562fc179467dcc92"
+    },
+    {
+      "id": "i0147",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 119,
+      "sha256": "a9f7a389ffe4ef41f083e072fac4ddefbed3ffd3a45e7217f4060fced0a62b69"
+    },
+    {
+      "id": "i0148",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 27, 30],
+      "black_pixels32": 104,
+      "sha256": "2846857969891737e50f3bee4ec5dfb1215e9a9b39591127d0b40af6d7421cbc"
+    },
+    {
+      "id": "i0149",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 99,
+      "sha256": "e8abac96815aa31d9a6b8287fcca3061853e809b72709e23c1cf32cde86309f6"
+    },
+    {
+      "id": "i0150",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 27, 30],
+      "black_pixels32": 102,
+      "sha256": "4ee374f8dacab178c59dbc124557f3e6733a262cc17edeb5924385b4f0a6dd1c"
+    },
+    {
+      "id": "i0151",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 100,
+      "sha256": "ecedfe5499c7107a0f896f88e5a50f4429db89da0b1e8fea403cfe917c493230"
+    },
+    {
+      "id": "i0152",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 92,
+      "sha256": "5d471a3894723051d086841b2151f0afcf9a6e027ef640be42f92dbc2ceafc47"
+    },
+    {
+      "id": "i0153",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 113,
+      "sha256": "9e06a6e4da05dfef18dbe47f070645e583422d4c4e28f6c5c1211fee8b9dc5e0"
+    },
+    {
+      "id": "i0154",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 105,
+      "sha256": "cb39f619eebf24fbaa70ce52c9a01fc9d11bcecd1be10d8b2a29ea7eac10eb98"
+    },
+    {
+      "id": "i0155",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 90,
+      "sha256": "75848c953307c99ff9965cbfa69234ac276d4d084b3b592e0552fc0d9aaaab9d"
+    },
+    {
+      "id": "i0156",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [7, 2, 25, 30],
+      "black_pixels32": 88,
+      "sha256": "d28945ac009689c5bdbe336a20fe8ffe63127383ced9a59b235a74a6ee87b641"
+    },
+    {
+      "id": "i0157",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 102,
+      "sha256": "b6c30be1b8d4b4d8ee27dfeb9e11b67e68f4cc70be33eb931a4b9d9313e328a2"
+    },
+    {
+      "id": "i0158",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 104,
+      "sha256": "5415205747f7d82e6cf56b2aebc01f26f1cf30931c86f33a493908bbebdf4fbd"
+    },
+    {
+      "id": "i0159",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 26, 30],
+      "black_pixels32": 92,
+      "sha256": "9c1fc8581b50abada0b2473e5353581cb86ec81b9595009c2830b6cce01c066a"
+    },
+    {
+      "id": "i0160",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "ec858454c6da66fb60b38c4fa970b5b9dc88ed165d73e279b1fa9b660fef6730"
+    },
+    {
+      "id": "i0161",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 142,
+      "sha256": "a63538b16804341c99b4921e222d4b1cba02d6a77726c39ffb9cca10dfa41ce2"
+    },
+    {
+      "id": "i0162",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "e9aac120b8482296c0dfa625a947ef0670439b20d7eca7bb0d6c15bcfecfa911"
+    },
+    {
+      "id": "i0163",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "4b68f7a75c200981e976e9c3c5f016cd94bb9173634094edcd97b3c2aaedba4e"
+    },
+    {
+      "id": "i0164",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "cda088bc2aec05344b8992b8b866ba1c044c24676802b16dca6a6d277f2d2db8"
+    },
+    {
+      "id": "i0165",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 25],
+      "black_pixels32": 94,
+      "sha256": "136786111a26ab6a926345060cb3cc1cec2ba2340045d7f5740a10a7d3517866"
+    },
+    {
+      "id": "i0166",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 25],
+      "black_pixels32": 96,
+      "sha256": "02027687a8c6b29b1c2328af2b7f79c1bb0ae4d7d94266f696e35a85a4ab7d3b"
+    },
+    {
+      "id": "i0167",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 158,
+      "sha256": "1fe5242aea08bdfc37cfbcc0a751853f3b64184a2d1cfcd2d461ad37e79839df"
+    },
+    {
+      "id": "i0168",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "bd1de5c19f3fd550a5da94885a44af9f8f808e5f2d0eb7d180fc84ba0eb39f25"
+    },
+    {
+      "id": "i0169",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 134,
+      "sha256": "806fb005300a3d630c8d3ffaf51c3eb8fe4ee8b093fb9ecd611f0a816d258292"
+    },
+    {
+      "id": "i0171",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 136,
+      "sha256": "e79125496407a2cddf7c901d7a98d8b304e913cc14202c73493c08095b68ef6c"
+    },
+    {
+      "id": "i0172",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 121,
+      "sha256": "b6d6ca2d3479fca73f0bcef4bcdf8758096e38bc7d463aec852b21fd3c31f6b9"
+    },
+    {
+      "id": "i0173",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 134,
+      "sha256": "7488016faa588d652eee229b83c137e825941f13c4cda3c8231543410c1e0bac"
+    },
+    {
+      "id": "i0174",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "6c3bbf1ec6e32d91e3fe9a9bde2a1344fe3ca10e255e149a586bdf7377cdd058"
+    },
+    {
+      "id": "i0175",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 102,
+      "sha256": "f8a5840586210726c4071c98ce5dd207bf6afba04efa26fca5b01f8b2f716ec9"
+    },
+    {
+      "id": "i0176",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "7af571e628b22c276c2f039f4d566534eb7767ea0880a157061e0fcfc5009842"
+    },
+    {
+      "id": "i0177",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "6839da678e08550640a09e5bff7b5933f714b9f2ad56df73ca9f2634ab4d8f04"
+    },
+    {
+      "id": "i0178",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 27, 30],
+      "black_pixels32": 104,
+      "sha256": "1df82817f61dabda8a71abfe44b6741e68907e8bf501ccee4f02bf71a0ca80bf"
+    },
+    {
+      "id": "i0179",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 121,
+      "sha256": "b702acc165816041c354bb5cb9b812255277b71b695bbe8b5d5badb5e8106f19"
+    },
+    {
+      "id": "i0180",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 25],
+      "black_pixels32": 88,
+      "sha256": "a1f37c90a671d8796e4b5eb823b5cc4ab431b6262e4e3d548653ad3eb17d99cb"
+    },
+    {
+      "id": "i0181",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 142,
+      "sha256": "ddbdf2bdb1621f77e53814c61389aeb253ac1ee64e89edf87db17a23a3bf7162"
+    },
+    {
+      "id": "i0182",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 130,
+      "sha256": "d13f27d96a9ed9f7dc9b1e1ebda104079bc18570745f25ffc37f05f31e1c0785"
+    },
+    {
+      "id": "i0183",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 113,
+      "sha256": "59ebe427e979f89d3b326a8044e155c1790384493bc92ec0a21ce8c187fc2c5f"
+    },
+    {
+      "id": "i0184",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 114,
+      "sha256": "580ea7a4455dac889dba3f92155e5146e5bcc5e01bbb46ee36ae93cb1dcaacc6"
+    },
+    {
+      "id": "i0185",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 154,
+      "sha256": "07d5b7a2473cebecd088f1be53f238cf327cba2d14f3d4139be2296d48a4f860"
+    },
+    {
+      "id": "i0186",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 105,
+      "sha256": "9c89bc311649c7a5dc14993429f4d0d92f64a10356324c25bdcd255d60b9a85a"
+    },
+    {
+      "id": "i0187",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 27, 30],
+      "black_pixels32": 96,
+      "sha256": "3087170ab47e490c612d2dacafd2a222af11245a1c12811e227e2d5525547268"
+    },
+    {
+      "id": "i0188",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "54d3b666229c17577376ee694e2f906936fd704ac479320f40bd8abbdcce851f"
+    },
+    {
+      "id": "i0189",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 12,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 92,
+      "sha256": "3282e3cd11e333bf129d20cc142a125680464e584bc651d01f96cf2104de7806"
+    },
+    {
+      "id": "i0190",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "9c8b0226920f1a4db81de37e42ef133db0790f0fa385a232491aef8bc1cf2855"
+    },
+    {
+      "id": "i0191",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 133,
+      "sha256": "896d221e3ecb3c0fa6d21ab2ff3b2e16e5da4fa8be3e529abba4508e9ac6da25"
+    },
+    {
+      "id": "i0192",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 116,
+      "sha256": "639448cb1e33412243b765dbee4b2f6b4e678c1d541885c24417570d01e41ef2"
+    },
+    {
+      "id": "i0193",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 116,
+      "sha256": "4bebe4660cbe0790389609afb04e829f048343c9bc991f8a6030d1db927ef19a"
+    },
+    {
+      "id": "i0194",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 106,
+      "sha256": "1c73f987714a3d712d02d552935021dbeff4e2b7230980f6ea6e0834b8fee23c"
+    },
+    {
+      "id": "i0195",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 100,
+      "sha256": "b436813f24043c94c05c62e1375dbf517ca5babc19f74eca6b94fb37324aa3a9"
+    },
+    {
+      "id": "i0196",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "57048ffe95193e556f39832610e9ccec4c080217281e8f8096adc7b55c243b87"
+    },
+    {
+      "id": "i0197",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 94,
+      "sha256": "42e1bb606e8efad32d7967e231cc622ee4ea20ce7558a185628a8d860c336b32"
+    },
+    {
+      "id": "i0198",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "16eb3aca5df09043aa52bf3959e97f4cfecf288905b2b7a8127e7a8ba7f89735"
+    },
+    {
+      "id": "i0199",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 109,
+      "sha256": "008275a2a6bd343d30135e89ac0e180c5ea61376ad952d7a1077e1e28ca33f08"
+    },
+    {
+      "id": "i0200",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 134,
+      "sha256": "3af1e1f6a4337cf1c37e8b0f6552dae2cc1660829be0f76a67598f7556eb95e3"
+    },
+    {
+      "id": "i0201",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 168,
+      "sha256": "c5d429a97d00ea72121538d17e1364a9d7b6327cd26e722ee3b97504e6c07e3a"
+    },
+    {
+      "id": "i0202",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 27, 30],
+      "black_pixels32": 104,
+      "sha256": "df34f7c96025a9f148df4d2757c34cfcd985b5770e97cd843555a1d3de33be33"
+    },
+    {
+      "id": "i0203",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 110,
+      "sha256": "c4b7d704a16a4271c14874528ce0c1c1148dbe210d04287febb9cf46834cf99f"
+    },
+    {
+      "id": "i0204",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "57f54d9acb56feb757b19f2815db655a2c8c3319ca80ffdb861d074db9d5cb64"
+    },
+    {
+      "id": "i0205",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "ed18d6eae1c3c375c9bfa188f374eb05d3ca8131c625ad5017dec473ac27c138"
+    },
+    {
+      "id": "i0206",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 113,
+      "sha256": "ff55ae7f3703640b6cb14a738036981d60af38563e8f1dc558b2b6e1eea88fb1"
+    },
+    {
+      "id": "i0207",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 99,
+      "sha256": "876e1805f3cffedd9e897f1b7f1bb92572f5d7cec39cb5c71719d114b14ef726"
+    },
+    {
+      "id": "i0208",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "485e077a8e9ea1d7529aefbba19d762d0e40039da02f41e905c5f49152533ce9"
+    },
+    {
+      "id": "i0209",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 113,
+      "sha256": "2f2303b21f56030ed26ccaea6bbb578179f393a0b69a838f47ca32cf9e685dab"
+    },
+    {
+      "id": "i0210",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "febb7ec1ff9f72892e8f740144e3e49686d91daad9bc62fa626c2d6c9905313f"
+    },
+    {
+      "id": "i0211",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 108,
+      "sha256": "2ac00c4e1e8fd7fe28587be9f756543e0e98f2dc3010b0900ffcbb5d7ff629fc"
+    },
+    {
+      "id": "i0212",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [7, 2, 24, 30],
+      "black_pixels32": 86,
+      "sha256": "3c9659ff405b842c9f66d132bfef04ba1b0163b056ffa6b7076a2304264e889c"
+    },
+    {
+      "id": "i0213",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 108,
+      "sha256": "f6f3b1e4f6256fcdfc601206db4fcdb61ea86e2c3ce98183931d232eed9cfd55"
+    },
+    {
+      "id": "i0214",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 112,
+      "sha256": "55b591cc5cdb2f4d90525b545076ad0b817a3573196484bee0ee55871c0776a6"
+    },
+    {
+      "id": "i0215",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 108,
+      "sha256": "a20afbc391ca0c9f011f4269070f8c59b86ad63519ea2001af0dbb9469f0f878"
+    },
+    {
+      "id": "i0216",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 108,
+      "sha256": "9708e396d500a812412b905d61c6f43c490860f7f86a3a05e3c6b209a84b0eba"
+    },
+    {
+      "id": "i0217",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 125,
+      "sha256": "22f1be734156550950a2c619c985d61aae3abcc2332943f9c71b891090a32ae6"
+    },
+    {
+      "id": "i0218",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 114,
+      "sha256": "1e49f225ef7906490eacee89e488a7f679227ce9f5f878ef135cc6e8137392df"
+    },
+    {
+      "id": "i0219",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 116,
+      "sha256": "48021a40f0c3b79dcb3e5e162f97cfca58cb7b6684f1883afd34b2838f34da4e"
+    },
+    {
+      "id": "i0220",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 101,
+      "sha256": "f22057c5439e4f462001e77f7b1296e6f07a32c0df923db6ea46474c8d06cc8d"
+    },
+    {
+      "id": "i0221",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 108,
+      "sha256": "8799aab7dbc9e2d9f1255246d5f89f158c533fa31d2b26ca17ab32c74fe8549f"
+    },
+    {
+      "id": "i0222",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 107,
+      "sha256": "39904adae9469de2d8e96b52aa12db2bcf0397b548f5eb64b9a39e186ac9b1ea"
+    },
+    {
+      "id": "i0223",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "1159fa69f5dd4c74faafcc3dadfcbddaa3202cea33c8d22c2893e28d06338563"
+    },
+    {
+      "id": "i0224",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 146,
+      "sha256": "6a1c3f5bf30cbc1c6c599f6ef597494926854212c9c381e12c0d12236fd262a0"
+    },
+    {
+      "id": "i0225",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 181,
+      "sha256": "b3a349803c9fb7551a0b6eeebe7d91ed94b6eb19fb3e5d6d32aedd921c58bc39"
+    },
+    {
+      "id": "i0226",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "4519322e5c8c4304413d1ee0394cb6f19bf0333718f2b755039b52ac90bb1f7d"
+    },
+    {
+      "id": "i0227",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 152,
+      "sha256": "c7b8995138a42ffb1d5834fcc232efdd04157c45f7128c5acef7485ea47dd30a"
+    },
+    {
+      "id": "i0228",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 110,
+      "sha256": "cbe900a33cf6f388010c6058519e51dbc884a98b42c79d410cf4e6bc0ec16c57"
+    },
+    {
+      "id": "i0229",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 101,
+      "sha256": "07410aac0acd88abcc3ae0ea0c0d1731d736f062254673a56384a87aa5edd512"
+    },
+    {
+      "id": "i0230",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 132,
+      "sha256": "da3684399336f8d0eb476d2ac599881345601109c0335d48c6dddf9d14da1c6c"
+    },
+    {
+      "id": "i0231",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 108,
+      "sha256": "b27e18c058b5893dc016e5b2e4ad3a7204a0b8fb7d8629e344f3913dbaf1db89"
+    },
+    {
+      "id": "i0232",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 8, 30, 24],
+      "black_pixels32": 97,
+      "sha256": "14f4b8c946d560f824407eda08d8a1d43bb873ebd5baed4b95c95c0ae4169add"
+    },
+    {
+      "id": "i0233",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "37ed5d55d7bb76927ad23daf543ed49c601c9d23371f6fc6855354fde2a75597"
+    },
+    {
+      "id": "i0234",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "cca1c34b8cb0fee7b9c6dc1d36afa3c4e42207a1e18dab4b5a2196de904ae977"
+    },
+    {
+      "id": "i0235",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 107,
+      "sha256": "55a2ebd65e8ce596ab1692bdbe611641dd46c205d7cf7cad1958cceca6c0691a"
+    },
+    {
+      "id": "i0236",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 103,
+      "sha256": "85a509fa705cad43a2a71a116f87a52d25672fe594d609f45734f44c93dd4af7"
+    },
+    {
+      "id": "i0237",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 123,
+      "sha256": "b67b081f5335ded9d5c8bdd6899f559410fe2e77c1f8489e8dc0f60efc54a0e8"
+    },
+    {
+      "id": "i0238",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 104,
+      "sha256": "03e7b7bf77a442478149448b810a476c2bedf63ecab9c01f5209b4af55a99034"
+    },
+    {
+      "id": "i0239",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 113,
+      "sha256": "4ff186eac7741fdf1020e116f7a28b32778250532715a6d69cb1cc58946f44f4"
+    },
+    {
+      "id": "i0240",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 100,
+      "sha256": "d440600cb1b49da3e443c0e2c8e75ca92fa7324287acace658a5b59cb0694450"
+    },
+    {
+      "id": "i0241",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 132,
+      "sha256": "e0bc60113d7f7dcd991b6b5ffd0ca2b4129d6c61bbdd6de4c4273bc9728d4ba1"
+    },
+    {
+      "id": "i0242",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 113,
+      "sha256": "36cd8087792964c83f4bff752ae9365ac2193888e3156bab933e5b47abcbbde9"
+    },
+    {
+      "id": "i0243",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "6810de40b7795b9b4104723e3c5b910b055d541ff931f59fddc690d17287e953"
+    },
+    {
+      "id": "i0244",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 94,
+      "sha256": "efc7340c8443162d14eb5e23f2c8398f5bb3f5f84d991efe663d8a3c67ca1956"
+    },
+    {
+      "id": "i0245",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "7f1fb0f7bf70777182825c563417e02d081609422e92421009d76b9f7890473a"
+    },
+    {
+      "id": "i0246",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 113,
+      "sha256": "c65cad85cf1fe5bacfeb3d9bf80f7e1f7c2f1f87f9d8f6552f0e69776af1124a"
+    },
+    {
+      "id": "i0247",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 114,
+      "sha256": "c14949a5367b27fe6f4a4667ebdb2fae7129c30ec12d58e75f38564c754e2cab"
+    },
+    {
+      "id": "i0248",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "03547525910b6d562f46ebaab7b137106da71aeb726bf2ea6e705563a55260f9"
+    },
+    {
+      "id": "i0249",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 148,
+      "sha256": "64a3c19ade65c29281450df26a4cecac192bf35510a5f076bed38d82058b3ba4"
+    },
+    {
+      "id": "i0250",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "a3f58510f5af420068228bf14b553bec872ce81b5bbe40f137dc0d48782531b1"
+    },
+    {
+      "id": "i0251",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "17f3414351610efae4de734999c1faba01d7886c5d2b59c35a61867c240bf0d3"
+    },
+    {
+      "id": "i0252",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 110,
+      "sha256": "5c92e38aa4b96b9bd391c6b9f8394113a7cc16f5fb098f5f121d493ee3df2ae5"
+    },
+    {
+      "id": "i0253",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 92,
+      "sha256": "a6bd762317a74855c7518637cd3ae33e5a5df74eb13cbdbbc254ca985f2dec73"
+    },
+    {
+      "id": "i0254",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "758a7e2b6dacffe2ea75bcf577c394aab10240b910723a093987ae74be10f014"
+    },
+    {
+      "id": "i0255",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "78012a233e6994d3db2352f4d3ef858424625d7d0c49aa57a85c92a41c2e7200"
+    },
+    {
+      "id": "i0256",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 113,
+      "sha256": "2968ad085168a0c21b775cda2c622b7d0d9ff14453fc288e434d4bb8251b96cd"
+    },
+    {
+      "id": "i0257",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 110,
+      "sha256": "c46d6d30105a6a5cc1fbb9fae54b010c5bfd082c128d215b670cfb5327784222"
+    },
+    {
+      "id": "i0258",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 118,
+      "sha256": "d61a0c007c0c959653344ede07e1b0aab8cf5a2c3907a0c33fb25f7cbfbecae5"
+    },
+    {
+      "id": "i0259",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "692236fa23adddd32b11093178ae62169ed23dd243740f0088da8c0a7f3e7c33"
+    },
+    {
+      "id": "i0260",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "c8ca3345f39e237ace8d066da997eda3d0f7a8858dc5fa2c5022fdc44e8a3049"
+    },
+    {
+      "id": "i0261",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "7ed7ac24c21e9015a08529d31ec0ec708612d05b71afff434b72cacb5b0582e4"
+    },
+    {
+      "id": "i0262",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 110,
+      "sha256": "c4e90cc686c9f5ababa3e6d66729756dd1cede5bc6ebba97f04de44cde6aba2e"
+    },
+    {
+      "id": "i0263",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 108,
+      "sha256": "bd7a48a15773abbc76fa928ca6f0bc4f1dc05e0ccf42260ff675fcf4ff19068a"
+    },
+    {
+      "id": "i0264",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 137,
+      "sha256": "ec2ffdec0fe486a0b80af85c111e50a9e30ac0910aafd7a24849fb499aa545eb"
+    },
+    {
+      "id": "i0265",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 7, 30, 24],
+      "black_pixels32": 91,
+      "sha256": "91688a0f8c6fe88ce31510a4dc9c65148648d0620a78cb9c3d797c7500618804"
+    },
+    {
+      "id": "i0266",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 108,
+      "sha256": "d9ef2b324c749b043712790a280a45326a2be5f6745f52b58122f4b3df72c00b"
+    },
+    {
+      "id": "i0267",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 110,
+      "sha256": "15c862ef1513084a71589152dbc76dc3b9ef16d033b02b0146a9967ea99db2b0"
+    },
+    {
+      "id": "i0268",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "3f4844edb8d45b8c72d065d88a2a9527b8319baec92575de9dd14353ad302d96"
+    },
+    {
+      "id": "i0269",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 149,
+      "sha256": "19096901433045b354369d1c958730500f124fdff2e0aaa2309bbef644ed1366"
+    },
+    {
+      "id": "i0270",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 96,
+      "sha256": "eead7737d89ead3ea0abe6bc51ff6f71885b369172827a8bca34de63e5c0b744"
+    },
+    {
+      "id": "i0271",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 97,
+      "sha256": "12ff1ff9c7c4b2483eb5910fa3ed3465887d610f223fbd3a00347ca99dc15f80"
+    },
+    {
+      "id": "i0272",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "93f8c0e0c0d31e5836e7e4a64589d17985c9302bddf5cea0d07dd32cdc25288e"
+    },
+    {
+      "id": "i0273",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 136,
+      "sha256": "bcf5d5ce801364ef91f87b42899a3a320ac4316a994273c163fe56c90464a1f7"
+    },
+    {
+      "id": "i0274",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 110,
+      "sha256": "d8812d3cffca75c99db1cce7ba035c1e0218f8b38437f9b26ce0497dcb9144b8"
+    },
+    {
+      "id": "i0275",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 146,
+      "sha256": "6dfd535f253d01ee3c5112e79350a9dccf97e07726b8ce7e02f650ae5a55addd"
+    },
+    {
+      "id": "i0276",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "9fc6f4f31d47c9dcbe6a7a1f1e0aef3dad7aa411d84037e6b70445945a4a11b3"
+    },
+    {
+      "id": "i0277",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "c50b328e54132f8b1bb998e09b34fe5611314ee35f0a039a2ee8b6caec50c161"
+    },
+    {
+      "id": "i0278",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 142,
+      "sha256": "36a10adacabd8c9740b9238320d064f689ab6f278e1316b7be1bf96b06f873b7"
+    },
+    {
+      "id": "i0279",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 139,
+      "sha256": "353c30d31014970d67fb3e3f9f15d7f40f6214235d0f03732b6a0278f5c651a5"
+    },
+    {
+      "id": "i0280",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 118,
+      "sha256": "947c4bf6cf2fca7c3be0cbb77f9be7c8968967089a77acd00a747da15aab5aae"
+    },
+    {
+      "id": "i0281",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 110,
+      "sha256": "7b752c1d6b3c01dbc3ca016d786ac3a3336c33c0d1b1676c085206b4fb6c409a"
+    },
+    {
+      "id": "i0282",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "2eb7ab306a0c64c3d41b0f0137d3fdfde9fb44f8ff2cbcd9f8da67ec66edd373"
+    },
+    {
+      "id": "i0283",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "a24d6fe8851a3c096a4d0e540006e89da372cb0ff5629541f1207f03988a9389"
+    },
+    {
+      "id": "i0284",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "5318f0947409242b5f048b39d8383ee9563020db44b36e1c965ba69a7dc5be92"
+    },
+    {
+      "id": "i0285",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "57bd42f07ee56aaeff76df092eed0c412e7398e7bfc37a21e521d3b7d318406c"
+    },
+    {
+      "id": "i0286",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 148,
+      "sha256": "a8f5203a00f82f49b49216f2309d7d777854003738dbd9e9832e33030b50807b"
+    },
+    {
+      "id": "i0287",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "3e77104cf8a2049fbf286b769cebc898994243bc65ffa9f10557fc0aababeff6"
+    },
+    {
+      "id": "i0288",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "22d5b95e1572d017f0820c29a7787dee7d7d1b9ceaac2af6d36383e23af2daf2"
+    },
+    {
+      "id": "i0289",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "b014bd355d4361a0052cb7c8e778c8f4e7df1f6a3c0aa7161141f9c26cf1a793"
+    },
+    {
+      "id": "i0290",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 98,
+      "sha256": "8c4282f82e1d36c45b19ac070a70b9306f064791386e79ca45d1397e098b175d"
+    },
+    {
+      "id": "i0291",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "c4d397625e9c0e13206d5c20bcb0554082862d3c8264239f4f7c85d874717a1a"
+    },
+    {
+      "id": "i0292",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 127,
+      "sha256": "88cc241a660eb1c48614cd38f056239215b91d7c52aa98fbbb29b327fd6059a9"
+    },
+    {
+      "id": "i0293",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "327c41bce5eb4095e859554b4ba3b4854e483c414478db049626d31fc784fea1"
+    },
+    {
+      "id": "i0294",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 100,
+      "sha256": "9288dfd1b9f7a9d96a9ea3639cff5321a6615617518e9c5526eec40295b855a6"
+    },
+    {
+      "id": "i0295",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 128,
+      "sha256": "249c2977d950ff094a30b7cbc474c94c24fad119c6165d46ee3ce244eed1a007"
+    },
+    {
+      "id": "i0296",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 8, 30, 23],
+      "black_pixels32": 84,
+      "sha256": "06bb2b6215ffd240ed9b239bb44d939e3e23d392114c5ecc081827ef18c9f5e3"
+    },
+    {
+      "id": "i0297",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "b74bb5513ff616cbcfa3e73697f0e923d4c4d9ad32e4717bb9e90b6387ba1db2"
+    },
+    {
+      "id": "i0298",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 106,
+      "sha256": "882b860c8556034388a0225408189211c4b5657706a4ae4d6311030e4e2f4a07"
+    },
+    {
+      "id": "i0299",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 101,
+      "sha256": "401162be529e79210c37e2913f61516ab890ea70b405df6b5a7002e02c7a2c73"
+    },
+    {
+      "id": "i0300",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "929c5d289a857f7c5e2f2f03e29df9a498489dc88cdb67f1b2ed2bb12cd48b26"
+    },
+    {
+      "id": "i0301",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 27],
+      "black_pixels32": 103,
+      "sha256": "17289046b65255fb0282ddd0b2ea044a1b92adadfb5a9497fb875acf0af0e487"
+    },
+    {
+      "id": "i0302",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "eddaacae18f5ef339c01a9e17faca03347a46861795c7f80e18e54d572251f75"
+    },
+    {
+      "id": "i0303",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [7, 2, 25, 30],
+      "black_pixels32": 88,
+      "sha256": "08ff5d0fd3162592900cc88f32837a882e8d2943d862b13ea781db16510de324"
+    },
+    {
+      "id": "i0304",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 6, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "08e7839cf83d794548663feb706dc794d7cc02edf17e1005c46735548cb4055e"
+    },
+    {
+      "id": "i0305",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 150,
+      "sha256": "23c5e544a3259e03174d4753408221bd479ff64d286c0dddc79e0d248537913e"
+    },
+    {
+      "id": "i0306",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 102,
+      "sha256": "c9de772f2143f225346cecf4887f9248e8423930f29c116df9127726e32d964b"
+    },
+    {
+      "id": "i0307",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [6, 2, 25, 30],
+      "black_pixels32": 90,
+      "sha256": "1396b7695cb57929b055aee4a727b1745e1af16b4b08413e8992082b53389738"
+    },
+    {
+      "id": "i0308",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 162,
+      "sha256": "7d5efeb92f4860f6aa57efde4794e83e071465c58fc6a966907edc0e4a99a252"
+    },
+    {
+      "id": "i0309",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 106,
+      "sha256": "7e40da2c9ff0c131e01fe3a97292feb2c16d642172472d260753aecb1f3ab60b"
+    },
+    {
+      "id": "i0310",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "141c93fd12d924ff3aa1a6b63ad47ccf9ffb6e371cf94ecd8350ec089234c7a2"
+    },
+    {
+      "id": "i0311",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 147,
+      "sha256": "f16561a403972743b96f515f5b07dd6ece4dc7da5d2330ca37140cb681042129"
+    },
+    {
+      "id": "i0312",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "d8990f98d236fee93a1f519bc5864d72a6c83091981751c2f15a692193f0dbae"
+    },
+    {
+      "id": "i0313",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "c421188ce797c2215bbb6d7b0dbae821f3fa2c79dc3bf08cf56584d49b7627b9"
+    },
+    {
+      "id": "i0314",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "8f1f2372fc18ee0b0c20a205da1857561cd3cd405d0c86696c2d893b5c778cb9"
+    },
+    {
+      "id": "i0315",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 107,
+      "sha256": "e0b1ba2b2ecd1007dc2694f99fc6777124bf91c60d02c0d4880c0775943cf3ea"
+    },
+    {
+      "id": "i0316",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 105,
+      "sha256": "9cd6cd52cf10767c7f6678ea54ad9dbfcdec4c2001592de5588a013b2d50c3d1"
+    },
+    {
+      "id": "i0317",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 123,
+      "sha256": "5fe4946cfe8e0573e9b76637ec0dd216664d00076fc1507fefd97f9273fce357"
+    },
+    {
+      "id": "i0318",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [7, 2, 24, 30],
+      "black_pixels32": 86,
+      "sha256": "e64babd0182d07643f534a775524131bd94ec476070ec2b342b45512c5e4d72f"
+    },
+    {
+      "id": "i0319",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "a3d0acc107dac23dc49b5ff83230a5340333d35d8fa546ecd2ac2ccd92c33f58"
+    },
+    {
+      "id": "i0320",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "aaf2aa55b13b3f314886cca4be5b15a7b5d9e56b831eb70d4aad353862c76281"
+    },
+    {
+      "id": "i0321",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 132,
+      "sha256": "590b9a272fc87be7f9403f5156425450fc5383c1f87bf82a1825de0c8cd67b1e"
+    },
+    {
+      "id": "i0322",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 107,
+      "sha256": "33ca898fe7ada65bde67e83966eb19b06069b80d2da0ee03b63082f86b0d8b41"
+    },
+    {
+      "id": "i0323",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 103,
+      "sha256": "148c836a223b003f9959c9bf2ca60813eaef05b87d34e2d16307805c52c18923"
+    },
+    {
+      "id": "i0324",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 26, 30],
+      "black_pixels32": 100,
+      "sha256": "3380abc9cf1e5d09ee6dccc1e516fa6c891aac9a3d1ac67e7abe1c356adb180d"
+    },
+    {
+      "id": "i0325",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 104,
+      "sha256": "2419ff31e114e26385c1b8805b0c929a4f70853c3fc959446ad9561edd6f8e87"
+    },
+    {
+      "id": "i0326",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 108,
+      "sha256": "dc3406b8c54ab836ec4833ef68c890d1aa307425c7481c63e3e818907127cf4d"
+    },
+    {
+      "id": "i0327",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 108,
+      "sha256": "948cae08638c1d1059f12dd8c2b69b2ff3be44c07ba197392b88dd303a7a259e"
+    },
+    {
+      "id": "i0328",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 104,
+      "sha256": "1df7380de95dec0feaec8b29f675bf06b7ef1010e06d1403596ace75143addcc"
+    },
+    {
+      "id": "i0329",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 15,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 174,
+      "sha256": "8bde39e0ae57ab64547565f870392e825d9bf6ab962239620bf1602751f8c5e2"
+    },
+    {
+      "id": "i0330",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 108,
+      "sha256": "fc697ff0a71ea0ed68783c0f7d7246a1b5488dccb5910bf8fb1d8b276e85a6e3"
+    },
+    {
+      "id": "i0331",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [5, 2, 27, 30],
+      "black_pixels32": 129,
+      "sha256": "ed74bde9da8b8a2db96331c67dc9a2941b7843a0eafecb3c9ab886a89bd118ef"
+    },
+    {
+      "id": "i0332",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 151,
+      "sha256": "3a62c3791478e094e60fd56b4ddaf6ba1d611f5a6f586ccb097e25db3c9f21da"
+    },
+    {
+      "id": "i0333",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 28, 30],
+      "black_pixels32": 123,
+      "sha256": "ee4438a95bdc48f292e396e98d3407c56a7f7c26f842ba7797dd2dddc031e96e"
+    },
+    {
+      "id": "i0334",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 28],
+      "black_pixels32": 100,
+      "sha256": "e1a4c1098fc4b945b7f6d5d17c30e45e8b952ad7e445d4c667785f70e3dd0c0a"
+    },
+    {
+      "id": "i0335",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 160,
+      "sha256": "260a56a241fb277e30876643f73a505f329b9a4835886bd900ce76e8f5bc0a55"
+    },
+    {
+      "id": "i0336",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 216,
+      "sha256": "92e5c85d3cd3580ed045a3896b72ac687e2447f0edcc7f5219fbc73dfb3ea264"
+    },
+    {
+      "id": "i0337",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 152,
+      "sha256": "e6783f93692dc5fd21b8b2921c09d3c89fe1a9d9193b8fa00d1d1c7789b6aa4b"
+    },
+    {
+      "id": "i0338",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "da72ea8f158f025ca3ec388a8e30bfea8dce2b435ec0ebc6458343f88b5ecd4e"
+    },
+    {
+      "id": "i0339",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 116,
+      "sha256": "4de14fee9806db679936328593c4171c0f3b28b89aae3d35498225db54d278cc"
+    },
+    {
+      "id": "i0340",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 29, 30],
+      "black_pixels32": 106,
+      "sha256": "4bea4d59e7addd938bef16d7bde9a61ba71d5c2507cdaefbefdb423872925dc2"
+    },
+    {
+      "id": "i0341",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [3, 2, 29, 30],
+      "black_pixels32": 153,
+      "sha256": "ab1e92c6ba06f457f0cad74cb4813888e7116e1963240d7d800638b58a4ec3ec"
+    },
+    {
+      "id": "i0342",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [4, 2, 28, 30],
+      "black_pixels32": 100,
+      "sha256": "6f706f9136579948c86a70c070d4201c40ddb825cfff3b20eda1f71747a85907"
+    },
+    {
+      "id": "i0343",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 136,
+      "sha256": "ef000562fa35224b3b1be05a1a9ec537cf8954b5871363c043af61522afd1c74"
+    },
+    {
+      "id": "i0344",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 116,
+      "sha256": "cff27a430335d67c4efcacfe6d37d95a40297bad8344c115785927eacd6dee27"
+    },
+    {
+      "id": "i0345",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 158,
+      "sha256": "86c315070888acab201d52cc855d17ae202d8f14f8d5d5b8f54ec74d564ec86d"
+    },
+    {
+      "id": "i0346",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 5, 30, 26],
+      "black_pixels32": 94,
+      "sha256": "5594853cf6cfad28bddc36ce4c81ff8041ec4c2bcf4242100e9fcd7178de016b"
+    },
+    {
+      "id": "i0347",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 106,
+      "sha256": "e5ac531fa0d610b048638ca6f4fcf995e8c282a94adcb5ddf38d568861be584e"
+    },
+    {
+      "id": "i0348",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 29],
+      "black_pixels32": 104,
+      "sha256": "5e0ce9cdbb7576a7073d57d1f8c4e87384aa2f4de2d2d84690b8384ef646c3ed"
+    },
+    {
+      "id": "i0349",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 132,
+      "sha256": "5e9b665695bbaf60f5024180bc975878e092e0bdb04f29cc13285ffd20ddc971"
+    },
+    {
+      "id": "i0350",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "e2481df7bb65f5602a61eda792d022afa00545d22086c4cf38ed13d3030c3ba4"
+    },
+    {
+      "id": "i0351",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 29],
+      "black_pixels32": 134,
+      "sha256": "cd9af40c766fa75b7ec2be2b91cced1201b817cdf0bbc98cd3ea2e9004c45d46"
+    },
+    {
+      "id": "i0352",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 3, 30, 28],
+      "black_pixels32": 110,
+      "sha256": "9e7bc5db9c6b3e9c5cbed781e10e4a466cfa21a36cacf3f407a89f4acef9656c"
+    },
+    {
+      "id": "iron_plate",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 4, 30, 27],
+      "black_pixels32": 99,
+      "sha256": "959c8a0b6bb26d384373bb3fa77ac565b07d15858111ca4de286c8087e6a129a"
+    },
+    {
+      "id": "gear",
+      "size": [128, 128],
+      "logical_size": [32, 32],
+      "alpha": [0, 255],
+      "opaque_colors": 16,
+      "bounds32": [2, 2, 30, 30],
+      "black_pixels32": 157,
+      "sha256": "76a436b767f708a35b76050fbdeba48d4f0fe5a9911763edf74c5a299c4edc4d"
+    }
+  ]
+}

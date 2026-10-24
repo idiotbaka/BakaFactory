@@ -115,6 +115,12 @@ it("keeps one DOM item from machine output through the belt into the input, then
   now = 1000;
   rerender(view(factory(1)));
   const icon = container.querySelector<HTMLSpanElement>(".conveyor-payload")!;
+  const sprite = icon.querySelector("img")!;
+  expect(sprite).not.toBeNull();
+  expect(icon.querySelector(".item-sprite")).toHaveAttribute(
+    "data-item-id",
+    "iron_ore",
+  );
   expect(icon.style.transform).toContain("267px,315px");
   frame(1500);
   expect(icon.style.transform).toContain("297px,315px");
@@ -127,6 +133,7 @@ it("keeps one DOM item from machine output through the belt into the input, then
   rerender(view(received));
   expect(container.querySelectorAll(".conveyor-payload")).toHaveLength(1);
   expect(container.querySelector(".conveyor-payload")).toBe(icon);
+  expect(icon.querySelector("img")).toBe(sprite);
   expect(icon.style.transform).toContain("327px,315px");
   frame(2875);
   expect(Number(icon.style.opacity)).toBeCloseTo(0.5);

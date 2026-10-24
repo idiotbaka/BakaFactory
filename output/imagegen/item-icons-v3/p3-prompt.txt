@@ -1,0 +1,71 @@
+Create ONE sprite atlas for BakaFactory in authentic 1990s SEGA Mega Drive / Super Famicom Japanese RPG inventory pixel art, matching the supplied visual STYLE REFERENCE only.
+CRITICAL COMPOSITION: EXACTLY EIGHT columns and EIGHT rows, 64 equal square cells. Prefer 2048x2048 output. Treat the sheet as a REAL 256x256 LOGICAL PIXEL canvas enlarged with nearest neighbor. Every cell is 32x32 logical pixels; each sprite fits in its central 24x24 pixels with FOUR empty logical pixels on every side. All 64 cell centers are on a perfectly regular grid. No item may overlap its cell or neighbor. Unused cells MUST stay completely EMPTY.
+Each object must be drawn as a genuine tiny 16-bit console sprite: big solid square pixels, consistent pixel grid, simple unique silhouette, broad flat color clusters, maximum 6-12 colors per item, two shadows per material, one crisp dark navy/black pixel contour. NO tiny lines or microdetails. No fine circuit grids, no dozens of bolts, no realistic glints, no gradients, no smooth lighting, no painterly texture, no anti-aliasing, no bloom, no blur, no dithering. The asset must remain readable at native 32x32. Radically simplify.
+Palette: dark navy/black contours, slate/lavender metal, warm cream highlights, vivid pink and bright cyan accents. Copper remains warm orange; glass/liquid identifiable by shape. Different items need different shapes and features, NOT identical templates recolored.
+ALL background and gutters TRANSPARENT alpha. NO stage-colored outlines, NO halos, NO floor shadows. NO labels, NO numbers, NO letters, NO text, NO UI panels, NO cell borders or guide lines. Reference is for pixel style and material treatment, NOT for repeating the same objects. Use the exact new object list below. Each listed item appears ONCE in its specified cell.
+
+OBJECTS IN STRICT ROW-MAJOR ORDER:
+Row 1, column 1: plastic pyrolysis furnace with angled hopper.
+Row 1, column 2: flask of dark purple crude pyrolysis oil.
+Row 1, column 3: small mound of jet-black carbon black powder.
+Row 1, column 4: crusty yellow-green acid residue lump.
+Row 1, column 5: small mound of dark graphite industrial carbon.
+Row 1, column 6: slim distillation column with side pipe loops.
+Row 1, column 7: short flask of pale pink light hydrocarbons.
+Row 1, column 8: jerrycan of vivid pink liquid fuel.
+Row 2, column 1: short dark heavy-oil barrel with cyan rim.
+Row 2, column 2: glossy dark oil sludge clump.
+Row 2, column 3: ivory industrial wax block with a drip.
+Row 2, column 4: small lavender solvent flask.
+Row 2, column 5: bottle of dark murky wastewater.
+Row 2, column 6: hydraulic power station with tank and pump.
+Row 2, column 7: squat flask of purple hydraulic working fluid.
+Row 2, column 8: reinforced pressure bottle of cyan working fluid.
+Row 3, column 1: small hydraulic press with twin cylinders.
+Row 3, column 2: thick clean high-strength steel slab.
+Row 3, column 3: bottle of dirty brown-purple working fluid.
+Row 3, column 4: flat pale corrosion-resistant aluminum plate.
+Row 3, column 5: pair of precise metal pipe couplings.
+Row 3, column 6: long diagonal hydraulic piston with eyelets.
+Row 3, column 7: chemical reactor pot with domed lid and mixer.
+Row 3, column 8: flask of dilute yellow acid.
+Row 4, column 1: glossy pink polymer resin beads.
+Row 4, column 2: small round bottle of violet organic solvent.
+Row 4, column 3: small roll of dark insulating adhesive.
+Row 4, column 4: short bottle of cyan etching solution.
+Row 4, column 5: compact centrifuge with round covered bowl.
+Row 4, column 6: rectangular wet-leaching bath with pipe.
+Row 4, column 7: bottle of golden precious-metal solution.
+Row 4, column 8: bottle of greenish spent acid.
+Row 5, column 1: flask of violet nickel-cobalt solution.
+Row 5, column 2: flask of pale mint rare-earth solution.
+Row 5, column 3: clear brine bottle with salt crystal emblem.
+Row 5, column 4: sealed cake of safe gray sludge.
+Row 5, column 5: alloy smelting furnace with tilted crucible.
+Row 5, column 6: warm gold heat-resistant alloy ingot.
+Row 5, column 7: cool silver heat-conducting alloy ingot.
+Row 5, column 8: clear pale blue silicate glass plate.
+Row 6, column 1: small mound of shining gold metal powder.
+Row 6, column 2: pale lavender rare-earth oxide powder.
+Row 6, column 3: hydraulic robot assembly table with piston arm.
+Row 6, column 4: small hydraulic hauling robot with treads.
+Row 6, column 5: slim pipe-inspection robot with probe eye.
+Row 6, column 6: metal pressure regulating valve with pink handwheel.
+Row 6, column 7: stacked plate heat exchanger with pipe sockets.
+Row 6, column 8: hydraulic demonstration skid with paired tanks.
+Row 7, column 1: closed electrification kit case with lightning emblem.
+Row 7, column 2: small pile of white industrial salt crystals.
+Row 7, column 3: greenish environmental storage brick.
+Row 7, column 4: dark gas-adsorbing sludge cake.
+Row 7, column 5: upright fluid tank with side level window.
+Row 7, column 6: three-way liquid valve with blue handle.
+Row 7, column 7: short cyan hydraulic conveyor belt segment.
+Row 7, column 8: chemical automatic dosing pump with hose.
+Row 8, column 1: U-shaped return fluid pipe with two flanges.
+Row 8, column 2: EMPTY transparent cell, no object.
+Row 8, column 3: EMPTY transparent cell, no object.
+Row 8, column 4: EMPTY transparent cell, no object.
+Row 8, column 5: EMPTY transparent cell, no object.
+Row 8, column 6: EMPTY transparent cell, no object.
+Row 8, column 7: EMPTY transparent cell, no object.
+Row 8, column 8: EMPTY transparent cell, no object.

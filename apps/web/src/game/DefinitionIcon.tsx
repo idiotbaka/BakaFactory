@@ -1,6 +1,8 @@
 import { memo, type CSSProperties } from "react";
 import type { Definition } from "../api/client";
 import { entityColor } from "./entityTheme";
+import ItemSprite from "./ItemSprite";
+import { itemSpriteURL } from "./itemSprites";
 
 const bodies: Record<string, string> = {
   bus: "M15 5h18l10 10v18L33 43H15L5 33V15Z",
@@ -61,34 +63,41 @@ function DefinitionIcon({
   compact?: boolean;
   rotation?: number;
 }) {
+  const sprite = itemSpriteURL(definition.id);
   return (
     <span
-      className={`definition-icon entity-${definition.id} ${compact ? "compact" : ""}`}
+      className={`definition-icon entity-${definition.id} ${compact ? "compact" : ""} ${sprite ? "has-item-sprite" : ""}`}
       style={{ "--entity-color": entityColor(definition) } as CSSProperties}
       aria-hidden="true"
     >
-      <svg
-        viewBox="0 0 48 48"
-        fill="none"
-        style={{ transform: `rotate(${rotation}deg)` }}
-      >
-        {bodies[definition.icon] && (
-          <path
-            className="entity-body"
-            d={bodies[definition.icon]}
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-        )}
-        <path
-          d={paths[definition.icon] ?? "M10 10h28v28H10z"}
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
-      <span>{definition.code}</span>
+      {sprite ? (
+        <ItemSprite id={definition.id} />
+      ) : (
+        <>
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            style={{ transform: `rotate(${rotation}deg)` }}
+          >
+            {bodies[definition.icon] && (
+              <path
+                className="entity-body"
+                d={bodies[definition.icon]}
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+            )}
+            <path
+              d={paths[definition.icon] ?? "M10 10h28v28H10z"}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="definition-code">{definition.code}</span>
+        </>
+      )}
     </span>
   );
 }

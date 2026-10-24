@@ -1,0 +1,71 @@
+Create ONE sprite atlas for BakaFactory in authentic 1990s SEGA Mega Drive / Super Famicom Japanese RPG inventory pixel art, matching the supplied visual STYLE REFERENCE only.
+CRITICAL COMPOSITION: EXACTLY EIGHT columns and EIGHT rows, 64 equal square cells. Prefer 2048x2048 output. Treat the sheet as a REAL 256x256 LOGICAL PIXEL canvas enlarged with nearest neighbor. Every cell is 32x32 logical pixels; each sprite fits in its central 24x24 pixels with FOUR empty logical pixels on every side. All 64 cell centers are on a perfectly regular grid. No item may overlap its cell or neighbor. Unused cells MUST stay completely EMPTY.
+Each object must be drawn as a genuine tiny 16-bit console sprite: big solid square pixels, consistent pixel grid, simple unique silhouette, broad flat color clusters, maximum 6-12 colors per item, two shadows per material, one crisp dark navy/black pixel contour. NO tiny lines or microdetails. No fine circuit grids, no dozens of bolts, no realistic glints, no gradients, no smooth lighting, no painterly texture, no anti-aliasing, no bloom, no blur, no dithering. The asset must remain readable at native 32x32. Radically simplify.
+Palette: dark navy/black contours, slate/lavender metal, warm cream highlights, vivid pink and bright cyan accents. Copper remains warm orange; glass/liquid identifiable by shape. Different items need different shapes and features, NOT identical templates recolored.
+ALL background and gutters TRANSPARENT alpha. NO stage-colored outlines, NO halos, NO floor shadows. NO labels, NO numbers, NO letters, NO text, NO UI panels, NO cell borders or guide lines. Reference is for pixel style and material treatment, NOT for repeating the same objects. Use the exact new object list below. Each listed item appears ONCE in its specified cell.
+
+OBJECTS IN STRICT ROW-MAJOR ORDER:
+Row 1, column 1: tied dark garbage sack with a pink patch.
+Row 1, column 2: three jagged broken steel shards.
+Row 1, column 3: pile of cyan and pink broken plastic shells.
+Row 1, column 4: loose copper wire loops with stripped blue tip.
+Row 1, column 5: sharp cyan glass and cream ceramic shards.
+Row 1, column 6: soggy green organic clump with a leaf.
+Row 1, column 7: broken tiny electronic parts and plugs.
+Row 1, column 8: crumpled thin silver foil scraps.
+Row 2, column 1: black rubber curls and crumbs.
+Row 2, column 2: small gray sand and ash mound.
+Row 2, column 3: short curled iron machining shavings.
+Row 2, column 4: rust red powder mound.
+Row 2, column 5: bundle of dry pale twigs and leaves.
+Row 2, column 6: squat bottle of murky gray-blue water.
+Row 2, column 7: one uneven rough gray iron sheet.
+Row 2, column 8: simple L-shaped bolted metal support.
+Row 3, column 1: small dismantling workbench with wrench.
+Row 3, column 2: spool of rough copper wire.
+Row 3, column 3: ragged pink insulating sheet scraps.
+Row 3, column 4: broken green circuit board with missing corner.
+Row 3, column 5: dented old battery with two terminals.
+Row 3, column 6: three mismatched metal alloy plates.
+Row 3, column 7: crushed small silver aluminum nuggets.
+Row 3, column 8: stack of reusable colorful plastic pieces.
+Row 4, column 1: purple contaminated sludge clump.
+Row 4, column 2: compact hand-cranked jaw crusher.
+Row 4, column 3: pile of sparkling pale glass sand.
+Row 4, column 4: cream ceramic powder mound.
+Row 4, column 5: pink and cyan plastic pellets.
+Row 4, column 6: small warm tan sand pile.
+Row 4, column 7: small dark gray ash powder pile.
+Row 4, column 8: iron-bearing brown mineral powder.
+Row 5, column 1: stubby charcoal kiln with short chimney.
+Row 5, column 2: three irregular black biochar chunks.
+Row 5, column 3: thick dark purple tar lump.
+Row 5, column 4: stack of two solid black fuel briquettes.
+Row 5, column 5: small brick melting furnace with orange opening.
+Row 5, column 6: rough rectangular gray iron ingot.
+Row 5, column 7: crusty dark furnace slag lump.
+Row 5, column 8: rough warm copper ingot.
+Row 6, column 1: rough pale silver aluminum ingot.
+Row 6, column 2: solid cyan recycled glass brick.
+Row 6, column 3: small sharp transparent glass chips.
+Row 6, column 4: two orange refractory bricks.
+Row 6, column 5: stack of flat basic iron plates.
+Row 6, column 6: long thick copper bar.
+Row 6, column 7: hollow square aluminum frame.
+Row 6, column 8: three large round-head iron rivets.
+Row 7, column 1: simple eight-tooth metal gear with open hole.
+Row 7, column 2: thick black rubber sealing ring.
+Row 7, column 3: small anvil on a wooden stump.
+Row 7, column 4: small manual assembly bench with vise.
+Row 7, column 5: short hand-cranked conveyor belt segment.
+Row 7, column 6: open sorting crate with two compartments.
+Row 7, column 7: mechanical two-finger grabber claw.
+Row 7, column 8: small solid-fuel engine with flywheel.
+Row 8, column 1: short plain low-speed drive shaft.
+Row 8, column 2: tiny mechanical counter with three blank rollers.
+Row 8, column 3: small hopper feeder with crank.
+Row 8, column 4: jointed small production robot arm and claw.
+Row 8, column 5: small manual sorting table with trays.
+Row 8, column 6: simple hand crafting workbench with hammer.
+Row 8, column 7: hardened gray waste residue brick.
+Row 8, column 8: rough chunky iron ore rock with two pale cyan mineral facets.

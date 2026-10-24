@@ -1555,7 +1555,7 @@
 .entity-body {
   fill: color-mix(in srgb, var(--entity-color) 17%, #101629);
 }
-.definition-icon > span {
+.definition-icon > .definition-code {
   font: 12px/14px var(--mono);
   letter-spacing: 1px;
 }
@@ -1569,9 +1569,19 @@
   width: 24px;
   height: 24px;
 }
-.definition-icon.compact > span {
+.definition-icon.compact > .definition-code {
   font: 12px/14px var(--mono);
   letter-spacing: 0.4px;
+}
+.definition-icon.has-item-sprite {
+  border: 0;
+  background: none;
+}
+.definition-icon.has-item-sprite > .item-sprite {
+  width: 100%;
+  height: 100%;
+  max-width: 48px;
+  max-height: 48px;
 }
 .map-panel {
   grid-area: map;

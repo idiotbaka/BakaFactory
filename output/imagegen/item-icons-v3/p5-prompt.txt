@@ -1,0 +1,71 @@
+Create ONE sprite atlas for BakaFactory in authentic 1990s SEGA Mega Drive / Super Famicom Japanese RPG inventory pixel art, matching the supplied visual STYLE REFERENCE only.
+CRITICAL COMPOSITION: EXACTLY EIGHT columns and EIGHT rows, 64 equal square cells. Prefer 2048x2048 output. Treat the sheet as a REAL 256x256 LOGICAL PIXEL canvas enlarged with nearest neighbor. Every cell is 32x32 logical pixels; each sprite fits in its central 24x24 pixels with FOUR empty logical pixels on every side. All 64 cell centers are on a perfectly regular grid. No item may overlap its cell or neighbor. Unused cells MUST stay completely EMPTY.
+Each object must be drawn as a genuine tiny 16-bit console sprite: big solid square pixels, consistent pixel grid, simple unique silhouette, broad flat color clusters, maximum 6-12 colors per item, two shadows per material, one crisp dark navy/black pixel contour. NO tiny lines or microdetails. No fine circuit grids, no dozens of bolts, no realistic glints, no gradients, no smooth lighting, no painterly texture, no anti-aliasing, no bloom, no blur, no dithering. The asset must remain readable at native 32x32. Radically simplify.
+Palette: dark navy/black contours, slate/lavender metal, warm cream highlights, vivid pink and bright cyan accents. Copper remains warm orange; glass/liquid identifiable by shape. Different items need different shapes and features, NOT identical templates recolored.
+ALL background and gutters TRANSPARENT alpha. NO stage-colored outlines, NO halos, NO floor shadows. NO labels, NO numbers, NO letters, NO text, NO UI panels, NO cell borders or guide lines. Reference is for pixel style and material treatment, NOT for repeating the same objects. Use the exact new object list below. Each listed item appears ONCE in its specified cell.
+
+OBJECTS IN STRICT ROW-MAJOR ORDER:
+Row 1, column 1: quartz purification furnace with crystal chamber.
+Row 1, column 2: rough pale blue polysilicon chunks.
+Row 1, column 3: small gray carbon-monoxide exhaust cloud.
+Row 1, column 4: long smooth silver-blue high-purity silicon rod.
+Row 1, column 5: bottle of cloudy waste solvent.
+Row 1, column 6: clear pale optical glass blank.
+Row 1, column 7: three dark magnet blocks with pink poles.
+Row 1, column 8: wafer cutting machine with visible saw wheel.
+Row 2, column 1: round lavender silicon wafer with notch and four colored blocks.
+Row 2, column 2: small irregular silicon wafer offcuts.
+Row 2, column 3: smooth reflective pale polished silicon wafer.
+Row 2, column 4: clear round convex optical lens.
+Row 2, column 5: small photolithography machine with optical chamber.
+Row 2, column 6: small amber bottle of pink photoresist.
+Row 2, column 7: wafer with one large cyan exposure cross.
+Row 2, column 8: wafer with three broad magenta exposure stripes.
+Row 3, column 1: pair of tiny cyan optical prisms.
+Row 3, column 2: thin-film deposition chamber with dome.
+Row 3, column 3: small dark logic die with pink central square.
+Row 3, column 4: small memory die with three pale bars.
+Row 3, column 5: small power die with gold cross.
+Row 3, column 6: small sensor die with cyan eye dot.
+Row 3, column 7: rolled flexible pink sensing film.
+Row 3, column 8: chip packaging machine with square socket.
+Row 4, column 1: square processor with pink core and three pins per side.
+Row 4, column 2: long memory chip with three magenta windows.
+Row 4, column 3: square power controller chip with gold connector bar.
+Row 4, column 4: square vision chip with cyan camera-eye symbol.
+Row 4, column 5: small embedded compute board with chip and connector.
+Row 4, column 6: optical calibration bench with target lens.
+Row 4, column 7: camera module with large cyan lens.
+Row 4, column 8: small round ranging radar with side plug.
+Row 5, column 1: round pressure-touch sensor with pink contact pad.
+Row 5, column 2: small environmental sensor with three probe prongs.
+Row 5, column 3: multi-sensor board with lens and two probe posts.
+Row 5, column 4: servo assembly line with motor and arm.
+Row 5, column 5: compact servo motor with square flange.
+Row 5, column 6: precision robot rotary joint with central bolt.
+Row 5, column 7: slender precision robotic arm with small gripper.
+Row 5, column 8: small high-speed sorter robot with paired wide claws.
+Row 6, column 1: small repair robot with wrench arm.
+Row 6, column 2: firmware programming station with chip socket.
+Row 6, column 3: path-planning firmware cartridge with three route dots.
+Row 6, column 4: maintenance firmware cartridge with wrench symbol.
+Row 6, column 5: collaborative scheduling cartridge with three linked blocks.
+Row 6, column 6: vision firmware cartridge with camera-eye symbol.
+Row 6, column 7: multi-robot coordination dock with three posts.
+Row 6, column 8: sorting robot upgrade kit with claw module.
+Row 7, column 1: repair robot upgrade kit with wrench and spare joint.
+Row 7, column 2: route sample tile with bent path and three bright dots.
+Row 7, column 3: inspection log data scroll with three cyan marks.
+Row 7, column 4: vision training sample slide with eye and pixel blocks.
+Row 7, column 5: unmanned demonstration system console with two robot heads.
+Row 7, column 6: cognitive project kit case with neural diamond emblem.
+Row 7, column 7: heat-resistant control module with large gold heatsink.
+Row 7, column 8: heat-rated repair robot with shielded wrench arm.
+Row 8, column 1: short high-speed precision conveyor with twin drive rollers.
+Row 8, column 2: smart routing node with four connected bright dots.
+Row 8, column 3: open repair spares toolbox with gear and wrench.
+Row 8, column 4: EMPTY transparent cell, no object.
+Row 8, column 5: EMPTY transparent cell, no object.
+Row 8, column 6: EMPTY transparent cell, no object.
+Row 8, column 7: EMPTY transparent cell, no object.
+Row 8, column 8: EMPTY transparent cell, no object.
