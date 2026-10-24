@@ -1,0 +1,22 @@
+Generate ONE production atlas for BakaFactory matching the supplied STYLE REFERENCE: medium-detail straight-front 16-bit pixel-art industrial machine facades. Exactly FOUR columns and FOUR rows; each cell square, same footprint; ideally 2048x2048 output.
+Each machine is a 56x56 logical pixel square facade on a 64x64 logical cell, exported enlarged with nearest neighbor. Dead straight FRONT VIEW, face parallel to screen, no top or side plane, no perspective, no isometric drawing. Keep all machinery inside an identical square housing. No protruding chimney, feet or pipes outside the square. Leave four logical pixels transparent margin on all sides of each cell. No overlap.
+Retain steel casing, structural frame, main working mechanism and 2-3 supporting functional details. Moderate detail BETWEEN technical pictograms and dense industrial miniature illustration. Major mechanisms need clear different silhouettes. No many tiny bolts, dense vents or ornamental circuit grids. Pixel art: deliberate square clusters, limited palette, clean stepped corners, no antialiasing, no smooth gradients, no texture noise, no dithering. One highlight band and one shadow band per steel edge. Dark navy recesses, slate blue steel, sparse pale metal highlights, cyan #46eff2 and small pink #ff62cb functional parts. Furnace apertures can have muted warm amber. Calm industrial sci-fi, NOT cartoon toys or comic illustration.
+The reference is STYLE ONLY. Draw the EXACT different subjects below, not repeated copies of reference machines. NO text, numbers, labels, arrows, chevrons, operating indicator dots, stage-colored outline, ground glow, cast shadows, background, grid or card borders. Genuine transparent alpha background and gutters. Direction/status/stage are rendered in GAME CODE.
+
+EXACT SUBJECT ORDER:
+Row 1, column 1: ultrapure purification tower facade with three stacked clean chambers inside one square enclosure.
+Row 1, column 2: nanomaterial reactor facade with central circular reaction vessel and three broad short manifolds.
+Row 1, column 3: neural chip packaging-line facade with a central diamond chip socket and twin assembly heads.
+Row 1, column 4: high-density energy factory facade with four large cell chambers and broad overhead collector bus.
+Row 2, column 1: bionic limb assembly-station facade with an articulated robot leg in a central assembly fixture.
+Row 2, column 2: intelligent robot final-assembly facade with an upright robot body fixture and two side assembly rails.
+Row 2, column 3: terminal robot acceptance pod facade with an upright empty inspection chamber and sensor arch.
+Row 2, column 4: rotary calcining kiln facade with one broad angled drum and circular front furnace mouth.
+Row 3, column 1: automatic feeder facade with broad hopper above and short mechanical feeding chute below.
+Row 3, column 2: waste extraction dock facade with a large recycling hatch and coarse scrap intake, no recycling lettering.
+Row 3, column 3: logistics buffer warehouse facade with three horizontal drawers and a broad square outer shell.
+Row 3, column 4: fluid storage tank facade with broad upright cylinder, long unmarked level window and flush side sockets.
+Row 4, column 1: fluid valve facade with a large cross-shaped handwheel, central circular valve body and three flush side sockets.
+Row 4, column 2: pressure regulating valve facade with a compact round regulator, adjustment knob and two flush sockets.
+Row 4, column 3: hydraulic robot dock facade with a broad pressure charging cradle and two vertical small reservoirs.
+Row 4, column 4: robot battery-swap station facade with one empty docking bay and two visible spare battery slots.

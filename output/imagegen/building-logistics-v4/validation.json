@@ -1,0 +1,553 @@
+{
+  "facades": 78,
+  "procedural": 12,
+  "catalog_ids": 90,
+  "images": [
+    {
+      "id": "bus",
+      "size": [128, 128],
+      "colors": 10,
+      "alpha": [0, 255],
+      "sha256": "82192c588489017093761513c99e2e3e5ba009895081a251fd1dd8bd5d618101"
+    },
+    {
+      "id": "miner",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "30553108230f11b0cf62460cc0b46621b39515b1c5e4a029fc6b2b5c50127da6"
+    },
+    {
+      "id": "furnace",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "3efed7d587bd10abac7d614a1e2e9be1ac99bc8bb3fc8e4310dab2284f374dc0"
+    },
+    {
+      "id": "assembler",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "1e65f9687be4211e58c36a2986f791a125aa67c85c79b559bd39031ed3578075"
+    },
+    {
+      "id": "item_output",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "369561f831c0d7bf58c2272feef24b76742cd476f5176d1ca74e91df567b819d"
+    },
+    {
+      "id": "item_input",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "4a80b82ef19971d742982011edea935909397a147d179d7a5fab49e37981aa1f"
+    },
+    {
+      "id": "m01",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "ebdc8bd4984d59667ce891c160a467dfa22714d4fb01ea4f24e0cdca6c8a9bc1"
+    },
+    {
+      "id": "m02",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "6e898db0510ed05de11005fcd7cd48ba64cd122bd7d0dfec2cabfd23a63a0ca8"
+    },
+    {
+      "id": "m03",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "896a2b9ac64e0cd70e744f3c8ba9909fa40862fe5e96870c7e8a4c7494adb38d"
+    },
+    {
+      "id": "m04",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "7c246362fb26e05ea95dbdd6cb27539bc92fb9a10056c13edd78f9532cc34926"
+    },
+    {
+      "id": "m05",
+      "size": [128, 128],
+      "colors": 12,
+      "alpha": [0, 255],
+      "sha256": "5768117b063fc50b1e6738ad6c54814356e0739980d6dbe0a19f442226ea38b9"
+    },
+    {
+      "id": "m06",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "8f7d078a923e1fe5bbf45e5d84c554726d01752e0d67d37342c5a85381fd310a"
+    },
+    {
+      "id": "m07",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "bc668c2c21708ae577ac5109078f5366c8fe7af75b7f7d42c251b927b08a535b"
+    },
+    {
+      "id": "m08",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "104594955bdca0d0ae3338c74e77e0b7998d0a3fe55a3242c447daa9dc2330a2"
+    },
+    {
+      "id": "m09",
+      "size": [128, 128],
+      "colors": 20,
+      "alpha": [0, 255],
+      "sha256": "1a7f53fcb4e51cb602a7a73f9aae807460046fe8e37f67bb09ef23f2d61761e8"
+    },
+    {
+      "id": "m10",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "59f0be4f1b28f991dfe606b56636bac3fb2253241d292ac3be2704be56fc7fd1"
+    },
+    {
+      "id": "m11",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "11b09619fa07a6763ac3752a4f44c933ef663c75c0a0b68c77ad24d92b0a42cf"
+    },
+    {
+      "id": "m12",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "b26e4cd359e0e897ad699a72bab7a0f962d781d897f25e8e96103378a552720f"
+    },
+    {
+      "id": "m13",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "5b360f43743e6168d3373d486d14b3f21fe9caf0b0ff1c8369851af8ea03d920"
+    },
+    {
+      "id": "m14",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "14a85e08abbb974d5d40b0320d995c2927919d3ec4584e279cc08374091a53e8"
+    },
+    {
+      "id": "m15",
+      "size": [128, 128],
+      "colors": 18,
+      "alpha": [0, 255],
+      "sha256": "5aede0ef2dacbd119f4f967de0349d416f788d1369576e6f74f8c5b3a3f05f18"
+    },
+    {
+      "id": "m16",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "b5f8af71aca973bbdf3c8a69e16c01ad99f7c359bfd279e465723ae19573a564"
+    },
+    {
+      "id": "m17",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "3f12aaddfbdef58e018fd2328d66a48f49390b259f95823beaaf959413b046cc"
+    },
+    {
+      "id": "m18",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "f8d31cf431c4f35e0b908c0dece876096c7317a2180fd0fe35eec7ca42ee75a5"
+    },
+    {
+      "id": "m19",
+      "size": [128, 128],
+      "colors": 20,
+      "alpha": [0, 255],
+      "sha256": "c3e6d1d300f8398087547d8248b70675fcb23acb4a873887eef5da4335cdaae6"
+    },
+    {
+      "id": "m20",
+      "size": [128, 128],
+      "colors": 20,
+      "alpha": [0, 255],
+      "sha256": "1b202875b2d331ff5f7dd42fbf235a696366a12871234b9b3093cd2a5398c68e"
+    },
+    {
+      "id": "m21",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "e3ea07068b5f8f004eaf12f5b64ee2d485f710502f40721a76a9d173109165b8"
+    },
+    {
+      "id": "m22",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "5a61fe322ebe7b5799f67464de0a9524ef9fe82915a94faff694c23bca70b950"
+    },
+    {
+      "id": "m23",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "8229e3e045728b6c637f47c9b56073c83838729dabef7ad5d1aa82542c191620"
+    },
+    {
+      "id": "m24",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "0832e1d4130726d458ae0d917836908e0484c61ae5e6a0e941485cb8e17b9523"
+    },
+    {
+      "id": "m25",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "1030fc199449d0eb5b39f452d240f95ff8251089f79cef5e3034ccad8f1f2955"
+    },
+    {
+      "id": "m26",
+      "size": [128, 128],
+      "colors": 18,
+      "alpha": [0, 255],
+      "sha256": "1f5d65ba8c851e28cf4a42a4fd7953434663646756b1304db915d20db027d7cf"
+    },
+    {
+      "id": "m27",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "f0c43b19a0f1dc471187899bb1aa2805ebec9002982b4fcc5abc3898da8f10a0"
+    },
+    {
+      "id": "m28",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "5b076eb30d602d5ea5bf171948c807a0ad004872bc7dd07e067d638b90af408c"
+    },
+    {
+      "id": "m29",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "07a0f1e0a9068306fc80199469b00bb9f92ae6269b0df42b05b79e31ad3849a9"
+    },
+    {
+      "id": "m30",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "94dd009316d1394a8d5e99e19974f7305dcf8f5390be1982a51da221cdf7ccaa"
+    },
+    {
+      "id": "m31",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "d95ed7c49bc8019a70ca16c069382d60f421de53165e1a478ec4ba6f6491581c"
+    },
+    {
+      "id": "m32",
+      "size": [128, 128],
+      "colors": 18,
+      "alpha": [0, 255],
+      "sha256": "1635ffe94c5f798ad1bf0f6a7438339fabd2e12ae2373504aef7dad7643ad401"
+    },
+    {
+      "id": "m33",
+      "size": [128, 128],
+      "colors": 20,
+      "alpha": [0, 255],
+      "sha256": "3e52c6540440364dd6785f6cf1290e4d7dab03a91d09e64baa87f91ad7d1e77f"
+    },
+    {
+      "id": "m34",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "642e304e0184ce37bf36636fc440a14a1a0076983c58d6b70b53d97819b49679"
+    },
+    {
+      "id": "m35",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "f3249fbf97636f3d2471153cdab3206e33cd2553bc33896242a10278d3731e7d"
+    },
+    {
+      "id": "m36",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "4974bf427c4a3fa68595cbf87f174129933a5a45d0117b358572d4db5182e0fc"
+    },
+    {
+      "id": "m37",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "83a4732416d80434f01db55b9d6b3c3abe22620edef53c9a4c0f4ded085bd514"
+    },
+    {
+      "id": "m38",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "174dcef4be9ce57caa872d5f42803e480dbe382034a786230991ae4de5948e82"
+    },
+    {
+      "id": "m39",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "4b148285dfb49a45dc63615c1d4ee024bafd867fe0fe8e9d0c302143aee82877"
+    },
+    {
+      "id": "m40",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "591ecf891323cf691190c333e4a44fac15c9e021e20503cc2ea3486bdf925281"
+    },
+    {
+      "id": "m41",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "987c36e9b434366d1e776432c0e49eca6ca89cc0bd8a95185a43c33404485af7"
+    },
+    {
+      "id": "m42",
+      "size": [128, 128],
+      "colors": 18,
+      "alpha": [0, 255],
+      "sha256": "0126ca1fd888117b5ae542232d2535e114fc3678a12e35197dd3d323e90863e3"
+    },
+    {
+      "id": "m43",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "025ce15e45720acbad432fe0c50926f8f9bac1f69f89f73fff102bcd849cb6b3"
+    },
+    {
+      "id": "m44",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "9d7cfb98777d844d662fe9b9e2ee5a8d47b5be0ed8a0e948cbcc24e02423e8b8"
+    },
+    {
+      "id": "m45",
+      "size": [128, 128],
+      "colors": 20,
+      "alpha": [0, 255],
+      "sha256": "cb2ff43cd2c9c0f44650283115ee26566d8d941f95e25d08107d5d104b4f515b"
+    },
+    {
+      "id": "m46",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "6578f85cea68d5c363618f7f6c622aacd0c06d55c4242c5f80478b84a097eacd"
+    },
+    {
+      "id": "m47",
+      "size": [128, 128],
+      "colors": 14,
+      "alpha": [0, 255],
+      "sha256": "001872cec49ed56db1acd1e69ff5c9a6eeda5f8205378d70d802f9df0330c829"
+    },
+    {
+      "id": "m48",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "bd1186e7a2f16b1d10068fe4a60781731b7e0dcbfa49b5d104032dea59eccc7f"
+    },
+    {
+      "id": "m49",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "9fc559d6af65dd9c500c818320a24da9927da76d37a5dfff6c6b1fd9f6bdcbf3"
+    },
+    {
+      "id": "m50",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "35db11f122291aa7f90a75ac37360ab908241746e649e269667aa211ef0c8a16"
+    },
+    {
+      "id": "m51",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "612fb664a04d20766ca7604367cff83901955a4da1e1c35444108598436576ba"
+    },
+    {
+      "id": "m52",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "3d16ae21d72025e46305412f509b19023e1a3a06f151f8d5bdfe84d086b996db"
+    },
+    {
+      "id": "m53",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "982c6de2c4994b1b3e4d860eb0a1d5f35826c07c617889a5bd80534c5b4c37d5"
+    },
+    {
+      "id": "m54",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "442f18e78db8c8036b8e26cceb5cb1a995e197722364290a858f67b36ac847bd"
+    },
+    {
+      "id": "m55",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "af6a58cea24bb48dc6159edc0248706f340be3dfeacf1700e35d5d009b5cdbbd"
+    },
+    {
+      "id": "feeder",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "b5773e6783f3974a5cbff08ac937980ccfe2b850eafca33ed9a1daac748b56b1"
+    },
+    {
+      "id": "waste_port",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "d13da691ffc7702a9ee0565c2bd562bcf1b5bb6dbc6ee43df7f8b7e001868d71"
+    },
+    {
+      "id": "chest",
+      "size": [128, 128],
+      "colors": 10,
+      "alpha": [0, 255],
+      "sha256": "aa40ebb503ba4843d024f15e0d2304f797bdb4fc6eb9d72a9bd5c1cc9eed323a"
+    },
+    {
+      "id": "buffer_chest",
+      "size": [128, 128],
+      "colors": 13,
+      "alpha": [0, 255],
+      "sha256": "e132a794200c80cf41c77e11fe53084d9044e27b86573a2c0572fe7a85e90c21"
+    },
+    {
+      "id": "steam_tank",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "a9d41884639b153b5a3e14293f9fe34db2d8db971dfa9a168a82fb359642d4e2"
+    },
+    {
+      "id": "tank",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "36b257192b259794d71d7d6f06ddacd3bd2e7e2e1039c975a4d989aacb1388d8"
+    },
+    {
+      "id": "valve",
+      "size": [128, 128],
+      "colors": 18,
+      "alpha": [0, 255],
+      "sha256": "9c8c5ade43a882eb0bd5305aae9314fdc090476f324805bff032dd3c8bc272c2"
+    },
+    {
+      "id": "pressure_valve",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "d0e48559d24447ff9b4cf6f2979d45ac2c78db292b2bd6bbc9c5ea0ca3d4d722"
+    },
+    {
+      "id": "pump",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "c8631fb816c9827cfb8a7b838d278e51ee320cdccef90c2fd5384c9bf8e1197f"
+    },
+    {
+      "id": "hydraulic_station",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "f0883959f3ee995f4d7c0ce247fcaf57b0cb4db1beb14d4df6543002189f5a95"
+    },
+    {
+      "id": "charge_station",
+      "size": [128, 128],
+      "colors": 15,
+      "alpha": [0, 255],
+      "sha256": "99369cd43e34a20efc8856f14838fec83ebb9dcf50cbe050a334ffbff77d838d"
+    },
+    {
+      "id": "battery",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "ad470f95379b80270d9c284cb0402624d857ec80fc17d51fe40fea05b45a2de5"
+    },
+    {
+      "id": "dense_battery",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "c6da3d07bd40a2deedb761118de99d7ca6205aa0403c0ca4caeb4b285c7bafda"
+    },
+    {
+      "id": "electric_feeder",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "c4173cf6b9c7304f889f75794f3ae5772b6b4b2032a76cb217ab99e330324a2b"
+    },
+    {
+      "id": "precision_feeder",
+      "size": [128, 128],
+      "colors": 17,
+      "alpha": [0, 255],
+      "sha256": "d7e8f5b86f97bf85328e2ac6c3499cc6696375ce56243479e28aab6ad5ba9594"
+    },
+    {
+      "id": "flexible_feeder",
+      "size": [128, 128],
+      "colors": 16,
+      "alpha": [0, 255],
+      "sha256": "f0b9433108682b4809105bf23ff4c7c4bb9300f0db7ee1460d8a3c672da6b913"
+    },
+    {
+      "id": "smart_gate",
+      "size": [128, 128],
+      "colors": 14,
+      "alpha": [0, 255],
+      "sha256": "b8944a73b08eea8489d5d81daa868bc25dd63480cd20bffd721c1d382b1e615c"
+    }
+  ]
+}

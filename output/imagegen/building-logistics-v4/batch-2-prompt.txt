@@ -1,0 +1,22 @@
+Generate ONE production atlas for BakaFactory matching the supplied STYLE REFERENCE: medium-detail straight-front 16-bit pixel-art industrial machine facades. Exactly FOUR columns and FOUR rows; each cell square, same footprint; ideally 2048x2048 output.
+Each machine is a 56x56 logical pixel square facade on a 64x64 logical cell, exported enlarged with nearest neighbor. Dead straight FRONT VIEW, face parallel to screen, no top or side plane, no perspective, no isometric drawing. Keep all machinery inside an identical square housing. No protruding chimney, feet or pipes outside the square. Leave four logical pixels transparent margin on all sides of each cell. No overlap.
+Retain steel casing, structural frame, main working mechanism and 2-3 supporting functional details. Moderate detail BETWEEN technical pictograms and dense industrial miniature illustration. Major mechanisms need clear different silhouettes. No many tiny bolts, dense vents or ornamental circuit grids. Pixel art: deliberate square clusters, limited palette, clean stepped corners, no antialiasing, no smooth gradients, no texture noise, no dithering. One highlight band and one shadow band per steel edge. Dark navy recesses, slate blue steel, sparse pale metal highlights, cyan #46eff2 and small pink #ff62cb functional parts. Furnace apertures can have muted warm amber. Calm industrial sci-fi, NOT cartoon toys or comic illustration.
+The reference is STYLE ONLY. Draw the EXACT different subjects below, not repeated copies of reference machines. NO text, numbers, labels, arrows, chevrons, operating indicator dots, stage-colored outline, ground glow, cast shadows, background, grid or card borders. Genuine transparent alpha background and gutters. Direction/status/stage are rendered in GAME CODE.
+
+EXACT SUBJECT ORDER:
+Row 1, column 1: steam boiler facade with broad pressure vessel, pipe manifold and unmarked circular gauge.
+Row 1, column 2: mechanical assembly-line facade with two short opposing assembly arms around a work platform.
+Row 1, column 3: gear crusher facade with two large meshing toothed wheels inside the square housing.
+Row 1, column 4: mechanical splitter facade with central drive cog and three compact flush output sockets.
+Row 2, column 1: early robot charging station facade with a winding-key docking post and square platform.
+Row 2, column 2: plastic pyrolysis furnace facade with squared hopper mouth, heat chamber and condenser coil.
+Row 2, column 3: frontal distillation tower enclosure with three stacked column chambers and side return line.
+Row 2, column 4: hydraulic power-station facade with one tank, one broad pump and two pressure sockets.
+Row 3, column 1: hydraulic press facade with twin thick cylinders and a heavy lower platen.
+Row 3, column 2: chemical reactor facade with central rounded pressure chamber and overhead mixer spindle.
+Row 3, column 3: centrifuge facade with large circular bowl and simple radial rotor inside a square casing.
+Row 3, column 4: wet leaching bath facade with broad rectangular basin window and a side circulation pipe.
+Row 4, column 1: alloy furnace facade with a tilted crucible silhouette inside a square heat-shield frame.
+Row 4, column 2: hydraulic robot assembly bench facade with one piston-driven arm over an empty robot cradle.
+Row 4, column 3: liquid-fuel generator facade with engine block, vertical exhaust channel and flush fuel reservoir.
+Row 4, column 4: electrolysis cell facade with two broad upright electrodes dipping into a rectangular bath.

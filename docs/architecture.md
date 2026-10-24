@@ -1,5 +1,7 @@
 # 当前架构
 
+建筑 / 物流美术属于客户端显示层：78 张 128px PNG 与 12 个代码连接定义覆盖全部 90 个目录 ID。DefinitionIcon / BuildingSprite 提供 GUI，BuildingVisual 提供地图与预览；buildingConnections 复用原方向邻接选择，routeGeometry 缓存整数 SVG。贴图索引和几何独立分包，图片以外部 URL 缓存；颜色 / 端口 / 液位只读目录、布局与确认状态，不增加 Worker、API、数据库迁移或存档字段。详见 [building-art.md](building-art.md)。
+
 物品贴图为客户端静态资源：按稳定物品 ID 查找 128px PNG，GUI 与传送带共用 ItemSprite，阶段脚下光影只读资源清单中的 tier。资源索引单独分包、PNG 独立缓存，不进入 Worker、GameSave、IndexedDB 或云备份，不修改定义与迁移。传送带只替换原 payload 节点内部图形，继续消费原成功收据与共享帧时钟；素材流水线见 [item-art.md](item-art.md)。
 
 开发者工具入口显示偏好为 LocalRecord.developerToolsVisible，可选布尔值、缺省 false，按账号同工厂记录串行写入 IndexedDB。GameRuntime 提供只读状态与串行切换方法，保存成功后发布 GameView；普通 tick / 编辑继续携带同一元数据，失败沿用暂停 / 重试保护。该字段不进入 Worker、GameSave 或云备份，恢复云档保留当前浏览器偏好。登录工作台只暴露 `window.bakaFactory.devTools()` 查询 / `devTools(true|false)` 切换入口，退出 / 换账号后清理并废止旧句柄；不暴露运行层对象或新增账号权限。隐藏入口与 industry.developer 的实际功能测试设置相互独立。

@@ -19,12 +19,10 @@ import DefinitionIcon from "./DefinitionIcon";
 import type { EditorCommands } from "./local/runtime";
 import type { RobotRoute } from "./local/robotNavigation";
 import type { DistrictSummary } from "./local/world";
-import ConveyorVisual from "./ConveyorVisual";
-import FluidVisual from "./FluidVisual";
+import BuildingVisual from "./BuildingVisual";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import { entityColor } from "./entityTheme";
 import { MachineProgress } from "./SimulationAnimation";
-import { isBelt, isPort, isFluidNode } from "./local/catalog";
 import {
   cellAtPoint,
   centeredCamera,
@@ -984,13 +982,7 @@ export default function FactoryEditor(props: Props) {
                       )}
                     {instance && d ? (
                       <button
-                        className={
-                          isBelt(instance.building_type)
-                            ? "conveyor-building"
-                            : isFluidNode(instance.building_type)
-                              ? `fluid-building${d.role === "pipe" ? " fluid-pipe-building" : ""}`
-                              : undefined
-                        }
+                        className="building-art-button"
                         aria-label={`${d.name} ${d.code} (${x},${y})`}
                         aria-pressed={highlight}
                         disabled={saving}
@@ -1001,44 +993,15 @@ export default function FactoryEditor(props: Props) {
                           { "--entity-color": entityColor(d) } as CSSProperties
                         }
                       >
-                        {isBelt(instance.building_type) ? (
-                          <ConveyorVisual
-                            definition={d}
-                            x={x}
-                            y={y}
-                            rotation={instance.rotation}
-                            buildings={buildings}
-                            instanceID={instance.id}
-                          />
-                        ) : isFluidNode(instance.building_type) ? (
-                          <FluidVisual
-                            definition={d}
-                            x={x}
-                            y={y}
-                            rotation={instance.rotation}
-                            buildings={buildings}
-                            instanceID={instance.id}
-                            machine={runtime}
-                          />
-                        ) : (
-                          <DefinitionIcon
-                            definition={d}
-                            compact
-                            rotation={instance.rotation}
-                          />
-                        )}
-                        {!isBelt(instance.building_type) &&
-                          !isFluidNode(instance.building_type) && (
-                            <span
-                              className="direction-indicator"
-                              style={{
-                                transform: `rotate(${instance.rotation}deg)`,
-                              }}
-                              aria-hidden="true"
-                            >
-                              {isPort(instance.building_type) ? "→" : "↑"}
-                            </span>
-                          )}
+                        <BuildingVisual
+                          definition={d}
+                          x={x}
+                          y={y}
+                          rotation={instance.rotation}
+                          buildings={buildings}
+                          instanceID={instance.id}
+                          machine={runtime}
+                        />
                         {(d.category === "machine" || d.role === "source") &&
                           runtime && (
                             <>
@@ -1065,31 +1028,14 @@ export default function FactoryEditor(props: Props) {
                     )}
                     {target && preview && (
                       <span className="tile-preview" aria-hidden="true">
-                        {isBelt(preview.definition.id) ? (
-                          <ConveyorVisual
-                            definition={preview.definition}
-                            x={x}
-                            y={y}
-                            rotation={preview.rotation}
-                            buildings={buildings}
-                            instanceID={preview.instanceID}
-                          />
-                        ) : isFluidNode(preview.definition.id) ? (
-                          <FluidVisual
-                            definition={preview.definition}
-                            x={x}
-                            y={y}
-                            rotation={preview.rotation}
-                            buildings={buildings}
-                            instanceID={preview.instanceID}
-                          />
-                        ) : (
-                          <DefinitionIcon
-                            definition={preview.definition}
-                            compact
-                            rotation={preview.rotation}
-                          />
-                        )}
+                        <BuildingVisual
+                          definition={preview.definition}
+                          x={x}
+                          y={y}
+                          rotation={preview.rotation}
+                          buildings={buildings}
+                          instanceID={preview.instanceID}
+                        />
                       </span>
                     )}
                   </div>

@@ -1,0 +1,39 @@
+Use case: stylized-concept
+Asset: ONE 4x4 atlas of sixteen factory BUILDING and LOGISTICS tile sprites for BakaFactory.
+
+ART DIRECTION: minimalist hard-surface science-fiction technical linework drawn as TRUE LOW-RESOLUTION PIXEL ART. This is a clean 2D game TILESET, NOT a cartoon inventory illustration. Flat orthographic projection. Machines and bins are seen STRAIGHT FROM THE FRONT, perfectly square screen-facing faces. No perspective, no isometric angles, no visible top or side planes, no bevelled 3D boxes, no cute toy shapes. All machines are contained in an identical 28x28 logical pixel SQUARE housing. Silhouettes should fill their square evenly. Industrial panel diagrams with a few crisp cyan/pink lines, vent slots, large unlit work openings and distinct functional shapes. Large mechanical shapes and minimal details, calm and precise.
+
+PIXEL BUDGET: the whole sheet has a 128x128 LOGICAL pixel grid, sixteen cells of 32x32 logical pixels. Export large, ideally 1536x1536 or 1024x1024, as a NEAREST-NEIGHBOR enlargement of that logical canvas. Every mark is a deliberate chunky square pixel cluster. Consistent grid and stroke thickness. Each object max 28x28 logical pixels, at least 2 empty logical pixels on all sides of its cell. One logical pixel dark near-black outer contour, 1-2 pixel material/technical lines, sparse 2-tone panels. Max 8-12 flat colors each. No subpixel details, gradients, airbrush, smooth lighting, reflective shine, noisy textures, dithering, bloom, halos, shadows, antialiasing, or realistic miniature objects.
+
+PALETTE: near-black #080d18 outlines, dark midnight navy #172033 panel fill, muted slate #526380 edges, cyan #46eff2 and pink #ff62cb short technical accents, occasional pale #dce3f1 metal. Restrained panels and distinct internal layouts, not shiny multicolored cartoons. Use the SAME material and line language across machines, bins, belts and pipes.
+
+TRANSPARENCY: genuine alpha-transparent background and gutters, no drawn grid, no card frames or labels.
+Absolutely NO ARROWS, chevrons, direction markers, numbers, lettering, operating indicator dots, running/stopped variants, colored floor glow, phase-colored outlines, or cast shadows. All of those will be rendered by GAME CODE. Draw each sprite exactly once in the order below. No extra symbols or objects.
+
+ROW 1 — FOUR SQUARE FRONT-ELEVATION MACHINE FACADES, identical overall footprint:
+1. Charcoal kiln: square industrial furnace panel, central large square dark combustion hatch with a small dull amber interior slot, two vertical side vents, short flush chimney port integrated into the square facade. No flames outside.
+2. Mechanical stamping press: square steel front frame, two broad vertical guide columns, horizontal upper ram and flat lower anvil, open rectangular dark work bay. Cyan technical edges with a small pink mechanical collar, not indicator lights.
+3. CNC machining center: fully square front enclosure, large rectangular dark inspection window on the left, three broad rectangular control strips on the right, central vertical tool spindle visible behind the window.
+4. AI training cluster: square front cabinet with two columns of three large server cartridge slots, cyan bus lines and a single pink horizontal connector bar. Strictly frontal and regular.
+
+ROW 2 — FOUR RECTANGULAR/SQUARE FRONT-ELEVATION FACILITIES:
+5. Factory warehouse WH: square flat front facade, large central segmented loading shutter, narrow flanking storage panels and three short structural lines. No WH lettering.
+6. Sorting chest: square flat front panel of an industrial storage bin, two horizontal drawer compartments, central latch and compact squared handles. No visible top surface.
+7. Steam pressure tank: squared outer support frame containing an upright simple pressure cylinder shown flat from front, two short side port sockets and one unmarked round pressure dial. Keep the silhouette square.
+8. Chemical dosing pump: square front plate with a large circular impeller housing at center, two rectangular side pipe sockets and one small motor block. No triangular arrow or directional symbol.
+
+ROW 3 — FOUR BELT CONNECTION TOPOLOGIES, FLAT ORTHOGRAPHIC SURFACE:
+All have dark flat transport beds, straight parallel cyan-edged steel side rails and three broad cross slats. A route is 14 logical pixels wide. Flat two-dimensional plan, never 3D or perspective. The ends are OPEN, NO perpendicular end caps blocking them. Same exact width and material across the four variants; no rollers sticking out, no diagonal chevrons.
+9. Horizontal straight belt, open LEFT and RIGHT.
+10. Squared 90-degree L bend, open LEFT and BOTTOM; tiny 1-pixel corner bevel at most, no large circular curve.
+11. T junction belt, open LEFT, RIGHT and BOTTOM; completely continuous dark bed through the central intersection, no barrier or rail crossing its center.
+12. Four-way cross belt, open LEFT, RIGHT, TOP and BOTTOM; continuous dark bed, no blocking center lines.
+
+ROW 4 — FOUR FLUID PIPE CONNECTION TOPOLOGIES, FLAT ORTHOGRAPHIC SURFACE:
+All use a dark rectangular conduit with muted steel wall lines, cyan inner channel, two short connector collars per visible route, same exact width and material. Route is 8 logical pixels wide. No full square tile background beneath the pipe, transparent around its shape. No liquid droplets, flow arrows or bright full-fluid glow: this is the neutral base asset.
+13. Horizontal straight pipe, open LEFT and RIGHT.
+14. Squared 90-degree L pipe, open LEFT and BOTTOM, small mechanical corner block rather than a rounded hose.
+15. T pipe, open LEFT, RIGHT and BOTTOM.
+16. Four-way cross pipe, open LEFT, RIGHT, TOP and BOTTOM.
+
+Ensure exactly sixteen isolated sprites on a precisely aligned 4x4 grid. Top row: square front machine facades. Second row: square front facility facades. Third and fourth rows: flat connectable route shapes. This is a sparse readable technical pixel tileset that will fit a 30px game grid.

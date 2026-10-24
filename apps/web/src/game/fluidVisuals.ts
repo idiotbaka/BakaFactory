@@ -18,13 +18,13 @@ const ends = [
 
 // Presentation only: an adjacent fluid node points into this cell. Do not
 // infer successful flow, pressure, compatibility or available capacity here.
-export function fluidPipePath({
+export function fluidPipeConnections({
   x,
   y,
   rotation,
   buildings,
   instanceID,
-}: PipeGeometry): string {
+}: PipeGeometry): number[] {
   const incoming: number[] = [];
   for (let local = 0; local < 4; local++) {
     const world = (rotation + local * 90) % 360,
@@ -38,6 +38,11 @@ export function fluidPipePath({
     )
       incoming.push(local);
   }
+  return incoming;
+}
+
+export function fluidPipePath(args: PipeGeometry): string {
+  const incoming = fluidPipeConnections(args);
   // The output always follows the pipe's arrow. With no other inlet, retain
   // the rear connector for a machine / WH source or an unconnected preview.
   const ports = [...new Set([0, ...incoming])];

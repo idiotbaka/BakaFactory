@@ -1,0 +1,33 @@
+Generate a SINGLE 4x4 transparent sprite atlas of 16 minimalist futuristic factory tiles. These are FLAT SCI-FI TECHNICAL PICTOGRAMS in 16-bit PIXEL ART, not illustrated machinery.
+
+The MOST IMPORTANT requirement is radical simplicity and graphic clarity at 30 pixels. Think stark clean industrial schematics, Japanese sci-fi panel symbols, with chunky straight pixel lines. ZERO realistic metallic rendering. ZERO bevel shading. ZERO screws, tiny vents, fine grilles, dials with ticks, or little decorative panels. Every sprite should be understandable from 3 to 5 BIG GEOMETRIC SHAPES.
+
+EXACT PIXEL LANGUAGE: each tile has a 32x32 logical pixel grid, big deliberate square pixels enlarged by integer nearest-neighbor for the final large image. Every line is 2 logical pixels thick where possible. NO line thinner than one logical pixel. No anti-aliasing, no gradients, no glints, no texture noise, no 3D lighting, no dithering. Maximum SIX solid flat colors for every tile: near-black #080d18 contours, uniform midnight #172033 panels, slate #526380 mechanical lines, pale #dce3f1 highlights used very sparingly, bright cyan #46eff2 and pink #ff62cb functional strokes. Most of every object is a SIMPLE DARK FLAT FILL. NOT a shiny toy, NOT cartoon concept art, NOT a detailed sprite illustration.
+
+FRAMING: exactly four rows and four equal columns. The first eight sprites are identical-size perfectly SQUARE machine facades, viewed dead STRAIGHT FROM THE FRONT. Face parallel to screen. All inside a square metal rim. No visible top or side surface, no depth or perspective, no protruding chimney, handles or feet, no shapes outside their square frame. Center within the cell, 2 empty logical pixels margin. Use a square silhouette with only a tiny 1-pixel chamfer if any.
+Last eight sprites are flat orthographic belt and pipe routing shapes, no perspective or undercarriage.
+True transparent alpha background and gutters. No labels, no text, no grid lines, no arrows, no chevrons, no status dots, no glow or shadows. Phase frames and direction arrows will be added in code.
+
+Exact cell contents:
+ROW 1:
+1. Square charcoal kiln facade: one square dark oven hatch, two short vertical slate rails, one pink horizontal bar inside the hatch. Nothing above the square.
+2. Square press facade: two straight vertical guide rails and one cyan wide horizontal press ram over a pink lower plate. A large clean empty dark central bay.
+3. Square CNC facade: one large dark rectangular window on the left containing ONE cyan vertical tool line; one small pink rectangle and two slate bars on the right.
+4. Square AI server facade: six simple dark rectangles arranged 2 columns by 3 rows, a single cyan short line inside each, one pink vertical central bus. All flat and regular.
+ROW 2:
+5. Square warehouse front facade: one large loading shutter made of FOUR broad horizontal slate stripes inside one cyan doorway rim. No letters.
+6. Square sorting bin front facade: TWO large rectangular drawers stacked vertically, one short cyan handle centered in each, one pink central latch.
+7. Square framed steam tank: one large upright capsule outline inside the square, one short cyan vertical level stripe, one pink horizontal collar. NO gauge or tiny details. All pipe sockets flush inside the square.
+8. Square pump front facade: one large slate circle around a small cyan square hub, two broad short horizontal side ports, one pink short motor bar. No triangles.
+ROW 3: consistent BELT bed 12 logical pixels wide, only dark bed, two parallel slate/cyan rails and TWO broad cross slats per route. NO end caps blocking connections, NO grid or chevrons.
+9. Belt straight, LEFT to RIGHT open.
+10. Belt L bend, LEFT and BOTTOM open, square corner.
+11. Belt T junction, LEFT RIGHT BOTTOM open, continuous dark intersection with no rails across it.
+12. Belt cross, all FOUR sides open, continuous dark center.
+ROW 4: consistent PIPE route 8 logical pixels wide, only dark core, thick slate outer wall and a single cyan inner line. No collar microdetails, no background behind the pipe.
+13. Pipe straight, LEFT RIGHT open.
+14. Pipe L bend, LEFT BOTTOM open, square corner.
+15. Pipe T junction, LEFT RIGHT BOTTOM open.
+16. Pipe cross, all FOUR sides open.
+
+The finished sheet must read as a SIMPLE TECHNICAL PIXEL TILESET. Prioritize very few bold marks and perfectly square front facades. Do not turn it into industrial product illustrations.

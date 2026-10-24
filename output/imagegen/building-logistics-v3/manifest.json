@@ -1,0 +1,110 @@
+{
+  "status": "style-sample-awaiting-review",
+  "generator": "built-in image_gen for facades; procedural code for connected logistics",
+  "runtime_integrated": false,
+  "machine_source": "source-sheet.png",
+  "prompt": "prompt.txt",
+  "machine_items": [
+    {
+      "id": "m05",
+      "name": "炭化炉",
+      "tier": 1,
+      "file": "textures128/m05.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [48, 50, 408, 399],
+      "phase_or_status_baked": false,
+      "sha256": "5768117b063fc50b1e6738ad6c54814356e0739980d6dbe0a19f442226ea38b9"
+    },
+    {
+      "id": "m11",
+      "name": "冲压机",
+      "tier": 2,
+      "file": "textures128/m11.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [483, 50, 849, 399],
+      "phase_or_status_baked": false,
+      "sha256": "11b09619fa07a6763ac3752a4f44c933ef663c75c0a0b68c77ad24d92b0a42cf"
+    },
+    {
+      "id": "m35",
+      "name": "数控加工中心",
+      "tier": 4,
+      "file": "textures128/m35.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [922, 50, 1295, 401],
+      "phase_or_status_baked": false,
+      "sha256": "f3249fbf97636f3d2471153cdab3206e33cd2553bc33896242a10278d3731e7d"
+    },
+    {
+      "id": "m51",
+      "name": "AI 训练集群",
+      "tier": 6,
+      "file": "textures128/m51.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [1370, 50, 1733, 400],
+      "phase_or_status_baked": false,
+      "sha256": "612fb664a04d20766ca7604367cff83901955a4da1e1c35444108598436576ba"
+    },
+    {
+      "id": "bus",
+      "name": "工厂仓库 WH",
+      "tier": null,
+      "file": "textures128/bus.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [41, 463, 412, 826],
+      "phase_or_status_baked": false,
+      "sha256": "82192c588489017093761513c99e2e3e5ba009895081a251fd1dd8bd5d618101"
+    },
+    {
+      "id": "chest",
+      "name": "分拣料箱",
+      "tier": 1,
+      "file": "textures128/chest.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [483, 463, 848, 826],
+      "phase_or_status_baked": false,
+      "sha256": "aa40ebb503ba4843d024f15e0d2304f797bdb4fc6eb9d72a9bd5c1cc9eed323a"
+    },
+    {
+      "id": "steam_tank",
+      "name": "蒸汽储压罐",
+      "tier": 2,
+      "file": "textures128/steam_tank.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [917, 457, 1300, 826],
+      "phase_or_status_baked": false,
+      "sha256": "a9d41884639b153b5a3e14293f9fe34db2d8db971dfa9a168a82fb359642d4e2"
+    },
+    {
+      "id": "pump",
+      "name": "化工投料泵",
+      "tier": 3,
+      "file": "textures128/pump.png",
+      "size": [128, 128],
+      "logical_working_size": [64, 64],
+      "source_region": [1356, 463, 1745, 826],
+      "phase_or_status_baked": false,
+      "sha256": "c8631fb816c9827cfb8a7b838d278e51ee320cdccef90c2fd5384c9bf8e1197f"
+    }
+  ],
+  "routes": {
+    "source": "route_style.py",
+    "native_size": 30,
+    "mask_bits": {
+      "N": 1,
+      "E": 2,
+      "S": 4,
+      "W": 8
+    },
+    "masks_per_family": 16,
+    "configurations_checked": 288,
+    "runtime_adapter": "pending approval; preserve existing directional neighbor logic"
+  }
+}

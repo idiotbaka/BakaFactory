@@ -1,0 +1,10 @@
+{
+  "facades": 78,
+  "procedural": 12,
+  "catalog_ids": 90,
+  "png_bytes": 175927,
+  "tile_size": 30,
+  "geometry_configurations": 405,
+  "edge_profiles": "matched; closed edges clear",
+  "geometry_source": "apps/web/src/game/routeGeometry.ts"
+}

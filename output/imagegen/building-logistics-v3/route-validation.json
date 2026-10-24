@@ -1,0 +1,138 @@
+{
+  "tile_size": 30,
+  "mask_bits": {
+    "N": 1,
+    "E": 2,
+    "S": 4,
+    "W": 8
+  },
+  "checks": [
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 1,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 2,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 3,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 4,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 5,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "belt",
+      "filled": false,
+      "stage": 6,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 1,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 2,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 3,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 4,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 5,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": false,
+      "stage": 6,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 1,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 2,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 3,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 4,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 5,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    },
+    {
+      "kind": "pipe",
+      "filled": true,
+      "stage": 6,
+      "masks": 16,
+      "edge_profiles": "exact match"
+    }
+  ],
+  "tile_configurations_checked": 288
+}

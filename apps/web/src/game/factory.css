@@ -1583,6 +1583,16 @@
   max-width: 48px;
   max-height: 48px;
 }
+.definition-icon.has-building-art {
+  border: 0;
+  background: none;
+}
+.definition-icon.has-building-art > .building-sprite {
+  width: 100%;
+  height: 100%;
+  max-width: 48px;
+  max-height: 48px;
+}
 .map-panel {
   grid-area: map;
   display: flex;

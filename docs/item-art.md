@@ -1,6 +1,6 @@
 # 物品像素贴图
 
-现行 352 种物品与 3 种旧档兼容物品已接入正式资源。美术延续经用户确认的 V2 像素方向；V1 / V2 保留为过程稿，运行时仅加载 v3 资源。图像、接入和静态检查已完成，实际游戏浏览器验收待用户执行。
+现行 352 种物品与 3 种旧档兼容物品已接入正式资源，用户已确认本轮物品贴图验收完成。美术延续经用户确认的 V2 像素方向；V1 / V2 保留为过程稿，运行时仅加载 v3 资源。应用自动测试的执行状态仍以 progress.md 的实际记录为准，不将用户验收等同于自动测试通过。
 
 ## 美术与尺寸
 
@@ -12,15 +12,15 @@
 
 ## 资源与接入
 
-| 路径 / 组件                                  | 职责                                                                     |
-| -------------------------------------------- | ------------------------------------------------------------------------ |
-| `apps/web/src/assets/items/v3/*.png`         | 按稳定物品 ID 命名的 355 份正式 PNG                                      |
-| `apps/web/src/assets/items/v3/manifest.json` | 资源版本、尺寸及每个 ID 的实际阶段                                       |
-| `apps/web/src/game/itemSprites.ts`           | 一次解析资源 URL 和阶段色；资源索引单独打包                              |
-| `apps/web/src/game/ItemSprite.tsx` / `.css`  | 透明像素图片、黑边素材与静态阶段脚下光影，使用 image-rendering:pixelated |
-| `apps/web/src/game/DefinitionIcon.tsx`       | 所有既有 GUI 物品图标共用入口，建筑 / 物流继续用原 SVG                   |
-| `apps/web/src/game/ConveyorItemsLayer.tsx`   | 带上物品和成功输入 / 输出收据共用同份贴图                                |
-| `scripts/check-item-sprites.mjs`             | npm lint 内检查目录 / 清单全覆盖、阶段、128px RGBA PNG 尺寸与格式        |
+| 路径 / 组件                                  | 职责                                                                              |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/web/src/assets/items/v3/*.png`         | 按稳定物品 ID 命名的 355 份正式 PNG                                               |
+| `apps/web/src/assets/items/v3/manifest.json` | 资源版本、尺寸及每个 ID 的实际阶段                                                |
+| `apps/web/src/game/itemSprites.ts`           | 一次解析资源 URL 和阶段色；资源索引单独打包                                       |
+| `apps/web/src/game/ItemSprite.tsx` / `.css`  | 透明像素图片、黑边素材与静态阶段脚下光影，使用 image-rendering:pixelated          |
+| `apps/web/src/game/DefinitionIcon.tsx`       | 所有既有 GUI 物品图标共用入口；建筑 / 物流另走 BuildingSprite，见 building-art.md |
+| `apps/web/src/game/ConveyorItemsLayer.tsx`   | 带上物品和成功输入 / 输出收据共用同份贴图                                         |
+| `scripts/check-item-sprites.mjs`             | npm lint 内检查目录 / 清单全覆盖、阶段、128px RGBA PNG 尺寸与格式                 |
 
 图鉴建造阵列“物品”Tab、检视、配方、工作室物料、仓库、任务奖励、机械手订单、来源查询均通过 DefinitionIcon 显示新贴图。GUI 在原图标容器内缩放，最大 48px；不额外挤入图像内代号，外部名称 / 代号、原工作台布局和 12px 文字下限保持。
 

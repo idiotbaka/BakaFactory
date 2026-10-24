@@ -1,0 +1,22 @@
+Generate ONE production atlas for BakaFactory matching the supplied STYLE REFERENCE: medium-detail straight-front 16-bit pixel-art industrial machine facades. Exactly FOUR columns and FOUR rows; each cell square, same footprint; ideally 2048x2048 output.
+Each machine is a 56x56 logical pixel square facade on a 64x64 logical cell, exported enlarged with nearest neighbor. Dead straight FRONT VIEW, face parallel to screen, no top or side plane, no perspective, no isometric drawing. Keep all machinery inside an identical square housing. No protruding chimney, feet or pipes outside the square. Leave four logical pixels transparent margin on all sides of each cell. No overlap.
+Retain steel casing, structural frame, main working mechanism and 2-3 supporting functional details. Moderate detail BETWEEN technical pictograms and dense industrial miniature illustration. Major mechanisms need clear different silhouettes. No many tiny bolts, dense vents or ornamental circuit grids. Pixel art: deliberate square clusters, limited palette, clean stepped corners, no antialiasing, no smooth gradients, no texture noise, no dithering. One highlight band and one shadow band per steel edge. Dark navy recesses, slate blue steel, sparse pale metal highlights, cyan #46eff2 and small pink #ff62cb functional parts. Furnace apertures can have muted warm amber. Calm industrial sci-fi, NOT cartoon toys or comic illustration.
+The reference is STYLE ONLY. Draw the EXACT different subjects below, not repeated copies of reference machines. NO text, numbers, labels, arrows, chevrons, operating indicator dots, stage-colored outline, ground glow, cast shadows, background, grid or card borders. Genuine transparent alpha background and gutters. Direction/status/stage are rendered in GAME CODE.
+
+EXACT SUBJECT ORDER:
+Row 1, column 1: legacy mining machine facade with a broad central drill spindle and reinforced lower base.
+Row 1, column 2: legacy furnace facade with a squared firebox and two simple side vent panels.
+Row 1, column 3: legacy assembler facade with one central gear chuck and two broad manipulator fixtures.
+Row 1, column 4: legacy output port facade with left source compartment and right open transfer socket, no arrows.
+Row 2, column 1: legacy input port facade with left open transfer socket and right receiving compartment, no arrows.
+Row 2, column 2: manual workbench facade with one broad work surface, tool clamp and drawer.
+Row 2, column 3: manual sorting table facade with three large rectangular sorting trays.
+Row 2, column 4: dismantling bench facade with a broad vise, wrench-shaped mechanical fixture and lower tray.
+Row 3, column 1: hand-cranked crusher facade with a pair of broad jaws and one small side crank.
+Row 3, column 2: simple smelting furnace facade with a large crucible opening and side vents.
+Row 3, column 3: anvil forge facade with central anvil silhouette, squared support and hammer fixture.
+Row 3, column 4: manual assembly bench facade with clamping jaws and two tool sockets.
+Row 4, column 1: solid-fuel power engine facade with a large round flywheel and rectangular fuel chamber.
+Row 4, column 2: mechanical screening machine facade with large diagonal mesh panel and two material outlets.
+Row 4, column 3: mechanical lathe facade with horizontal spindle, chuck and carriage rail.
+Row 4, column 4: high-temperature casting furnace facade with central crucible and two thick side heat shields.

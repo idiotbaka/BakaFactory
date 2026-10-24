@@ -12,13 +12,13 @@ type Point = { x: number; y: number };
 type Opening = { start: Point; end: Point; edge: string };
 
 // Local SVG coordinates turn with the belt. World Y points up, SVG Y down.
-export function conveyorPaths({
+export function conveyorConnections({
   x,
   y,
   rotation,
   buildings,
   instanceID,
-}: ConveyorGeometry): { body: string; rails: string; ribs: string } {
+}: ConveyorGeometry): { incoming: number[]; front: boolean } {
   const incoming: number[] = [];
   let front = false;
   for (let local = 0; local < 4; local++) {
@@ -34,6 +34,17 @@ export function conveyorPaths({
     if (local === 0) front = true;
     if (neighbor.rotation === (world + 180) % 360) incoming.push(local);
   }
+  return { incoming, front };
+}
+
+// Legacy vector outline retained as a compatibility probe for the shared
+// directional selection above. Production art uses routeGeometry's pixel paths.
+export function conveyorPaths(args: ConveyorGeometry): {
+  body: string;
+  rails: string;
+  ribs: string;
+} {
+  const { incoming, front } = conveyorConnections(args);
   // Only layout arrows determine appearance. Power, filters, speed and the
   // actual transport reservations must not change these openings.
   if (!incoming.includes(1) && !incoming.includes(3)) {

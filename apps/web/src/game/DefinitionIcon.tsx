@@ -3,6 +3,8 @@ import type { Definition } from "../api/client";
 import { entityColor } from "./entityTheme";
 import ItemSprite from "./ItemSprite";
 import { itemSpriteURL } from "./itemSprites";
+import BuildingSprite from "./BuildingSprite";
+import { buildingArtwork } from "./buildingArtwork";
 
 const bodies: Record<string, string> = {
   bus: "M15 5h18l10 10v18L33 43H15L5 33V15Z",
@@ -64,14 +66,17 @@ function DefinitionIcon({
   rotation?: number;
 }) {
   const sprite = itemSpriteURL(definition.id);
+  const building = buildingArtwork(definition.id);
   return (
     <span
-      className={`definition-icon entity-${definition.id} ${compact ? "compact" : ""} ${sprite ? "has-item-sprite" : ""}`}
+      className={`definition-icon entity-${definition.id} ${compact ? "compact" : ""} ${sprite ? "has-item-sprite" : building ? "has-building-art" : ""}`}
       style={{ "--entity-color": entityColor(definition) } as CSSProperties}
       aria-hidden="true"
     >
       {sprite ? (
         <ItemSprite id={definition.id} />
+      ) : building ? (
+        <BuildingSprite id={definition.id} rotation={rotation} />
       ) : (
         <>
           <svg

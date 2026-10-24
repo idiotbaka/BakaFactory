@@ -84,6 +84,18 @@
 .map-tile > button.empty-tile:focus-visible {
   outline: none;
 }
+.map-tile > button.building-art-button,
+.map-tile > button.building-art-button:hover {
+  position: absolute;
+  inset: 0;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
 .map-tile > button.conveyor-building,
 .map-tile > button.fluid-pipe-building {
   position: absolute;

@@ -4,11 +4,12 @@ import type { Catalog } from "../api/client";
 import definitions from "../../../server/internal/catalog/definitions.json";
 import DefinitionIcon from "./DefinitionIcon";
 import { itemSpriteColor, itemSpriteURL } from "./itemSprites";
+import { buildingSpriteURL } from "./buildingArtwork";
 
 afterEach(cleanup);
 const catalog = definitions as unknown as Catalog;
 
-it("renders a cached raster for GUI items and keeps building SVG rotation", () => {
+it("renders separate cached rasters for GUI items and front-facing buildings", () => {
   const item = catalog.items.find((d) => d.id === "i0001")!;
   const building = catalog.buildings.find((d) => d.id === "bus")!;
   const { container, rerender } = render(
@@ -24,9 +25,12 @@ it("renders a cached raster for GUI items and keeps building SVG rotation", () =
     "true",
   );
   rerender(<DefinitionIcon definition={building} rotation={90} compact />);
-  expect(container.querySelector("img")).toBeNull();
-  expect(container.querySelector("svg")?.style.transform).toBe("rotate(90deg)");
-  expect(container.querySelector(".definition-code")).toHaveTextContent("WH");
+  expect(container.querySelector("img")).toHaveAttribute(
+    "src",
+    buildingSpriteURL(building.id),
+  );
+  expect(container.querySelector("img")?.style.transform).toBe("");
+  expect(container.querySelector("svg")).toBeNull();
 });
 
 it("uses actual item stage for floor color, including the early P2 pipe", () => {

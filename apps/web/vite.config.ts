@@ -13,6 +13,12 @@ export default defineConfig({
             id.endsWith("/game/itemSprites.ts")
           )
             return "item-sprites";
+          if (
+            id.includes("/assets/buildings/v1/") ||
+            id.endsWith("/game/buildingArtwork.ts")
+          )
+            return "building-art";
+          if (id.endsWith("/game/routeGeometry.ts")) return "route-geometry";
         },
       },
     },

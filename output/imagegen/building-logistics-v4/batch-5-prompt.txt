@@ -1,0 +1,22 @@
+Generate ONE production atlas for BakaFactory matching the supplied STYLE REFERENCE: medium-detail straight-front 16-bit pixel-art industrial machine facades. Exactly FOUR columns and FOUR rows; each cell square, same footprint; ideally 2048x2048 output.
+Each machine is a 56x56 logical pixel square facade on a 64x64 logical cell, exported enlarged with nearest neighbor. Dead straight FRONT VIEW, face parallel to screen, no top or side plane, no perspective, no isometric drawing. Keep all machinery inside an identical square housing. No protruding chimney, feet or pipes outside the square. Leave four logical pixels transparent margin on all sides of each cell. No overlap.
+Retain steel casing, structural frame, main working mechanism and 2-3 supporting functional details. Moderate detail BETWEEN technical pictograms and dense industrial miniature illustration. Major mechanisms need clear different silhouettes. No many tiny bolts, dense vents or ornamental circuit grids. Pixel art: deliberate square clusters, limited palette, clean stepped corners, no antialiasing, no smooth gradients, no texture noise, no dithering. One highlight band and one shadow band per steel edge. Dark navy recesses, slate blue steel, sparse pale metal highlights, cyan #46eff2 and small pink #ff62cb functional parts. Furnace apertures can have muted warm amber. Calm industrial sci-fi, NOT cartoon toys or comic illustration.
+The reference is STYLE ONLY. Draw the EXACT different subjects below, not repeated copies of reference machines. NO text, numbers, labels, arrows, chevrons, operating indicator dots, stage-colored outline, ground glow, cast shadows, background, grid or card borders. Genuine transparent alpha background and gutters. Direction/status/stage are rendered in GAME CODE.
+
+EXACT SUBJECT ORDER:
+Row 1, column 1: energy storage-box facade with three large rectangular cell windows and two flush terminal blocks.
+Row 1, column 2: high-density storage-box facade with six compact cell windows and a broad collector panel.
+Row 1, column 3: electric feeder-arm facade with one short articulated grabber and a compact side motor block.
+Row 1, column 4: precision feeder-arm facade with slim two-joint manipulator and small twin-finger gripper.
+Row 2, column 1: flexible feed-node facade with a segmented flexible manipulator and four flush connector sockets.
+Row 2, column 2: smart sorting gate facade with one broad sliding shutter and two small sensor blocks, no arrows.
+Row 2, column 3: EMPTY transparent cell, no object.
+Row 2, column 4: EMPTY transparent cell, no object.
+Row 3, column 1: EMPTY transparent cell, no object.
+Row 3, column 2: EMPTY transparent cell, no object.
+Row 3, column 3: EMPTY transparent cell, no object.
+Row 3, column 4: EMPTY transparent cell, no object.
+Row 4, column 1: EMPTY transparent cell, no object.
+Row 4, column 2: EMPTY transparent cell, no object.
+Row 4, column 3: EMPTY transparent cell, no object.
+Row 4, column 4: EMPTY transparent cell, no object.

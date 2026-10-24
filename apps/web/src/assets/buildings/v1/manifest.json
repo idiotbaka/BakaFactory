@@ -1,0 +1,457 @@
+{
+  "version": 1,
+  "size": 128,
+  "logicalSize": 64,
+  "buildings": {
+    "bus": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#c8ed9c"
+    },
+    "miner": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#d5bd7c"
+    },
+    "furnace": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#df9c79"
+    },
+    "assembler": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#9ebcdb"
+    },
+    "conveyor": {
+      "renderer": "belt",
+      "tier": null,
+      "color": "#a8bfa9"
+    },
+    "item_output": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#e2bd79"
+    },
+    "item_input": {
+      "renderer": "image",
+      "tier": null,
+      "color": "#83cdbd"
+    },
+    "m01": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m02": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m03": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m04": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m05": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m06": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m07": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m08": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m09": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "m10": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m11": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m12": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m13": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m14": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m15": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m16": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m17": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m18": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "m19": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m20": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m21": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m22": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m23": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m24": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m25": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m26": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m27": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "m28": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m29": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m30": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m31": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m32": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m33": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m34": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m35": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m36": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m37": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "m38": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m39": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m40": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m41": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m42": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m43": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m44": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m45": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m46": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "m47": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m48": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m49": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m50": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m51": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m52": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m53": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m54": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "m55": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "hand_belt": {
+      "renderer": "belt",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "feeder": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "waste_port": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "chest": {
+      "renderer": "image",
+      "tier": 1,
+      "color": "#ffc879"
+    },
+    "buffer_chest": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "shaft": {
+      "renderer": "shaft",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "mechanical_belt": {
+      "renderer": "belt",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "pipe": {
+      "renderer": "pipe",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "return_pipe": {
+      "renderer": "pipe",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "steam_tank": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "hydraulic_line": {
+      "renderer": "hydraulic",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "hydraulic_belt": {
+      "renderer": "belt",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "tank": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "valve": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "pressure_valve": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "pump": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "cable": {
+      "renderer": "cable",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "hydraulic_station": {
+      "renderer": "image",
+      "tier": 3,
+      "color": "#74edce"
+    },
+    "charge_station": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "battery": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "dense_battery": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "electric_feeder": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "precision_feeder": {
+      "renderer": "image",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "flexible_feeder": {
+      "renderer": "image",
+      "tier": 6,
+      "color": "#ff72cf"
+    },
+    "smart_gate": {
+      "renderer": "image",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "electric_belt": {
+      "renderer": "belt",
+      "tier": 4,
+      "color": "#46eff2"
+    },
+    "precision_belt": {
+      "renderer": "belt",
+      "tier": 5,
+      "color": "#b69aff"
+    },
+    "flexible_belt": {
+      "renderer": "belt",
+      "tier": 6,
+      "color": "#ff72cf"
+    }
+  }
+}

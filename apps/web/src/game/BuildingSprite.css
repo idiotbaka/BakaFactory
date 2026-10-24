@@ -1,0 +1,91 @@
+.building-sprite {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  isolation: isolate;
+}
+.building-sprite > .building-face {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+}
+.building-sprite-gui::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 18%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--building-stage-color) 65%, transparent),
+    transparent 72%
+  );
+}
+.building-sprite-gui > .building-face,
+.definition-icon.has-building-art > .building-sprite-gui > .building-route {
+  width: 92%;
+  height: 92%;
+  align-self: start;
+}
+.building-sprite-map.building-facade::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 1px solid var(--building-stage-color);
+  z-index: 2;
+}
+.building-route {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.route-gui .route-layer-stage {
+  display: none;
+}
+.building-route-arrow {
+  stroke-linejoin: miter;
+}
+.building-map-visual {
+  position: absolute;
+  inset: 0;
+  width: var(--tile-size, 30px);
+  height: var(--tile-size, 30px);
+  pointer-events: none;
+  isolation: isolate;
+}
+.building-map-visual > .building-route {
+  position: absolute;
+  inset: 0;
+}
+.building-map-arrow {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  width: 9px;
+  height: 9px;
+  z-index: 4;
+}
+.building-fluid-level {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 2px;
+  height: 16px;
+  background: #46eff2;
+  opacity: 0.85;
+  transform: scaleY(var(--fluid-level));
+  transform-origin: bottom;
+  z-index: 3;
+}

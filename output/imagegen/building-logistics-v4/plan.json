@@ -1,0 +1,557 @@
+{
+  "version": 1,
+  "size": 128,
+  "logicalSize": 64,
+  "style_reference": "../building-logistics-v3/source-sheet.png",
+  "approved": [
+    "m05",
+    "m11",
+    "m35",
+    "m51",
+    "bus",
+    "chest",
+    "steam_tank",
+    "pump"
+  ],
+  "routes": {
+    "conveyor": "belt",
+    "hand_belt": "belt",
+    "mechanical_belt": "belt",
+    "hydraulic_belt": "belt",
+    "electric_belt": "belt",
+    "precision_belt": "belt",
+    "flexible_belt": "belt",
+    "pipe": "pipe",
+    "return_pipe": "pipe",
+    "shaft": "shaft",
+    "cable": "cable",
+    "hydraulic_line": "hydraulic"
+  },
+  "batches": [
+    {
+      "name": "batch-1",
+      "source": "batch-1-source.png",
+      "prompt": "batch-1-prompt.txt",
+      "items": [
+        {
+          "id": "miner",
+          "name": "采矿机",
+          "tier": null,
+          "slot": 0,
+          "brief": "legacy mining machine facade with a broad central drill spindle and reinforced lower base"
+        },
+        {
+          "id": "furnace",
+          "name": "熔炉",
+          "tier": null,
+          "slot": 1,
+          "brief": "legacy furnace facade with a squared firebox and two simple side vent panels"
+        },
+        {
+          "id": "assembler",
+          "name": "装配机",
+          "tier": null,
+          "slot": 2,
+          "brief": "legacy assembler facade with one central gear chuck and two broad manipulator fixtures"
+        },
+        {
+          "id": "item_output",
+          "name": "物品输出口",
+          "tier": null,
+          "slot": 3,
+          "brief": "legacy output port facade with left source compartment and right open transfer socket, no arrows"
+        },
+        {
+          "id": "item_input",
+          "name": "物品输入口",
+          "tier": null,
+          "slot": 4,
+          "brief": "legacy input port facade with left open transfer socket and right receiving compartment, no arrows"
+        },
+        {
+          "id": "m01",
+          "name": "手工工作台",
+          "tier": 1,
+          "slot": 5,
+          "brief": "manual workbench facade with one broad work surface, tool clamp and drawer"
+        },
+        {
+          "id": "m02",
+          "name": "手动分拣台",
+          "tier": 1,
+          "slot": 6,
+          "brief": "manual sorting table facade with three large rectangular sorting trays"
+        },
+        {
+          "id": "m03",
+          "name": "简易拆解台",
+          "tier": 1,
+          "slot": 7,
+          "brief": "dismantling bench facade with a broad vise, wrench-shaped mechanical fixture and lower tray"
+        },
+        {
+          "id": "m04",
+          "name": "手摇破碎机",
+          "tier": 1,
+          "slot": 8,
+          "brief": "hand-cranked crusher facade with a pair of broad jaws and one small side crank"
+        },
+        {
+          "id": "m06",
+          "name": "简易熔炼炉",
+          "tier": 1,
+          "slot": 9,
+          "brief": "simple smelting furnace facade with a large crucible opening and side vents"
+        },
+        {
+          "id": "m07",
+          "name": "铁砧锻台",
+          "tier": 1,
+          "slot": 10,
+          "brief": "anvil forge facade with central anvil silhouette, squared support and hammer fixture"
+        },
+        {
+          "id": "m08",
+          "name": "手工装配台",
+          "tier": 1,
+          "slot": 11,
+          "brief": "manual assembly bench facade with clamping jaws and two tool sockets"
+        },
+        {
+          "id": "m09",
+          "name": "固燃传动机",
+          "tier": 1,
+          "slot": 12,
+          "brief": "solid-fuel power engine facade with a large round flywheel and rectangular fuel chamber"
+        },
+        {
+          "id": "m10",
+          "name": "机械筛分器",
+          "tier": 2,
+          "slot": 13,
+          "brief": "mechanical screening machine facade with large diagonal mesh panel and two material outlets"
+        },
+        {
+          "id": "m12",
+          "name": "机械车床",
+          "tier": 2,
+          "slot": 14,
+          "brief": "mechanical lathe facade with horizontal spindle, chuck and carriage rail"
+        },
+        {
+          "id": "m13",
+          "name": "高温铸造炉",
+          "tier": 2,
+          "slot": 15,
+          "brief": "high-temperature casting furnace facade with central crucible and two thick side heat shields"
+        }
+      ]
+    },
+    {
+      "name": "batch-2",
+      "source": "batch-2-source.png",
+      "prompt": "batch-2-prompt.txt",
+      "items": [
+        {
+          "id": "m14",
+          "name": "蒸汽锅炉",
+          "tier": 2,
+          "slot": 0,
+          "brief": "steam boiler facade with broad pressure vessel, pipe manifold and unmarked circular gauge"
+        },
+        {
+          "id": "m15",
+          "name": "机械装配线",
+          "tier": 2,
+          "slot": 1,
+          "brief": "mechanical assembly-line facade with two short opposing assembly arms around a work platform"
+        },
+        {
+          "id": "m16",
+          "name": "齿轮粉碎机",
+          "tier": 2,
+          "slot": 2,
+          "brief": "gear crusher facade with two large meshing toothed wheels inside the square housing"
+        },
+        {
+          "id": "m17",
+          "name": "机械分流器",
+          "tier": 2,
+          "slot": 3,
+          "brief": "mechanical splitter facade with central drive cog and three compact flush output sockets"
+        },
+        {
+          "id": "m18",
+          "name": "初级搬运站",
+          "tier": 2,
+          "slot": 4,
+          "brief": "early robot charging station facade with a winding-key docking post and square platform"
+        },
+        {
+          "id": "m19",
+          "name": "废塑料裂解炉",
+          "tier": 3,
+          "slot": 5,
+          "brief": "plastic pyrolysis furnace facade with squared hopper mouth, heat chamber and condenser coil"
+        },
+        {
+          "id": "m20",
+          "name": "分馏塔",
+          "tier": 3,
+          "slot": 6,
+          "brief": "frontal distillation tower enclosure with three stacked column chambers and side return line"
+        },
+        {
+          "id": "m21",
+          "name": "液压动力站",
+          "tier": 3,
+          "slot": 7,
+          "brief": "hydraulic power-station facade with one tank, one broad pump and two pressure sockets"
+        },
+        {
+          "id": "m22",
+          "name": "液压冲压机",
+          "tier": 3,
+          "slot": 8,
+          "brief": "hydraulic press facade with twin thick cylinders and a heavy lower platen"
+        },
+        {
+          "id": "m23",
+          "name": "化学反应釜",
+          "tier": 3,
+          "slot": 9,
+          "brief": "chemical reactor facade with central rounded pressure chamber and overhead mixer spindle"
+        },
+        {
+          "id": "m24",
+          "name": "离心分离机",
+          "tier": 3,
+          "slot": 10,
+          "brief": "centrifuge facade with large circular bowl and simple radial rotor inside a square casing"
+        },
+        {
+          "id": "m25",
+          "name": "湿法浸出槽",
+          "tier": 3,
+          "slot": 11,
+          "brief": "wet leaching bath facade with broad rectangular basin window and a side circulation pipe"
+        },
+        {
+          "id": "m26",
+          "name": "合金熔炼炉",
+          "tier": 3,
+          "slot": 12,
+          "brief": "alloy furnace facade with a tilted crucible silhouette inside a square heat-shield frame"
+        },
+        {
+          "id": "m27",
+          "name": "液压机器人装配台",
+          "tier": 3,
+          "slot": 13,
+          "brief": "hydraulic robot assembly bench facade with one piston-driven arm over an empty robot cradle"
+        },
+        {
+          "id": "m28",
+          "name": "液体燃料发电机",
+          "tier": 4,
+          "slot": 14,
+          "brief": "liquid-fuel generator facade with engine block, vertical exhaust channel and flush fuel reservoir"
+        },
+        {
+          "id": "m29",
+          "name": "电解槽",
+          "tier": 4,
+          "slot": 15,
+          "brief": "electrolysis cell facade with two broad upright electrodes dipping into a rectangular bath"
+        }
+      ]
+    },
+    {
+      "name": "batch-3",
+      "source": "batch-3-source.png",
+      "prompt": "batch-3-prompt.txt",
+      "items": [
+        {
+          "id": "m30",
+          "name": "线缆挤出机",
+          "tier": 4,
+          "slot": 0,
+          "brief": "cable extruder facade with a large circular reel and squared extrusion nozzle"
+        },
+        {
+          "id": "m31",
+          "name": "电路板蚀刻机",
+          "tier": 4,
+          "slot": 1,
+          "brief": "PCB etching-machine facade with a broad shallow bath window and upper processing rail"
+        },
+        {
+          "id": "m32",
+          "name": "电子焊接台",
+          "tier": 4,
+          "slot": 2,
+          "brief": "electronic soldering bench facade with a short soldering tool and central board holder"
+        },
+        {
+          "id": "m33",
+          "name": "电机组装机",
+          "tier": 4,
+          "slot": 3,
+          "brief": "motor assembler facade with central rotor shaft and circular stator ring"
+        },
+        {
+          "id": "m34",
+          "name": "电池组装机",
+          "tier": 4,
+          "slot": 4,
+          "brief": "battery assembler facade with three cylindrical cell holders in a square assembly fixture"
+        },
+        {
+          "id": "m36",
+          "name": "电控自动装配线",
+          "tier": 4,
+          "slot": 5,
+          "brief": "electrical assembly-line facade with one short articulated tool arm and large flat work bed"
+        },
+        {
+          "id": "m37",
+          "name": "物流中央控制台",
+          "tier": 4,
+          "slot": 6,
+          "brief": "logistics control-console facade with two large flat screens and two socket rows"
+        },
+        {
+          "id": "m38",
+          "name": "高纯石英提纯炉",
+          "tier": 5,
+          "slot": 7,
+          "brief": "quartz purification furnace facade with a broad crystal chamber and thick heat-shield panels"
+        },
+        {
+          "id": "m39",
+          "name": "晶圆切割机",
+          "tier": 5,
+          "slot": 8,
+          "brief": "wafer cutting-machine facade with one large vertical saw disc and wafer support tray"
+        },
+        {
+          "id": "m40",
+          "name": "光刻机",
+          "tier": 5,
+          "slot": 9,
+          "brief": "photolithography machine facade with a central optical column and broad sealed exposure chamber"
+        },
+        {
+          "id": "m41",
+          "name": "薄膜沉积机",
+          "tier": 5,
+          "slot": 10,
+          "brief": "thin-film deposition machine facade with central dome chamber and two flush side flanges"
+        },
+        {
+          "id": "m42",
+          "name": "芯片封装机",
+          "tier": 5,
+          "slot": 11,
+          "brief": "chip packaging-machine facade with a central square chip socket and short upper press head"
+        },
+        {
+          "id": "m43",
+          "name": "光学标定台",
+          "tier": 5,
+          "slot": 12,
+          "brief": "optical calibration station facade with a large lens ring facing a simple target plate"
+        },
+        {
+          "id": "m44",
+          "name": "伺服总装线",
+          "tier": 5,
+          "slot": 13,
+          "brief": "servo assembly-line facade with central motor flange and one mechanical tool spindle"
+        },
+        {
+          "id": "m45",
+          "name": "固件烧录台",
+          "tier": 5,
+          "slot": 14,
+          "brief": "firmware programmer facade with a central chip socket, broad connection strip and one screen"
+        },
+        {
+          "id": "m46",
+          "name": "多机协作站",
+          "tier": 5,
+          "slot": 15,
+          "brief": "multi-robot coordination dock facade with three identical docking bays and a central bus line"
+        }
+      ]
+    },
+    {
+      "name": "batch-4",
+      "source": "batch-4-source.png",
+      "prompt": "batch-4-prompt.txt",
+      "items": [
+        {
+          "id": "m47",
+          "name": "超纯净化塔",
+          "tier": 6,
+          "slot": 0,
+          "brief": "ultrapure purification tower facade with three stacked clean chambers inside one square enclosure"
+        },
+        {
+          "id": "m48",
+          "name": "纳米材料反应器",
+          "tier": 6,
+          "slot": 1,
+          "brief": "nanomaterial reactor facade with central circular reaction vessel and three broad short manifolds"
+        },
+        {
+          "id": "m49",
+          "name": "神经芯片封装线",
+          "tier": 6,
+          "slot": 2,
+          "brief": "neural chip packaging-line facade with a central diamond chip socket and twin assembly heads"
+        },
+        {
+          "id": "m50",
+          "name": "高密度储能工厂",
+          "tier": 6,
+          "slot": 3,
+          "brief": "high-density energy factory facade with four large cell chambers and broad overhead collector bus"
+        },
+        {
+          "id": "m52",
+          "name": "仿生肢体装配站",
+          "tier": 6,
+          "slot": 4,
+          "brief": "bionic limb assembly-station facade with an articulated robot leg in a central assembly fixture"
+        },
+        {
+          "id": "m53",
+          "name": "智能机器人总装线",
+          "tier": 6,
+          "slot": 5,
+          "brief": "intelligent robot final-assembly facade with an upright robot body fixture and two side assembly rails"
+        },
+        {
+          "id": "m54",
+          "name": "终端验收舱",
+          "tier": 6,
+          "slot": 6,
+          "brief": "terminal robot acceptance pod facade with an upright empty inspection chamber and sensor arch"
+        },
+        {
+          "id": "m55",
+          "name": "回转煅烧窑",
+          "tier": 2,
+          "slot": 7,
+          "brief": "rotary calcining kiln facade with one broad angled drum and circular front furnace mouth"
+        },
+        {
+          "id": "feeder",
+          "name": "自动投料机",
+          "tier": 1,
+          "slot": 8,
+          "brief": "automatic feeder facade with broad hopper above and short mechanical feeding chute below"
+        },
+        {
+          "id": "waste_port",
+          "name": "垃圾提取口",
+          "tier": 1,
+          "slot": 9,
+          "brief": "waste extraction dock facade with a large recycling hatch and coarse scrap intake, no recycling lettering"
+        },
+        {
+          "id": "buffer_chest",
+          "name": "物流缓冲仓",
+          "tier": 2,
+          "slot": 10,
+          "brief": "logistics buffer warehouse facade with three horizontal drawers and a broad square outer shell"
+        },
+        {
+          "id": "tank",
+          "name": "流体储罐",
+          "tier": 3,
+          "slot": 11,
+          "brief": "fluid storage tank facade with broad upright cylinder, long unmarked level window and flush side sockets"
+        },
+        {
+          "id": "valve",
+          "name": "分液阀",
+          "tier": 3,
+          "slot": 12,
+          "brief": "fluid valve facade with a large cross-shaped handwheel, central circular valve body and three flush side sockets"
+        },
+        {
+          "id": "pressure_valve",
+          "name": "压力调节阀",
+          "tier": 3,
+          "slot": 13,
+          "brief": "pressure regulating valve facade with a compact round regulator, adjustment knob and two flush sockets"
+        },
+        {
+          "id": "hydraulic_station",
+          "name": "液压机器人补给站",
+          "tier": 3,
+          "slot": 14,
+          "brief": "hydraulic robot dock facade with a broad pressure charging cradle and two vertical small reservoirs"
+        },
+        {
+          "id": "charge_station",
+          "name": "机器人换电站",
+          "tier": 4,
+          "slot": 15,
+          "brief": "robot battery-swap station facade with one empty docking bay and two visible spare battery slots"
+        }
+      ]
+    },
+    {
+      "name": "batch-5",
+      "source": "batch-5-source.png",
+      "prompt": "batch-5-prompt.txt",
+      "items": [
+        {
+          "id": "battery",
+          "name": "储能箱",
+          "tier": 4,
+          "slot": 0,
+          "brief": "energy storage-box facade with three large rectangular cell windows and two flush terminal blocks"
+        },
+        {
+          "id": "dense_battery",
+          "name": "高密度储能箱",
+          "tier": 6,
+          "slot": 1,
+          "brief": "high-density storage-box facade with six compact cell windows and a broad collector panel"
+        },
+        {
+          "id": "electric_feeder",
+          "name": "电动投料臂",
+          "tier": 4,
+          "slot": 2,
+          "brief": "electric feeder-arm facade with one short articulated grabber and a compact side motor block"
+        },
+        {
+          "id": "precision_feeder",
+          "name": "精密投料臂",
+          "tier": 5,
+          "slot": 3,
+          "brief": "precision feeder-arm facade with slim two-joint manipulator and small twin-finger gripper"
+        },
+        {
+          "id": "flexible_feeder",
+          "name": "柔性投料节点",
+          "tier": 6,
+          "slot": 4,
+          "brief": "flexible feed-node facade with a segmented flexible manipulator and four flush connector sockets"
+        },
+        {
+          "id": "smart_gate",
+          "name": "智能分拣闸门",
+          "tier": 4,
+          "slot": 5,
+          "brief": "smart sorting gate facade with one broad sliding shutter and two small sensor blocks, no arrows"
+        }
+      ]
+    }
+  ]
+}

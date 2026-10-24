@@ -1,0 +1,22 @@
+Generate ONE production atlas for BakaFactory matching the supplied STYLE REFERENCE: medium-detail straight-front 16-bit pixel-art industrial machine facades. Exactly FOUR columns and FOUR rows; each cell square, same footprint; ideally 2048x2048 output.
+Each machine is a 56x56 logical pixel square facade on a 64x64 logical cell, exported enlarged with nearest neighbor. Dead straight FRONT VIEW, face parallel to screen, no top or side plane, no perspective, no isometric drawing. Keep all machinery inside an identical square housing. No protruding chimney, feet or pipes outside the square. Leave four logical pixels transparent margin on all sides of each cell. No overlap.
+Retain steel casing, structural frame, main working mechanism and 2-3 supporting functional details. Moderate detail BETWEEN technical pictograms and dense industrial miniature illustration. Major mechanisms need clear different silhouettes. No many tiny bolts, dense vents or ornamental circuit grids. Pixel art: deliberate square clusters, limited palette, clean stepped corners, no antialiasing, no smooth gradients, no texture noise, no dithering. One highlight band and one shadow band per steel edge. Dark navy recesses, slate blue steel, sparse pale metal highlights, cyan #46eff2 and small pink #ff62cb functional parts. Furnace apertures can have muted warm amber. Calm industrial sci-fi, NOT cartoon toys or comic illustration.
+The reference is STYLE ONLY. Draw the EXACT different subjects below, not repeated copies of reference machines. NO text, numbers, labels, arrows, chevrons, operating indicator dots, stage-colored outline, ground glow, cast shadows, background, grid or card borders. Genuine transparent alpha background and gutters. Direction/status/stage are rendered in GAME CODE.
+
+EXACT SUBJECT ORDER:
+Row 1, column 1: cable extruder facade with a large circular reel and squared extrusion nozzle.
+Row 1, column 2: PCB etching-machine facade with a broad shallow bath window and upper processing rail.
+Row 1, column 3: electronic soldering bench facade with a short soldering tool and central board holder.
+Row 1, column 4: motor assembler facade with central rotor shaft and circular stator ring.
+Row 2, column 1: battery assembler facade with three cylindrical cell holders in a square assembly fixture.
+Row 2, column 2: electrical assembly-line facade with one short articulated tool arm and large flat work bed.
+Row 2, column 3: logistics control-console facade with two large flat screens and two socket rows.
+Row 2, column 4: quartz purification furnace facade with a broad crystal chamber and thick heat-shield panels.
+Row 3, column 1: wafer cutting-machine facade with one large vertical saw disc and wafer support tray.
+Row 3, column 2: photolithography machine facade with a central optical column and broad sealed exposure chamber.
+Row 3, column 3: thin-film deposition machine facade with central dome chamber and two flush side flanges.
+Row 3, column 4: chip packaging-machine facade with a central square chip socket and short upper press head.
+Row 4, column 1: optical calibration station facade with a large lens ring facing a simple target plate.
+Row 4, column 2: servo assembly-line facade with central motor flange and one mechanical tool spindle.
+Row 4, column 3: firmware programmer facade with a central chip socket, broad connection strip and one screen.
+Row 4, column 4: multi-robot coordination dock facade with three identical docking bays and a central bus line.

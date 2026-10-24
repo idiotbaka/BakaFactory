@@ -1,0 +1,21 @@
+Create ONE sprite atlas with exactly FOUR columns and TWO rows: eight square industrial machine FRONT FACADES for a cyberpunk vaporwave factory game, genuine pixel art. Wide 2:1 canvas, preferably 1536x768. Equal square cells. True transparent alpha background.
+
+Art direction: an INTERMEDIATE detail level between detailed metal factory sprites and overly abstract flat pictograms. Keep recognizable mechanical parts, a solid steel casing, shallow industrial framing and a few useful panels; do not reduce machines to a few symbols. But avoid the dense screws, many little slots and excessive bevels of a miniature industrial illustration. Use 3 or 4 major functional shapes and 2 or 3 supporting mechanical details per machine.
+
+DEAD STRAIGHT FRONT VIEW. Face parallel to screen. Perfectly square silhouette inside a common square rim. NO visible top/side planes, NO isometric view, NO perspective, NO external chimney, feet or tubes protruding beyond the square footprint. Each housing fits within 28x28 logical pixels centered in its own 32x32 cell with clear empty margins. A 32-48 logical-pixel visual vocabulary, big discrete square pixel clusters, clean stair-step edges and deliberately limited details. Export a larger nearest-neighbor pixel enlargement. No antialiasing, no airbrushing, no smooth gradients, no noise or dithering.
+
+Materials: near-black outer silhouette, deep midnight panel recesses, slate blue steel faceplates, ONE lighter gray bevel/highlight band per structural edge and ONE shadow band. Use calm cyan #46eff2 functional trim and small pink #ff62cb components. Sparse pale metal highlights only. Limited palette of roughly 10-14 flat colors per machine. Technical sci-fi INDUSTRIAL linework, not cartoon toys, not comic illustration. Do not flatten away the structural detail; steel rails, hatches and machinery should still read as mechanical objects.
+
+No words, numbers or letters. No direction arrows or chevrons, no operating status dots, no stage-colored rim or ground glow, no cast shadows. Those will be CODE overlays in the game. No UI cards, cell borders or background.
+
+EXACT SUBJECT ORDER:
+Row 1 col 1: charcoal kiln facade. Large framed square dark furnace hatch, a recessed muted warm orange grate with THREE broad slots, two short side vent groups of THREE slits each, square upper faceplate. NO projecting chimney. Keep the outer silhouette square.
+Row 1 col 2: mechanical press facade. Two steel guide columns, one central clearly shaped vertical piston and horizontal upper ram, broad lower anvil plate, open dark work bay, cyan guide collars and a small pink mechanical collar.
+Row 1 col 3: CNC machining center facade. Rectangular inspection bay at left, distinct vertical spindle with a blunt tool inside, lower work platform, narrow right control column with TWO big rectangular controls and one broad vent. Square enclosure, restrained single-band edge shading.
+Row 1 col 4: AI training cluster facade. Six front server cartridges in a 2-column x 3-row array, simple recessed slots, broad cyan central interconnect and ONE pink connector block. A unified square front cabinet, not a stack of loose boxes.
+Row 2 col 1: factory warehouse facade. Square frame, large central segmented loading shutter of FIVE broad horizontal panels, two narrow structural side columns with one recessed plate each. No WH lettering.
+Row 2 col 2: sorting storage chest facade. Two large drawers, each with a simple square inset handle and small cyan trim; a sturdy square outer shell and one central dark latch. No visible top.
+Row 2 col 3: steam pressure vessel facade. Perfectly square steel support frame, broad upright cylinder contained entirely within it, simple unmarked round pressure dial, top connector flush inside the rim and two short symmetric side sockets. No gauge numbers or ticks.
+Row 2 col 4: chemical dosing pump facade. Square industrial faceplate, one round central impeller casing with two simple concentric rings, a small offset rectangular motor grille of THREE slits, two broad symmetric horizontal sockets contained inside the square rim, small pink coupling.
+
+All eight items have consistent square dimensions and coherent frontal 16-bit pixel-art steel detailing. No belt or pipe route tiles in this sheet.
