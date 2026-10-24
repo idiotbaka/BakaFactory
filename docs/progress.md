@@ -2,6 +2,14 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-24：新开发环境搭建与一键启动确认
+
+- 补充 macOS 工具安装、版本 / PATH 检查、依赖下载、启动与退出说明，以及缺依赖 / 端口占用 / 模块代理超时的处理方式；网络配置只保存到用户工具环境，启动与游戏代码沿用现有实现。
+- setup 改用 npm ci 按既有锁文件重建依赖，避免更换 npm 版本时仅安装依赖就改写锁文件的元数据；新增 / 升级依赖仍使用 npm install。
+- 补充新环境手动验收入口：前端页面、API 健康检查、Vite 代理和停止后重新启动。账号 / 工厂 / 浏览器存档不因环境搭建重建或清理。
+
+验证状态：`npm run setup`（npm ci 与 Go 模块下载）、`npm run lint`（12px / ESLint / TypeScript / Go 格式 / go vet）、`npm run build`（前后端编译）、Prettier 与 `git diff --check` 通过。使用临时目录数据库实际启动 `npm run dev`，前端首页、API 健康接口和 Vite 健康代理均返回 HTTP 200；Ctrl+C 后两端退出并释放端口，再次启动与健康检查通过，确认后已停止服务。未访问正式数据库或浏览器 IndexedDB，未执行 `npm test` / `test:smoke` / 浏览器测试，登录与游玩待用户验收。
+
 ## 2026-10-23：地图操作错误浮条三秒隐藏
 
 - 地图面板的本次操作错误显示 3 秒后移除；每次报告（包括同文字）重建提示生命周期，清错 / 卸载时取消计时器，并防止旧回调覆盖较新提示。持续在线 / 本地保存等状态不受影响。

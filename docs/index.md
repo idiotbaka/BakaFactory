@@ -73,6 +73,34 @@
 
 要求本机 Node.js 22.13+ 或 24+、npm、Go 1.26+。SQLite 由纯 Go 驱动提供，无需 Docker、C 编译器或数据库进程。
 
+### 新开发环境准备
+
+先在终端确认工具可用；Node.js 版本还应满足根目录 package.json 的 engines，Go 最低版本以 apps/server/go.mod 为准。
+
+```bash
+node --version
+npm --version
+go version
+```
+
+macOS 已安装 Homebrew 时，可安装缺少的工具（已有符合要求的版本无需重装）：
+
+```bash
+brew install node@22 go
+```
+
+Homebrew 的 node@22 为独立版本；若终端找不到 node / npm，将下面一行加入所用 shell 的配置文件（zsh 为 ~/.zprofile），然后重新打开终端：
+
+```bash
+export PATH="$(brew --prefix node@22)/bin:$PATH"
+```
+
+其他系统可安装对应平台的 Node.js 和 [Go 官方发行版](https://go.dev/doc/install)，确保 node、npm 和 go 位于 PATH。项目不要求全局安装 Vite 或 TypeScript。
+
+### 安装依赖与启动
+
+在仓库根目录执行：
+
 ```bash
 # 第一次安装依赖
 npm run setup
@@ -81,6 +109,17 @@ npm run dev
 ```
 
 打开 <http://127.0.0.1:5173>。后端健康检查为 <http://127.0.0.1:8080/health>。前端支持热更新；Go 修改需 Ctrl+C 后重启该命令。启动自动执行尚未应用的 migration，001～005 保持原样；006 增加独立云存档和单会话约束。新游戏不读取旧布局 / 模拟 / 仓库。请勿删除数据库。
+
+setup 通过 npm ci 按 package-lock.json 重建 npm workspace 依赖，再下载 Go 模块，不改写锁文件；需要能够访问 npm registry、Go 模块代理和校验服务。新增 / 升级 npm 依赖时仍使用 npm install 并提交对应锁文件。dev 会先编译 Go 后端到 .runtime，再同时启动 API 与 Vite；首次编译可能较慢，等待终端出现 Vite 地址。Ctrl+C 停止两端。若提示 go 不存在，检查 PATH；若提示缺少 vite 等模块，重新运行 setup；端口被占用时先停止自己此前启动的服务，Vite 不会自动换端口。不要使用 npm start 代替本地开发入口。
+
+若 Go 模块下载因网络超时失败，可按所在网络选择可访问的模块代理。例如使用 [Goproxy.cn](https://goproxy.cn/)：
+
+```bash
+go env -w GOPROXY=https://goproxy.cn,direct
+npm run setup
+```
+
+该设置仅保存到当前用户的 Go 工具配置，不写入项目；保留默认校验数据库和 go.sum 校验。恢复默认代理使用 `go env -u GOPROXY`，不要通过关闭校验解决网络故障。
 
 服务器账号及云备份默认在 apps/server/data/bakafactory.local.db；游戏主存档在浏览器 IndexedDB，按账号隔离。Go 读取进程环境变量，不自动加载 .env，变量样例见 apps/server/.env.example。
 
@@ -99,4 +138,4 @@ npm run dev
 | `npm run benchmark -- --districts 6 --machines 24 --robots 12 --ticks 60 --seed 1 --profile mixed` | 用户运行隔离的合成测量，不访问存档 / 数据库                  |
 | `npm run migrate`                                                                                  | 手动执行待应用迁移                                           |
 
-本轮服务启动和测试由用户完成。`npm run dev` 是本机浏览器验收入口；`npm start` 用于构建后的生产服务，使用 Secure Cookie，账号功能需要 HTTPS。
+默认由用户启动服务和执行测试；实际执行状态见 [progress.md](progress.md)。`npm run dev` 是本机浏览器验收入口；`npm start` 用于构建后的生产服务，使用 Secure Cookie，账号功能需要 HTTPS。

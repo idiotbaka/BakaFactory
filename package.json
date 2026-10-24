@@ -11,7 +11,7 @@
   },
   "scripts": {
     "format": "prettier --write . && node scripts/go.mjs fmt ./...",
-    "setup": "npm install && node scripts/go.mjs mod download",
+    "setup": "npm ci && node scripts/go.mjs mod download",
     "dev": "node scripts/dev.mjs",
     "dev:web": "npm run dev --workspace @bakafactory/web",
     "dev:server": "node scripts/go.mjs run ./cmd/server",
