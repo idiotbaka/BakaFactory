@@ -1,0 +1,30 @@
+{
+  "family": "Fusion Pixel Game",
+  "upstream": "https://github.com/TakWolf/fusion-pixel-font",
+  "release": "2026.10.16",
+  "file": "fusion-pixel-12px-proportional-zh_hans-v2026.10.16.woff2",
+  "bytes": 680388,
+  "sha256": "037fb51624ec39500a6be28f7eac4aa6a8c9366205b2344dd2b4f182879519ce",
+  "archive": {
+    "url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.10.16/fusion-pixel-font-12px-proportional-otf.woff2-v2026.10.16.zip",
+    "sha256": "0544ba28f8f177b036fcb326163145f1469206d4f9f5e7cd3a8ef814bbd152ed"
+  },
+  "licenses": [
+    {
+      "file": "LICENSES/ark-pixel/OFL.txt",
+      "sha256": "3ab41567e68e3988ba1ef16dd2644eca95ca5648ea12e7d46e6287fc0bbe5aee"
+    },
+    {
+      "file": "LICENSES/cubic-11/OFL.txt",
+      "sha256": "2b6e5938e5cffa0b9e183bd05f8c363e174e7ebed1a0556e2855fd1707fa2188"
+    },
+    {
+      "file": "LICENSES/galmuri/LICENSE.txt",
+      "sha256": "86a3ee9495f942f0243f18c103da9faca27adb88142613edb8bb852e56c892c1"
+    },
+    {
+      "file": "OFL.txt",
+      "sha256": "bc518cf64b8032c07690f33cc270c35c179255a6ac8efa7c165ebae7e8f76a63"
+    }
+  ]
+}

@@ -669,7 +669,7 @@
 .operations-details > summary {
   color: var(--cyan);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 400;
   line-height: 1.7;
 }
 .operations-details[open] > summary {
@@ -1328,7 +1328,7 @@
   margin: 6px 0 0;
   color: var(--text);
   font-size: 20px;
-  font-weight: 750;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1402,7 +1402,7 @@
   border-bottom: 1px solid var(--line-dim);
   color: var(--text);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 400;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -1498,7 +1498,7 @@
 }
 .catalog-entry strong {
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 400;
   white-space: nowrap;
 }
 .catalog-entry small {
@@ -1871,6 +1871,53 @@
   margin: 0;
   font-size: 12px;
   background: var(--panel);
+}
+.factory-loading-content {
+  width: min(520px, calc(100% - 64px));
+  display: grid;
+  gap: 16px;
+}
+.factory-loading-content h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.factory-loading-metrics {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--cyan);
+}
+.factory-loading-progress {
+  display: block;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  border: 1px solid #376379;
+  border-radius: 0;
+  background: #070912;
+  color: var(--cyan);
+}
+.factory-loading-progress::-webkit-progress-bar {
+  background: #070912;
+}
+.factory-loading-progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #ad92ff, #46eff2);
+}
+.factory-loading-progress::-moz-progress-bar {
+  background: linear-gradient(90deg, #ad92ff, #46eff2);
+}
+.factory-loading-detail,
+.factory-loading-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.factory-loading-error {
+  color: var(--danger);
 }
 .inspector-panel {
   display: block;

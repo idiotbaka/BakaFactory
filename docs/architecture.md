@@ -1,5 +1,7 @@
 # 当前架构
 
+工厂入口新增静态资源门槛：useLocalGame 订阅页面内共享的 AssetPreloader，等待同源 Fusion Pixel 字体的实际 FontFace 与全部物品 / 建筑图标读取解码完成，再创建 GameRuntime、读取账号存档锁 / IndexedDB、校验在线与云备份、启动 Worker。进度按真实完成项计算，最后一项为原存档 / 在线初始化；失败保留进度重试。卸载 / 退出后的迟到预热不会启动旧玩家运行层，公开静态缓存不包含账号数据，不改服务端、持久化或生产规则。详见 [fonts-and-loading.md](fonts-and-loading.md)。
+
 建筑 / 物流美术属于客户端显示层：78 张 128px PNG 与 12 个代码连接定义覆盖全部 90 个目录 ID。DefinitionIcon / BuildingSprite 提供 GUI，BuildingVisual 提供地图与预览；buildingConnections 复用原方向邻接选择，routeGeometry 缓存整数 SVG。贴图索引和几何独立分包，图片以外部 URL 缓存；颜色 / 端口 / 液位只读目录、布局与确认状态，不增加 Worker、API、数据库迁移或存档字段。详见 [building-art.md](building-art.md)。
 
 物品贴图为客户端静态资源：按稳定物品 ID 查找 128px PNG，GUI 与传送带共用 ItemSprite，阶段脚下光影只读资源清单中的 tier。资源索引单独分包、PNG 独立缓存，不进入 Worker、GameSave、IndexedDB 或云备份，不修改定义与迁移。传送带只替换原 payload 节点内部图形，继续消费原成功收据与共享帧时钟；素材流水线见 [item-art.md](item-art.md)。

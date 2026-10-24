@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "lint": "node ../../scripts/check-ui-typography.mjs && node ../../scripts/check-item-sprites.mjs && node ../../scripts/check-building-art.mjs && eslint . && tsc --noEmit",
+    "lint": "node ../../scripts/check-ui-typography.mjs && node ../../scripts/check-game-font.mjs && node ../../scripts/check-item-sprites.mjs && node ../../scripts/check-building-art.mjs && eslint . && tsc --noEmit",
     "test": "vitest run",
     "generate:api": "openapi-typescript ../../docs/openapi.yaml -o src/api/schema.d.ts"
   },

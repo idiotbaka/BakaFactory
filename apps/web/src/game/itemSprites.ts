@@ -7,6 +7,7 @@ const files = import.meta.glob<string>("../assets/items/v3/*.png", {
   import: "default",
   query: "?no-inline",
 });
+export const itemSpriteURLs: readonly string[] = Object.values(files);
 const definitions: Readonly<Record<string, { tier: number }>> = manifest.items;
 export const itemStageColors: Readonly<Record<number, string>> = {
   1: "#ffc879",

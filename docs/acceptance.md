@@ -1,5 +1,22 @@
 # 用户启动与验收
 
+## 全站像素字体与进入工厂资源进度
+
+用户 `npm run dev` 后刷新前端，无需迁移或清档。字体来源、许可证、加载顺序和回归命令见 [fonts-and-loading.md](fonts-and-loading.md)。冷缓存核对可在浏览器开发者工具 Network 勾选 Disable cache 并刷新；不要清理网站 IndexedDB 或账号数据。
+
+1. 在游客首页切换登录 / 注册，查看中文、英文、昵称输入、密码、按钮、提示、玩家资料及进入后的图鉴 / 配方 / 仓库 / 任务 / 能源 / 机器人等页。正文与原 mono 文字均应使用 Fusion Pixel 像素风；当前全站为 Regular，尤其 12～17px 的标题 / strong / 标签不加粗，em / i 不倾斜；最小 12px 和高 DPI / 浏览器缩放下的可读性保持。SVG 品牌字标与图片内美术文字仍是原图形。
+2. 冷缓存登录或刷新已有登录页面：确认登录后，原工作台位置显示“准备进入工厂”、进度条、百分比和字体 / 图标完成数。进度随实际资源完成递增，字体与全部物品 / 建筑图标未完成时不显示工厂；静态资源完成后提示读取存档并校验登录，运行层确认后才进入。进度按 URL 去重计数，开发 / 生产构建总数可能不同，不要求固定某个数字。
+3. 在 Network 使用慢网并观察请求：字体为项目同源版本化 WOFF2，图标使用原正式 PNG URL，无外部字体 CDN。图标读取 / 解码和字体加载未完成前，不应创建模拟 Worker 或开始生产；进入工厂后切换各阶段图鉴、检视和配方不再首次下载这些图标。再次进入可复用缓存，进度允许很快完成。
+4. 用 Network 的请求阻止临时阻止字体或某个 PNG，再冷缓存进入。应停留加载页、保留成功完成数，显示资源失败和“重新加载资源”，不会把失败计为成功或启动工厂。解除阻止后点击重试，成功图片不重载，失败字体使用新的加载实例，全部就绪后进入。存档 / 在线读取失败时仍显示原错误和“重新读取工厂”，不清档或提前放行。
+5. 资源尚在加载时退出登录，再登录另一账号；旧组件的迟到完成不能打开旧工厂或推进其生产，静态素材缓存可以复用。首次新厂、云备份冲突和已有厂分别在资源就绪后进入原流程；离线 / 会话过期按原规则拒绝，不增加等待期间收益。
+6. 检查加载 / 错误页与正式工作台的 16:9 外框和玩家条占位相同，三栏仍为 18:58:24，长中英文换行不撑缩地图。进入后 R / 1～6 / F、连续放置、50ms 长按移动、右键、平移缩放及普通 / 节能保持。构建目录 fonts/fusion-pixel 中应保留字体、OFL.txt、LICENSES 内三份上游许可与说明。
+
+已执行字体文件 / 四份许可证哈希与静态字号检查、完整 lint 与前后端编译；上述浏览器步骤和已补应用自动测试**未代执行**。用户可运行：
+
+```bash
+npm run test --workspace @bakafactory/web -- src/game/assetPreloader.test.ts src/game/gameAssets.test.ts src/game/FactoryLoading.test.tsx src/game/local/useLocalGame.test.tsx src/game/FactoryWorkspace.test.tsx src/game/RobotInteraction.test.tsx
+```
+
 ## 全量建筑 / 物流像素外观
 
 由用户在仓库根目录 `npm run dev` 后刷新前端，无需迁移或清档。离线可查看 `output/imagegen/building-logistics-v4/showcase.png`、all-facades.png 和五张 batch-N-preview.png；前者为正式资源 / 运行时几何的静态合成，不能替代浏览器验证。来源、处理脚本和完整覆盖见 [building-art.md](building-art.md)。

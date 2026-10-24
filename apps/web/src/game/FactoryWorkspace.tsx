@@ -8,6 +8,7 @@ import {
   type User,
 } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
+import FactoryLoading from "./FactoryLoading";
 import FactoryEditor from "./FactoryEditor";
 import { ProductionInspector } from "./ProductionPanel";
 import { isLogisticsBuilding } from "./catalogPresentation";
@@ -299,21 +300,13 @@ export default function FactoryWorkspace({
       editorError(error);
     }
   }
-  if (workspace.kind === "loading")
+  if (workspace.kind === "loading" || workspace.kind === "failed")
     return (
-      <div className="factory-loading" role="status">
-        <span className="eyebrow">WORKSHOP / LOADING</span>
-        <p>正在读取本地存档并校验登录…</p>
-      </div>
-    );
-  if (workspace.kind === "failed")
-    return (
-      <div className="factory-loading">
-        <p role="alert">{workspace.message}</p>
-        <button className="primary-button" onClick={game.retry}>
-          重新读取工厂
-        </button>
-      </div>
+      <FactoryLoading
+        resources={game.resources}
+        error={workspace.kind === "failed" ? workspace.message : undefined}
+        onRetry={game.retry}
+      />
     );
   const { catalog, factory } = workspace;
   const placeable = catalog.buildings.filter(

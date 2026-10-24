@@ -16,6 +16,7 @@ const files = import.meta.glob<string>("../assets/buildings/v1/*.png", {
   import: "default",
   query: "?no-inline",
 });
+export const buildingSpriteURLs: readonly string[] = Object.values(files);
 export const buildingArtwork = (id: string): Artwork | undefined =>
   Object.hasOwn(entries, id) ? entries[id] : undefined;
 export const buildingSpriteURL = (id: string): string | undefined =>

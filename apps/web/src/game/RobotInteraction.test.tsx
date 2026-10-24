@@ -95,6 +95,7 @@ function prepare(transit = false, paused = false) {
     } as unknown as GameRuntime;
     return {
       runtime,
+      resources: { phase: "ready" as const, completed: 0, total: 0, failed: 0 },
       ready: true,
       factory: projectFactory(root),
       districts: districtSummary(root),

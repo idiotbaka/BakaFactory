@@ -80,6 +80,7 @@ function prepare(
       },
     } as unknown as GameRuntime;
     return {
+      resources: { phase: "ready" as const, completed: 0, total: 0, failed: 0 },
       ready: !options.error,
       viewedStories,
       pendingStories,

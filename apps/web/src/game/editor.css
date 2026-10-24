@@ -508,7 +508,7 @@
   width: 12px;
   height: 10px;
   margin: -5px 0 0 -6px;
-  font: bold 12px/1 var(--mono);
+  font: 12px/1 var(--mono);
   border: 1px solid var(--item-color);
   border-radius: 1px;
   background: color-mix(in srgb, var(--item-color) 72%, #171728);
