@@ -20,6 +20,7 @@ import type { EditorCommands } from "./local/runtime";
 import type { RobotRoute } from "./local/robotNavigation";
 import type { DistrictSummary } from "./local/world";
 import BuildingVisual from "./BuildingVisual";
+import MachineNameLayer from "./MachineNameLayer";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import { entityColor } from "./entityTheme";
 import { MachineProgress } from "./SimulationAnimation";
@@ -1044,6 +1045,14 @@ export default function FactoryEditor(props: Props) {
             )}
           </div>
         </div>
+        <MachineNameLayer
+          factory={factory}
+          catalog={catalog}
+          camera={camera}
+          preview={
+            preview ? { ...preview, invalid: Boolean(issue) } : undefined
+          }
+        />
       </div>
       <div className="map-statusbar">
         <span>

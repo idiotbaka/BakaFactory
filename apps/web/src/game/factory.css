@@ -1664,6 +1664,7 @@
   background: var(--cyan);
 }
 .map-viewport {
+  --factory-floor-color: #0e1425;
   overflow: hidden;
   position: relative;
   flex: 1 1 0;
@@ -1740,7 +1741,7 @@
   grid-template-columns: repeat(var(--grid-width), var(--tile-size));
   grid-template-rows: repeat(var(--grid-height), var(--tile-size));
   border: 1px solid #376379;
-  background: #0e1425;
+  background: var(--factory-floor-color, #0e1425);
   position: relative;
 }
 .map-tile {

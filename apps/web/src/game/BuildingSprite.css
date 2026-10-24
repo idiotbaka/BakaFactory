@@ -69,6 +69,9 @@
   position: absolute;
   inset: 0;
 }
+.building-map-visual .definition-code {
+  display: none;
+}
 .building-map-arrow {
   position: absolute;
   right: 1px;

@@ -462,6 +462,20 @@ describe("factory editor interactions", () => {
       rotation: 0,
     });
   });
+  it("shows machine names only after zooming in and follows fit / recenter", () => {
+    render(<Harness />);
+    expect(document.querySelector(".machine-name-layer")).not.toBeNull();
+    fireEvent.wheel(area(), { ...point(0, 0), deltaY: -10000 });
+    const layer = document.querySelector(".machine-name-layer")!;
+    expect(layer).toHaveTextContent("采矿机");
+    expect(layer.closest(".factory-map")).toBeNull();
+    expect(layer.querySelector('[data-building-type="bus"]')).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "适应地图" }));
+    expect(document.querySelector(".machine-name-layer")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "居中放大" }));
+    expect(document.querySelector(".machine-name-layer")).not.toBeNull();
+    expect(updateBuilding).not.toHaveBeenCalled();
+  });
   it("clamps wheel zoom and restores a centered fit without mutating the factory", () => {
     render(<Harness />);
     fireEvent.wheel(area(), { ...point(0, 0), deltaY: -10000 });

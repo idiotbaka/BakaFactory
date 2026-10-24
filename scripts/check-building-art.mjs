@@ -18,6 +18,24 @@ const files = new Set(
   (await readdir(directory)).filter((file) => file.endsWith(".png")),
 );
 const ids = Object.keys(manifest.buildings);
+const machineNames = JSON.parse(
+  await readFile(
+    path.join(root, "apps/web/src/game/machineMapNames.json"),
+    "utf8",
+  ),
+);
+const machines = catalog.buildings.filter((b) => b.category === "machine");
+if (Object.keys(machineNames).length !== machines.length)
+  throw new Error("Machine map names must cover exactly the machine catalog");
+if (new Set(Object.values(machineNames)).size !== machines.length)
+  throw new Error("Machine map names must be distinct");
+for (const machine of machines) {
+  const name = machineNames[machine.id];
+  if (typeof name !== "string" || !/^[\p{Script=Han}]{1,3}$/u.test(name))
+    throw new Error(
+      `Machine map name must be 1–3 Chinese characters: ${machine.id}`,
+    );
+}
 if (
   ids.length !== catalog.buildings.length ||
   manifest.size !== 128 ||
@@ -151,5 +169,5 @@ if (reportIndex >= 0)
     JSON.stringify(report, null, 2) + "\n",
   );
 console.log(
-  `Building art: ${ids.length} IDs, ${facadeCount} facades (${Math.ceil(bytes / 1024)} KiB), ${configurations} cached route geometries with exact seams`,
+  `Building art: ${ids.length} IDs, ${facadeCount} facades (${Math.ceil(bytes / 1024)} KiB), ${configurations} cached route geometries with exact seams; ${machines.length} unique machine captions (1–3 characters)`,
 );
