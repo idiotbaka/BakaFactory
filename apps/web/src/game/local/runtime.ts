@@ -223,7 +223,8 @@ export class GameRuntime {
               local.uploadedRevision < 0))
         )
           throw new Error("本地存档元数据无效，原数据已保留");
-        if (local.save !== null) validateSave(local.save, this.user.id);
+        if (local.save !== null)
+          validateSave(local.save, this.user.id, { source: "本机 IndexedDB" });
         this.record = local;
       }
       await this.heartbeat();
@@ -232,11 +233,16 @@ export class GameRuntime {
         throw new Error("无法校验在线状态，请恢复网络后重试；本地存档已保留");
       this.cloud = await downloadSave(this.sessionID, this.signal());
       if (this.disposed) return;
-      if (this.cloud) validateSave(this.cloud.save, this.user.id);
+      if (this.cloud)
+        validateSave(this.cloud.save, this.user.id, {
+          source: "云备份（登录校验）",
+        });
       const hasLocalSave = !!local?.save;
       if (!hasLocalSave && this.cloud) this.adoptCloud(this.cloud);
       const factory = this.record.save
-        ? validateSave(this.record.save, this.user.id)
+        ? validateSave(this.record.save, this.user.id, {
+            source: "初始化运行快照",
+          })
         : null;
       const conflict =
         hasLocalSave && (this.cloud?.version ?? 0) !== local!.cloudVersion;
@@ -298,7 +304,9 @@ export class GameRuntime {
     }
   }
   private adoptCloud(cloud: CloudSave) {
-    const f = validateSave(cloud.save, this.user.id);
+    const f = validateSave(cloud.save, this.user.id, {
+      source: "云备份（恢复）",
+    });
     this.record = {
       ...this.record,
       save: toSave(f),
@@ -737,7 +745,9 @@ export class GameRuntime {
       const factory = await this.command(
         {
           kind: "replace",
-          factory: validateSave(cloud.save, this.user.id),
+          factory: validateSave(cloud.save, this.user.id, {
+            source: "云备份（手动恢复）",
+          }),
         },
         cloud,
       );

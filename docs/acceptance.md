@@ -1,5 +1,27 @@
 # 用户启动与验收
 
+## 存档读取失败的控制台诊断（待用户执行）
+
+不要清除网站数据、IndexedDB 或账号。修改模拟、Worker、物流或持久化代码前先关闭游戏页，开发服务可继续运行；热更新可能运行到编辑中的中间版本，自动保存会保留它产生的错误状态。编译完成后再打开游戏。单纯刷新不是合法物品字段变为 undefined 的充分原因。
+
+1. 更新前端后打开 F12 → Console，开启“Preserve log / 保留日志”，再正常刷新或重试读取工厂。若校验失败，应出现红色 `[BakaFactory] 存档校验失败`。
+2. 展开第二个参数，复制 source、path、reason：source 区分本机 IndexedDB、登录云备份校验或云恢复；path 指出字段，分厂保留 factory.districts[n] 前缀；reason 说明违反的规则。仅反馈该诊断对象即可，无需发送完整存档、账号或登录 Cookie。
+3. 界面仍提示原存档保留，失败读取不得被新世界覆盖；有效存档正常进入且不产生诊断错误日志。定位到实际字段前，不把错误直接归因于版本或对全部数据放宽校验。
+
+4. 使用测试夹具验证缺失物品类型的带载荷 / 容器栈，以及仓库或入库统计中的未知物品键：均应拒绝读取并保留原始对象，不能自动清理、改数量或修改任务进度。不要为此破坏真实存档；这部分由回归代码覆盖。
+
+回归代码覆盖分厂字段、队列未知字段、局部详细日志、损坏数据严格拒绝且原数据不改写、有效数据与默认调用静默。用户可运行 `npm run test --workspace @bakafactory/web -- src/game/local/saveDiagnostics.test.ts src/game/local/logistics.test.ts src/game/local/runtime.test.ts`；本轮未代运行。本轮精简未打开游戏页面或读写真实存档，实际用户验收待执行。
+
+## 固体物流跳过不可输送物品（待用户执行）
+
+用户启动 `npm run dev` 后刷新前端，无需迁移或清档。规则及设施范围见 [simulation.md](simulation.md#固体物流的候选物品与阻塞)。回归命令：`npm run test --workspace @bakafactory/web -- src/game/local/logistics.test.ts src/game/local/simulation.test.ts src/game/local/fluids.test.ts src/game/local/robotFreight.test.ts`；本轮未代运行。
+
+1. 分拣料箱 → 自动投料机 → 简易熔炼炉，炉体选择 R1024 耐火砖，输入砂粒 100；箱内先放砂粒 100，再放陶瓷粉 100。投料机无过滤、投配方原料时，应输送陶瓷粉，砂粒仍各保留 100，状态为运输中；陶瓷粉补到 3 且有真实燃料后炉体应工作并最终产出耐火砖。不得出现重复物品、额外砂粒格或失败物品的成功入料动画。
+2. 在投料机明确过滤砂粒，应保持阻塞而不擅自改送陶瓷粉；清除过滤恢复。上游首物品不在所选配方中时，也应尝试后面的正确原料；若所有候选都不可接收，来源数量、冷却和成功收据不变。燃料通道用“第一种燃料已满、第二种可接收”的箱子复核，不能把物料送入错误通道。
+3. 对各级投料臂 / 柔性节点、OUT / IN 和固体分流器复核，所需动力必须真实供应；每次仍只送一个定义批次，按原间隔工作。目标为带 / 箱 / WH 时，其过滤、格数及数量上限继续有效；有空位的后续物品应能输送。
+4. 分流器前方接装有载荷且无处输出的满带，另一个分支接空箱。无不匹配过滤时应改走空箱，满带原载荷保持；只能发生一次成功批次，不应两头各送一次。两个投料机争同箱最后一份可行原料只能成功一次；某条满带路线失败后，其他可行路线应能使用释放的旧库存。
+5. 复核同容量满带环同步移动、快慢带拆批守恒和堵塞带链；新到箱子 / 带的物品不能同 tick 又被送到下一容器。流体单介质 / 阀门权重等待和机器人指定货物仍沿用原规则。
+
 ## 开发者模拟倍速（待用户执行）
 
 由用户启动 `npm run dev` 并刷新已有工厂，无需迁移或清档；F12 执行 `bakaFactory.devTools(true)` 开启入口，在“开发者工具 → 功能测试”查看模拟倍速。用户回归命令：`npm run test --workspace @bakafactory/web -- src/game/local/worker.test.ts src/game/local/runtime.test.ts src/game/DeveloperToolsPanel.test.tsx src/game/animationClock.test.ts src/game/ConveyorItemsLayer.test.tsx`。

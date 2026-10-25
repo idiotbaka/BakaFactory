@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { catalog, buildingDefinitions, itemID } from "./catalog";
+import { catalog, buildingDefinitions, itemID, isPort } from "./catalog";
 import {
   createLocalFactory,
   editFactory,
@@ -91,6 +91,298 @@ function transfer(f: LocalFactory) {
 }
 
 describe("solid logistics", () => {
+  it("supplies ceramic powder for R1024 when the first source item is sand and its furnace input is full", () => {
+    let f = place(start(), "box", "chest", 2, 0);
+    f = place(f, "port", "feeder", 3, 0);
+    f = place(f, "furnace", "m06", 4, 0);
+    f = act(f, { type: "recipe", id: "furnace", recipe: "r1024" });
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.buildings.box.output = [
+      { item: sand, count: 100 },
+      { item: powder, count: 100 },
+    ];
+    f.simulation.buildings.furnace.input = [{ item: sand, count: 100 }];
+    f.simulation.buildings.furnace.fuel = [
+      { item: itemID("干燥生物质"), count: 100 },
+    ];
+    const before = structuredClone(f);
+    f = step(f);
+    expect(f.simulation.buildings.port.status).toBe("transferring");
+    expect(f.simulation.buildings.furnace.input).toEqual([
+      { item: sand, count: 100 },
+      { item: powder, count: 1 },
+    ]);
+    expect(f.simulation.buildings.box.output).toEqual([
+      { item: sand, count: 100 },
+      { item: powder, count: 99 },
+    ]);
+    expect(f.simulation.transfers).toHaveLength(1);
+    expect(f.simulation.transfers![0]).toMatchObject({
+      item: powder,
+      count: 1,
+    });
+    expect(total(f, sand)).toBe(total(before, sand));
+    expect(total(f, powder)).toBe(total(before, powder));
+    expect(before.simulation.buildings.box.output[1].count).toBe(100);
+    f = advance(f, 2);
+    expect(f.simulation.buildings.furnace.status).toBe("working");
+    expect(f.simulation.buildings.furnace.input).toContainEqual({
+      item: powder,
+      count: 3,
+    });
+    f = advance(f, 12);
+    expect(f.simulation.buildings.furnace.output).toContainEqual({
+      item: itemID("耐火砖"),
+      count: 2,
+    });
+  });
+  it.each(
+    catalog.buildings
+      .filter((d) => isPort(d.id))
+      .map((d) => [d.id, d.batch_size ?? 1] as const),
+  )(
+    "tries later output stacks for %s without exceeding its batch size",
+    (type, batch) => {
+      let f = place(start(6), "box", "chest", 2, 0);
+      f = place(f, "port", type, 3, 0);
+      f = place(f, "furnace", "m06", 4, 0);
+      f = act(f, { type: "recipe", id: "furnace", recipe: "r1024" });
+      const sand = itemID("砂粒"),
+        powder = itemID("陶瓷粉");
+      f.simulation.buildings.box.output = [
+        { item: sand, count: 100 },
+        { item: powder, count: 100 },
+      ];
+      f.simulation.buildings.furnace.input = [{ item: sand, count: 100 }];
+      f.simulation.buildings.port.powered = true;
+      f = transfer(f);
+      expect(f.simulation.buildings.furnace.input).toContainEqual({
+        item: powder,
+        count: batch,
+      });
+      expect(f.simulation.buildings.box.output).toContainEqual({
+        item: powder,
+        count: 100 - batch,
+      });
+      expect(f.simulation.transfers).toHaveLength(1);
+      expect(total(f, sand)).toBe(200);
+      expect(total(f, powder)).toBe(100);
+    },
+  );
+  it("tries machine outputs against a target belt filter and does not take machine inputs", () => {
+    let f = place(start(), "machine", "m02", 2, 0);
+    f = place(f, "port", "feeder", 3, 0);
+    f = place(f, "belt", "hand_belt", 4, 0);
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.buildings.machine.output = [
+      { item: sand, count: 2 },
+      { item: powder, count: 1 },
+    ];
+    f.simulation.buildings.machine.input = [{ item: powder, count: 20 }];
+    f = act(f, { type: "transport", id: "belt", filter: powder });
+    f = transfer(f);
+    expect(f.simulation.buildings.belt.belt).toMatchObject({
+      item: powder,
+      count: 1,
+    });
+    expect(f.simulation.buildings.machine.output).toEqual([
+      { item: sand, count: 2 },
+    ]);
+    expect(f.simulation.buildings.machine.input).toEqual([
+      { item: powder, count: 20 },
+    ]);
+    expect(total(f, powder)).toBe(21);
+    expect(() => validateSave(toSave(f), user.id)).not.toThrow();
+  });
+  it("persists the selected item through feeder, belt movement and repeated save reloads", () => {
+    let f = place(start(), "box", "chest", 2, 0);
+    f = place(f, "port", "feeder", 3, 0);
+    f = place(f, "belt", "hand_belt", 4, 0);
+    f = place(f, "next", "hand_belt", 5, 0);
+    const item = itemID("陶瓷粉");
+    f.simulation.buildings.box.output = [{ item, count: 3 }];
+    for (let tick = 0; tick < 12; tick++) {
+      f = step(f);
+      const saved = toSave(f);
+      expect(() => validateSave(saved, user.id)).not.toThrow();
+      expect(() =>
+        validateSave(JSON.parse(JSON.stringify(saved)), user.id),
+      ).not.toThrow();
+      for (const machine of Object.values(f.simulation.buildings))
+        if (machine.belt) expect(machine.belt.item).toBe(item);
+      for (const receipt of f.simulation.transfers ?? [])
+        expect(receipt.item).toBe(item);
+      expect(total(f, item)).toBe(3);
+      f = validateSave(structuredClone(saved), user.id);
+    }
+  });
+  it("tries another fuel without using the recipe input channel or bypassing an explicit source filter", () => {
+    let f = place(start(), "box", "chest", 2, 0);
+    f = place(f, "port", "feeder", 3, 0);
+    f = place(f, "furnace", "m06", 4, 0);
+    const biomass = itemID("干燥生物质"),
+      carbon = itemID("生物炭");
+    f.simulation.buildings.box.output = [
+      { item: biomass, count: 2 },
+      { item: carbon, count: 2 },
+    ];
+    f.simulation.buildings.furnace.fuel = [{ item: biomass, count: 100 }];
+    f = act(f, {
+      type: "transport",
+      id: "port",
+      channel: "fuel",
+      filter: biomass,
+    });
+    f = transfer(f);
+    expect(f.simulation.transfers).toEqual([]);
+    expect(f.simulation.buildings.port.cooldown).toBe(0);
+    f = act(f, { type: "transport", id: "port", filter: "" });
+    f = transfer(f);
+    expect(f.simulation.buildings.furnace.fuel).toContainEqual({
+      item: carbon,
+      count: 1,
+    });
+    expect(f.simulation.buildings.furnace.input).toEqual([]);
+    expect(total(f, biomass)).toBe(102);
+    expect(total(f, carbon)).toBe(2);
+  });
+  it("reserves a scarce later item once when two feeders draw from the same mixed box", () => {
+    let f = place(start(), "box", "chest", 2, 0);
+    f = place(f, "east-port", "feeder", 3, 0);
+    f = place(f, "east-furnace", "m06", 4, 0);
+    f = place(f, "south-port", "feeder", 2, -1, 90);
+    f = place(f, "south-furnace", "m06", 2, -2);
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.buildings.box.output = [
+      { item: sand, count: 100 },
+      { item: powder, count: 1 },
+    ];
+    for (const id of ["east-furnace", "south-furnace"]) {
+      f = act(f, { type: "recipe", id, recipe: "r1024" });
+      f.simulation.buildings[id].input = [{ item: sand, count: 100 }];
+    }
+    f = transfer(f);
+    expect(f.simulation.transfers).toHaveLength(1);
+    expect(f.simulation.buildings.box.output).toEqual([
+      { item: sand, count: 100 },
+    ]);
+    expect(total(f, powder)).toBe(1);
+    expect(total(f, sand)).toBe(300);
+  });
+  it("fills an existing stack in a full-slot box after skipping a full first stack", () => {
+    let f = place(start(), "source", "chest", 2, 0);
+    f = place(f, "port", "feeder", 3, 0);
+    f = place(f, "target", "chest", 4, 0);
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    const extras = catalog.items
+      .filter(
+        (i) => ![sand, powder].includes(i.id) && i.kind !== "fluid_or_gas",
+      )
+      .slice(0, 6);
+    f.simulation.buildings.source.output = [
+      { item: sand, count: 1 },
+      { item: powder, count: 1 },
+    ];
+    f.simulation.buildings.target.output = [
+      { item: sand, count: 100 },
+      { item: powder, count: 99 },
+      ...extras.map((i) => ({ item: i.id, count: 1 })),
+    ];
+    f = transfer(f);
+    expect(f.simulation.buildings.target.output).toHaveLength(8);
+    expect(f.simulation.buildings.target.output).toContainEqual({
+      item: powder,
+      count: 100,
+    });
+    expect(f.simulation.buildings.source.output).toEqual([
+      { item: sand, count: 1 },
+    ]);
+  });
+  it("tries other source items against the WH intake filter", () => {
+    let f = place(start(), "source", "chest", -2, 0);
+    f = place(f, "port", "feeder", -1, 0);
+    const bus = f.buildings[0].id,
+      sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.buildings.source.output = [
+      { item: sand, count: 1 },
+      { item: powder, count: 1 },
+    ];
+    f = act(f, {
+      type: "bus_face",
+      id: bus,
+      rotation: 180,
+      mode: "input",
+      filter: powder,
+    });
+    f = transfer(f);
+    expect(f.simulation.warehouse[powder]).toBe(1);
+    expect(f.simulation.buildings.source.output).toEqual([
+      { item: sand, count: 1 },
+    ]);
+    expect(f.simulation.transfers).toHaveLength(1);
+  });
+  it("reroutes a splitter to its free branch when its first choice is an occupied belt that cannot vacate", () => {
+    let f = place(start(2), "box", "chest", 2, 0);
+    f = place(f, "split", "m17", 3, 0);
+    f = place(f, "blocked", "hand_belt", 4, 0);
+    f = place(f, "open", "chest", 3, -1);
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.buildings.box.output = [{ item: powder, count: 2 }];
+    f.simulation.buildings.blocked.belt = {
+      id: "held",
+      item: sand,
+      count: 1,
+      progress: 3,
+    };
+    f.simulation.buildings.split.powered = true;
+    f = transfer(f);
+    expect(f.simulation.buildings.open.output).toEqual([
+      { item: powder, count: 1 },
+    ]);
+    expect(f.simulation.buildings.box.output).toEqual([
+      { item: powder, count: 1 },
+    ]);
+    expect(f.simulation.buildings.blocked.belt?.id).toBe("held");
+    expect(f.simulation.transfers).toHaveLength(1);
+    expect(f.simulation.buildings.split.cooldown).toBe(1);
+    expect(total(f, powder)).toBe(2);
+    expect(total(f, sand)).toBe(1);
+  });
+  it("releases failed belt reservations for another feeder and never forwards new arrivals in the same tick", () => {
+    let f = place(start(2), "box", "chest", 2, 0);
+    f = place(f, "a-split", "m17", 3, 0);
+    f = place(f, "blocked", "hand_belt", 4, 0);
+    f = place(f, "z-port", "feeder", 2, 1, 270);
+    f = place(f, "middle", "chest", 2, 2);
+    f = place(f, "next-port", "feeder", 2, 3, 270);
+    f = place(f, "last", "chest", 2, 4);
+    const sand = itemID("砂粒"),
+      powder = itemID("陶瓷粉");
+    f.simulation.tick = 1;
+    f.simulation.buildings.box.output = [{ item: powder, count: 1 }];
+    f.simulation.buildings.blocked.belt = {
+      id: "held",
+      item: sand,
+      count: 1,
+      progress: 3,
+    };
+    f.simulation.buildings["a-split"].powered = true;
+    f = transfer(f);
+    expect(f.simulation.buildings.middle.output).toEqual([
+      { item: powder, count: 1 },
+    ]);
+    expect(f.simulation.buildings.last.output).toEqual([]);
+    expect(f.simulation.buildings.box.output).toEqual([]);
+    expect(f.simulation.transfers).toHaveLength(1);
+    expect(f.simulation.transfers![0].via?.id).toBe("z-port");
+    expect(total(f, powder)).toBe(1);
+  });
   it("extracts only at the top edge, caps ports by stage and produces twelve bags per ten active seconds", () => {
     let f = start();
     f.simulation.warehouse[itemID("初阶自动投料机")] = 2;
@@ -177,6 +469,12 @@ describe("solid logistics", () => {
       Object.values(f.simulation.buildings).filter((m) => m.belt).length,
     ).toBe(1);
     expect(total(f, item)).toBe(1);
+    expect(f.simulation.warehouse).not.toHaveProperty("undefined");
+    expect(f.simulation.transfers?.[0]).toMatchObject({ item, count: 1 });
+    expect(
+      Object.values(f.simulation.buildings).find((m) => m.belt)?.belt?.item,
+    ).toBe(item);
+    expect(() => validateSave(toSave(f), user.id)).not.toThrow();
   });
   it("checks the actual intake face and preserves refused items without cosmetic success", () => {
     let f = place(start(), "belt", "hand_belt", -1, 0);
@@ -204,7 +502,7 @@ describe("solid logistics", () => {
     expect(f.simulation.warehouse[item]).toBe(1);
     expect(f.simulation.transfers).toHaveLength(1);
   });
-  it("uses finite box storage, routes around other item types using a filter, and respects the selected recipe", () => {
+  it("uses finite box storage and respects explicit filters and the selected recipe", () => {
     let f = place(start(), "box", "chest", 2, 0);
     f = place(f, "port", "feeder", 3, 0);
     f = place(f, "machine", "m02", 4, 0);
@@ -214,6 +512,7 @@ describe("solid logistics", () => {
     Object.assign(f.simulation.warehouse, { [scrap]: 3, [bag]: 12 });
     f = act(f, { type: "deposit", id: "box", item: scrap, count: 3 });
     f = act(f, { type: "deposit", id: "box", item: bag, count: 12 });
+    f = act(f, { type: "transport", id: "port", filter: scrap });
     f = step(f);
     expect(f.simulation.buildings.port.status).toBe("rejected");
     expect(f.simulation.buildings.machine.input).toEqual([]);

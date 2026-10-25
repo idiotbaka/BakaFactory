@@ -17,6 +17,7 @@ import {
   isChest,
   isFluid,
   isPort,
+  itemDefinitions,
   selectedRecipe,
 } from "./catalog";
 import { add, count, remove, type Inventory } from "./inventory";
@@ -38,10 +39,12 @@ type Candidate = {
   target: BuildingInstance;
   via?: BuildingInstance;
   actor: string;
-  item: string;
+  items: string[];
   limit: number;
 };
-type Move = Candidate & {
+type Move = Omit<Candidate, "items"> & {
+  item: string;
+  candidate: Candidate;
   quantity: number;
   payload: string;
   destination: "input" | "output" | "fuel" | "warehouse" | "belt";
@@ -123,12 +126,12 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     (!isSolidTransport(b.building_type) || enabled(b)) &&
     ((!isBelt(b.building_type) && !isPort(b.building_type)) ||
       poweredTransport(b, s.buildings[b.id]));
-  const sourceItem = (
+  const sourceItems = (
     b: BuildingInstance,
     anchor: BuildingInstance,
     filter = "",
   ) => {
-    if (!usable(b)) return "";
+    if (!usable(b)) return [];
     const m = s.buildings[b.id];
     if (b.building_type === "bus") {
       const r = side(b, anchor),
@@ -138,21 +141,24 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         (!filter || filter === output.filter) &&
         (s.warehouse[output.filter] ?? 0) > 0 &&
         !isFluid(output.filter)
-        ? output.filter
-        : "";
+        ? [output.filter]
+        : [];
     }
     if (isBelt(b.building_type))
       return m.belt &&
         m.belt.progress >= beltTicks(b.building_type) &&
         (!filter || m.belt.item === filter) &&
         !isFluid(m.belt.item)
-        ? m.belt.item
-        : "";
-    return (
-      m.output.find(
-        (stack) => !isFluid(stack.item) && (!filter || stack.item === filter),
-      )?.item ?? ""
-    );
+        ? [m.belt.item]
+        : [];
+    return m.output
+      .filter(
+        (stack) =>
+          stack.count > 0 &&
+          !isFluid(stack.item) &&
+          (!filter || stack.item === filter),
+      )
+      .map((stack) => stack.item);
   };
   let candidates: Candidate[] = [];
   for (const b of ordered) {
@@ -161,7 +167,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       d = buildingDefinitions.get(b.building_type)!;
     if (isBelt(b.building_type)) {
       const target = adjacent(b, b.rotation),
-        item = sourceItem(b, b, itemFilter(b));
+        [item] = sourceItems(b, b, itemFilter(b));
       if (
         !target ||
         !item ||
@@ -179,7 +185,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         source: b,
         target,
         actor: b.id,
-        item,
+        items: [item],
         limit: beltCapacity(b.building_type),
       });
     } else if (isPort(b.building_type) && !m.cooldown) {
@@ -193,19 +199,19 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       const rotated = [...branches.slice(offset), ...branches.slice(0, offset)];
       for (const r of rotated) {
         const target = adjacent(b, r),
-          item = sourceItem(
+          items = sourceItems(
             source,
             b,
             d.role === "splitter" ? branchFilter(b, r) : itemFilter(b),
           );
-        if (!target || !item || isPort(target.building_type)) continue;
+        if (!target || !items.length || isPort(target.building_type)) continue;
         m.status = "blocked";
         candidates.push({
           source,
           target,
           via: b,
           actor: b.id,
-          item,
+          items,
           limit: d.batch_size ?? 1,
         });
       }
@@ -225,7 +231,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           source: b,
           target,
           actor: `${b.id}:${r}`,
-          item: output.filter,
+          items: [output.filter],
           limit: 1,
         });
       }
@@ -235,153 +241,205 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     const offset = s.tick % candidates.length;
     candidates = [...candidates.slice(offset), ...candidates.slice(0, offset)];
   }
-  const chosen: Move[] = [],
-    beltSources = new Map<string, number>(),
-    beltTargets = new Set<string>(),
-    actors = new Set<string>();
-  const sources = new Map<string, Inventory>(),
-    inputs = new Map<string, Inventory>(),
-    outgoing = new Map<string, number>(),
-    incoming = new Map<string, number>();
-  const payloads = new Set(
-    Object.values(s.buildings).flatMap((m) => (m.belt ? [m.belt.id] : [])),
-  );
-  for (const c of candidates) {
-    const { source, target, item } = c,
-      sourceState = s.buildings[source.id],
-      targetState = s.buildings[target.id],
-      targetDef = buildingDefinitions.get(target.building_type)!;
-    const validTarget =
-      isBelt(target.building_type) ||
-      isChest(target.building_type) ||
-      target.building_type === "bus" ||
-      (targetDef.category === "machine" && !isPort(target.building_type));
-    if (
-      actors.has(c.actor) ||
-      !usable(target) ||
-      (isBelt(source.building_type) && beltSources.has(source.id)) ||
-      !validTarget
-    )
-      continue;
-    const sourceCount = isBelt(source.building_type)
-      ? (sourceState.belt?.count ?? 1)
-      : source.building_type === "bus"
-        ? (s.warehouse[item] ?? 0) - (outgoing.get(item) ?? 0)
-        : count(sources.get(source.id) ?? sourceState.output, item);
-    let n = Math.min(sourceCount, c.limit),
-      destination: Move["destination"],
-      inv: Inventory | undefined;
-    if (isBelt(target.building_type)) {
-      if (beltTargets.has(target.id)) continue;
-      n = Math.min(n, beltCapacity(target.building_type));
-      destination = "belt";
-      if (itemFilter(target) && itemFilter(target) !== item) continue;
-    } else if (target.building_type === "bus") {
-      const r = side(target, c.via ?? source),
-        intake = r === undefined ? undefined : face(target, r);
-      if (
-        !intake ||
-        intake.mode !== "input" ||
-        (intake.filter && intake.filter !== item)
-      )
-        continue;
-      destination = "warehouse";
-      n = Math.min(
-        n,
-        Number.MAX_SAFE_INTEGER -
-          (s.warehouse[item] ?? 0) -
-          (incoming.get(item) ?? 0),
-      );
-    } else {
-      destination = isChest(target.building_type)
-        ? "output"
-        : c.via && channel(c.via) === "fuel"
-          ? "fuel"
-          : "input";
-      const accepts =
-        destination === "output"
-          ? !itemFilter(target) || itemFilter(target) === item
-          : destination === "fuel"
-            ? !!fuelValues(targetDef)[item]
-            : !!selectedRecipe(target)?.inputs[item];
-      if (!accepts) {
-        if (c.via) s.buildings[c.via.id].status = "rejected";
-        continue;
-      }
-      const key = `${target.id}:${destination}`;
-      inv = structuredClone(inputs.get(key) ?? targetState[destination] ?? []);
-      const slots =
-        destination === "fuel"
-          ? 3
-          : destination === "output"
-            ? targetDef.output_slots
-            : targetDef.input_slots;
-      if (
-        !inv.some((stack) => stack.item === item) &&
-        inv.length >= (slots ?? 4)
-      )
-        continue;
-      n = Math.min(n, 100 - count(inv, item));
-    }
-    if (n < 1) continue;
-    if (inv) {
-      add(inv, item, n);
-      inputs.set(`${target.id}:${destination}`, inv);
-    }
-    if (isBelt(source.building_type)) beltSources.set(source.id, chosen.length);
-    else if (source.building_type === "bus")
-      outgoing.set(item, (outgoing.get(item) ?? 0) + n);
-    else {
-      const inv = structuredClone(sources.get(source.id) ?? sourceState.output);
-      remove(inv, item, n);
-      sources.set(source.id, inv);
-    }
-    if (destination === "belt") beltTargets.add(target.id);
-    if (destination === "warehouse")
-      incoming.set(item, (incoming.get(item) ?? 0) + n);
-    actors.add(c.actor);
-    let payload =
-      sourceState.belt && n === (sourceState.belt.count ?? 1)
-        ? sourceState.belt.id
-        : `payload:${s.tick}:${chosen.length}`;
-    if (payload !== sourceState.belt?.id) {
-      let collision = 0;
-      const base = payload;
-      while (payloads.has(payload)) payload = `${base}:${++collision}`;
-      payloads.add(payload);
-    }
-    chosen.push({ ...c, quantity: n, payload, destination });
+  const excluded = new Set<Candidate>();
+  const routesFrom = new Map<string, Candidate[]>(),
+    routesTo = new Map<string, Candidate[]>();
+  for (const route of candidates) {
+    routesFrom.set(route.source.id, [
+      ...(routesFrom.get(route.source.id) ?? []),
+      route,
+    ]);
+    routesTo.set(route.target.id, [
+      ...(routesTo.get(route.target.id) ?? []),
+      route,
+    ]);
   }
+  const select = () => {
+    const chosen: Move[] = [],
+      beltSources = new Map<string, number>(),
+      beltTargets = new Set<string>(),
+      actors = new Set<string>();
+    const sources = new Map<string, Inventory>(),
+      inputs = new Map<string, Inventory>(),
+      outgoing = new Map<string, number>(),
+      incoming = new Map<string, number>();
+    const payloads = new Set(
+      Object.values(s.buildings).flatMap((m) => (m.belt ? [m.belt.id] : [])),
+    );
+    for (const c of candidates) {
+      if (excluded.has(c)) continue;
+      const { source, target } = c,
+        sourceState = s.buildings[source.id],
+        targetState = s.buildings[target.id],
+        targetDef = buildingDefinitions.get(target.building_type)!;
+      const validTarget =
+        isBelt(target.building_type) ||
+        isChest(target.building_type) ||
+        target.building_type === "bus" ||
+        (targetDef.category === "machine" && !isPort(target.building_type));
+      if (
+        actors.has(c.actor) ||
+        !usable(target) ||
+        (isBelt(source.building_type) && beltSources.has(source.id)) ||
+        !validTarget
+      )
+        continue;
+      // Try every old output stack on this route before giving up. Failed
+      // probes reserve nothing; one successful item consumes the actor's turn.
+      for (const item of c.items) {
+        const sourceCount = isBelt(source.building_type)
+          ? (sourceState.belt?.count ?? 1)
+          : source.building_type === "bus"
+            ? (s.warehouse[item] ?? 0) - (outgoing.get(item) ?? 0)
+            : count(sources.get(source.id) ?? sourceState.output, item);
+        let n = Math.min(sourceCount, c.limit),
+          destination: Move["destination"],
+          inv: Inventory | undefined;
+        if (isBelt(target.building_type)) {
+          if (beltTargets.has(target.id)) continue;
+          n = Math.min(n, beltCapacity(target.building_type));
+          destination = "belt";
+          if (itemFilter(target) && itemFilter(target) !== item) continue;
+        } else if (target.building_type === "bus") {
+          const r = side(target, c.via ?? source),
+            intake = r === undefined ? undefined : face(target, r);
+          if (
+            !intake ||
+            intake.mode !== "input" ||
+            (intake.filter && intake.filter !== item)
+          )
+            continue;
+          destination = "warehouse";
+          n = Math.min(
+            n,
+            Number.MAX_SAFE_INTEGER -
+              (s.warehouse[item] ?? 0) -
+              (incoming.get(item) ?? 0),
+          );
+        } else {
+          destination = isChest(target.building_type)
+            ? "output"
+            : c.via && channel(c.via) === "fuel"
+              ? "fuel"
+              : "input";
+          const accepts =
+            destination === "output"
+              ? !itemFilter(target) || itemFilter(target) === item
+              : destination === "fuel"
+                ? !!fuelValues(targetDef)[item]
+                : !!selectedRecipe(target)?.inputs[item];
+          if (!accepts) {
+            if (c.via) s.buildings[c.via.id].status = "rejected";
+            continue;
+          }
+          const key = `${target.id}:${destination}`;
+          inv = structuredClone(
+            inputs.get(key) ?? targetState[destination] ?? [],
+          );
+          const slots =
+            destination === "fuel"
+              ? 3
+              : destination === "output"
+                ? targetDef.output_slots
+                : targetDef.input_slots;
+          if (
+            !inv.some((stack) => stack.item === item) &&
+            inv.length >= (slots ?? 4)
+          )
+            continue;
+          n = Math.min(n, 100 - count(inv, item));
+        }
+        if (n < 1) continue;
+        if (inv) {
+          add(inv, item, n);
+          inputs.set(`${target.id}:${destination}`, inv);
+        }
+        if (isBelt(source.building_type))
+          beltSources.set(source.id, chosen.length);
+        else if (source.building_type === "bus")
+          outgoing.set(item, (outgoing.get(item) ?? 0) + n);
+        else {
+          const inv = structuredClone(
+            sources.get(source.id) ?? sourceState.output,
+          );
+          remove(inv, item, n);
+          sources.set(source.id, inv);
+        }
+        if (destination === "belt") beltTargets.add(target.id);
+        if (destination === "warehouse")
+          incoming.set(item, (incoming.get(item) ?? 0) + n);
+        actors.add(c.actor);
+        let payload =
+          sourceState.belt && n === (sourceState.belt.count ?? 1)
+            ? sourceState.belt.id
+            : `payload:${s.tick}:${chosen.length}`;
+        if (payload !== sourceState.belt?.id) {
+          let collision = 0;
+          const base = payload;
+          while (payloads.has(payload)) payload = `${base}:${++collision}`;
+          payloads.add(payload);
+        }
+        chosen.push({
+          source,
+          target,
+          via: c.via,
+          actor: c.actor,
+          limit: c.limit,
+          item,
+          candidate: c,
+          quantity: n,
+          payload,
+          destination,
+        });
+        break;
+      }
+    }
+    return { chosen, beltSources };
+  };
   // A receiving belt must be completely vacated in this same batch. Partial
   // withdrawals cannot free its cell; full closed loops still move atomically.
-  const result = new Map<number, boolean>();
-  for (let start = 0; start < chosen.length; start++) {
-    if (result.has(start)) continue;
-    const path: number[] = [],
-      visiting = new Set<number>();
-    let index: number | undefined = start,
-      success = true;
-    while (index !== undefined) {
-      if (result.has(index)) {
-        success = result.get(index)!;
-        break;
-      }
-      if (visiting.has(index)) break;
-      visiting.add(index);
-      path.push(index);
-      const target = chosen[index].target,
-        old = s.buildings[target.id].belt;
-      if (!isBelt(target.building_type) || !old) break;
-      index = beltSources.get(target.id);
-      if (index === undefined || chosen[index].quantity !== (old.count ?? 1)) {
-        success = false;
-        break;
-      }
+  // Drop only a route whose immediate belt dependency cannot vacate, then
+  // rebuild reservations so its actor can try another branch in this tick.
+  // Without a blocked dependency every chain ends in space or a valid cycle.
+  let plan = select();
+  for (;;) {
+    const blocked = plan.chosen.find((move) => {
+      const old = s.buildings[move.target.id].belt;
+      if (!isBelt(move.target.building_type) || !old) return false;
+      const source = plan.beltSources.get(move.target.id);
+      return (
+        source === undefined ||
+        plan.chosen[source].quantity !== (old.count ?? 1)
+      );
+    });
+    if (!blocked) break;
+    const pending = [blocked.candidate];
+    while (pending.length) {
+      const route = pending.pop()!;
+      if (excluded.has(route)) continue;
+      excluded.add(route);
+      // Prune a blocked belt chain in one pass. If another extractor can
+      // still empty this belt, leave its incoming routes available to retry.
+      if (
+        isBelt(route.source.building_type) &&
+        routesFrom.get(route.source.id)!.every((c) => excluded.has(c))
+      )
+        pending.push(...(routesTo.get(route.source.id) ?? []));
     }
-    for (const i of path) result.set(i, success);
+    plan = select();
   }
+  const { chosen } = plan;
+  // Validate the complete plan before deducting anything. A malformed move
+  // must never become an unidentified persisted belt load or receipt.
+  for (const move of chosen)
+    if (
+      !itemDefinitions.has(move.item) ||
+      isFluid(move.item) ||
+      !Number.isSafeInteger(move.quantity) ||
+      move.quantity < 1
+    )
+      throw new Error("物流转移计划包含无效物品或数量，已停止本次输送");
   for (let i = 0; i < chosen.length; i++) {
-    if (!result.get(i)) continue;
     const t = chosen[i],
       m = s.buildings[t.source.id];
     if (isBelt(t.source.building_type)) {
@@ -396,7 +454,6 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     else remove(m.output, t.item, t.quantity);
   }
   for (let i = 0; i < chosen.length; i++) {
-    if (!result.get(i)) continue;
     const t = chosen[i],
       m = s.buildings[t.target.id];
     if (
@@ -432,7 +489,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       actor.status = "transferring";
     }
   }
-  // O(entities), with at most one visual event per actor/face; receipts are a
+  // Receipt storage is O(entities), with one visual event per actor/face; these are a
   // bounded cosmetic log, not an inventory or throughput source.
   s.transfers = s.transfers.slice(-3 * ordered.length);
 }
