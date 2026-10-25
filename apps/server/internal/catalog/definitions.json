@@ -7775,7 +7775,7 @@
       "building_type": "m08",
       "tier": 1,
       "duration_ms": 15000,
-      "inputs": { "i0055": 2, "i0057": 2, "i0054": 1 },
+      "inputs": { "i0055": 1, "i0057": 1, "i0054": 1 },
       "outputs": { "i0059": 1 },
       "description": "物流入料自动化",
       "power_kw": 0,

@@ -59,7 +59,10 @@ const recipes = d.recipes.map((r) => ({
   building_type: r.machine.toLowerCase(),
   tier: r.tier,
   duration_ms: r.seconds * 1000,
-  inputs: convert(r.input),
+  // P1 logistics balance: keep the original design input unchanged on disk.
+  inputs: convert(
+    r.id === "R1039" ? { 机械抓取爪: 1, 低速传动轴: 1, 分拣料箱: 1 } : r.input,
+  ),
   outputs: convert(r.output),
   description:
     r.id === "R3011"

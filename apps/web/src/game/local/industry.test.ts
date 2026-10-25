@@ -373,8 +373,8 @@ describe("recycling gameplay", () => {
     f.simulation.buildings.m08.progress = 4;
     f = act(f, { type: "feed_batch", id: "m08", batches: 6 });
     expect(f.simulation.buildings.m08.input).toEqual([
-      { item: "i0055", count: 12 },
-      { item: "i0057", count: 12 },
+      { item: "i0055", count: 7 },
+      { item: "i0057", count: 6 },
       { item: "i0054", count: 6 },
     ]);
     expect(
@@ -384,7 +384,7 @@ describe("recycling gameplay", () => {
           f.simulation.warehouse[id],
         ]),
       ),
-    ).toEqual({ i0055: 95, i0057: 91, i0054: 94 });
+    ).toEqual({ i0055: 100, i0057: 97, i0054: 94 });
     expect(f.simulation.buildings.m08.progress).toBe(4);
     const inventory = structuredClone(f.simulation);
     f = act(f, { type: "feed_batch", id: "m08", batches: 6 });
@@ -408,7 +408,7 @@ describe("recycling gameplay", () => {
     expect(f.simulation.buildings.m08.input).toEqual([
       { item: "i0055", count: 100 },
       { item: "i0057", count: 100 },
-      { item: "i0054", count: 50 },
+      { item: "i0054", count: 100 },
     ]);
     f = advance(f, recipe.duration_ms / 1000);
     expect(f.simulation.buildings.m08.output).toEqual([
@@ -416,11 +416,11 @@ describe("recycling gameplay", () => {
     ]);
     f = act(f, { type: "feed_batch", id: "m08", batches: 999 });
     expect(f.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
-      100, 100, 50,
+      100, 100, 100,
     ]);
-    expect(f.simulation.warehouse.i0055).toBe(398);
-    expect(f.simulation.warehouse.i0057).toBe(398);
-    expect(f.simulation.warehouse.i0054).toBe(449);
+    expect(f.simulation.warehouse.i0055).toBe(399);
+    expect(f.simulation.warehouse.i0057).toBe(399);
+    expect(f.simulation.warehouse.i0054).toBe(399);
     let scarce = act(install(start(), "m08"), {
       type: "recipe",
       id: "m08",
@@ -433,7 +433,7 @@ describe("recycling gameplay", () => {
     });
     scarce = act(scarce, { type: "feed_batch", id: "m08", batches: 100 });
     expect(scarce.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
-      14, 14, 7,
+      14, 14, 14,
     ]);
     expect(scarce.simulation.warehouse.i0055).toBe(0);
   });
@@ -443,7 +443,7 @@ describe("recycling gameplay", () => {
       id: "m08",
       recipe: "r1039",
     });
-    Object.assign(f.simulation.warehouse, { i0055: 10, i0057: 1, i0054: 10 });
+    Object.assign(f.simulation.warehouse, { i0055: 10, i0057: 0, i0054: 10 });
     const before = structuredClone(f);
     expect(() => act(f, { type: "feed_batch", id: "m08", batches: 9 })).toThrow(
       "无法容纳一批",
@@ -459,7 +459,7 @@ describe("recycling gameplay", () => {
     }
     f = act(f, { type: "feed_batch", id: "m08" });
     expect(f.simulation.buildings.m08.input.map((s) => s.count)).toEqual([
-      2, 2, 1,
+      1, 1, 1,
     ]);
   });
   it("charges heat separately from chemical ingredients, retains burn energy and rejects batteries as fuel", () => {

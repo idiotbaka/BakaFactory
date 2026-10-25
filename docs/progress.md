@@ -2,6 +2,13 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-25：初阶自动投料机配方减负
+
+- 在玩法导入脚本中将 R1039 每批输入改为机械抓取爪 1、低速传动轴 1、分拣料箱 1；重新生成运行目录，产出 1 个初阶自动投料机、M08 加工设备和 15 秒原工时保持，手工仍按现有规则为 7 秒。原 v0.9 设计案不修改。
+- 按用户明确的开发期约定，直接应用新配方，不新增旧队列成本兼容、存档字段、协议变更或迁移。更新现有补料数量 / 容量与来源卡断言，以及玩法适配、功能说明和手动验收中的材料数量。
+
+验证状态：`npm run import:gameplay`（静态材料 / 能源 / 作业闭包与拼音索引生成）、完整 `npm run lint` 和 `npm run build`（Web / Worker、Go 编译）通过；Prettier 与 `git diff --check` 通过。按仓库约定未启动服务，未执行应用自动 / 冒烟 / 浏览器测试；用户可运行 `npm run test --workspace @bakafactory/web -- src/game/local/industry.test.ts src/game/ItemInfo.test.tsx`，并按 [acceptance.md](acceptance.md) 核对 R1039 来源与批量补料。
+
 ## 2026-10-25：开发者模拟 TPS 倍速
 
 - 在“开发者工具 → 功能测试”添加当前速率、1～60 整数输入、“应用 TPS”与“恢复 1 TPS”，无效输入就地提示。参数 / 验证集中在 local/tickRate.ts，GameRuntime 当前页面状态通过 permit 传给 Worker，唯一调度器按 1000 / TPS 每次执行同一 stepWorld；改速率替换等待定时器，同速率心跳不重启计时。

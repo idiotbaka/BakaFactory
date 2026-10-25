@@ -71,10 +71,10 @@ describe("item acquisition popovers", () => {
     expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
     expect(
       source.getByRole("button", { name: "机械抓取爪" }).closest("li"),
-    ).toHaveTextContent("机械抓取爪 × 2");
+    ).toHaveTextContent("机械抓取爪 × 1");
     expect(
       source.getByRole("button", { name: "低速传动轴" }).closest("li"),
-    ).toHaveTextContent("低速传动轴 × 2");
+    ).toHaveTextContent("低速传动轴 × 1");
     expect(
       source.getByRole("button", { name: "分拣料箱" }).closest("li"),
     ).toHaveTextContent("分拣料箱 × 1");
