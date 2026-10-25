@@ -54,7 +54,7 @@ func New(health *application.HealthService, logger *slog.Logger, webDir string, 
 		if err != nil || info.IsDir() {
 			return nil, fmt.Errorf("WEB_DIST_DIR must contain built index.html")
 		}
-		static = http.FileServer(http.Dir(webDir))
+		static = cacheStaticFiles(http.FileServer(http.Dir(webDir)))
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if static != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead) && r.URL.Path != "/api" && !strings.HasPrefix(r.URL.Path, "/api/") {

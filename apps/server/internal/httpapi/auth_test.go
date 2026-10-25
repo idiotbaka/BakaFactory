@@ -65,6 +65,9 @@ func credentials(name, pwd string) string {
 }
 func userFrom(t *testing.T, w *httptest.ResponseRecorder, expected int) domain.User {
 	t.Helper()
+	if w.Header().Get("Cache-Control") != "no-store" {
+		t.Fatal("account responses must not be cached")
+	}
 	if w.Code != expected {
 		t.Fatalf("want %d got %d: %s", expected, w.Code, w.Body)
 	}

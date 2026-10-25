@@ -226,6 +226,9 @@ func (f authFixture) cloudRequest(method, session, body string, cookie *http.Coo
 func heartbeatID(t *testing.T, f authFixture, cookie *http.Cookie) string {
 	t.Helper()
 	w := f.request("POST", "/api/v1/game/heartbeat", `{"session_id":""}`, cookie)
+	if w.Header().Get("Cache-Control") != "no-store" {
+		t.Fatal("online session responses must not be cached")
+	}
 	if w.Code != 200 {
 		t.Fatalf("heartbeat: %d %s", w.Code, w.Body)
 	}
@@ -361,11 +364,14 @@ func TestCloudSaveSingleSlotOwnershipAndSessionRevocation(t *testing.T) {
 	user := userFrom(t, registered, 201)
 	cookie := registered.Result().Cookies()[0]
 	session := heartbeatID(t, f, cookie)
-	if w := f.cloudRequest("GET", session, "", cookie); w.Code != 200 || !strings.Contains(w.Body.String(), `"backup":null`) {
+	if w := f.cloudRequest("GET", session, "", cookie); w.Code != 200 || !strings.Contains(w.Body.String(), `"backup":null`) || w.Header().Get("Cache-Control") != "no-store" {
 		t.Fatalf("new game must start empty: %s", w.Body)
 	}
 	save := sampleSave(user.ID)
 	first := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie)
+	if first.Header().Get("Cache-Control") != "no-store" {
+		t.Fatal("cloud save responses must not be cached")
+	}
 	if first.Code != 200 {
 		t.Fatalf("upload %d %s", first.Code, first.Body)
 	}

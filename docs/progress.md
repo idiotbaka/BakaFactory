@@ -2,6 +2,15 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-25：生产静态资源浏览器缓存
+
+- 定位到 Go 全局中间件对静态文件也写入 no-store，导致页面内预热虽可共享，刷新后仍无法保存 HTTP 响应。保留全局默认策略，在生产 FileServer 外按成功状态覆盖静态缓存头。
+- Vite 八位内容哈希 PNG / JS / CSS / Worker 及版本化 Fusion Pixel 字体的 200 / 206 / 304 使用 public、max-age=31536000、immutable；入口、favicon、清单 / 许可证及其他未版本化文件使用 no-cache 并沿用 Last-Modified 校验。API、健康检查、重定向与静态错误仍为 no-store，不添加资源持久化副本或改变预热 / 游戏 / 存档规则。
+- 补充 GET / HEAD、查询参数、Range 206 / 416、条件 304、缺失文件、目录重定向与 API 隔离回归代码；账号、在线心跳及云备份用例增加 no-store 断言。测试使用临时目录或内存数据库，不访问真实存档。
+- 新增 [static-assets.md](static-assets.md)，说明 Go 定义策略 / nginx 透传的职责、代理覆盖排查、正常刷新验收、版本化字体更新及保留旧哈希资源的发布要求；同步索引、架构、字体预热与验收文档。
+
+验证状态：完整 `npm run lint`（资源 / 字号静态检查、ESLint、TypeScript、Go 格式 / vet）与 `npm run build`（Web / Worker 和 Go 编译）通过。Prettier 与 `git diff --check` 通过。按仓库约定未启动服务，未运行应用自动 / 冒烟 / 浏览器测试，未修改实际 nginx 配置或部署；新增回归由用户运行 `node scripts/go.mjs test ./internal/httpapi`，生产响应头、浏览器重复访问与更新发布待用户验收。
+
 ## 2026-10-24：多尺寸建造提示与卡片入口优化
 
 - 连续建造底部说明对受支持机器添加 E 键切换尺寸提示；跟随窗补充当前尺寸，并在多尺寸连续建造时显示 E 提示，移动已有机器不显示无效切换提示。跟随窗使用多行 12px / 18px 排版及更充分的屏幕边界留白。
