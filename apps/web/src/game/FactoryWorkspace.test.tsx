@@ -431,10 +431,15 @@ describe("local factory workspace", () => {
       palette.getByRole("button", { name: /^手工工作台/ }),
     ).toHaveAttribute("aria-pressed", "true");
   });
-  it("dims never-obtained items while preserving order, inspection and previously spent discoveries", () => {
+  it("shows stock for discovered items, including spent discoveries, while preserving undiscovered inspection and order", () => {
     prepare(true, {
       setup: (f) => {
-        f.simulation.industry!.discovered_items = [itemID("基础铁板")];
+        f.simulation.industry!.discovered_items = [
+          itemID("基础铁板"),
+          itemID("废铜线"),
+        ];
+        f.simulation.warehouse[itemID("基础铁板")] = 0;
+        f.simulation.warehouse[itemID("废铜线")] = 12345;
       },
     });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
@@ -453,7 +458,13 @@ describe("local factory workspace", () => {
     const seen = palette.getByRole("button", { name: /^基础铁板/ }),
       unknown = palette.getByRole("button", { name: /^垃圾包/ });
     expect(seen).not.toHaveClass("is-undiscovered");
+    expect(seen).toHaveTextContent("库存 0");
+    const stocked = palette.getByRole("button", { name: /^废铜线/ });
+    expect(stocked).not.toHaveClass("is-undiscovered");
+    expect(stocked).toHaveTextContent("库存 12345");
     expect(unknown).toHaveClass("is-undiscovered");
+    expect(unknown).toHaveTextContent("尚未获得");
+    expect(unknown).not.toHaveTextContent("库存");
     fireEvent.click(unknown);
     expect(unknown).toHaveAttribute("aria-pressed", "true");
     expect(unknown).toHaveClass("is-undiscovered");

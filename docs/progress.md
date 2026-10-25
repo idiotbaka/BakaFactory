@@ -2,6 +2,14 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-25：建造阵列物品库存显示
+
+- 物品 Tab 卡片将已获得物品原“已获得”替换为“库存 数量”，直接读取当前工厂投影中的共用总仓库，与建筑 / 物流卡片保持同一库存口径，随确认状态更新。
+- 未获得物品保留灰显与“尚未获得”；已获得后即使库存耗尽，仍保持实体色并显示“库存 0”。沿用现有卡片字号 / 排版、原序、阶段 / 搜索和资料查看，不改获得记录、库存结算、API 或存档。
+- 更新现有图鉴回归断言，覆盖未获得、正库存及已耗尽物品；同步当前功能、编辑器说明与手动验收步骤。
+
+验证状态：`npm run lint --workspace @bakafactory/web`（资源 / 字号静态检查、ESLint、TypeScript）与 `npm run build --workspace @bakafactory/web`（Web / Worker 编译）通过，Prettier 与 `git diff --check` 通过。按仓库约定未启动服务，未执行应用自动 / 冒烟 / 浏览器测试；用户可运行 `npm run test --workspace @bakafactory/web -- src/game/FactoryWorkspace.test.tsx`，实际库存变化、切厂和布局按 [acceptance.md](acceptance.md) 验收。
+
 ## 2026-10-25：生产静态资源浏览器缓存
 
 - 定位到 Go 全局中间件对静态文件也写入 no-store，导致页面内预热虽可共享，刷新后仍无法保存 HTTP 响应。保留全局默认策略，在生产 FileServer 外按成功状态覆盖静态缓存头。

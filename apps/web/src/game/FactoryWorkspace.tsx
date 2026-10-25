@@ -615,7 +615,7 @@ export default function FactoryWorkspace({
                             ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
                             : unknown
                               ? "尚未获得"
-                              : "已获得"}
+                              : `库存 ${factory?.simulation?.warehouse[d.id] ?? 0}`}
                         </small>
                       </span>
                       {tab !== "item" &&
