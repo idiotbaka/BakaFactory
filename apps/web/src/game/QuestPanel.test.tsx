@@ -84,12 +84,11 @@ describe("quest interface", () => {
       id: "p1_free_hands",
     });
   });
-  it("keeps recommended order, leaves unclaimed completions pending and moves claimed tasks to completed", () => {
+  it("prioritizes pending rewards, preserves order within each status and moves claimed tasks to completed", () => {
     const factory = createLocalFactory(user, "任务"),
       world = vi.fn();
     const props = { factory, catalog, disabled: false, act: world };
     const progress = factory.simulation.industry!.quests!;
-    progress.completed = ["p1_belt"];
     const { rerender } = render(<QuestPanel {...props} />);
     expect(
       screen.getAllByRole("article").map((x) => x.getAttribute("aria-label")),
@@ -98,6 +97,20 @@ describe("quest interface", () => {
         .quests!.filter((q) => q.tier === 1 && !q.stage_final)
         .map((q) => q.title),
     );
+    progress.completed = ["p1_feeder", "p1_belt"];
+    rerender(<QuestPanel {...props} />);
+    expect(
+      screen.getAllByRole("article").map((x) => x.getAttribute("aria-label")),
+    ).toEqual([
+      "给我自己动！",
+      "筷子夹来夹去",
+      "开局一对爪，材料全靠捡",
+      "逆向工程",
+      "手摇曲柄",
+      "欢迎来到青铜时代",
+      "这是？工作台！",
+      "工厂的一小步",
+    ]);
     const ready = within(screen.getByRole("article", { name: "给我自己动！" }));
     const reward = within(ready.getByRole("listitem"));
     expect(
@@ -127,6 +140,11 @@ describe("quest interface", () => {
     expect(
       screen.queryByRole("button", { name: "领取奖励" }),
     ).not.toBeInTheDocument();
+    progress.claimed = ["p1_feeder", "p1_belt"];
+    rerender(<QuestPanel {...props} />);
+    expect(
+      screen.getAllByRole("article").map((x) => x.getAttribute("aria-label")),
+    ).toEqual(["给我自己动！", "筷子夹来夹去"]);
   });
   it("hides the final and its pending count until four ordinary tasks are achieved, then keeps a historical claim visible", () => {
     const factory = createLocalFactory(user, "终局显示");

@@ -2,6 +2,13 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-25：待领奖任务优先显示
+
+- 仅对任务页已筛选出的“待完成”列表按确认达成状态稳定排序：“已达成 · 待领奖”位于“进行中”上方，两组内部保留配置推荐顺序；“已完成”仍保持推荐顺序。排序不改目录源数组、任务开放 / 达成 / 领奖、奖励和存档。
+- 更新现有任务界面回归断言，覆盖无待领奖时的原顺序、状态更新后的优先显示 / 组内顺序，以及领奖后的归属和已完成列表顺序；同步任务、编辑器、画风说明、索引和验收步骤。
+
+验证状态：`npm run lint --workspace @bakafactory/web`（资源 / 字号静态检查、ESLint、TypeScript）与 `npm run build --workspace @bakafactory/web`（Web / Worker 编译）通过，Prettier 与 `git diff --check` 通过。按仓库约定未启动服务，未执行应用自动 / 冒烟 / 浏览器测试；用户可运行 `npm run test --workspace @bakafactory/web -- src/game/QuestPanel.test.tsx`，实际显示按 [acceptance.md](acceptance.md) 验收。
+
 ## 2026-10-25：名称全拼与首字母模糊搜索
 
 - 采用算法自动生成后构建分发的小索引：根开发依赖固定 pinyin-pro 3.29.5，从运行目录 items / buildings / recipes / robots 名称生成去重全拼 / 首字母，不修改原案、运行定义、API、数据库或存档，也不逐件维护拼音。

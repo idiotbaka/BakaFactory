@@ -28,6 +28,12 @@ export default function QuestPanel({
   const list = quests.filter(
     (q) => claimed.has(q.id) === (tab === "completed"),
   );
+  if (tab === "pending") {
+    // Stable sorting preserves the recommended order within each status.
+    list.sort(
+      (a, b) => Number(completed.has(b.id)) - Number(completed.has(a.id)),
+    );
+  }
   const hiddenFinal = catalog.quests?.find(
     (q) =>
       q.stage_final &&
