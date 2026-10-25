@@ -46,6 +46,31 @@ function fixture() {
   return root;
 }
 describe("robot onboarding and task controls", () => {
+  it("filters the fleet by model pinyin, initials or the existing robot ID without issuing commands", () => {
+    const root = fixture(),
+      act = vi.fn();
+    render(
+      <RobotPanel
+        factory={projectFactory(root)}
+        catalog={catalog}
+        districts={districtSummary(root)}
+        disabled={false}
+        act={act}
+      />,
+    );
+    const search = screen.getByLabelText("查找机器人");
+    for (const query of ["fatiaobanyunche", "ftbyc", "banyun", "cart"]) {
+      fireEvent.change(search, { target: { value: query } });
+      expect(screen.getByRole("button", { name: /cart/ })).toBeInTheDocument();
+    }
+    fireEvent.change(search, { target: { value: "nonexistent" } });
+    expect(
+      screen.queryByRole("button", { name: /cart/ }),
+    ).not.toBeInTheDocument();
+    fireEvent.change(search, { target: { value: "" } });
+    expect(screen.getByRole("button", { name: /cart/ })).toBeInTheDocument();
+    expect(act).not.toHaveBeenCalled();
+  });
   it("keeps P2 focused on local hauling and preserves the actual task payload", () => {
     const root = fixture(),
       act = vi.fn(),

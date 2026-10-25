@@ -103,6 +103,47 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("searches palette items, buildings and logistics by partial pinyin and initials within the selected phase", () => {
+    prepare();
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+      screen.getByRole("complementary", { name: "实体图鉴" }),
+    );
+    const search = palette.getByLabelText("搜索图鉴");
+    fireEvent.click(palette.getByRole("button", { name: "物品" }));
+    for (const query of ["feitongxian", "ftx", "tongx"]) {
+      fireEvent.change(search, { target: { value: query } });
+      expect(palette.getByRole("button", { name: /^废铜线/ })).toHaveClass(
+        "is-undiscovered",
+      );
+      expect(
+        palette.queryByRole("button", { name: /^基础铁板/ }),
+      ).not.toBeInTheDocument();
+    }
+    fireEvent.click(palette.getByRole("button", { name: "建筑" }));
+    fireEvent.change(search, { target: { value: "sggzt" } });
+    expect(
+      palette.getByRole("button", { name: /^手工工作台/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(palette.getByRole("button", { name: "物流" }));
+    fireEvent.change(search, { target: { value: "chuansong" } });
+    expect(
+      palette.getByRole("button", { name: /^手摇传送带/ }),
+    ).toBeInTheDocument();
+    expect(
+      palette.queryByRole("button", { name: /^机械传送带/ }),
+    ).not.toBeInTheDocument();
+    fireEvent.change(search, { target: { value: "nonexistent" } });
+    expect(
+      palette
+        .queryAllByRole("button")
+        .filter((button) => button.classList.contains("catalog-entry")),
+    ).toHaveLength(0);
+    fireEvent.change(search, { target: { value: "" } });
+    expect(
+      palette.getByRole("button", { name: /^手摇传送带/ }),
+    ).toBeInTheDocument();
+  });
   it("hides map operation errors after three seconds and gives repeated errors a fresh lifetime", async () => {
     vi.useFakeTimers();
     prepare();

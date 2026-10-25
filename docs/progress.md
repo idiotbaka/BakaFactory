@@ -2,6 +2,15 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-25：名称全拼与首字母模糊搜索
+
+- 采用算法自动生成后构建分发的小索引：根开发依赖固定 pinyin-pro 3.29.5，从运行目录 items / buildings / recipes / robots 名称生成去重全拼 / 首字母，不修改原案、运行定义、API、数据库或存档，也不逐件维护拼音。
+- 共用 catalogSearch 归一化和连续子串匹配，接入建造阵列三分类、工作室配方、总仓库、诊断物品和机器人列表；兼容中文 / 编号、大小写、部分全拼 / 首字母、空格 / 撇号、音调 / 全角和 ü / v。原分类 / 阶段 / 当前工作室设备 / 库存与厂区筛选、原序和键盘输入隔离保持。
+- 新增 generate:search；玩法导入、根 dev、前端 dev / build / test 自动生成，lint 以 --check 拒绝过期索引，内容不变时不写文件。当前生成 536 个去重名称、约 31.6 KiB JSON，独立 catalog-search 分包 28.63 kB / gzip 10.13 kB；完整词库仅供开发工具使用，不进前端 / Worker。
+- 补充匹配规则和名称覆盖回归代码，以及图鉴、工作室 / 仓库、诊断和机器人搜索界面用例；新增 [search.md](search.md) 比较方案并说明新增内容、多音词和动态名称边界，同步架构、编辑器、文档索引与验收。
+
+验证状态：已安装固定开发依赖并更新锁文件；`npm run generate:search`、索引一致性检查、完整 `npm run lint`（资源 / 字号、ESLint、TypeScript、Go 格式 / vet）和 `npm run build`（Web / Worker、Go 编译）通过，Prettier、脚本语法检查与 `git diff --check` 通过。按仓库约定未启动服务，未执行应用自动 / 冒烟 / 浏览器测试；新增回归命令与手动验收见 [search.md](search.md)、[acceptance.md](acceptance.md)。
+
 ## 2026-10-25：建造阵列物品库存显示
 
 - 物品 Tab 卡片将已获得物品原“已获得”替换为“库存 数量”，直接读取当前工厂投影中的共用总仓库，与建筑 / 物流卡片保持同一库存口径，随确认状态更新。

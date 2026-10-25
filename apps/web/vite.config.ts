@@ -6,6 +6,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.endsWith("/game/catalogSearchIndex.json"))
+            return "catalog-search";
           if (id.includes("/internal/catalog/definitions.json"))
             return "game-catalog";
           if (

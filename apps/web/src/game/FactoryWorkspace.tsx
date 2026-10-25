@@ -9,6 +9,7 @@ import {
   type User,
 } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
+import { createCatalogSearch } from "./catalogSearch";
 import FactoryLoading from "./FactoryLoading";
 import FactoryEditor from "./FactoryEditor";
 import { ProductionInspector } from "./ProductionPanel";
@@ -327,17 +328,14 @@ export default function FactoryWorkspace({
     (d) => !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
   );
   const catalogPhase = phaseFor(tab);
+  const matchesCatalog = createCatalogSearch(catalogQuery);
   const definitions = (
     tab === "item"
       ? catalog.items.filter((i) => !i.legacy)
       : placeable.filter(
           (d) => isLogisticsBuilding(d) === (tab === "logistics"),
         )
-  ).filter(
-    (d) =>
-      (d.tier ?? 1) === catalogPhase &&
-      `${d.name}${d.code}`.toLowerCase().includes(catalogQuery.toLowerCase()),
-  );
+  ).filter((d) => (d.tier ?? 1) === catalogPhase && matchesCatalog(d));
   const discoveredItems = new Set(
     factory?.simulation?.industry?.discovered_items ?? [],
   );
@@ -516,7 +514,8 @@ export default function FactoryWorkspace({
               <input
                 className="catalog-search"
                 aria-label="搜索图鉴"
-                placeholder="搜索名称 / 编号"
+                placeholder="名称 / 编号 / 拼音"
+                title="支持全拼、拼音首字母和部分内容"
                 value={catalogQuery}
                 onChange={(e) => setCatalogQuery(e.target.value)}
               />

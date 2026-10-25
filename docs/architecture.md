@@ -1,5 +1,7 @@
 # 当前架构
 
+名称搜索为纯客户端展示逻辑：开发依赖 pinyin-pro 在 `scripts/generate-search-index.mjs` 中读取运行目录，为物品 / 建筑 / 配方 / 机器人模型名称生成唯一全拼和首字母索引，前端共用 `catalogSearch.ts` 做归一化后的连续子串匹配；完整词库不进入浏览器或 Worker。玩法导入、开发启动、前端 build / test 自动生成，lint 校验一致性，不改玩法原案 / 运行定义、API 或存档。未知动态名称仅按原文 / ID 搜索。方案、数据流程与新增内容维护见 [search.md](search.md)。
+
 机器可选占地：36 台复杂配方机器的目录增加 supported_sizes=[1,2]；实例 / 放置 / 蓝图的可选 size 缺省 1，2×2 坐标为左上角。前后端存档校验完整占格，Worker 的放置、物流、能源、机器人路径与蓝图共用对应几何；不改变实例数、安装道具数、缓存、配方工时、物料或产能。旧存档保留原单格，不需迁移，完整设计见 [machine-footprints.md](machine-footprints.md)。
 
 工厂入口新增静态资源门槛：useLocalGame 订阅页面内共享的 AssetPreloader，等待同源 Fusion Pixel 字体的实际 FontFace 与全部物品 / 建筑图标读取解码完成，再创建 GameRuntime、读取账号存档锁 / IndexedDB、校验在线与云备份、启动 Worker。进度按真实完成项计算，最后一项为原存档 / 在线初始化；失败保留进度重试。卸载 / 退出后的迟到预热不会启动旧玩家运行层，公开静态缓存不包含账号数据，不改持久化或生产规则。详见 [fonts-and-loading.md](fonts-and-loading.md)。

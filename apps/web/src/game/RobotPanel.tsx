@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createCatalogSearch } from "./catalogSearch";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { DistrictSummary, WorldAction } from "./local/world";
 import { buildingDefinitions } from "./local/catalog";
@@ -68,6 +69,7 @@ export default function RobotPanel({
   const lockedZones = selected
     ? requiredRobotZones(selected)
     : new Set<string>();
+  const matchesCatalog = createCatalogSearch(query);
   const visible = robots.filter(
     (r) =>
       (filter !== "current" ||
@@ -76,9 +78,10 @@ export default function RobotPanel({
       (filter !== "attention" ||
         !r.enabled ||
         robotAttention.includes(r.status)) &&
-      `${definitions.find((d) => d.item === r.item)?.name} ${r.id}`
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
+      matchesCatalog({
+        name: definitions.find((d) => d.item === r.item)?.name,
+        id: r.id,
+      }),
   );
   const zoneName = (id: string) =>
     districts.find((f) => f.id === id)?.name ?? "当前厂区";
@@ -217,7 +220,8 @@ export default function RobotPanel({
               aria-label="查找机器人"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="机型或机器人编号"
+              placeholder="机型 / 编号 / 拼音"
+              title="支持全拼、拼音首字母和部分内容"
             />
           </label>
           <label>

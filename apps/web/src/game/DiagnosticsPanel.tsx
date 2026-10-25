@@ -10,6 +10,7 @@ import {
 } from "./local/diagnostics";
 import type { Observation } from "./local/observations";
 import { robotStateHint } from "./local/robotLifecycle";
+import { createCatalogSearch } from "./catalogSearch";
 export default function DiagnosticsPanel({
   factory,
   observation,
@@ -23,11 +24,8 @@ export default function DiagnosticsPanel({
     outcome = industryOutcome(factory);
   const [query, setQuery] = useState(""),
     [item, setItem] = useState(catalog.root_item ?? "");
-  const items = catalog.items.filter(
-    (i) =>
-      !i.legacy &&
-      `${i.name}${i.id}`.toLowerCase().includes(query.toLowerCase()),
-  );
+  const matchesCatalog = createCatalogSearch(query);
+  const items = catalog.items.filter((i) => !i.legacy && matchesCatalog(i));
   const selected = items.find((i) => i.id === item) ?? items[0];
   const number = (n: number) =>
     n.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -142,7 +140,8 @@ export default function DiagnosticsPanel({
           aria-label="诊断物品搜索"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="物品名或编号"
+          placeholder="名称 / 编号 / 拼音"
+          title="支持全拼、拼音首字母和部分内容"
         />
       </label>
       <label>

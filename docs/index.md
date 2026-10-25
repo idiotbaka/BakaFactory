@@ -4,6 +4,8 @@
 
 ## 当前功能
 
+建造阵列、工作室、仓库、诊断物品和机器人列表支持名称 / 编号、拼音全拼与首字母的连续部分搜索，例如“废铜线”可用 feitongxian、ftx、tongx 查找。开发工具从目录自动生成小索引，新增物品随导入 / 构建更新，浏览器不加载完整拼音词库；方案与维护见 [拼音搜索](search.md)。
+
 生产静态资源按类型设置浏览器缓存：Vite 内容哈希资源与版本化字体缓存一年，入口和未版本化文件每次校验；账号 / 心跳 / 云存档与静态错误仍为 no-store。Go 负责策略，nginx 透传；部署、更新和验收见 [静态资源缓存](static-assets.md)。
 
 36 台复杂配方候选机器（审查表 35 台生产机器与 M21 液压动力站）现在可在连续建造时按 E 或点当前卡片右上角按钮切换 1×1 / 2×2，默认 1×1。卡片标注“多尺寸”，检视列出支持及当前尺寸；点击格为左上角，旋转 / 移动保留占地。物流、能源、机器人、蓝图预留及本机 / 云存档已接入完整占格，旧档保持单格。设计、边界与验收见 [多格机器](machine-footprints.md)，自动测试和实际游戏效果待用户验证。
@@ -83,6 +85,7 @@
 - [六阶段游玩路线](gameplay-walkthrough.md)、[性能测量与边界](performance.md)：统一游玩检查、纯模拟规模参数和未实测范围。
 - [玩法开发计划](gameplay-plan.md)、[导入审计](gameplay-data-audit.md)：六阶段内容、网页适配决策、阶段任务与完成状态。
 - [编辑器操作](editor.md)、[账号机制](auth.md)、[工厂建模历史](factories.md)。
+- [拼音搜索](search.md)：统一名称 / 编号 / 全拼 / 首字母匹配、自动生成索引与新增内容维护。
 - [任务系统](quests.md)、[任务配置](quests.json)：开放任务、判定 / 领奖、历史补认与内容扩展。
 - [机械手订单](warehouse-orders.md)：任务机制奖励、递归规划、物料预留 / 回收、兼容及验收。
 - [剧情系统](stories.md)：开场漫画、按账号保存观看状态、播放 / 重放与后续内容注册。
@@ -152,6 +155,7 @@ npm run setup
 | `npm run test:smoke`                                                                               | 构建后启动临时服务，检查单点登录、云备份及重启保存           |
 | `npm run check`                                                                                    | 上述所有步骤                                                 |
 | `npm run generate:api`                                                                             | 依据 OpenAPI 更新 API 类型                                   |
+| `npm run generate:search`                                                                          | 从当前目录自动生成名称全拼 / 首字母索引                      |
 | `npm run import:gameplay`                                                                          | 从原案 JSON 生成目录并进行静态材料 / 能源 / 真实作业闭包审计 |
 | `npm run benchmark:build`                                                                          | 编译纯模拟测量入口，不运行测量                               |
 | `npm run benchmark -- --districts 6 --machines 24 --robots 12 --ticks 60 --seed 1 --profile mixed` | 用户运行隔离的合成测量，不访问存档 / 数据库                  |

@@ -9,6 +9,9 @@ const binary = fileURLToPath(
     import.meta.url,
   ),
 );
+await run(process.execPath, ["scripts/generate-search-index.mjs"], {
+  cwd: root,
+});
 await mkdir(`${root}/.runtime`, { recursive: true });
 await run("go", ["build", "-o", binary, "./cmd/server"], { cwd: serverRoot });
 const backend = spawn(binary, [], {

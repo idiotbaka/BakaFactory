@@ -9,6 +9,7 @@ import {
   clampWorkshopBatches,
 } from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
+import { createCatalogSearch } from "./catalogSearch";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
@@ -90,11 +91,12 @@ export default function IndustryViews({
   const workshopMachine = workshopMachineAvailable(p?.crafted, selectedMachine)
     ? selectedMachine
     : "m02";
+  const matchesCatalog = createCatalogSearch(query);
   const recipes = catalog.recipes.filter(
     (r) =>
       r.building_type === workshopMachine &&
       (r.tier ?? 1) <= (p?.stage ?? 1) &&
-      `${r.id}${r.name}`.toLowerCase().includes(query.toLowerCase()),
+      matchesCatalog(r),
   );
   const ingredients = (values: Record<string, number>, input: boolean) => (
     <section
@@ -206,7 +208,8 @@ export default function IndustryViews({
                 view !== "developer" && (
                   <input
                     aria-label="搜索工作室或仓库"
-                    placeholder="搜索名称或编号"
+                    placeholder="名称 / 编号 / 拼音"
+                    title="支持全拼、拼音首字母和部分内容"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
@@ -396,9 +399,7 @@ export default function IndustryViews({
                     (i) =>
                       ((s?.warehouse[i.id] ?? 0) > 0 ||
                         (canOrder && orderable.has(i.id))) &&
-                      `${i.name}${i.code}`
-                        .toLowerCase()
-                        .includes(query.toLowerCase()),
+                      matchesCatalog(i),
                   )
                   .map((i) => (
                     <article

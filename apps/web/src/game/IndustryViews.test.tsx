@@ -13,6 +13,45 @@ const user = {
   last_login_at: "now",
 };
 describe("manual workshop batch controls", () => {
+  it("uses the same partial pinyin search for workshop outputs and stocked warehouse items", () => {
+    const f = createLocalFactory(user, "拼音搜索");
+    f.simulation.warehouse[itemID("废铜线")] = 42;
+    f.simulation.warehouse[itemID("基础铁板")] = 12;
+    const props = {
+      factory: f,
+      catalog,
+      disabled: false,
+      act: vi.fn(),
+      view: "workshop" as const,
+      onViewChange: vi.fn(),
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />);
+    const sorter = recipeDefinitions.get("r1001")!;
+    for (const query of ["feitongxian", "ftx", "tongx"]) {
+      fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
+        target: { value: query },
+      });
+      expect(
+        screen.getByLabelText(`${sorter.name}加工批数`),
+      ).toBeInTheDocument();
+    }
+    rerender(<IndustryViews {...props} view="warehouse" />);
+    const warehouse = within(
+      screen.getByRole("region", { name: "工厂总仓库" }),
+    );
+    expect(warehouse.getAllByRole("article")).toHaveLength(1);
+    expect(warehouse.getByText("42 u")).toBeInTheDocument();
+    expect(warehouse.queryByText("基础铁板")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
+      target: { value: "I0045" },
+    });
+    expect(warehouse.getByText("12 u")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
+      target: { value: "" },
+    });
+    expect(warehouse.getAllByRole("article")).toHaveLength(2);
+  });
   it("shows shared workshop actions in a child and disables every recipe when the global queue is occupied", () => {
     const root = createWorld(user, "全局工作室"),
       act = vi.fn(),

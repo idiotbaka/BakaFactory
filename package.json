@@ -16,7 +16,8 @@
     "dev:web": "npm run dev --workspace @bakafactory/web",
     "dev:server": "node scripts/go.mjs run ./cmd/server",
     "generate:api": "npm run generate:api --workspace @bakafactory/web",
-    "import:gameplay": "node scripts/import-gameplay.mjs",
+    "import:gameplay": "node scripts/import-gameplay.mjs && npm run generate:search",
+    "generate:search": "node scripts/generate-search-index.mjs",
     "benchmark:build": "node scripts/build-benchmark.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "migrate": "node scripts/go.mjs run ./cmd/migrate",
@@ -28,6 +29,7 @@
     "check": "npm run lint && npm test && npm run build && npm run test:smoke"
   },
   "devDependencies": {
+    "pinyin-pro": "3.29.5",
     "prettier": "^3.9.10"
   }
 }

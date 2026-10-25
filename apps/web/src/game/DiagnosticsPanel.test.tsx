@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import DiagnosticsPanel from "./DiagnosticsPanel";
 import { createWorld } from "./local/world";
@@ -46,5 +46,16 @@ describe("factory diagnostics panel", () => {
     });
     expect(screen.getByText(/web_cable_start/)).toBeInTheDocument();
     expect(screen.getByText(/名义产出/)).toBeInTheDocument();
+    for (const query of ["jueyuanxianlan", "jyxl", "yuanxian"]) {
+      fireEvent.change(screen.getByLabelText("诊断物品搜索"), {
+        target: { value: query },
+      });
+      const options = within(screen.getByLabelText("诊断物品")).getAllByRole(
+        "option",
+      );
+      expect(options).toHaveLength(1);
+      expect(options[0]).toHaveTextContent("绝缘线缆");
+      expect(screen.getByText(/web_cable_start/)).toBeInTheDocument();
+    }
   });
 });
