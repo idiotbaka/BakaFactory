@@ -1,5 +1,7 @@
 # 当前架构
 
+开发者模拟倍速由 `GameRuntime` 当前页面的 `GameView.tickRate` 管理，默认 1，打开工具并在线运行时可设置 1～60 的整数。`permit` 向 Worker 携带速率和原真实时间许可，唯一 `setTimeout` 使用 `1000 / TPS` 间隔逐刻调用同一 `stepWorld`；切速率替换待执行定时器，相同速率心跳不重启计时。参数 / 验证集中在 `local/tickRate.ts`，不放入 `WorldAction`、GameSave、IndexedDB 元数据或云备份，既有 `simulation.tick_rate=1` 仍表示每刻一秒游戏逻辑。关闭开发者工具恢复 1，暂停 / 恢复保留本页所选速率；刷新 / 换账号新建运行层默认 1。顶部 HUD 和动画读取临时速率，心跳 / 许可 / 云备份继续按真实时间运行，不改服务器或数据库。验收见 [acceptance.md](acceptance.md)。
+
 名称搜索为纯客户端展示逻辑：开发依赖 pinyin-pro 在 `scripts/generate-search-index.mjs` 中读取运行目录，为物品 / 建筑 / 配方 / 机器人模型名称生成唯一全拼和首字母索引，前端共用 `catalogSearch.ts` 做归一化后的连续子串匹配；完整词库不进入浏览器或 Worker。玩法导入、开发启动、前端 build / test 自动生成，lint 校验一致性，不改玩法原案 / 运行定义、API 或存档。未知动态名称仅按原文 / ID 搜索。方案、数据流程与新增内容维护见 [search.md](search.md)。
 
 机器可选占地：36 台复杂配方机器的目录增加 supported_sizes=[1,2]；实例 / 放置 / 蓝图的可选 size 缺省 1，2×2 坐标为左上角。前后端存档校验完整占格，Worker 的放置、物流、能源、机器人路径与蓝图共用对应几何；不改变实例数、安装道具数、缓存、配方工时、物料或产能。旧存档保留原单格，不需迁移，完整设计见 [machine-footprints.md](machine-footprints.md)。

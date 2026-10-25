@@ -11,12 +11,14 @@ import {
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import { worldFrame } from "./worldFrame";
 import { Observations } from "./observations";
+import { DEFAULT_TPS, tickIntervalMs, validateTickRate } from "./tickRate";
 const observations = new Observations();
 
 let factory: LocalFactory | null = null;
 let enabled = false,
   expires = 0,
   lastWake = 0;
+let tickRate = DEFAULT_TPS;
 let timer: ReturnType<typeof setTimeout> | undefined;
 const send = (event: WorkerEvent) => postMessage(event);
 const sendState = (request?: number) =>
@@ -58,7 +60,7 @@ function schedule() {
       }
     }
     schedule();
-  }, 1000);
+  }, tickIntervalMs(tickRate));
 }
 self.onmessage = (event: MessageEvent<WorkerCommand>) => {
   const command = event.data;
@@ -66,18 +68,22 @@ self.onmessage = (event: MessageEvent<WorkerCommand>) => {
     if (command.kind === "init") {
       factory = command.factory ? initializeWorld(command.factory) : null;
       enabled = false;
+      tickRate = DEFAULT_TPS;
       observations.clear();
       clearTimeout(timer);
       if (factory) sendState();
       return;
     }
     if (command.kind === "permit") {
+      const nextRate = validateTickRate(command.tickRate ?? DEFAULT_TPS);
+      const rateChanged = nextRate !== tickRate;
+      tickRate = nextRate;
       const wasEnabled = enabled;
       enabled = command.enabled && command.validFor > 0;
       expires =
         performance.now() + Math.min(30000, Math.max(0, command.validFor));
       if (!enabled) clearTimeout(timer);
-      else if (!wasEnabled) schedule();
+      else if (!wasEnabled || rateChanged) schedule();
       return;
     }
     if (command.kind === "replace") {

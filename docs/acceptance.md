@@ -1,5 +1,15 @@
 # 用户启动与验收
 
+## 开发者模拟倍速（待用户执行）
+
+由用户启动 `npm run dev` 并刷新已有工厂，无需迁移或清档；F12 执行 `bakaFactory.devTools(true)` 开启入口，在“开发者工具 → 功能测试”查看模拟倍速。用户回归命令：`npm run test --workspace @bakafactory/web -- src/game/local/worker.test.ts src/game/local/runtime.test.ts src/game/DeveloperToolsPanel.test.tsx src/game/animationClock.test.ts src/game/ConveyorItemsLayer.test.tsx`。
+
+1. 初始输入 / 当前值 / 顶部 HUD 均为 1 TPS。输入 4 并应用，顶部显示 4 TPS，低负载下每真实秒约推进 4 tick；机器、物流、机器人和唯一工作室队列同步推进，切页 / 切厂保持 4。切回 1 后约每秒 1 tick，切速率本身不发放产物或重置进度。
+2. 空值、0、负数、小数和大于 60 的输入应显示校验错误且保持当前值。重复应用同一值不叠加定时器；“恢复 1 TPS”回到正常速度。比较相同逻辑 tick 数的配方、能耗和库存变化，仍符合原逐刻规则。
+3. 倍速时切后台、断网或令在线许可失效，tick 应停止；恢复前台 / 在线校验后按当前速率继续，不追赶暂停时间。暂停时速率控件禁用，普通 / 节能绘制仍约 60 / 15 FPS，不改变所选 TPS。
+4. `bakaFactory.devTools(false)` 关闭入口后顶部恢复 1 TPS；重新开启应为 1。刷新、重新登录 / 换账号也默认 1；本机 / 云存档仍保留真实已推进进度，恢复云档不从云端继承测试速率。高负载下允许实际 TPS 低于目标，不得为追赶而额外循环结算。
+5. 在最小工作台宽度下检查数值、按钮、说明 / 错误可换行并独立滚动，文字至少 12px；布局、键盘隔离、地图操作、下单开关及原诊断保持。
+
 ## 待领奖任务优先显示（待用户执行）
 
 用户启动 `npm run dev` 后刷新前端，无需迁移或清档。现有任务界面回归断言已更新，用户可运行 `npm run test --workspace @bakafactory/web -- src/game/QuestPanel.test.tsx`。

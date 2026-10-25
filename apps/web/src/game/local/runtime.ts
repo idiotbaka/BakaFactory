@@ -28,6 +28,7 @@ import {
   type StoryID,
 } from "../stories/progress";
 import type { Observation } from "./observations";
+import { DEFAULT_TPS, validateTickRate } from "./tickRate";
 import {
   districtSummary,
   projectFactory,
@@ -50,6 +51,7 @@ export type EditorCommands = {
   getFactory: (factory: string, signal?: AbortSignal) => Promise<FactoryDetail>;
 };
 export type GameView = {
+  tickRate?: number;
   developerToolsVisible?: boolean;
   viewedStories?: string[];
   pendingStories?: string[];
@@ -83,6 +85,7 @@ const AUTO_UPLOAD = 30 * 60 * 1000;
 export class GameRuntime {
   readonly catalog = catalog;
   private view: GameView = {
+    tickRate: DEFAULT_TPS,
     ready: false,
     factory: null,
     error: "",
@@ -168,6 +171,7 @@ export class GameRuntime {
       kind: "permit",
       enabled: this.allowed(),
       validFor: Math.max(0, this.deadline - performance.now()),
+      tickRate: this.view.tickRate ?? DEFAULT_TPS,
     } satisfies WorkerCommand);
   }
   private async lock() {
@@ -478,6 +482,13 @@ export class GameRuntime {
   get developerToolsVisible() {
     return !this.disposed && this.view.developerToolsVisible === true;
   }
+  readonly setTickRate = (value: number) => {
+    const tickRate = validateTickRate(value);
+    if (!this.developerToolsVisible || !this.allowed() || !this.view.factory)
+      throw new Error("请在工厂在线运行时打开开发者工具后调整 TPS");
+    this.publish({ tickRate });
+    this.permit();
+  };
   setDeveloperToolsVisible(enabled: boolean): Promise<boolean> {
     const task = this.developerWriteTail
       .catch(() => {})
@@ -494,6 +505,7 @@ export class GameRuntime {
         this.storageFailed = false;
         this.publish({
           developerToolsVisible: enabled,
+          ...(!enabled ? { tickRate: DEFAULT_TPS } : {}),
           ...(this.view.message.startsWith("本地保存失败")
             ? { message: "" }
             : {}),

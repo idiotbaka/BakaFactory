@@ -11,19 +11,23 @@ import {
 import type { MachineState, Simulation } from "../api/client";
 import { AnimationClock, type AnimationFrame } from "./animationClock";
 import { productionProgress } from "./animationMath";
+import { DEFAULT_TPS, tickIntervalMs } from "./local/tickRate";
 
 const ClockContext = createContext<AnimationClock | null>(null);
+const StepMsContext = createContext(1000);
 export function SimulationAnimationProvider({
   factoryID,
   simulation,
   powerSaving = false,
   paused = false,
+  tickRate = DEFAULT_TPS,
   children,
 }: {
   factoryID?: string;
   simulation?: Simulation;
   powerSaving?: boolean;
   paused?: boolean;
+  tickRate?: number;
   children: ReactNode;
 }) {
   const [clock] = useState(() => new AnimationClock());
@@ -32,8 +36,8 @@ export function SimulationAnimationProvider({
     clock.setPowerSaving(powerSaving);
   }, [clock, powerSaving]);
   useLayoutEffect(() => {
-    clock.sync(factoryID, simulation?.tick);
-  }, [clock, factoryID, simulation?.tick]);
+    clock.sync(factoryID, simulation?.tick, tickIntervalMs(tickRate));
+  }, [clock, factoryID, simulation?.tick, tickRate]);
   useEffect(() => {
     const visibility = () => {
       if (document.hidden) clock.pause();
@@ -46,8 +50,13 @@ export function SimulationAnimationProvider({
     };
   }, [clock]);
   return (
-    <ClockContext.Provider value={clock}>{children}</ClockContext.Provider>
+    <StepMsContext.Provider value={tickIntervalMs(tickRate)}>
+      <ClockContext.Provider value={clock}>{children}</ClockContext.Provider>
+    </StepMsContext.Provider>
   );
+}
+export function useSimulationStepMs() {
+  return useContext(StepMsContext);
 }
 export function useSimulationFrame(
   paint: (frame: AnimationFrame) => boolean | void,

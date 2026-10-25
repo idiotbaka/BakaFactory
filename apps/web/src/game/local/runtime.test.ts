@@ -54,14 +54,17 @@ class FakeWorker {
   onerror: (() => void) | null = null;
   factory: LocalFactory | null = null;
   enabled = false;
+  tickRate = 1;
   constructor() {
     FakeWorker.instances.push(this);
   }
   postMessage(command: WorkerCommand) {
     if (command.kind === "init")
       this.factory = command.factory ? initializeWorld(command.factory) : null;
-    else if (command.kind === "permit") this.enabled = command.enabled;
-    else {
+    else if (command.kind === "permit") {
+      this.enabled = command.enabled;
+      this.tickRate = command.tickRate ?? 1;
+    } else {
       if (command.kind === "create")
         this.factory = createWorld(command.user, command.name);
       else if (command.kind === "edit")
@@ -157,6 +160,41 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("controls session-only TPS through permits, preserves save rules and resets when tools close or runtime restarts", async () => {
+    await game.start();
+    await game.create("倍速测试");
+    expect(view.tickRate).toBe(1);
+    expect(() => game.setTickRate(4)).toThrow("开发者工具");
+    await game.setDeveloperToolsVisible(true);
+    const revision = view.factory!.revision;
+    game.setTickRate(4);
+    expect(view.tickRate).toBe(4);
+    expect(FakeWorker.instances[0].tickRate).toBe(4);
+    expect(view.factory!.revision).toBe(revision);
+    expect(view.factory!.simulation.tick_rate).toBe(1);
+    expect(() => game.setTickRate(0)).toThrow("整数");
+    expect(view.tickRate).toBe(4);
+    await game.act({ type: "scavenge" });
+    expect(saved).not.toHaveProperty("tickRate");
+    expect(saved!.save).not.toHaveProperty("tickRate");
+    expect(saved!.save!.factory.simulation!.tick_rate).toBe(1);
+    window.dispatchEvent(new Event("offline"));
+    expect(FakeWorker.instances[0].enabled).toBe(false);
+    expect(() => game.setTickRate(2)).toThrow("在线运行");
+    await game.setDeveloperToolsVisible(false);
+    expect(view.tickRate).toBe(1);
+    expect(FakeWorker.instances[0].tickRate).toBe(1);
+    await game.close();
+    game = new GameRuntime(
+      user,
+      (next) => {
+        view = next;
+      },
+      expired,
+    );
+    await game.start();
+    expect(view.tickRate).toBe(1);
+  });
   it("defaults developer visibility off, serializes toggles with world saves and restores the local-only preference", async () => {
     await game.start();
     expect(view.developerToolsVisible).toBe(false);

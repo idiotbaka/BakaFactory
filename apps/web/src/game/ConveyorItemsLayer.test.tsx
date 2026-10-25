@@ -96,11 +96,12 @@ function factory(tick: number): FactoryDetail {
     },
   };
 }
-function view(detail: FactoryDetail) {
+function view(detail: FactoryDetail, tickRate = 1) {
   return (
     <SimulationAnimationProvider
       factoryID={detail.id}
       simulation={detail.simulation}
+      tickRate={tickRate}
     >
       <ConveyorItemsLayer
         factory={detail}
@@ -110,37 +111,40 @@ function view(detail: FactoryDetail) {
   );
 }
 
-it("keeps one DOM item from machine output through the belt into the input, then absorbs it", () => {
-  const { container, rerender } = render(view(factory(0)));
-  now = 1000;
-  rerender(view(factory(1)));
-  const icon = container.querySelector<HTMLSpanElement>(".conveyor-payload")!;
-  const sprite = icon.querySelector("img")!;
-  expect(sprite).not.toBeNull();
-  expect(icon.querySelector(".item-sprite")).toHaveAttribute(
-    "data-item-id",
-    "iron_ore",
-  );
-  expect(icon.style.transform).toContain("267px,315px");
-  frame(1500);
-  expect(icon.style.transform).toContain("297px,315px");
-  const halfway = icon.style.transform;
-  rerender(view(factory(1)));
-  expect(icon.style.transform).toBe(halfway);
-  frame(2000);
-  expect(icon.style.transform).toContain("327px,315px");
-  const received = factory(2);
-  rerender(view(received));
-  expect(container.querySelectorAll(".conveyor-payload")).toHaveLength(1);
-  expect(container.querySelector(".conveyor-payload")).toBe(icon);
-  expect(icon.querySelector("img")).toBe(sprite);
-  expect(icon.style.transform).toContain("327px,315px");
-  frame(2875);
-  expect(Number(icon.style.opacity)).toBeCloseTo(0.5);
-  frame(3000);
-  expect(container.querySelector(".conveyor-payload")).toBeNull();
-  // Visual completion never changes the server-confirmed inventory.
-  expect(received.simulation?.buildings.furnace.input).toEqual([
-    { item: "iron_ore", count: 1 },
-  ]);
-});
+it.each([1, 4])(
+  "keeps one continuous item and confirmed inventory at %s TPS",
+  (tickRate) => {
+    const { container, rerender } = render(view(factory(0), tickRate));
+    now = 1000 / tickRate;
+    rerender(view(factory(1), tickRate));
+    const icon = container.querySelector<HTMLSpanElement>(".conveyor-payload")!;
+    const sprite = icon.querySelector("img")!;
+    expect(sprite).not.toBeNull();
+    expect(icon.querySelector(".item-sprite")).toHaveAttribute(
+      "data-item-id",
+      "iron_ore",
+    );
+    expect(icon.style.transform).toContain("267px,315px");
+    frame(1500 / tickRate);
+    expect(icon.style.transform).toContain("297px,315px");
+    const halfway = icon.style.transform;
+    rerender(view(factory(1), tickRate));
+    expect(icon.style.transform).toBe(halfway);
+    frame(2000 / tickRate);
+    expect(icon.style.transform).toContain("327px,315px");
+    const received = factory(2);
+    rerender(view(received, tickRate));
+    expect(container.querySelectorAll(".conveyor-payload")).toHaveLength(1);
+    expect(container.querySelector(".conveyor-payload")).toBe(icon);
+    expect(icon.querySelector("img")).toBe(sprite);
+    expect(icon.style.transform).toContain("327px,315px");
+    frame(2875 / tickRate);
+    expect(Number(icon.style.opacity)).toBeCloseTo(0.5);
+    frame(3000 / tickRate);
+    expect(container.querySelector(".conveyor-payload")).toBeNull();
+    // Visual completion never changes the server-confirmed inventory.
+    expect(received.simulation?.buildings.furnace.input).toEqual([
+      { item: "iron_ore", count: 1 },
+    ]);
+  },
+);

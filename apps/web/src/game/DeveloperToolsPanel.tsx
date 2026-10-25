@@ -5,6 +5,7 @@ import { orderRewardClaimed } from "./local/progression";
 import DiagnosticsPanel from "./DiagnosticsPanel";
 import type { LocalFactory } from "./local/state";
 import type { Observation } from "./local/observations";
+import { DEFAULT_TPS, MAX_TPS, validateTickRate } from "./local/tickRate";
 
 export default function DeveloperToolsPanel({
   factory,
@@ -12,12 +13,16 @@ export default function DeveloperToolsPanel({
   act,
   observation,
   onLocate,
+  tickRate = DEFAULT_TPS,
+  onTickRateChange,
 }: {
   factory: FactoryDetail;
   disabled: boolean;
   act?: (action: WorldAction) => void;
   observation?: Observation;
   onLocate?: (id: string) => void;
+  tickRate?: number;
+  onTickRateChange?: (value: number) => void;
 }) {
   const [tab, setTab] = useState<"features" | "diagnostics">("features");
   return (
@@ -37,7 +42,15 @@ export default function DeveloperToolsPanel({
         </button>
       </nav>
       {tab === "features" ? (
-        <FeatureTests factory={factory} disabled={disabled} act={act} />
+        <>
+          <TickRateControl
+            key={tickRate}
+            tickRate={tickRate}
+            disabled={disabled || !onTickRateChange}
+            onChange={onTickRateChange}
+          />
+          <FeatureTests factory={factory} disabled={disabled} act={act} />
+        </>
       ) : (
         <DiagnosticsPanel
           factory={factory as LocalFactory}
@@ -45,6 +58,76 @@ export default function DeveloperToolsPanel({
           onLocate={onLocate}
         />
       )}
+    </section>
+  );
+}
+
+function TickRateControl({
+  tickRate,
+  disabled,
+  onChange,
+}: {
+  tickRate: number;
+  disabled: boolean;
+  onChange?: (value: number) => void;
+}) {
+  const [input, setInput] = useState(String(tickRate));
+  const [error, setError] = useState("");
+  function apply(value: number) {
+    if (disabled || !onChange) return;
+    try {
+      onChange(validateTickRate(value));
+      setInput(String(value));
+      setError("");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "调整 TPS 失败");
+    }
+  }
+  return (
+    <section className="developer-tools" aria-label="模拟倍速">
+      <h3>模拟倍速</h3>
+      <p>当前 {tickRate} TPS · 默认 1 TPS</p>
+      <form
+        className="developer-tick-rate"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          apply(Number(input));
+        }}
+      >
+        <label>
+          每秒 tick 数（TPS）
+          <input
+            aria-label="模拟 TPS"
+            type="number"
+            min={DEFAULT_TPS}
+            max={MAX_TPS}
+            step="1"
+            value={input}
+            disabled={disabled}
+            onChange={(event) => setInput(event.target.value)}
+          />
+        </label>
+        <button type="submit" disabled={disabled}>
+          应用 TPS
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => apply(DEFAULT_TPS)}
+        >
+          恢复 1 TPS
+        </button>
+      </form>
+      <p>
+        支持 1～{MAX_TPS} 的整数。每 tick
+        仍推进一秒游戏时间；高倍速的实际速度取决于设备负载。
+      </p>
+      <p>
+        仅当前页面有效，刷新、换账号或关闭开发者工具后恢复 1
+        TPS；后台、断网和暂停时不运行，也不补算时间。
+      </p>
+      {error && <p role="alert">{error}</p>}
     </section>
   );
 }

@@ -13,6 +13,42 @@ const user = {
   last_login_at: "now",
 };
 describe("developer tools", () => {
+  it("applies validated TPS only through the session control and offers a reset", () => {
+    const factory = createWorld(user, "模拟倍速"),
+      onTickRateChange = vi.fn();
+    const props = {
+      factory,
+      catalog,
+      disabled: false,
+      act: vi.fn(),
+      world: vi.fn(),
+      view: "developer" as const,
+      developerToolsVisible: true,
+      onViewChange: vi.fn(),
+      onTickRateChange,
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />);
+    const input = screen.getByLabelText("模拟 TPS");
+    expect(input).toHaveValue(1);
+    fireEvent.change(input, { target: { value: "4" } });
+    fireEvent.click(screen.getByRole("button", { name: "应用 TPS" }));
+    expect(onTickRateChange).toHaveBeenCalledWith(4);
+    expect(props.world).not.toHaveBeenCalled();
+    rerender(<IndustryViews {...props} tickRate={4} />);
+    expect(screen.getByLabelText("模拟 TPS")).toHaveValue(4);
+    fireEvent.change(screen.getByLabelText("模拟 TPS"), {
+      target: { value: "1.5" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "应用 TPS" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("整数");
+    expect(onTickRateChange).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "恢复 1 TPS" }));
+    expect(onTickRateChange).toHaveBeenLastCalledWith(1);
+    rerender(<IndustryViews {...props} tickRate={4} disabled />);
+    expect(screen.getByRole("button", { name: "应用 TPS" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "恢复 1 TPS" })).toBeDisabled();
+  });
   it("hides the entry and developer content by default, including a stale selected view", () => {
     const factory = createWorld(user, "默认隐藏"),
       props = {

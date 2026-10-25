@@ -26,6 +26,19 @@ function frame(at: number) {
   for (const callback of pending) callback(at);
 }
 describe("shared visual clock", () => {
+  it("samples the configured tick interval and keeps repeated accelerated ticks from rewinding", () => {
+    const clock = new AnimationClock();
+    clock.sync("factory", 10, 250);
+    now = 100;
+    clock.sync("factory", 10, 250);
+    expect(clock.frame()).toMatchObject({ phase: 0.4, stepMs: 250 });
+    now = 400;
+    expect(clock.frame().phase).toBe(1);
+    clock.sync("factory", 10, 1000);
+    now = 900;
+    expect(clock.frame().phase).toBe(0.5);
+    clock.dispose();
+  });
   it("keeps the same tick clock across repeated polls and edits", () => {
     const clock = new AnimationClock();
     clock.sync("factory", 10);

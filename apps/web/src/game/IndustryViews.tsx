@@ -44,6 +44,8 @@ export default function IndustryViews({
   world,
   view: requestedView,
   developerToolsVisible = false,
+  tickRate = 1,
+  onTickRateChange,
   onViewChange,
   selectedRobotID,
   onSelectRobot,
@@ -61,6 +63,8 @@ export default function IndustryViews({
   world?: (action: WorldAction) => void;
   view: IndustryView;
   developerToolsVisible?: boolean;
+  tickRate?: number;
+  onTickRateChange?: (value: number) => void;
   onViewChange: (view: IndustryView) => void;
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
@@ -230,6 +234,8 @@ export default function IndustryViews({
                 act={world}
                 observation={observation}
                 onLocate={onLocateBuilding}
+                tickRate={tickRate}
+                onTickRateChange={onTickRateChange}
               />
             ) : view === "quests" ? (
               <QuestPanel

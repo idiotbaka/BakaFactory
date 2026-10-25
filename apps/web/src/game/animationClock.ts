@@ -31,15 +31,16 @@ export class AnimationClock {
       stepMs: this.stepMs,
     };
   }
-  sync(factoryID: string | undefined, tick: number | undefined) {
+  sync(factoryID: string | undefined, tick: number | undefined, stepMs = 1000) {
     if (!factoryID || tick === undefined) {
       this.key = null;
       this.pause();
       return;
     }
-    const key = `${factoryID}:${tick}`;
+    const key = `${factoryID}:${tick}:${stepMs}`;
     if (key !== this.key) {
       this.key = key;
+      this.stepMs = stepMs;
       this.startedAt = performance.now();
     }
     // An edit or repeated read of the same tick must not rewind animations.

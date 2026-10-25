@@ -401,6 +401,22 @@
   margin: 0;
   color: var(--muted);
 }
+
+.developer-tick-rate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+.developer-tick-rate label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.developer-tick-rate input {
+  width: 120px;
+  max-width: 100%;
+}
 .developer-switch {
   display: flex;
   align-items: center;

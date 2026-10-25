@@ -381,6 +381,7 @@ export default function FactoryWorkspace({
       simulation={factory?.simulation}
       powerSaving={powerSaving}
       paused={game.paused}
+      tickRate={game.tickRate}
     >
       <section
         className={`factory-workspace ${immersive ? "is-immersive" : ""} ${powerSaving ? "is-eco" : ""}`}
@@ -411,7 +412,7 @@ export default function FactoryWorkspace({
               {factory?.simulation && (
                 <span className="simulation-clock">
                   Tick {factory.simulation.tick.toLocaleString()} ·{" "}
-                  {factory.simulation.tick_rate} TPS
+                  {game.tickRate ?? 1} TPS
                 </span>
               )}
             </div>
@@ -733,6 +734,8 @@ export default function FactoryWorkspace({
                 }}
                 view={industryView}
                 developerToolsVisible={game.developerToolsVisible === true}
+                tickRate={game.tickRate}
+                onTickRateChange={game.runtime?.setTickRate}
                 onViewChange={setIndustryView}
                 selectedRobotID={selectedRobotID}
                 onSelectRobot={selectRobot}

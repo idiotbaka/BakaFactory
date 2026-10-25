@@ -15,7 +15,7 @@ import {
   transferPath,
   type VisualItem,
 } from "./logisticsVisuals";
-import { useSimulationFrame } from "./SimulationAnimation";
+import { useSimulationFrame, useSimulationStepMs } from "./SimulationAnimation";
 import { entityColor } from "./entityTheme";
 import { beltTicks } from "./local/catalog";
 import ItemSprite from "./ItemSprite";
@@ -42,6 +42,7 @@ function ItemVisual({
 }) {
   const element = useRef<HTMLSpanElement>(null);
   const track = useRef<Track | null>(null);
+  const stepMs = useSimulationStepMs();
   const item = catalog.items.find((d) => d.id === visual.item);
   const sprite = itemSpriteURL(visual.item);
   const { belt, transfer } = visual;
@@ -61,7 +62,7 @@ function ItemVisual({
   const goal = belt
     ? position(belt.payload.progress + (belt.moving ? 1 : 0))
     : ends.goal;
-  const segment = `${visual.epoch}:${visual.tick}:${building.id}:${building.x}:${building.y}:${building.rotation}:${belt?.payload.progress}:${belt?.moving}:${transfer?.id}`;
+  const segment = `${visual.epoch}:${visual.tick}:${stepMs}:${building.id}:${building.x}:${building.y}:${building.rotation}:${belt?.payload.progress}:${belt?.moving}:${transfer?.id}`;
   useLayoutEffect(() => {
     const now = performance.now();
     const previous = track.current;
@@ -105,12 +106,12 @@ function ItemVisual({
       points,
       startedAt: now,
       duration: transfer
-        ? 1000
+        ? stepMs
         : Math.hypot(destination.x - start.x, destination.y - start.y) < 0.01
           ? 0
           : belt!.payload.progress >= durationTicks
-            ? 120
-            : 1000,
+            ? Math.min(120, stepMs)
+            : stepMs,
       building,
       epoch: visual.epoch,
       segment,
