@@ -24,6 +24,61 @@ const deleteBuilding = vi.fn(),
   placeBuilding = vi.fn(),
   updateBuilding = vi.fn();
 const catalog = definitions as unknown as Catalog;
+it("marks an underground entrance without editing and commits only a valid second click", async () => {
+  const placeUnderground = vi.fn().mockResolvedValue(original),
+    onError = vi.fn();
+  const props = {
+    commands: {
+      deleteBuilding,
+      getFactory,
+      placeBuilding,
+      updateBuilding,
+      placeUnderground,
+    },
+    factory: original,
+    catalog,
+    selectedID: null,
+    placementType: "underground_belt",
+    onExitPlacement: vi.fn(),
+    onSelect: vi.fn(),
+    onChange: vi.fn(),
+    onError,
+  };
+  const { rerender } = render(<FactoryEditor {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "空格 (-4,3)" }));
+  expect(placeUnderground).not.toHaveBeenCalled();
+  expect(placeBuilding).not.toHaveBeenCalled();
+  expect(
+    screen.getByLabelText("入口预览 (-4,3)，尚未安装"),
+  ).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "空格 (5,3)" }));
+  expect(placeUnderground).not.toHaveBeenCalled();
+  expect(onError).toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "空格 (3,4)" }));
+  expect(placeUnderground).not.toHaveBeenCalled();
+  await act(async () =>
+    fireEvent.click(screen.getByRole("button", { name: "空格 (4,3)" })),
+  );
+  expect(placeUnderground).toHaveBeenCalledWith(
+    original.id,
+    { x: -4, y: 3, rotation: 0 },
+    { x: 4, y: 3, rotation: 0 },
+  );
+  expect(
+    screen.queryByLabelText("入口预览 (-4,3)，尚未安装"),
+  ).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "空格 (-4,3)" }));
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(
+    screen.queryByLabelText("入口预览 (-4,3)，尚未安装"),
+  ).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "空格 (-4,3)" }));
+  rerender(<FactoryEditor {...props} placementType="hand_belt" />);
+  rerender(<FactoryEditor {...props} />);
+  expect(
+    screen.queryByLabelText("入口预览 (-4,3)，尚未安装"),
+  ).not.toBeInTheDocument();
+});
 const original: FactoryDetail = {
   id: "editor-factory",
   owner_id: "owner",

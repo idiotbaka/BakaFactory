@@ -27,7 +27,12 @@ export default function ConstructionForm({
     [recipeID, setRecipeID] = useState("");
   const stage = factory.simulation?.industry?.stage ?? 1;
   const options = catalog.buildings.filter(
-    (d) => d.item && !d.fixed && !d.legacy && (d.tier ?? 1) <= stage,
+    (d) =>
+      d.item &&
+      !d.fixed &&
+      !d.legacy &&
+      d.id !== "underground_belt" &&
+      (d.tier ?? 1) <= stage,
   );
   const d = options.find((d) => d.id === type) ?? options[0];
   const placementSize = d && supportsLargeSize(d) ? size : 1;

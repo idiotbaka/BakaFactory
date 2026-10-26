@@ -504,6 +504,18 @@
       "legacy": true
     },
     {
+      "id": "d0001",
+      "name": "地下传送带出入口",
+      "code": "D0001",
+      "icon": "conveyor",
+      "color": "#a5d4b2",
+      "description": "成对地下物流端口，一套安装入口和出口；地下路线可交叉并穿过建筑。",
+      "kind": "component",
+      "tier": 2,
+      "source_recipes": ["web_underground_belt"],
+      "used_by": []
+    },
+    {
       "id": "i0001",
       "name": "垃圾包",
       "code": "I0001",
@@ -1129,7 +1141,15 @@
       "kind": "solid_or_module",
       "tier": 1,
       "source_recipes": ["r1029"],
-      "used_by": ["r1033", "r1035", "r1036", "r1037", "r2006", "r2012"]
+      "used_by": [
+        "r1033",
+        "r1035",
+        "r1036",
+        "r1037",
+        "r2006",
+        "r2012",
+        "web_underground_belt"
+      ]
     },
     {
       "id": "i0050",
@@ -1378,7 +1398,8 @@
         "r2034",
         "r2040",
         "r2045",
-        "r3019"
+        "r3019",
+        "web_underground_belt"
       ]
     },
     {
@@ -6878,6 +6899,25 @@
       "power_kw": 1
     },
     {
+      "id": "underground_belt",
+      "name": "地下传送带出入口",
+      "code": "UG",
+      "icon": "conveyor",
+      "color": "#a5d4b2",
+      "description": "一套安装一对同向端口；出口位于入口正前方 1～8 格。无需供能，单批最多 6 件，入地即抵达出口；删除任意端回收整对。",
+      "category": "logistics",
+      "fixed": false,
+      "tier": 2,
+      "item": "d0001",
+      "role": "belt",
+      "input_slots": 12,
+      "output_slots": 12,
+      "stack_limit": 100,
+      "input_whitelist": [],
+      "belt_ticks": 1,
+      "batch_size": 6
+    },
+    {
       "id": "pipe",
       "name": "流体管道",
       "code": "PIPE",
@@ -11632,6 +11672,18 @@
       "description": "网页适配：手工制造首批电网导线，通电后改用原案高效配方。",
       "power_kw": 0,
       "gate": "i0174",
+      "conditions": []
+    },
+    {
+      "id": "web_underground_belt",
+      "name": "地下传送带出入口",
+      "building_type": "m08",
+      "tier": 2,
+      "duration_ms": 12000,
+      "inputs": { "i0049": 2, "i0068": 2 },
+      "outputs": { "d0001": 1 },
+      "description": "制造一套成对地下端口，入口正前方 1～8 格放置出口，无额外地下行程。",
+      "power_kw": 0,
       "conditions": []
     }
   ]

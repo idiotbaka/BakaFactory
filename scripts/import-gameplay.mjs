@@ -17,6 +17,7 @@ const d = JSON.parse(await readFile(source, "utf8"));
 const previous = JSON.parse(await readFile(target, "utf8"));
 const names = new Map(d.items.map((i) => [i.name, i.id.toLowerCase()]));
 names.set("流水线机械手", names.get("机械启动套件"));
+names.set("地下传送带出入口", "d0001");
 const displayName = (value) => value.replaceAll("机械启动套件", "流水线机械手");
 const item = (name) => {
   const id = names.get(name);
@@ -101,6 +102,19 @@ recipes.push({
   description: "网页适配：手工制造首批电网导线，通电后改用原案高效配方。",
   power_kw: 0,
   gate: item(d.stages[2].milestone_item.split(":")[0]),
+  conditions: [],
+});
+recipes.push({
+  id: "web_underground_belt",
+  name: "地下传送带出入口",
+  building_type: "m08",
+  tier: 2,
+  duration_ms: 12000,
+  inputs: convert({ 简易齿轮: 2, 标准钢板: 2 }),
+  outputs: convert({ 地下传送带出入口: 1 }),
+  description:
+    "制造一套成对地下端口，入口正前方 1～8 格放置出口，无额外地下行程。",
+  power_kw: 0,
   conditions: [],
 });
 const energy = (mode) =>
@@ -247,6 +261,20 @@ const utilities = [
     energy: "shaft",
     power_kw: 1,
   }),
+  utility(
+    "underground_belt",
+    "地下传送带出入口",
+    "地下传送带出入口",
+    2,
+    "belt",
+    {
+      code: "UG",
+      belt_ticks: 1,
+      batch_size: 6,
+      description:
+        "一套安装一对同向端口；出口位于入口正前方 1～8 格。无需供能，单批最多 6 件，入地即抵达出口；删除任意端回收整对。",
+    },
+  ),
   utility("pipe", "流体管道", "流体管道", 2, "pipe", {
     icon: "pipe",
     fluid_capacity: 10,
@@ -529,6 +557,19 @@ const base = {
   })),
   items: [
     ...legacyItems,
+    {
+      id: "d0001",
+      name: "地下传送带出入口",
+      code: "D0001",
+      icon: "conveyor",
+      color: colors[1],
+      description:
+        "成对地下物流端口，一套安装入口和出口；地下路线可交叉并穿过建筑。",
+      kind: "component",
+      tier: 2,
+      source_recipes: ["web_underground_belt"],
+      used_by: [],
+    },
     ...d.items.map((i) => ({
       id: i.id.toLowerCase(),
       name: displayName(i.name),

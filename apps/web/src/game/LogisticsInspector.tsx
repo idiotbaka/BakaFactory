@@ -66,6 +66,23 @@ export default function LogisticsInspector({
   return (
     <section className="logistics-settings" aria-label="物流设置">
       <h4>物流设置</h4>
+      {definition.id === "underground_belt" && (
+        <p>
+          {instance.configuration.underground_role === "entry"
+            ? "入口：只从箭头后方收货，立即转交配对出口。"
+            : "出口：向箭头前方送货，不从地面收货。"}
+          {(() => {
+            const peer = factory.buildings.find(
+              (b) => b.id === instance.configuration.underground_peer,
+            );
+            return peer
+              ? ` 配对端口 (${peer.x}, ${peer.y})，距离 ${Math.abs(peer.x - instance.x) + Math.abs(peer.y - instance.y)} 格。`
+              : "";
+          })()}
+          无需供能，单批最多 6 件；只能沿原直线移动，距离 1～8
+          格。删除任意端会回收整对及载荷。
+        </p>
+      )}
       <button
         disabled={disabled}
         aria-pressed={enabled(instance)}

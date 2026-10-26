@@ -462,6 +462,11 @@
       "renderer": "image",
       "tier": 2,
       "color": "#a5d4b2"
+    },
+    "underground_belt": {
+      "renderer": "belt",
+      "tier": 2,
+      "color": "#a5d4b2"
     }
   }
 }

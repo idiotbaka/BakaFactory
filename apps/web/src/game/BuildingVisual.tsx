@@ -8,14 +8,17 @@ import {
 import BuildingSprite from "./BuildingSprite";
 import DefinitionIcon from "./DefinitionIcon";
 import RouteVisual from "./RouteVisual";
+import UndergroundVisual from "./UndergroundVisual";
 
 export type BuildingVisualProps = ConnectionContext & {
   definition: BuildingDefinition;
   machine?: MachineState;
+  undergroundExit?: boolean;
 };
 function BuildingVisual({
   definition,
   machine,
+  undergroundExit,
   ...context
 }: BuildingVisualProps) {
   const art = buildingArtwork(definition.id);
@@ -47,7 +50,16 @@ function BuildingVisual({
       }
       aria-hidden="true"
     >
-      {kind && connection ? (
+      {definition.id === "underground_belt" ? (
+        <UndergroundVisual
+          rotation={context.rotation}
+          exit={
+            undergroundExit ??
+            context.buildings.get(`${context.x},${context.y}`)?.configuration
+              .underground_role === "exit"
+          }
+        />
+      ) : kind && connection ? (
         <RouteVisual
           id={definition.id}
           kind={kind}

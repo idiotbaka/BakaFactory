@@ -30,6 +30,16 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 	}
 	for key, raw := range config {
 		switch key {
+		case "underground_role":
+			var value string
+			if kind != undergroundType || json.Unmarshal(raw, &value) != nil || (value != "entry" && value != "exit") {
+				return false
+			}
+		case "underground_peer":
+			var value string
+			if kind != undergroundType || json.Unmarshal(raw, &value) != nil || value == "" || len(value) > 128 {
+				return false
+			}
 		case "output_items":
 			var values []string
 			if kind != "warehouse_pickup" || json.Unmarshal(raw, &values) != nil || len(values) < 1 || len(values) > 2 {

@@ -37,6 +37,11 @@ import {
 } from "./world";
 
 export type EditorCommands = {
+  placeUnderground?: (
+    factory: string,
+    entry: BuildingPlacement,
+    exit: BuildingPlacement,
+  ) => Promise<FactoryDetail>;
   placeBuilding: (
     factory: string,
     type: string,
@@ -767,6 +772,18 @@ export class GameRuntime {
   create = (name: string) =>
     this.command({ kind: "create", user: this.user, name });
   readonly commands: EditorCommands = {
+    placeUnderground: (factoryID, entry, exit) =>
+      this.command({
+        kind: "edit",
+        factoryID,
+        edit: {
+          kind: "place_underground",
+          id: crypto.randomUUID(),
+          exitID: crypto.randomUUID(),
+          entry,
+          exit,
+        },
+      }),
     placeBuilding: (factoryID, type, placement) =>
       this.command({
         kind: "edit",

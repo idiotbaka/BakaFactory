@@ -30,6 +30,15 @@ import { validWorkReceipts } from "./workLedger";
 import { validIncident } from "./incidents";
 import { newMachine } from "./machine";
 import { validatePlacement } from "./placement";
+import {
+  undergroundType,
+  isUnderground,
+  isUndergroundEntry,
+  undergroundPeer,
+  undergroundSpan,
+  undergroundMoveIssue,
+  validUndergroundPairs,
+} from "./underground";
 import { validDiscoveries, restoreDiscoveries } from "./discovery";
 import { validWorkshopCounts, workshopMachineAvailable } from "./workshop";
 import { restoreQuestProgress, syncQuests, validQuestProgress } from "./quests";
@@ -582,6 +591,21 @@ export function validateSave(
   factory.simulation.transfers = [];
   factory.simulation.industry ??= initialIndustry();
   restoreQuestProgress(factory);
+  if (
+    !validUndergroundPairs(factory.buildings) ||
+    factory.buildings.some(
+      (b) =>
+        isUnderground(b) &&
+        (factory.simulation.industry!.stage < 2 ||
+          factory.simulation.buildings[b.id].input.length > 0 ||
+          factory.simulation.buildings[b.id].output.length > 0 ||
+          (isUndergroundEntry(b) && factory.simulation.buildings[b.id].belt)),
+    )
+  )
+    return fail(
+      `${root}.buildings`,
+      "地下端口必须是本厂同向 1～8 格的完整配对，入口不能持有载荷",
+    );
   for (const type of [pickupType, intakeType]) {
     const count = factory.buildings.filter(
       (b) => b.building_type === type,
@@ -700,6 +724,13 @@ export function validateSave(
 
 export type Edit =
   | {
+      kind: "place_underground";
+      id: string;
+      exitID: string;
+      entry: BuildingPlacement;
+      exit: BuildingPlacement;
+    }
+  | {
       kind: "place";
       building_type: string;
       placement: BuildingPlacement;
@@ -716,6 +747,35 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
   if (edit.kind === "industry") {
     applyIndustry(f, edit.action);
     syncQuests(f);
+    f.revision++;
+    return f;
+  }
+  if (edit.kind === "place_underground") {
+    if (
+      !edit.id ||
+      !edit.exitID ||
+      edit.id === edit.exitID ||
+      edit.id.length > 128 ||
+      edit.exitID.length > 128 ||
+      !undergroundSpan(edit.entry, edit.exit)
+    )
+      throw new Error("出口必须在入口正前方 1～8 格");
+    const d = validatePlacement(f, undergroundType, edit.id, edit.entry, true);
+    validatePlacement(f, undergroundType, edit.exitID, edit.exit, true);
+    store(f.simulation.warehouse, { [d.item!]: -1 });
+    for (const [id, peer, role, p] of [
+      [edit.id, edit.exitID, "entry", edit.entry],
+      [edit.exitID, edit.id, "exit", edit.exit],
+    ] as const) {
+      f.buildings.push({
+        id,
+        factory_id: f.id,
+        building_type: undergroundType,
+        ...p,
+        configuration: { underground_role: role, underground_peer: peer },
+      });
+      f.simulation.buildings[id] = newMachine();
+    }
     f.revision++;
     return f;
   }
@@ -777,8 +837,37 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
         !inBounds({ ...edit.placement, size })
       )
         throw new Error("移动须保留尺寸且不得超出边界");
+      const undergroundIssue = undergroundMoveIssue(
+        b,
+        edit.placement,
+        f.buildings,
+      );
+      if (undergroundIssue) throw new Error(undergroundIssue);
       Object.assign(b, edit.placement);
     } else {
+      if (isUnderground(b)) {
+        const peer = undergroundPeer(b, f.buildings);
+        if (!peer) throw new Error("地下端口配对不完整");
+        for (const end of [b, peer]) {
+          const load = f.simulation.buildings[end.id].belt;
+          if (load)
+            store(f.simulation.warehouse, { [load.item]: load.count ?? 1 });
+          delete f.simulation.buildings[end.id];
+        }
+        store(f.simulation.warehouse, {
+          [buildingDefinitions.get(undergroundType)!.item!]: 1,
+        });
+        const removed = new Set([b.id, peer.id]);
+        f.buildings = f.buildings.filter((end) => !removed.has(end.id));
+        f.simulation.transfers = (f.simulation.transfers ?? []).filter(
+          (t) =>
+            !removed.has(t.source.id) &&
+            !removed.has(t.target.id) &&
+            (!t.via || !removed.has(t.via.id)),
+        );
+        f.revision++;
+        return f;
+      }
       const m = f.simulation.buildings[b.id];
       const stacks = [
         ...m.input,

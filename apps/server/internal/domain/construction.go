@@ -46,7 +46,7 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 		definitions[b.ID] = b
 	}
 	b, ok := definitions[v.BuildingType]
-	if !ok || !validFootprintSize(b, v.Size) || !footprintInBounds(v.X, v.Y, v.Size) || b.Item == "" || b.Fixed || b.Legacy || b.Tier > root.Simulation.Industry.Stage {
+	if !ok || b.ID == undergroundType || !validFootprintSize(b, v.Size) || !footprintInBounds(v.X, v.Y, v.Size) || b.Item == "" || b.Fixed || b.Legacy || b.Tier > root.Simulation.Industry.Stage {
 		return false
 	}
 	if v.RecipeID != nil {

@@ -4,6 +4,7 @@ import type { LocalFactory } from "./state";
 import { buildingDefinitions, catalog, recipeDefinitions } from "./catalog";
 import { validatePlacement } from "./placement";
 import { newMachine } from "./machine";
+import { undergroundType } from "./underground";
 import { store } from "./inventory";
 import {
   homeEndpoint,
@@ -74,6 +75,7 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
   if (
     !f ||
     !d?.item ||
+    d.id === undergroundType ||
     !validSize(d, c.size) ||
     !inBounds(c) ||
     d.fixed ||

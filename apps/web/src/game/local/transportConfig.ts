@@ -9,6 +9,7 @@ import {
 } from "./catalog";
 import { validFluidConfig } from "./fluidConfig";
 import { isWarehouseTerminal, pickupType } from "./warehouseIO";
+import { undergroundType } from "./underground";
 
 export const rotations = [0, 90, 180, 270] as const;
 export type Rotation = (typeof rotations)[number];
@@ -56,6 +57,19 @@ export function validTransportConfig(
   b: Pick<BuildingInstance, "configuration" | "building_type">,
 ) {
   const c = b.configuration;
+  if (b.building_type === undergroundType) {
+    if (
+      !["entry", "exit"].includes(c.underground_role as string) ||
+      typeof c.underground_peer !== "string" ||
+      !c.underground_peer.length ||
+      c.underground_peer.length > 128
+    )
+      return false;
+  } else if (
+    c.underground_role !== undefined ||
+    c.underground_peer !== undefined
+  )
+    return false;
   if (b.building_type === pickupType) {
     const values = c.output_items;
     if (

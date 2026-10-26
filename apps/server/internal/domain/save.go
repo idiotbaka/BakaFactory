@@ -169,6 +169,9 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 		}
 	}
 	sim := f.Simulation
+	if !validUndergroundPairs(f) {
+		return bad()
+	}
 	if buses != 1 || sim.TickRate != 1 || sim.Tick > MaxSafeInteger || len(sim.Buildings) != len(ids) || sim.Warehouse == nil || sim.Transfers == nil || len(sim.Transfers) > 3*len(ids) {
 		return bad()
 	}

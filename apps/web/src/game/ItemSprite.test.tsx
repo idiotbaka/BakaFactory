@@ -7,6 +7,24 @@ import { itemSpriteColor, itemSpriteURL } from "./itemSprites";
 import { buildingSpriteURL } from "./buildingArtwork";
 
 afterEach(cleanup);
+it("uses a generated raster for the underground kit but SVG for the logistics tool", () => {
+  const { container, rerender } = render(
+    <DefinitionIcon
+      definition={catalog.items.find((i) => i.id === "d0001")!}
+    />,
+  );
+  expect(container.querySelector("img")).toHaveAttribute(
+    "src",
+    itemSpriteURL("d0001"),
+  );
+  rerender(
+    <DefinitionIcon
+      definition={catalog.buildings.find((b) => b.id === "underground_belt")!}
+    />,
+  );
+  expect(container.querySelector("img")).toBeNull();
+  expect(container.querySelector(".underground-visual")).not.toBeNull();
+});
 const catalog = definitions as unknown as Catalog;
 
 it("renders separate cached rasters for GUI items and front-facing buildings", () => {

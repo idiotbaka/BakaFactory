@@ -5,6 +5,7 @@ import {
   buildingStageColor,
 } from "./buildingArtwork";
 import RouteVisual from "./RouteVisual";
+import UndergroundVisual from "./UndergroundVisual";
 import "./BuildingSprite.css";
 
 function BuildingSprite({
@@ -29,7 +30,9 @@ function BuildingSprite({
         { "--building-stage-color": buildingStageColor(id) } as CSSProperties
       }
     >
-      {art.renderer === "image" ? (
+      {id === "underground_belt" ? (
+        <UndergroundVisual rotation={rotation} />
+      ) : art.renderer === "image" ? (
         <img
           className="building-face"
           src={buildingSpriteURL(id)}

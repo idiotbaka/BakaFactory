@@ -18,6 +18,7 @@ import {
 import { useSimulationFrame, useSimulationStepMs } from "./SimulationAnimation";
 import { entityColor } from "./entityTheme";
 import { beltTicks } from "./local/catalog";
+import { undergroundType } from "./local/underground";
 import ItemSprite from "./ItemSprite";
 import { itemSpriteURL } from "./itemSprites";
 
@@ -78,7 +79,14 @@ function ItemVisual({
         Math.abs(previous.building.y - building.y) >
         2;
     const continuous =
-      previous && previous.epoch === visual.epoch && !relocated && !missed;
+      previous &&
+      previous.epoch === visual.epoch &&
+      !relocated &&
+      !missed &&
+      !(
+        building.building_type === undergroundType &&
+        previous.building.id !== building.id
+      );
     // An event starts at the last drawn source belt position, or at the
     // machine's output edge. The target belt and the flight share one key.
     const start =

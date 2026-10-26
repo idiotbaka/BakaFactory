@@ -1,0 +1,10 @@
+{
+  "width": 128,
+  "height": 128,
+  "logical_size": 32,
+  "opaque_colors": 15,
+  "alpha": [0, 255],
+  "source": "source.png",
+  "prompt": "prompt.txt",
+  "generator": "built-in image_gen"
+}

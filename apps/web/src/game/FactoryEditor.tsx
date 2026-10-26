@@ -28,6 +28,14 @@ import type { DistrictSummary } from "./local/world";
 import BuildingVisual from "./BuildingVisual";
 import MachineNameLayer from "./MachineNameLayer";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
+import UndergroundVisual from "./UndergroundVisual";
+import {
+  undergroundType,
+  isUnderground,
+  undergroundPeer,
+  undergroundSpan,
+  undergroundMoveIssue,
+} from "./local/underground";
 import { entityColor } from "./entityTheme";
 import { MachineProgress } from "./SimulationAnimation";
 import {
@@ -117,6 +125,11 @@ export default function FactoryEditor(props: Props) {
     type: string | null;
     rotation: BuildingPlacement["rotation"];
   }>({ type: null, rotation: 0 });
+  const [undergroundEntry, setUndergroundEntry] = useState<Cell | null>(null);
+  const [undergroundContext, setUndergroundContext] = useState({
+    factoryID: props.factory.id,
+    type: props.placementType,
+  });
   const { factory, catalog, selectedID, placementType } = props;
   const placementDefinition = catalog.buildings.find(
     (d) => d.id === placementType && !d.fixed && d.id !== "bus",
@@ -124,6 +137,18 @@ export default function FactoryEditor(props: Props) {
   const rotation =
     orientation.type === placementType ? orientation.rotation : 0;
   const selected = factory.buildings.find((b) => b.id === selectedID);
+  const selectedPeer =
+    selected && isUnderground(selected)
+      ? undergroundPeer(selected, factory.buildings)
+      : undefined;
+  const placingUnderground = placementType === undergroundType;
+  if (
+    undergroundContext.factoryID !== factory.id ||
+    undergroundContext.type !== placementType
+  ) {
+    setUndergroundContext({ factoryID: factory.id, type: placementType });
+    setUndergroundEntry(null);
+  }
   const isFixed = (b: BuildingInstance) =>
     b.building_type === "bus" ||
     Boolean(catalog.buildings.find((d) => d.id === b.building_type)?.fixed);
@@ -319,7 +344,16 @@ export default function FactoryEditor(props: Props) {
       y: cellHit.y - p.offset.y,
     };
     const f = latest.current.factory,
-      issue = placementIssue(f, p.cell, p.instanceID, p.definition.id, p.size);
+      originalEnd = f.buildings.find((b) => b.id === p.instanceID),
+      issue =
+        placementIssue(f, p.cell, p.instanceID, p.definition.id, p.size) ??
+        (originalEnd && p.cell
+          ? undergroundMoveIssue(
+              originalEnd,
+              { ...p.cell, rotation: p.rotation },
+              f.buildings,
+            )
+          : null);
     cancel();
     if (issue) {
       latest.current.onError(new Error(issue));
@@ -346,6 +380,12 @@ export default function FactoryEditor(props: Props) {
   function rotateDrag() {
     const p = drag.current;
     if (!p) return;
+    if (p.definition.id === undergroundType) {
+      latest.current.onError(
+        new Error("已安装地下端口须保持共同朝向；更换方向请回收整对后重建"),
+      );
+      return;
+    }
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
@@ -367,6 +407,12 @@ export default function FactoryEditor(props: Props) {
     const f = latest.current.factory,
       b = f.buildings.find((b) => b.id === latest.current.selectedID);
     if (!b || isFixed(b) || lock.current) return;
+    if (isUnderground(b)) {
+      latest.current.onError(
+        new Error("已安装地下端口须保持共同朝向；更换方向请回收整对后重建"),
+      );
+      return;
+    }
     void commit(
       () =>
         latest.current.commands.updateBuilding(f.id, b.id, {
@@ -402,6 +448,47 @@ export default function FactoryEditor(props: Props) {
         return;
       }
       const f = latest.current.factory;
+      if (placingUnderground) {
+        if (!undergroundEntry) {
+          setUndergroundEntry(cell);
+          return;
+        }
+        const entry = { ...undergroundEntry, rotation },
+          exit = { ...cell, rotation };
+        if (!undergroundSpan(entry, exit)) {
+          props.onError(
+            new Error("出口必须在入口正前方的直线上，距离为 1～8 格"),
+          );
+          return;
+        }
+        const entranceIssue = placementIssue(
+          f,
+          undergroundEntry,
+          undefined,
+          undergroundType,
+        );
+        if (entranceIssue) {
+          props.onError(new Error(entranceIssue));
+          return;
+        }
+        void commit(
+          async () => {
+            if (!latest.current.commands.placeUnderground)
+              throw new Error("地下端口建造命令不可用");
+            const result = await latest.current.commands.placeUnderground(
+              f.id,
+              entry,
+              exit,
+            );
+            setUndergroundEntry(null);
+            return result;
+          },
+          (snapshot) =>
+            snapshot.buildings.find((b) => b.x === cell.x && b.y === cell.y)
+              ?.id ?? null,
+        );
+        return;
+      }
       void commit(
         () =>
           latest.current.commands.placeBuilding(f.id, placementDefinition.id, {
@@ -589,6 +676,7 @@ export default function FactoryEditor(props: Props) {
       )
         return;
       if (event.key === "Escape") {
+        setUndergroundEntry(null);
         actions.current.cancel();
         setMenu(null);
         setPointer(null);
@@ -699,13 +787,35 @@ export default function FactoryEditor(props: Props) {
   }, [menu]);
 
   const issue = preview
-    ? placementIssue(
+    ? (placementIssue(
         factory,
         preview.cell,
         preview.instanceID,
         preview.definition.id,
         preview.size,
-      )
+      ) ??
+      (preview.cell && preview.instanceID
+        ? (() => {
+            const b = factory.buildings.find(
+              (b) => b.id === preview.instanceID,
+            );
+            return b
+              ? undergroundMoveIssue(
+                  b,
+                  { ...preview.cell!, rotation: preview.rotation },
+                  factory.buildings,
+                )
+              : null;
+          })()
+        : placingUnderground &&
+            undergroundEntry &&
+            preview.cell &&
+            !undergroundSpan(
+              { ...undergroundEntry, rotation },
+              { ...preview.cell, rotation },
+            )
+          ? "出口须位于入口正前方 1～8 格"
+          : null))
     : null;
   const buildings = useMemo(
     () => occupancy(factory.buildings),
@@ -755,7 +865,8 @@ export default function FactoryEditor(props: Props) {
           onClick={placementDefinition ? rotatePlacement : rotateSelected}
           disabled={
             saving ||
-            (!placementDefinition && (!selected || fixed)) ||
+            (!placementDefinition &&
+              (!selected || fixed || isUnderground(selected))) ||
             Boolean(dragPreview)
           }
         >
@@ -773,7 +884,8 @@ export default function FactoryEditor(props: Props) {
             Boolean(placementDefinition)
           }
         >
-          删除建筑 <kbd>Del</kbd>
+          {selected && isUnderground(selected) ? "回收整对" : "删除建筑"}{" "}
+          <kbd>Del</kbd>
         </button>
         <button
           onClick={reloadFactory}
@@ -783,9 +895,15 @@ export default function FactoryEditor(props: Props) {
         </button>
         <span>
           {dragPreview
-            ? "移动建筑 · 右键旋转 · 松开左键确认"
+            ? dragPreview.definition.id === undergroundType
+              ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
+              : "移动建筑 · 右键旋转 · 松开左键确认"
             : placementDefinition
-              ? `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
+              ? placingUnderground
+                ? undergroundEntry
+                  ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
+                  : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
+                : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
               : selected
                 ? fixed
                   ? "工厂仓库固定，无法编辑"
@@ -907,6 +1025,35 @@ export default function FactoryEditor(props: Props) {
             aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定工厂仓库`}
           >
             <ConveyorItemsLayer factory={factory} catalog={catalog} />
+            {((undergroundEntry && placingUnderground) || selectedPeer) && (
+              <svg
+                className="underground-link-layer"
+                viewBox="0 0 630 630"
+                aria-hidden="true"
+              >
+                <line
+                  x1={((undergroundEntry?.x ?? selected!.x) + 10.5) * TILE_SIZE}
+                  y1={(10.5 - (undergroundEntry?.y ?? selected!.y)) * TILE_SIZE}
+                  x2={
+                    ((undergroundEntry
+                      ? (pointer?.cell?.x ?? undergroundEntry.x)
+                      : selectedPeer!.x) +
+                      10.5) *
+                    TILE_SIZE
+                  }
+                  y2={
+                    (10.5 -
+                      (undergroundEntry
+                        ? (pointer?.cell?.y ?? undergroundEntry.y)
+                        : selectedPeer!.y)) *
+                    TILE_SIZE
+                  }
+                  stroke={undergroundEntry && issue ? "#ff6179" : "#a5d4b2"}
+                  strokeWidth="2"
+                  strokeDasharray="4 4"
+                />
+              </svg>
+            )}
             {props.robotRoute?.factory_id === factory.id &&
               props.robotRoute.points.length > 1 && (
                 <svg
@@ -946,7 +1093,10 @@ export default function FactoryEditor(props: Props) {
                       { x, y },
                     ),
                   anchor = instance?.x === x && instance?.y === y,
-                  highlight = anchor && instance?.id === selectedID;
+                  highlight =
+                    anchor &&
+                    (instance?.id === selectedID ||
+                      instance?.id === selectedPeer?.id);
                 const runtime =
                   instance && factory.simulation?.buildings[instance.id];
                 return (
@@ -1103,7 +1253,26 @@ export default function FactoryEditor(props: Props) {
                             rotation={preview.rotation}
                             buildings={buildings}
                             instanceID={preview.instanceID}
+                            undergroundExit={
+                              preview.definition.id === undergroundType
+                                ? preview.instanceID
+                                  ? factory.buildings.find(
+                                      (b) => b.id === preview.instanceID,
+                                    )?.configuration.underground_role === "exit"
+                                  : !!undergroundEntry
+                                : undefined
+                            }
                           />
+                        </span>
+                      )}
+                    {placingUnderground &&
+                      undergroundEntry?.x === x &&
+                      undergroundEntry.y === y && (
+                        <span
+                          className="underground-entry-preview"
+                          aria-label={`入口预览 (${x},${y})，尚未安装`}
+                        >
+                          <UndergroundVisual rotation={rotation} />
                         </span>
                       )}
                   </div>
@@ -1209,7 +1378,9 @@ export default function FactoryEditor(props: Props) {
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7" />
               </svg>
-              <span>删除</span>
+              <span>
+                {isUnderground(menuBuilding) ? "回收整对出入口" : "删除"}
+              </span>
             </button>
             {isFixed(menuBuilding) && <small>工厂仓库固定</small>}
             {isTerminal(menuBuilding) && (

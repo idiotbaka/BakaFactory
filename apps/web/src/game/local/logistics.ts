@@ -33,6 +33,7 @@ import {
   side,
 } from "./transportConfig";
 import { fuelValues } from "./fuel";
+import { isUnderground, isUndergroundEntry } from "./underground";
 import {
   pickupType,
   intakeType,
@@ -124,6 +125,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
   const s = f.simulation;
   s.transfers ??= [];
   const positions = occupancy(ordered);
+  const nodes = new Map(ordered.map((b) => [b.id, b]));
   const adjacent = (b: BuildingInstance, r: number, offset = 1) => {
     const [dx, dy] = direction(r);
     return positions.get(`${b.x + dx * offset},${b.y + dy * offset}`);
@@ -139,6 +141,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
   ) => {
     if (!usable(b)) return [];
     const m = s.buildings[b.id];
+    if (isUndergroundEntry(b)) return [];
     if (b.building_type === pickupType) {
       if (side(b, anchor) !== b.rotation) return [];
       const items = terminalItems(b),
@@ -260,6 +263,34 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       }
     }
   }
+  // A tunnel is a routing edge, not an extra actor or an intermediate stock.
+  // Reserve the real exit buffer in the same transaction as the surface source.
+  const tunnels = new Set<Candidate>();
+  candidates = candidates.flatMap((c) => {
+    if (!isUnderground(c.target)) return [c];
+    if (!isUndergroundEntry(c.target)) return [];
+    const entry = c.target,
+      exit = nodes.get(entry.configuration.underground_peer as string);
+    const anchor = c.via ?? c.source,
+      [dx, dy] = direction(entry.rotation);
+    if (
+      !exit ||
+      !usable(entry) ||
+      !usable(exit) ||
+      anchor.x !== entry.x - dx ||
+      anchor.y !== entry.y - dy
+    )
+      return [];
+    const filter = itemFilter(entry);
+    const route = {
+      ...c,
+      target: exit,
+      items: c.items.filter((id) => !filter || id === filter),
+    };
+    if (!route.items.length) return [];
+    tunnels.add(route);
+    return [route];
+  });
   if (candidates.length) {
     const offset = s.tick % candidates.length;
     candidates = [...candidates.slice(offset), ...candidates.slice(0, offset)];
@@ -504,11 +535,12 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     const t = chosen[i],
       m = s.buildings[t.target.id];
     if (
-      t.via ||
-      t.source.building_type === "bus" ||
-      t.target.building_type === "bus" ||
-      isWarehouseTerminal(t.source.building_type) ||
-      isWarehouseTerminal(t.target.building_type)
+      !tunnels.has(t.candidate) &&
+      (t.via ||
+        t.source.building_type === "bus" ||
+        t.target.building_type === "bus" ||
+        isWarehouseTerminal(t.source.building_type) ||
+        isWarehouseTerminal(t.target.building_type))
     ) {
       const event: ItemTransfer = {
         id: `transfer:${s.tick}:${i}`,

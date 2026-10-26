@@ -4,11 +4,13 @@ import type { LocalFactory } from "./state";
 import { buildingDefinitions } from "./catalog";
 import { rotations } from "./transportConfig";
 import { isWarehouseTerminal } from "./warehouseIO";
+import { undergroundType } from "./underground";
 export function validatePlacement(
   f: LocalFactory,
   type: string,
   id: string,
   p: BuildingPlacement,
+  paired = false,
 ) {
   const d = buildingDefinitions.get(type),
     stage = f.simulation.industry?.stage ?? 1;
@@ -23,6 +25,7 @@ export function validatePlacement(
     !d ||
     d.fixed ||
     isWarehouseTerminal(type) ||
+    (type === undergroundType && !paired) ||
     f.buildings.some((b) => b.id === id)
   )
     throw new Error("无法建造该模组");

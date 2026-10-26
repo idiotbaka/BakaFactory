@@ -206,17 +206,25 @@ export function editWorld(
               : edit.placement.size,
         }
       : undefined;
-  if (shape && plannedBuildings(current, id).some((b) => overlaps(b, shape)))
-    throw new Error("该格已预留施工蓝图，请先取消施工");
-  if (
-    shape &&
-    current.robots?.some(
-      (r) =>
-        (!r.transit && r.factory_id === id && containsCell(shape, r)) ||
-        (r.transit?.to_factory_id === id && containsCell(shape, r.transit)),
+  const shapes =
+    edit.kind === "place_underground"
+      ? [edit.entry, edit.exit]
+      : shape
+        ? [shape]
+        : [];
+  for (const endpoint of shapes) {
+    if (plannedBuildings(current, id).some((b) => overlaps(b, endpoint)))
+      throw new Error("该格已预留施工蓝图，请先取消施工");
+    if (
+      current.robots?.some(
+        (r) =>
+          (!r.transit && r.factory_id === id && containsCell(endpoint, r)) ||
+          (r.transit?.to_factory_id === id &&
+            containsCell(endpoint, r.transit)),
+      )
     )
-  )
-    throw new Error("该格有机器人停靠，请先召回或移走机器人");
+      throw new Error("该格有机器人停靠，请先召回或移走机器人");
+  }
   if (
     (edit.kind === "delete" || edit.kind === "move") &&
     current.robots?.some(
@@ -228,7 +236,9 @@ export function editWorld(
     if ((next.robots ?? []).some((r) => !constructionValid(next, r)))
       throw new Error("该编辑与在建蓝图的位置、数量或解锁限制冲突");
     if (
-      (edit.kind === "place" || edit.kind === "move") &&
+      (edit.kind === "place" ||
+        edit.kind === "place_underground" ||
+        edit.kind === "move") &&
       !routeEditsSafe(current, next)
     )
       throw new Error("该建造会堵住机器人返站通路或超出其剩余能量范围");
