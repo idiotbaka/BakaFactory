@@ -2370,49 +2370,284 @@
     letter-spacing: 1px;
   }
 }
-.world-panel,
-.world-districts {
+.world-panel {
   display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.world-panel button,
+.world-panel input,
+.world-action-dialog button,
+.world-action-dialog input {
+  border-radius: 0;
+}
+.world-expansion {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--cyan);
+  border-radius: 0;
+  background: #101320;
+  min-width: 0;
+}
+.world-expansion-heading,
+.world-list-heading,
+.world-district-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
   min-width: 0;
 }
-.world-panel label {
+.world-panel h4 {
+  margin: 0;
+  font-size: 14px;
+}
+.world-capacity {
+  color: var(--cyan);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.world-expansion form {
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+.world-expansion input,
+.world-action-dialog input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #090d18;
+  color: var(--text);
+  font-size: 12px;
+}
+.world-expansion button {
+  border-color: #46eff25c;
+  color: var(--cyan);
+}
+.world-expansion-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.world-expansion-footer .is-short,
+.world-dialog-cost .is-short {
+  color: var(--danger);
+}
+.world-list-heading > span {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
 }
 .world-districts {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.world-districts button {
   display: grid;
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+  align-items: start;
+}
+.world-district-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #101320;
+}
+.world-district-card.is-active {
+  border-color: var(--cyan);
+  background: #46eff20c;
+}
+.world-panel .world-district-select {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 1.5;
   text-align: left;
   overflow-wrap: anywhere;
 }
-.world-districts button[aria-pressed="true"] {
-  border-color: var(--cyan);
+.world-district-select:hover:not(:disabled) {
+  color: var(--cyan);
+}
+.world-building-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.world-district-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.world-tag {
+  padding: 3px 6px;
+  border: 1px solid var(--line-dim);
+  border-radius: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.world-tag.is-current,
+.world-tag.is-pickup {
+  color: var(--cyan);
+  border-color: #46eff235;
+  background: #46eff208;
+}
+.world-tag.is-intake {
+  color: var(--purple);
+  border-color: #ad92ff35;
+  background: #ad92ff08;
+}
+.world-district-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line-dim);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.world-district-actions button {
+  flex: 1 1 auto;
+  padding: 6px;
+  border-radius: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.world-district-actions .world-upgrade-pickup {
+  color: var(--cyan);
+  border-color: #46eff238;
+  background: #46eff207;
+}
+.world-district-actions .world-upgrade-intake {
+  color: var(--purple);
+  border-color: #ad92ff38;
+  background: #ad92ff07;
+}
+.world-district-actions .world-rename {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.world-action-dialog {
+  width: min(440px, calc(100vw - 40px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--cyan);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  box-shadow: 0 0 24px #46eff21a;
+}
+.world-action-dialog::backdrop {
+  background: #040610d9;
+}
+.world-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line-dim);
+}
+.world-dialog-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.world-action-dialog button {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #151c2e;
+  color: var(--text);
+  font-size: 12px;
+}
+.world-dialog-heading button {
+  padding: 2px 8px;
+  font-size: 18px;
+}
+.world-dialog-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+}
+.world-dialog-body p {
+  margin: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.world-dialog-target,
+.world-install-detail {
+  color: var(--muted);
+}
+.world-dialog-body label {
+  display: grid;
+  gap: 8px;
+}
+.world-terminal-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.world-terminal-preview > div {
+  display: grid;
+  gap: 6px;
+}
+.world-terminal-capacity {
+  color: var(--cyan);
+}
+.world-install-hint {
+  padding: 10px 12px;
+  border-left: 2px solid var(--cyan);
+  background: #46eff208;
+}
+.world-dialog-cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-dim);
+}
+.world-dialog-cost > :first-child,
+.world-dialog-cost > :last-child {
+  color: var(--muted);
+}
+.world-dialog-cost > .is-short {
+  color: var(--danger);
+}
+.world-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 18px 16px;
+}
+.world-dialog-actions .world-dialog-confirm {
+  border-color: #46eff260;
+  color: var(--cyan);
+  background: #46eff210;
 }
 .quest-tag.quest-critical-tag {
   color: var(--magenta);
   border-color: var(--magenta);
   background: rgba(255, 98, 203, 0.1);
 }
-.world-district-card {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-.world-io-upgrades,
-.world-io-upgrades > div {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-.world-io-upgrades {
-  gap: 12px;
-  overflow-wrap: anywhere;
+.quest-unlock-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.6;
 }

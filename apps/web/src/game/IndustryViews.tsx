@@ -222,7 +222,10 @@ export default function IndustryViews({
             <p
               className="industry-goal"
               hidden={
-                view === "developer" || view === "robots" || view === "power"
+                view === "developer" ||
+                view === "robots" ||
+                view === "power" ||
+                view === "world"
               }
             >
               {stage?.goal}

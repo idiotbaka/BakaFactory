@@ -53,6 +53,11 @@ describe("quest interface", () => {
     expect(
       card.getByText("让你的工厂可以升级取货和供货能力"),
     ).toBeInTheDocument();
+    expect(
+      card.getByText(
+        "（完成后，可以在厂区页面中对工厂安装新的存入和取货终端）",
+      ),
+    ).toBeInTheDocument();
   });
   it("shows per-item P2 progress and logistics rewards without enabling a partial completion claim", () => {
     const factory = createLocalFactory(user, "P2 进度"),

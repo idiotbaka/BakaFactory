@@ -193,8 +193,14 @@ export default function QuestPanel({
                         <p className="quest-mechanism-reward">
                           {q.unlocks.includes("warehouse_orders") &&
                             "仓库中解锁下单功能"}
-                          {q.unlocks.includes("warehouse_io") &&
-                            "让你的工厂可以升级取货和供货能力"}
+                          {q.unlocks.includes("warehouse_io") && (
+                            <>
+                              <span>让你的工厂可以升级取货和供货能力</span>
+                              <span className="quest-unlock-hint">
+                                （完成后，可以在厂区页面中对工厂安装新的存入和取货终端）
+                              </span>
+                            </>
+                          )}
                         </p>
                       )}
                     </section>
