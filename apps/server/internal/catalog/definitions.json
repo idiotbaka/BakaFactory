@@ -115,6 +115,21 @@
       "rewards": { "i0018": 24, "i0050": 12, "i0170": 12 }
     },
     {
+      "id": "p2_crowded_hatch",
+      "tier": 2,
+      "title": "舱门过于拥挤",
+      "critical": true,
+      "description": "仓库门口已经挤成了早高峰。提交总仓库中的基础铁板 50 个和铜条 50 个，为每座工厂申请更多舱门。",
+      "goal": {
+        "type": "submit_items",
+        "target": "bus",
+        "items": ["i0045", "i0046"],
+        "count": 50
+      },
+      "rewards": {},
+      "unlocks": ["warehouse_io"]
+    },
+    {
       "id": "p2_shaft_work",
       "tier": 2,
       "title": "机械动力：应力过载",
@@ -214,6 +229,7 @@
     },
     {
       "id": "p2_clockwork_colleague",
+      "critical": true,
       "tier": 2,
       "title": "第一位会走路的帕鲁同事",
       "description": "发条搬运车成功完成一次运输工作。",
@@ -7273,6 +7289,38 @@
       "batch_size": 6,
       "energy": "electric",
       "power_kw": 4
+    },
+    {
+      "id": "warehouse_pickup",
+      "name": "取货终端",
+      "code": "WOUT",
+      "icon": "bus",
+      "color": "#a5d4b2",
+      "description": "厂区 IO 升级安装；沿朝向轮询输出 1～2 种指定固体，缺货跳过，每秒最多 1 件。可移动，不可删除。",
+      "category": "logistics",
+      "fixed": false,
+      "tier": 2,
+      "role": "warehouse_pickup",
+      "input_slots": 1,
+      "output_slots": 1,
+      "stack_limit": 100,
+      "input_whitelist": []
+    },
+    {
+      "id": "warehouse_intake",
+      "name": "存入终端",
+      "code": "WIN",
+      "icon": "bus",
+      "color": "#a5d4b2",
+      "description": "厂区 IO 升级安装；四面接收固体并存入唯一总仓库。可移动，不可删除。",
+      "category": "logistics",
+      "fixed": false,
+      "tier": 2,
+      "role": "warehouse_intake",
+      "input_slots": 1,
+      "output_slots": 1,
+      "stack_limit": 100,
+      "input_whitelist": []
     }
   ],
   "recipes": [

@@ -21,6 +21,7 @@ type BeltItem struct {
 	Count    *int   `json:"count,omitempty"`
 }
 type MachineState struct {
+	TerminalCursor   *int          `json:"terminal_cursor,omitempty"`
 	BatchesCompleted int64         `json:"batches_completed,omitempty"`
 	Incident         *WorkIncident `json:"incident,omitempty"`
 	StationEnergyKJ  int           `json:"station_energy_kj,omitempty"`

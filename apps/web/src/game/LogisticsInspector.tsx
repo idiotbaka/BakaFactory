@@ -7,6 +7,7 @@ import type {
 } from "../api/client";
 import type { IndustryAction } from "./local/industry";
 import { isBelt, isChest, isFluid, isPort } from "./local/catalog";
+import { pickupType, intakeType, terminalItems } from "./local/warehouseIO";
 import {
   branchFilter,
   channel,
@@ -78,7 +79,50 @@ export default function LogisticsInspector({
       >
         {enabled(instance) ? "已启用 · 点击暂停" : "已暂停 · 点击启用"}
       </button>
-      {definition.id === "bus" ? (
+      {definition.id === pickupType ? (
+        <>
+          <p>
+            向朝向输出，每秒最多 1 件。设置 1～2
+            种固体轮询供料，缺货或拒收时跳过。可拖动 / 旋转，不可删除。
+          </p>
+          {[0, 1].map((index) => (
+            <label key={index}>
+              {index === 0 ? "第一种物品（必选）" : "第二种物品（可选）"}
+              <select
+                aria-label={`取货终端物品 ${index + 1}`}
+                disabled={disabled}
+                value={terminalItems(instance)[index] ?? ""}
+                onChange={(e) => {
+                  const values = [...terminalItems(instance)];
+                  values[index] = e.target.value;
+                  act({
+                    type: "transport",
+                    id: instance.id,
+                    output_items: values.filter(Boolean),
+                  });
+                }}
+              >
+                {index === 1 && <option value="">仅输出第一种物品</option>}
+                {items
+                  .filter(
+                    (i) =>
+                      i.id === terminalItems(instance)[index] ||
+                      !terminalItems(instance).includes(i.id),
+                  )
+                  .map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          ))}
+        </>
+      ) : definition.id === intakeType ? (
+        <p>
+          四面均可接收固体，成功送达后直接进入共用总仓库。没有独立库存，无朝向要求；可拖动，不可删除。
+        </p>
+      ) : definition.id === "bus" ? (
         <>
           <p>
             输出面先选择物品，再切换为输出。每面每秒最多 1

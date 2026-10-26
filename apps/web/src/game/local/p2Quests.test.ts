@@ -235,22 +235,22 @@ describe("P2 production and logistics quests", () => {
     );
     expect(restored.simulation.industry!.stage).toBe(2);
   });
-  it("gates the renamed final at nine of eighteen and does not retract a historically claimed P2 final", () => {
+  it("gates the renamed final at ten of nineteen and does not retract a historically claimed P2 final", () => {
     let f = start();
     const p = f.simulation.industry!,
       final = definition("p2_industrial_license"),
       others = catalog.quests!.filter((q) => q.tier === 2 && !q.stage_final);
     recordCraft(f, { [final.goal.target]: 1 });
-    p.quests!.completed.push(...others.slice(0, 8).map((q) => q.id));
+    p.quests!.completed.push(...others.slice(0, 9).map((q) => q.id));
     syncQuests(f);
     expect(finalQuestRequirement(p, final)).toEqual({
-      completed: 8,
-      required: 9,
-      total: 18,
+      completed: 9,
+      required: 10,
+      total: 19,
     });
     expect(questVisible(p, final)).toBe(false);
     expect(() => actWorld(f, { type: "claim_quest", id: final.id })).toThrow();
-    p.quests!.completed.push(others[8].id);
+    p.quests!.completed.push(others[9].id);
     syncQuests(f);
     expect(p.quests!.completed).toContain(final.id);
     f = actWorld(f, { type: "claim_quest", id: final.id });

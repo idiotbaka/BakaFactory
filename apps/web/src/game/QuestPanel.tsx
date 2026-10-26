@@ -73,6 +73,13 @@ export default function QuestPanel({
           {list.map((q) => {
             const done = completed.has(q.id),
               taken = claimed.has(q.id);
+            const submission = q.goal.type === "submit_items";
+            const canSubmit =
+              submission &&
+              !!q.goal.items?.every(
+                (id) =>
+                  (factory.simulation?.warehouse[id] ?? 0) >= q.goal.count,
+              );
             return (
               <li key={q.id}>
                 <article
@@ -84,6 +91,11 @@ export default function QuestPanel({
                       <ItemText>{q.title}</ItemText>
                     </h4>
                     <div className="quest-tags" aria-label="任务标签">
+                      {q.critical && (
+                        <span className="quest-tag quest-critical-tag">
+                          关键任务
+                        </span>
+                      )}
                       <span className="quest-tag quest-stage-tag">
                         P{q.tier}
                       </span>
@@ -107,10 +119,10 @@ export default function QuestPanel({
                       完成本任务并领取奖励后解锁 P{q.tier + 1} 阶段。
                     </p>
                   )}
-                  {q.goal.type === "factory_delivery" ? (
+                  {q.goal.type === "factory_delivery" || submission ? (
                     <ul
                       className="quest-delivery-progress"
-                      aria-label="自动化入库进度"
+                      aria-label={submission ? "待提交材料" : "自动化入库进度"}
                     >
                       {q.goal.items?.map((id) => {
                         const item = catalog.items.find((i) => i.id === id);
@@ -126,7 +138,10 @@ export default function QuestPanel({
                                   ? q.goal.count
                                   : Math.min(
                                       q.goal.count,
-                                      questItemAmount(p, id),
+                                      submission
+                                        ? (factory.simulation?.warehouse[id] ??
+                                            0)
+                                        : questItemAmount(p, id),
                                     )}{" "}
                                 / {q.goal.count}
                               </span>
@@ -178,6 +193,8 @@ export default function QuestPanel({
                         <p className="quest-mechanism-reward">
                           {q.unlocks.includes("warehouse_orders") &&
                             "仓库中解锁下单功能"}
+                          {q.unlocks.includes("warehouse_io") &&
+                            "让你的工厂可以升级取货和供货能力"}
                         </p>
                       )}
                     </section>
@@ -185,10 +202,18 @@ export default function QuestPanel({
                   {!taken && (
                     <button
                       className="quest-claim"
-                      disabled={!done || disabled || !act}
-                      onClick={() => act?.({ type: "claim_quest", id: q.id })}
+                      disabled={(!done && !canSubmit) || disabled || !act}
+                      onClick={() =>
+                        act?.({
+                          type:
+                            submission && !done
+                              ? "submit_quest"
+                              : "claim_quest",
+                          id: q.id,
+                        })
+                      }
                     >
-                      领取奖励
+                      {submission && !done ? "提交材料" : "领取奖励"}
                     </button>
                   )}
                 </article>

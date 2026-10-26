@@ -35,6 +35,13 @@ import { validWorkshopCounts, workshopMachineAvailable } from "./workshop";
 import { restoreQuestProgress, syncQuests, validQuestProgress } from "./quests";
 import { expectedStage } from "./progression";
 import { validWorkshopOrder } from "./orders";
+import {
+  ioLimit,
+  ioUnlocked,
+  pickupType,
+  intakeType,
+  isWarehouseTerminal,
+} from "./warehouseIO";
 export { newMachine } from "./machine";
 
 export { catalog } from "./catalog";
@@ -232,6 +239,20 @@ export function validateSave(
     if (typeof m.status !== "string")
       return fail(`${machinePath}.status`, "状态必须为字符串");
     const definition = buildingDefinitions.get(b.building_type)!;
+    if (
+      m.terminal_cursor !== undefined &&
+      (b.building_type !== pickupType || !integer(m.terminal_cursor, 1))
+    )
+      return fail(`${machinePath}.terminal_cursor`, "取货终端轮询游标无效");
+    if (
+      isWarehouseTerminal(b.building_type) &&
+      ((Array.isArray(m.input) && m.input.length) ||
+        (Array.isArray(m.output) && m.output.length) ||
+        m.belt !== undefined ||
+        m.fluid !== undefined ||
+        (Array.isArray(m.fuel) && m.fuel.length))
+    )
+      return fail(machinePath, "仓库终端不能保存独立库存或载荷");
     if (
       (m.batches_completed !== undefined && !integer(m.batches_completed)) ||
       !validIncident(m.incident, sim.tick as number)
@@ -561,6 +582,19 @@ export function validateSave(
   factory.simulation.transfers = [];
   factory.simulation.industry ??= initialIndustry();
   restoreQuestProgress(factory);
+  for (const type of [pickupType, intakeType]) {
+    const count = factory.buildings.filter(
+      (b) => b.building_type === type,
+    ).length;
+    if (
+      count > ioLimit(factory.simulation.industry!.stage, type) ||
+      (count > 0 && !ioUnlocked(factory.simulation))
+    )
+      return fail(
+        `${root}.buildings`,
+        "仓库终端超过阶段上限或任务奖励尚未领取",
+      );
+  }
   const sources = factory.buildings.filter(
     (b) => buildingDefinitions.get(b.building_type)?.role === "source",
   );
@@ -724,6 +758,11 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
   } else {
     const b = f.buildings.find((b) => b.id === edit.id);
     if (!b) throw new Error("建筑不存在");
+    if (
+      edit.kind === "delete" &&
+      ["warehouse_pickup", "warehouse_intake"].includes(b.building_type)
+    )
+      throw new Error("仓库终端可以移动，但不能删除");
     if (catalog.buildings.find((d) => d.id === b.building_type)?.fixed)
       throw new Error("工厂仓库固定，不能移动、旋转或删除");
     if (edit.kind === "move") {

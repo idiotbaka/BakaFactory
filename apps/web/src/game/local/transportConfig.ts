@@ -8,6 +8,7 @@ import {
   isChest,
 } from "./catalog";
 import { validFluidConfig } from "./fluidConfig";
+import { isWarehouseTerminal, pickupType } from "./warehouseIO";
 
 export const rotations = [0, 90, 180, 270] as const;
 export type Rotation = (typeof rotations)[number];
@@ -45,6 +46,7 @@ export const isSolidTransport = (type: string) =>
   isPort(type) ||
   isChest(type) ||
   type === "bus" ||
+  isWarehouseTerminal(type) ||
   buildingDefinitions.get(type)?.role === "source";
 
 // Configuration is persisted JSON; validate restored and edited fields equally.
@@ -54,6 +56,22 @@ export function validTransportConfig(
   b: Pick<BuildingInstance, "configuration" | "building_type">,
 ) {
   const c = b.configuration;
+  if (b.building_type === pickupType) {
+    const values = c.output_items;
+    if (
+      !Array.isArray(values) ||
+      values.length < 1 ||
+      values.length > 2 ||
+      new Set(values).size !== values.length ||
+      values.some(
+        (id) =>
+          typeof id !== "string" ||
+          !itemDefinitions.has(id) ||
+          itemDefinitions.get(id)?.kind === "fluid_or_gas",
+      )
+    )
+      return false;
+  } else if (c.output_items !== undefined) return false;
   if (!validFluidConfig(b)) return false;
   if (
     c.priority !== undefined &&

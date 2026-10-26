@@ -2392,3 +2392,27 @@
 .world-districts button[aria-pressed="true"] {
   border-color: var(--cyan);
 }
+.quest-tag.quest-critical-tag {
+  color: var(--magenta);
+  border-color: var(--magenta);
+  background: rgba(255, 98, 203, 0.1);
+}
+.world-district-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.world-io-upgrades,
+.world-io-upgrades > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.world-io-upgrades {
+  gap: 12px;
+  overflow-wrap: anywhere;
+}

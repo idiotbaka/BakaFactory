@@ -430,6 +430,8 @@ const quests = questSource.map((q) => {
   )
     throw new Error(`Invalid quest: ${q.id}`);
   questIDs.add(q.id);
+  if (q.critical !== undefined && typeof q.critical !== "boolean")
+    throw new Error(`Invalid critical quest flag: ${q.id}`);
   if (q.stage_final !== undefined && typeof q.stage_final !== "boolean")
     throw new Error(`Invalid final quest flag: ${q.id}`);
   if (q.stage_final) {
@@ -445,7 +447,7 @@ const quests = questSource.map((q) => {
     ? q.goal.count === 1
     : q.goal.type === "automated_delivery"
       ? target === "bus"
-      : q.goal.type === "factory_delivery"
+      : ["factory_delivery", "submit_items"].includes(q.goal.type)
         ? target === "bus" &&
           goalItems?.length > 0 &&
           goalItems.length <= 12 &&
@@ -466,7 +468,8 @@ const quests = questSource.map((q) => {
               );
   if (
     !goalValid ||
-    (q.goal.type !== "factory_delivery" && goalItems !== undefined)
+    (!["factory_delivery", "submit_items"].includes(q.goal.type) &&
+      goalItems !== undefined)
   )
     throw new Error(`Invalid quest goal: ${q.id}`);
   const rewards = Object.fromEntries(
@@ -478,7 +481,7 @@ const quests = questSource.map((q) => {
   );
   if (
     (q.unlocks ?? []).some(
-      (u) => !["warehouse_orders", "stage_2"].includes(u),
+      (u) => !["warehouse_orders", "stage_2", "warehouse_io"].includes(u),
     ) ||
     new Set(q.unlocks ?? []).size !== (q.unlocks ?? []).length
   )
@@ -564,6 +567,25 @@ const base = {
     ...legacyBuildings,
     ...buildings,
     ...utilities,
+    ...["warehouse_pickup", "warehouse_intake"].map((id) => ({
+      id,
+      name: id === "warehouse_pickup" ? "取货终端" : "存入终端",
+      code: id === "warehouse_pickup" ? "WOUT" : "WIN",
+      icon: "bus",
+      color: colors[1],
+      description:
+        id === "warehouse_pickup"
+          ? "厂区 IO 升级安装；沿朝向轮询输出 1～2 种指定固体，缺货跳过，每秒最多 1 件。可移动，不可删除。"
+          : "厂区 IO 升级安装；四面接收固体并存入唯一总仓库。可移动，不可删除。",
+      category: "logistics",
+      fixed: false,
+      tier: 2,
+      role: id,
+      input_slots: 1,
+      output_slots: 1,
+      stack_limit: 100,
+      input_whitelist: [],
+    })),
   ],
   recipes: [...legacyRecipes, ...recipes],
 };
@@ -637,7 +659,7 @@ const lines = [
   "",
   "## 扩展与偏差",
   "",
-  "P1 追加真实 WH 自动化入库与制造流水线机械手两任务。I0060 / R1040 编号与物料保持，原机械启动套件显示名改为流水线机械手。P1～P5 每阶段唯一终局，需完成同阶段其他任务至少一半（向上取整）才开放；只有完成并领取终局奖励才推进下一阶段，制造记录仅保留成果与配方前置。P1 终局同时开放仓库订单；旧档只补认已跨过阶段的终局，不补普通历史或奖励。P2 新增十三项自动化 / 作业 / 扩建目标和五项首造补给，普通任务达成 9/18 后开放原许可包终局；逐物品自动化进度取地图制造与 WH 自动入库较小值，不以库存 / 工作室 / 收取替代。P3～P5 普通任务尚待配置。静态闭包检查可安装机器产出、真实事件能力和半数门槛可达，不发任务物品、不证明百件吞吐 / 路径实际运行。仓库递归订单只使用当前已开放工作室配方，一次预留、独占队列、逐批真实结算，取消回收当前实物；复杂度 / 工序 / 批次数有界，见 warehouse-orders.md。",
+  "P1 追加真实 WH 自动化入库与制造流水线机械手两任务。I0060 / R1040 编号与物料保持，原机械启动套件显示名改为流水线机械手。P1～P5 每阶段唯一终局，需完成同阶段其他任务至少一半（向上取整）才开放；只有完成并领取终局奖励才推进下一阶段，制造记录仅保留成果与配方前置。P1 终局同时开放仓库订单；旧档只补认已跨过阶段的终局，不补普通历史或奖励。P2 新增十三项自动化 / 作业 / 扩建目标和五项首造补给，普通任务达成 10/19 后开放原许可包终局；逐物品自动化进度取地图制造与 WH 自动入库较小值，不以库存 / 工作室 / 收取替代。P3～P5 普通任务尚待配置。静态闭包检查可安装机器产出、真实事件能力和半数门槛可达，不发任务物品、不证明百件吞吐 / 路径实际运行。仓库递归订单只使用当前已开放工作室配方，一次预留、独占队列、逐批真实结算，取消回收当前实物；复杂度 / 工序 / 批次数有界，见 warehouse-orders.md。",
   "",
   "工作室便捷加工保留初始 M01/M02/M07；M03 / M04 / M08 在累计制造对应设备至少 1 次后开放共用手工队列，不要求安装且不消耗解锁设备。仅持有、拆回或查看设备不算制造；工作室运行层每批耗时为 max(1, floor(duration_ms / 2000)) 秒，原始 duration_ms 留给地图机器，不改导入配方工时。材料和 1～100 批预留 / 取消规则保持；UI 超限自动回填当前库存上限，Worker 原子复核。旧队列保留原工时范围内的进度，达到新工时时下一运行 tick 最多结算当前一批。不开放热能炉或其他机器。starting_machines 仍只有原三种，不额外赠设备或独立队列。界面按 M02 / M07 / M01 / M03 / M04 / M08 分组，仅设备子分类在工作室滚动区内吸顶，垃圾堆正常滚动，库存 / 每批原料及产物用物品卡显示。",
   "",

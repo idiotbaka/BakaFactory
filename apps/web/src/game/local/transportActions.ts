@@ -22,6 +22,7 @@ export type TransportAction =
       interval?: number;
       channel?: "input" | "fuel";
       enabled?: boolean;
+      output_items?: string[];
     }
   | {
       type: "bus_face";
@@ -58,8 +59,15 @@ export function applyTransportAction(f: LocalFactory, action: TransportAction) {
   if (action.type === "transport") {
     if (!isSolidTransport(b.building_type))
       throw new Error("该设备不是固体物流设施");
-    for (const key of ["filter", "interval", "channel", "enabled"] as const)
+    for (const key of [
+      "filter",
+      "interval",
+      "channel",
+      "enabled",
+      "output_items",
+    ] as const)
       if (action[key] !== undefined) b.configuration[key] = action[key];
+    if (action.output_items !== undefined) m.terminal_cursor = 0;
     if (action.enabled !== undefined)
       m.status = action.enabled ? "idle" : "disabled";
     if (action.filter && isFluid(action.filter))

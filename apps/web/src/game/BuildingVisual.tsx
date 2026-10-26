@@ -74,7 +74,7 @@ function BuildingVisual({
               rotation={context.rotation}
             />
           )}
-          {definition.id !== "bus" && (
+          {definition.id !== "bus" && definition.id !== "warehouse_intake" && (
             <svg
               className="building-map-arrow"
               viewBox="0 0 10 10"

@@ -10,4 +10,6 @@ export const isLogisticsBuilding = (definition: BuildingDefinition) =>
     "tank",
     "valve",
     "pump",
+    "warehouse_pickup",
+    "warehouse_intake",
   ].includes(definition.role ?? "");

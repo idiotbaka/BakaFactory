@@ -1,0 +1,46 @@
+[
+  {
+    "asset": "apps/web/src/assets/buildings/v1/warehouse_pickup.png",
+    "width": 128,
+    "height": 128,
+    "binary_alpha": true,
+    "integer_scale": true
+  },
+  {
+    "asset": "apps/web/src/assets/buildings/v1/warehouse_intake.png",
+    "width": 128,
+    "height": 128,
+    "binary_alpha": true,
+    "integer_scale": true
+  },
+  {
+    "asset": "apps/web/src/assets/stories/p2-hatch-v1/01-crowded-doors.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 3563746
+  },
+  {
+    "asset": "apps/web/src/assets/stories/p2-hatch-v1/02-charcoal-vip.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 3198618
+  },
+  {
+    "asset": "apps/web/src/assets/stories/p2-hatch-v1/03-rush-hour-again.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 3153630
+  },
+  {
+    "asset": "apps/web/src/assets/stories/p2-hatch-v1/04-extra-mouths.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2993863
+  },
+  {
+    "asset": "apps/web/src/assets/stories/p2-hatch-v1/05-clock-out-rejected.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 3179939
+  }
+]

@@ -19,13 +19,29 @@ import {
 import { constructionValid } from "./construction";
 import { syncIncidents } from "./incidents";
 import { dispatchRobots } from "./robotAutonomy";
-import { claimQuest, syncQuests } from "./quests";
+import { claimQuest, submitQuest, syncQuests } from "./quests";
+import {
+  ioUnlocked,
+  ioCost,
+  ioLimit,
+  pickupType,
+  intakeType,
+  isWarehouseTerminal,
+} from "./warehouseIO";
+import { catalog } from "./catalog";
+import { newMachine } from "./machine";
 import { orderRewardClaimed } from "./progression";
 
 export type WorldAction =
   | RobotAction
   | { type: "developer_settings"; warehouse_orders_always_available: boolean }
   | { type: "claim_quest"; id: string }
+  | { type: "submit_quest"; id: string }
+  | {
+      type: "upgrade_io";
+      id: string;
+      terminal: "warehouse_pickup" | "warehouse_intake";
+    }
   | { type: "select_district"; id: string }
   | { type: "expand_district"; name: string }
   | { type: "rename_district"; id: string; name: string };
@@ -36,6 +52,8 @@ export type DistrictSummary = {
   tick: number;
   headquarters: boolean;
   warehouse_id?: string;
+  pickup_terminals?: number;
+  intake_terminals?: number;
 };
 export const districtLimit = (stage: number) =>
   [6, 12, 24, 40, 70, 100][stage - 1];
@@ -55,6 +73,10 @@ export const districtSummary = (root: LocalFactory): DistrictSummary[] =>
     tick: f.simulation.tick,
     headquarters: f.id === root.id,
     warehouse_id: f.buildings.find((b) => b.building_type === "bus")?.id,
+    pickup_terminals: f.buildings.filter((b) => b.building_type === pickupType)
+      .length,
+    intake_terminals: f.buildings.filter((b) => b.building_type === intakeType)
+      .length,
   }));
 export function projectFactory(root: LocalFactory): LocalFactory {
   const f =
@@ -280,8 +302,83 @@ export function actWorld(
     root.revision++;
     return root;
   }
-  if (action.type === "claim_quest") {
-    claimQuest(root, action.id);
+  if (action.type === "claim_quest" || action.type === "submit_quest") {
+    if (action.type === "claim_quest") claimQuest(root, action.id);
+    else submitQuest(root, action.id);
+    root.revision++;
+    return root;
+  }
+  if (action.type === "upgrade_io") {
+    const f = allDistricts(root).find((f) => f.id === action.id);
+    if (!f || !isWarehouseTerminal(action.terminal))
+      throw new Error("厂区或终端类型无效");
+    if (!ioUnlocked(root.simulation))
+      throw new Error("请先领取「舱门过于拥挤」任务奖励");
+    const stage = root.simulation.industry!.stage;
+    if (
+      f.buildings.filter((b) => b.building_type === action.terminal).length >=
+      ioLimit(stage, action.terminal)
+    )
+      throw new Error("当前阶段该类终端已达上限");
+    // Deterministic search near WH, excluding complete footprints, robots,
+    // landing reservations and construction. Also preserve safe return routes.
+    const cells = Array.from({ length: 441 }, (_, i) => ({
+      x: (i % 21) - 10,
+      y: 10 - Math.floor(i / 21),
+    })).sort(
+      (a, b) => Math.abs(a.x) + Math.abs(a.y) - Math.abs(b.x) - Math.abs(b.y),
+    );
+    const id = crypto.randomUUID();
+    const p = cells.find((p) => {
+      if (
+        f.buildings.some((b) => containsCell(b, p)) ||
+        plannedBuildings(root, f.id).some((b) => containsCell(b, p)) ||
+        root.robots?.some(
+          (r) =>
+            (!r.transit &&
+              r.factory_id === f.id &&
+              r.x === p.x &&
+              r.y === p.y) ||
+            (r.transit?.to_factory_id === f.id &&
+              r.transit.x === p.x &&
+              r.transit.y === p.y),
+        )
+      )
+        return false;
+      const candidate = {
+        id,
+        factory_id: f.id,
+        building_type: action.terminal,
+        ...p,
+        rotation: 0 as const,
+        configuration: {},
+      };
+      const before = f.buildings;
+      f.buildings = [...before, candidate];
+      const safe = routeEditsSafe(current, root);
+      f.buildings = before;
+      return safe;
+    });
+    if (!p)
+      throw new Error(
+        "没有可安装终端的空闲格子，请腾出一格并保留机器人返站通路",
+      );
+    store(root.simulation.warehouse, ioCost(stage, action.terminal));
+    f.buildings = [
+      ...f.buildings,
+      {
+        id,
+        factory_id: f.id,
+        building_type: action.terminal,
+        ...p,
+        rotation: 0,
+        configuration:
+          action.terminal === pickupType
+            ? { output_items: [catalog.root_item!], enabled: false }
+            : {},
+      },
+    ];
+    f.simulation.buildings[id] = newMachine();
     root.revision++;
     return root;
   }

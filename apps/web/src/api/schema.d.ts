@@ -290,6 +290,8 @@ export interface components {
             count: number;
         };
         MachineState: {
+            /** @description 取货终端下一次优先尝试的物品槽，缺省为 0。 */
+            terminal_cursor?: number;
             batches_completed?: number;
             incident?: components["schemas"]["WorkIncident"];
             energy_kj?: number;
@@ -546,20 +548,21 @@ export interface components {
             tier: number;
             title: string;
             description: string;
+            critical?: boolean;
             /** @description 阶段终局任务；同阶段其他任务完成至少一半后可见，领奖解锁下一阶段。 */
             stage_final?: boolean;
             goal: {
                 /** @enum {string} */
-                type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery" | "factory_delivery" | "factory_event" | "district_count";
+                type: "obtain_item" | "workshop_recipe" | "craft_item" | "automated_delivery" | "factory_delivery" | "submit_items" | "factory_event" | "district_count";
                 target: string;
                 count: number;
-                /** @description factory_delivery 的逐物品目标，每种分别达到 count。 */
+                /** @description factory_delivery 或 submit_items 的逐物品目标，每种分别达到 count；提交任务实际扣除总仓库存。 */
                 items?: string[];
             };
             rewards: {
                 [key: string]: number;
             };
-            unlocks?: ("warehouse_orders" | "stage_2")[];
+            unlocks?: ("warehouse_orders" | "stage_2" | "warehouse_io")[];
         };
         QuestProgress: {
             /** @enum {integer} */

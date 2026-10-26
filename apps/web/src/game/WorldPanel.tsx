@@ -1,4 +1,12 @@
 import { useState } from "react";
+import {
+  ioCost,
+  ioLimit,
+  ioUnlocked,
+  pickupType,
+  intakeType,
+} from "./local/warehouseIO";
+import { itemDefinitions } from "./local/catalog";
 import type { FactoryDetail } from "../api/client";
 import {
   districtLimit,
@@ -18,6 +26,8 @@ export default function WorldPanel({
   act: (action: WorldAction) => void;
 }) {
   const [name, setName] = useState("");
+  const stage = factory.simulation?.industry?.stage ?? 1;
+  const unlocked = ioUnlocked(factory.simulation);
   return (
     <section className="world-panel" aria-label="厂区管理">
       <h3>
@@ -30,20 +40,65 @@ export default function WorldPanel({
       </p>
       <div className="world-districts">
         {districts.map((d) => (
-          <button
-            key={d.id}
-            disabled={disabled}
-            aria-pressed={factory.id === d.id}
-            onClick={() => act({ type: "select_district", id: d.id })}
-          >
-            <strong>{d.name}</strong>
-            <small>
-              {d.headquarters ? "起始回收场 · " : ""}
-              {d.buildings} 建筑 · tick {d.tick}
-            </small>
-          </button>
+          <article className="world-district-card" key={d.id}>
+            <button
+              key={d.id}
+              disabled={disabled}
+              aria-pressed={factory.id === d.id}
+              onClick={() => act({ type: "select_district", id: d.id })}
+            >
+              <strong>{d.name}</strong>
+              <small>
+                {d.headquarters ? "起始回收场 · " : ""}
+                {d.buildings} 建筑 · tick {d.tick}
+              </small>
+            </button>
+            {unlocked && (
+              <div
+                className="world-io-upgrades"
+                aria-label={`${d.name} IO 升级`}
+              >
+                {([pickupType, intakeType] as const).map((type) => {
+                  const count =
+                    (type === pickupType
+                      ? d.pickup_terminals
+                      : d.intake_terminals) ?? 0;
+                  const limit = ioLimit(stage, type);
+                  const cost = ioCost(stage, type);
+                  const [item, value] = Object.entries(cost)[0];
+                  const enough =
+                    (factory.simulation?.warehouse[item] ?? 0) >= -value;
+                  const label = type === pickupType ? "取货终端" : "存入终端";
+                  return (
+                    <div key={type}>
+                      <span>
+                        {label}：{count} / {limit}
+                      </span>
+                      <button
+                        disabled={disabled || count >= limit || !enough}
+                        onClick={() =>
+                          act({ type: "upgrade_io", id: d.id, terminal: type })
+                        }
+                      >
+                        {count >= limit
+                          ? "已达阶段上限"
+                          : `增设${label} · ${itemDefinitions.get(item)?.name} 30${enough ? "" : "（不足）"}`}
+                      </button>
+                    </div>
+                  );
+                })}
+                <small>每次增设需一个安全空格，终端可拖动、不可删除。</small>
+              </div>
+            )}
+          </article>
         ))}
       </div>
+      {unlocked && (
+        <p>
+          IO 累计上限：P2 取货 2 / 存入 1；P3 取货 4 / 存入 2；P4 起取货 6 /
+          存入 3。费用按当前阶段计算。初装取货终端暂停，选好物品后启用。
+        </p>
+      )}
       <label>
         厂区名称
         <input

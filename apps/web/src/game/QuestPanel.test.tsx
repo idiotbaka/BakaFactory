@@ -4,7 +4,7 @@ import QuestPanel from "./QuestPanel";
 import QuestNotifications from "./QuestNotifications";
 import IndustryViews from "./IndustryViews";
 import { createLocalFactory } from "./local/state";
-import { catalog } from "./local/catalog";
+import { catalog, itemID } from "./local/catalog";
 
 const user = {
   id: "quests-ui",
@@ -15,6 +15,45 @@ const user = {
 };
 afterEach(() => vi.useRealTimers());
 describe("quest interface", () => {
+  it("shows two pink key tags and separates actual material submission from claiming", () => {
+    const factory = createLocalFactory(user, "舱门"),
+      act = vi.fn();
+    const p = factory.simulation.industry!;
+    p.stage = 2;
+    p.quests!.completed = ["p1_free_hands"];
+    p.quests!.claimed = ["p1_free_hands"];
+    factory.simulation.warehouse = {
+      [itemID("基础铁板")]: 50,
+      [itemID("铜条")]: 49,
+    };
+    const props = { factory, catalog, disabled: false, act };
+    const { rerender } = render(<QuestPanel {...props} />);
+    const card = within(screen.getByRole("article", { name: "舱门过于拥挤" }));
+    expect(card.getByText("关键任务")).toHaveClass("quest-critical-tag");
+    expect(
+      within(
+        screen.getByRole("article", { name: "第一位会走路的帕鲁同事" }),
+      ).getByText("关键任务"),
+    ).toBeInTheDocument();
+    expect(card.getByRole("button", { name: "提交材料" })).toBeDisabled();
+    factory.simulation.warehouse[itemID("铜条")] = 50;
+    rerender(<QuestPanel {...props} />);
+    fireEvent.click(card.getByRole("button", { name: "提交材料" }));
+    expect(act).toHaveBeenLastCalledWith({
+      type: "submit_quest",
+      id: "p2_crowded_hatch",
+    });
+    p.quests!.completed.push("p2_crowded_hatch");
+    rerender(<QuestPanel {...props} />);
+    fireEvent.click(card.getByRole("button", { name: "领取奖励" }));
+    expect(act).toHaveBeenLastCalledWith({
+      type: "claim_quest",
+      id: "p2_crowded_hatch",
+    });
+    expect(
+      card.getByText("让你的工厂可以升级取货和供货能力"),
+    ).toBeInTheDocument();
+  });
   it("shows per-item P2 progress and logistics rewards without enabling a partial completion claim", () => {
     const factory = createLocalFactory(user, "P2 进度"),
       p = factory.simulation.industry!;

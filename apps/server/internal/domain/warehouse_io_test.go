@@ -1,0 +1,47 @@
+package domain
+
+import (
+	"encoding/json"
+	"testing"
+)
+
+func TestWarehouseTerminalConfiguration(t *testing.T) {
+	c := Catalog{Items: []ItemDefinition{
+		{Definition: Definition{ID: "iron"}},
+		{Definition: Definition{ID: "copper"}},
+		{Definition: Definition{ID: "water"}, Kind: "fluid_or_gas"},
+	}}
+	for _, raw := range []string{`{"output_items":["iron"]}`, `{"output_items":["iron","copper"]}`} {
+		var config map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(raw), &config); err != nil {
+			t.Fatal(err)
+		}
+		if !validTransportConfiguration("warehouse_pickup", config, c) {
+			t.Fatal("valid terminal rejected", raw)
+		}
+	}
+	for _, raw := range []string{`{}`, `{"output_items":null}`, `{"output_items":[]}`, `{"output_items":["iron","iron"]}`, `{"output_items":["water"]}`, `{"output_items":["missing"]}`, `{"output_items":["iron","copper","water"]}`, `{"output_items":[null]}`} {
+		var config map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(raw), &config); err != nil {
+			t.Fatal(err)
+		}
+		if validTransportConfiguration("warehouse_pickup", config, c) {
+			t.Fatal("invalid terminal accepted", raw)
+		}
+	}
+	var state MachineState
+	if json.Unmarshal([]byte(`{"terminal_cursor":null}`), &state) == nil {
+		t.Fatal("null cursor accepted")
+	}
+}
+
+func TestSubmissionQuestDefinition(t *testing.T) {
+	c := Catalog{Items: []ItemDefinition{{Definition: Definition{ID: "iron"}}, {Definition: Definition{ID: "copper"}}}, Quests: []QuestDefinition{{ID: "p2_crowded_hatch", Tier: 2, Title: "舱门过于拥挤", Description: "提交材料", Critical: true, Goal: QuestGoal{Type: "submit_items", Target: "bus", Items: []string{"iron", "copper"}, Count: 50}, Rewards: map[string]int64{}, Unlocks: []string{"warehouse_io"}}}}
+	if err := validateQuestDefinitions(c); err != nil {
+		t.Fatal(err)
+	}
+	c.Quests[0].Goal.Items = []string{"iron", "iron"}
+	if validateQuestDefinitions(c) == nil {
+		t.Fatal("duplicate submission item accepted")
+	}
+}

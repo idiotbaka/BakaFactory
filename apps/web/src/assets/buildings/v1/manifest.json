@@ -452,6 +452,16 @@
       "renderer": "belt",
       "tier": 6,
       "color": "#ff72cf"
+    },
+    "warehouse_pickup": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
+    },
+    "warehouse_intake": {
+      "renderer": "image",
+      "tier": 2,
+      "color": "#a5d4b2"
     }
   }
 }

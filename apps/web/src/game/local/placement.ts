@@ -3,6 +3,7 @@ import type { BuildingPlacement } from "../../api/client";
 import type { LocalFactory } from "./state";
 import { buildingDefinitions } from "./catalog";
 import { rotations } from "./transportConfig";
+import { isWarehouseTerminal } from "./warehouseIO";
 export function validatePlacement(
   f: LocalFactory,
   type: string,
@@ -18,7 +19,12 @@ export function validatePlacement(
     !rotations.includes(p.rotation as (typeof rotations)[number])
   )
     throw new Error("建筑坐标或方向无效");
-  if (!d || d.fixed || f.buildings.some((b) => b.id === id))
+  if (
+    !d ||
+    d.fixed ||
+    isWarehouseTerminal(type) ||
+    f.buildings.some((b) => b.id === id)
+  )
     throw new Error("无法建造该模组");
   if (!validSize(d, p.size)) throw new Error("该机器不支持此占地尺寸");
   if (f.buildings.some((b) => overlaps(b, p)))

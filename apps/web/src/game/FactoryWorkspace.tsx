@@ -39,6 +39,7 @@ import type { Robot } from "./local/robotRoutes";
 import type { RobotFocus } from "./FactoryEditor";
 import type { IndustryAction } from "./local/industry";
 import type { WorldAction } from "./local/world";
+import { isWarehouseTerminal } from "./local/warehouseIO";
 
 type Workspace =
   | { kind: "loading" }
@@ -182,7 +183,11 @@ export default function FactoryWorkspace({
       if (!/^[1-6]$/.test(event.key)) return;
       const definition = paletteCatalog.buildings.filter(
         (d) =>
-          !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
+          !d.fixed &&
+          !d.legacy &&
+          !isWarehouseTerminal(d.id) &&
+          d.id !== "bus" &&
+          (d.tier ?? 1) <= stage,
       )[Number(event.key) - 1];
       if (!definition) return;
       event.preventDefault();
@@ -325,7 +330,12 @@ export default function FactoryWorkspace({
     );
   const { catalog, factory } = workspace;
   const placeable = catalog.buildings.filter(
-    (d) => !d.fixed && !d.legacy && d.id !== "bus" && (d.tier ?? 1) <= stage,
+    (d) =>
+      !d.fixed &&
+      !d.legacy &&
+      !isWarehouseTerminal(d.id) &&
+      d.id !== "bus" &&
+      (d.tier ?? 1) <= stage,
   );
   const catalogPhase = phaseFor(tab);
   const matchesCatalog = createCatalogSearch(catalogQuery);
@@ -829,7 +839,9 @@ export default function FactoryWorkspace({
                         <dd>
                           {buildingDefinition.fixed
                             ? "中心固定"
-                            : "可连续放置 / 移动"}
+                            : isWarehouseTerminal(buildingDefinition.id)
+                              ? "厂区升级安装 · 可移动 · 不可删除"
+                              : "可连续放置 / 移动"}
                         </dd>
                       </div>
                     )}

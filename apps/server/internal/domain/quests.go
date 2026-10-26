@@ -18,6 +18,7 @@ type QuestDefinition struct {
 	Title       string           `json:"title"`
 	Description string           `json:"description"`
 	StageFinal  bool             `json:"stage_final,omitempty"`
+	Critical    bool             `json:"critical,omitempty"`
 	Goal        QuestGoal        `json:"goal"`
 	Rewards     map[string]int64 `json:"rewards"`
 	Unlocks     []string         `json:"unlocks,omitempty"`
@@ -81,7 +82,7 @@ func validateQuestDefinitions(c Catalog) error {
 			}
 			finals[q.Tier] = true
 		}
-		if q.Goal.Type != "factory_delivery" && q.Goal.Items != nil {
+		if q.Goal.Type != "factory_delivery" && q.Goal.Type != "submit_items" && q.Goal.Items != nil {
 			return fmt.Errorf("unexpected quest items")
 		}
 		if q.Goal.Type == "obtain_item" || q.Goal.Type == "craft_item" {
@@ -92,7 +93,7 @@ func validateQuestDefinitions(c Catalog) error {
 			if q.Goal.Target != "bus" {
 				return fmt.Errorf("invalid delivery quest")
 			}
-		} else if q.Goal.Type == "factory_delivery" {
+		} else if q.Goal.Type == "factory_delivery" || q.Goal.Type == "submit_items" {
 			if q.Goal.Target != "bus" || len(q.Goal.Items) < 1 || len(q.Goal.Items) > 12 {
 				return fmt.Errorf("invalid factory delivery quest")
 			}
@@ -116,7 +117,7 @@ func validateQuestDefinitions(c Catalog) error {
 		}
 		unlocks := map[string]bool{}
 		for _, u := range q.Unlocks {
-			if (u != "warehouse_orders" && u != "stage_2") || unlocks[u] {
+			if (u != "warehouse_orders" && u != "stage_2" && u != "warehouse_io") || unlocks[u] {
 				return fmt.Errorf("invalid quest unlock")
 			}
 			if u == "stage_2" && (!q.StageFinal || q.Tier != 1) {

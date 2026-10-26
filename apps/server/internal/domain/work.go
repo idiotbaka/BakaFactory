@@ -90,7 +90,7 @@ func rejectNullWork(data []byte, keys ...string) error {
 }
 func (v *MachineState) UnmarshalJSON(data []byte) error {
 	type plain MachineState
-	if err := rejectNullWork(data, "batches_completed", "incident"); err != nil {
+	if err := rejectNullWork(data, "batches_completed", "incident", "terminal_cursor"); err != nil {
 		return err
 	}
 	return decodeRobotObject(data, (*plain)(v))

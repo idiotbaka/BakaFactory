@@ -113,6 +113,21 @@
     "rewards": { "粗铜丝": 24, "粗密封圈": 12, "流体管道": 12 }
   },
   {
+    "id": "p2_crowded_hatch",
+    "tier": 2,
+    "title": "舱门过于拥挤",
+    "critical": true,
+    "description": "仓库门口已经挤成了早高峰。提交总仓库中的基础铁板 50 个和铜条 50 个，为每座工厂申请更多舱门。",
+    "goal": {
+      "type": "submit_items",
+      "target": "bus",
+      "items": ["基础铁板", "铜条"],
+      "count": 50
+    },
+    "rewards": {},
+    "unlocks": ["warehouse_io"]
+  },
+  {
     "id": "p2_shaft_work",
     "tier": 2,
     "title": "机械动力：应力过载",
@@ -217,6 +232,7 @@
   },
   {
     "id": "p2_clockwork_colleague",
+    "critical": true,
     "tier": 2,
     "title": "第一位会走路的帕鲁同事",
     "description": "发条搬运车成功完成一次运输工作。",

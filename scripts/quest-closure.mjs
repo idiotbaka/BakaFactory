@@ -13,6 +13,8 @@ export function advanceQuestStages(
     if (["obtain_item", "craft_item"].includes(q.goal.type))
       return items.has(q.goal.target);
     if (q.goal.type === "workshop_recipe") return recipes.has(q.goal.target);
+    if (q.goal.type === "submit_items")
+      return q.goal.items.every((id) => items.has(id));
     if (q.goal.type === "factory_delivery")
       return (
         canDeliver &&

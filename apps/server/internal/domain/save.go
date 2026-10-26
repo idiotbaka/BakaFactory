@@ -189,6 +189,39 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 	if sim.Industry != nil {
 		stage = sim.Industry.Stage
 	}
+	for _, kind := range []string{"warehouse_pickup", "warehouse_intake"} {
+		n := 0
+		for _, b := range f.Buildings {
+			m := sim.Buildings[b.ID]
+			if m.TerminalCursor != nil && (b.BuildingType != "warehouse_pickup" || *m.TerminalCursor < 0 || *m.TerminalCursor > 1) {
+				return bad()
+			}
+			if b.BuildingType != kind {
+				continue
+			}
+			n++
+			if len(m.Input) != 0 || len(m.Output) != 0 || len(m.Fuel) != 0 || m.Belt != nil || m.Fluid != nil {
+				return bad()
+			}
+		}
+		level := stage - 1
+		if level > 3 {
+			level = 3
+		}
+		limit := level
+		if kind == "warehouse_pickup" {
+			limit *= 2
+		}
+		unlocked := false
+		if sim.Industry != nil && sim.Industry.Quests != nil {
+			for _, id := range sim.Industry.Quests.Claimed {
+				unlocked = unlocked || id == "p2_crowded_hatch"
+			}
+		}
+		if n > limit || n > 0 && !unlocked {
+			return bad()
+		}
+	}
 	for _, b := range f.Buildings {
 		if limits[b.BuildingType].Role == "source" {
 			sources++

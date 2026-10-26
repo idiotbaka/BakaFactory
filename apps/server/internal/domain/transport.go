@@ -30,6 +30,18 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 	}
 	for key, raw := range config {
 		switch key {
+		case "output_items":
+			var values []string
+			if kind != "warehouse_pickup" || json.Unmarshal(raw, &values) != nil || len(values) < 1 || len(values) > 2 {
+				return false
+			}
+			seen := map[string]bool{}
+			for _, id := range values {
+				if id == "" || !items[id] || fluids[id] || seen[id] {
+					return false
+				}
+				seen[id] = true
+			}
 		case "fluid_rate":
 			var value int
 			if definition.FluidCapacity == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil || value < 0 || value > definition.FluidRate {
@@ -151,6 +163,9 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 				}
 			}
 		}
+	}
+	if kind == "warehouse_pickup" && config["output_items"] == nil {
+		return false
 	}
 	return true
 }

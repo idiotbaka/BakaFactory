@@ -34,6 +34,7 @@ export function questAmount(
   p: components["schemas"]["IndustryState"] | undefined,
   q: Quest,
 ) {
+  if (q.goal.type === "submit_items") return 0;
   if (q.goal.type === "automated_delivery")
     return p?.quests?.automated_received ?? 0;
   if (q.goal.type === "factory_delivery")
@@ -151,6 +152,7 @@ export function syncQuests(f: LocalFactory) {
   ])
     if (
       questVisible(p, q) &&
+      q.goal.type !== "submit_items" &&
       !progress.completed.includes(q.id) &&
       questAmount(p, q) >= q.goal.count
     )
@@ -176,6 +178,21 @@ export function claimQuest(root: LocalFactory, id: string) {
   p.claimed.push(id);
   root.simulation.industry!.stage = expectedStage(root.simulation.industry!);
   discoverItems(root, Object.keys(q.rewards));
+  syncQuests(root);
+}
+export function submitQuest(root: LocalFactory, id: string) {
+  const q = catalog.quests?.find((q) => q.id === id);
+  const p = root.simulation.industry;
+  if (!q || q.goal.type !== "submit_items" || !questVisible(p, q))
+    throw new Error("材料提交任务尚未开放");
+  const progress = (p!.quests ??= newQuestProgress());
+  if (progress.completed.includes(id))
+    throw new Error("该任务已提交材料，请领取奖励");
+  store(
+    root.simulation.warehouse,
+    Object.fromEntries(q.goal.items!.map((item) => [item, -q.goal.count])),
+  );
+  progress.completed.push(id);
   syncQuests(root);
 }
 export function validQuestProgress(value: unknown) {

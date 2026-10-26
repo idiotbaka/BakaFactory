@@ -33,6 +33,12 @@ import {
   side,
 } from "./transportConfig";
 import { fuelValues } from "./fuel";
+import {
+  pickupType,
+  intakeType,
+  isWarehouseTerminal,
+  terminalItems,
+} from "./warehouseIO";
 
 type Candidate = {
   source: BuildingInstance;
@@ -66,7 +72,7 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
     const m = s.buildings[b.id],
       d = buildingDefinitions.get(b.building_type)!;
     if (m.cooldown > 0) m.cooldown--;
-    if (b.building_type === "bus") {
+    if (b.building_type === "bus" || isWarehouseTerminal(b.building_type)) {
       m.status = enabled(b) ? "warehouse" : "disabled";
       continue;
     }
@@ -133,6 +139,15 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
   ) => {
     if (!usable(b)) return [];
     const m = s.buildings[b.id];
+    if (b.building_type === pickupType) {
+      if (side(b, anchor) !== b.rotation) return [];
+      const items = terminalItems(b),
+        cursor = (m.terminal_cursor ?? 0) % items.length;
+      return [...items.slice(cursor), ...items.slice(0, cursor)].filter(
+        (id) => (!filter || filter === id) && (s.warehouse[id] ?? 0) > 0,
+      );
+    }
+    if (b.building_type === intakeType) return [];
     if (b.building_type === "bus") {
       const r = side(b, anchor),
         output = r === undefined ? undefined : face(b, r);
@@ -171,7 +186,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       if (
         !target ||
         !item ||
-        (!["bus", "chest"].includes(target.building_type) &&
+        (!["bus", "chest", intakeType].includes(target.building_type) &&
           !isBelt(target.building_type) &&
           !isChest(target.building_type))
       )
@@ -214,6 +229,14 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           items,
           limit: d.batch_size ?? 1,
         });
+      }
+    } else if (b.building_type === pickupType) {
+      const target = adjacent(b, b.rotation);
+      if (target && !isPort(target.building_type)) {
+        const [dx, dy] = direction(b.rotation);
+        const items = sourceItems(b, { ...target, x: b.x + dx, y: b.y + dy });
+        if (items.length)
+          candidates.push({ source: b, target, actor: b.id, items, limit: 1 });
       }
     } else if (b.building_type === "bus" && !m.cooldown) {
       for (const r of rotations) {
@@ -259,6 +282,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       beltSources = new Map<string, number>(),
       beltTargets = new Set<string>(),
       actors = new Set<string>();
+    const terminalSources = new Set<string>();
     const sources = new Map<string, Inventory>(),
       inputs = new Map<string, Inventory>(),
       outgoing = new Map<string, number>(),
@@ -276,10 +300,13 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         isBelt(target.building_type) ||
         isChest(target.building_type) ||
         target.building_type === "bus" ||
+        target.building_type === intakeType ||
         (targetDef.category === "machine" && !isPort(target.building_type));
       if (
         actors.has(c.actor) ||
         !usable(target) ||
+        (source.building_type === pickupType &&
+          terminalSources.has(source.id)) ||
         (isBelt(source.building_type) && beltSources.has(source.id)) ||
         !validTarget
       )
@@ -289,10 +316,15 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       for (const item of c.items) {
         const sourceCount = isBelt(source.building_type)
           ? (sourceState.belt?.count ?? 1)
-          : source.building_type === "bus"
+          : source.building_type === "bus" ||
+              source.building_type === pickupType
             ? (s.warehouse[item] ?? 0) - (outgoing.get(item) ?? 0)
             : count(sources.get(source.id) ?? sourceState.output, item);
-        let n = Math.min(sourceCount, c.limit),
+        let n = Math.min(
+            sourceCount,
+            c.limit,
+            source.building_type === pickupType ? 1 : Infinity,
+          ),
           destination: Move["destination"],
           inv: Inventory | undefined;
         if (isBelt(target.building_type)) {
@@ -300,9 +332,17 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           n = Math.min(n, beltCapacity(target.building_type));
           destination = "belt";
           if (itemFilter(target) && itemFilter(target) !== item) continue;
-        } else if (target.building_type === "bus") {
+        } else if (
+          target.building_type === "bus" ||
+          target.building_type === intakeType
+        ) {
           const r = side(target, c.via ?? source),
-            intake = r === undefined ? undefined : face(target, r);
+            intake =
+              target.building_type === intakeType
+                ? { mode: "input", filter: "" }
+                : r === undefined
+                  ? undefined
+                  : face(target, r);
           if (
             !intake ||
             intake.mode !== "input" ||
@@ -356,7 +396,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         }
         if (isBelt(source.building_type))
           beltSources.set(source.id, chosen.length);
-        else if (source.building_type === "bus")
+        else if (
+          source.building_type === "bus" ||
+          source.building_type === pickupType
+        )
           outgoing.set(item, (outgoing.get(item) ?? 0) + n);
         else {
           const inv = structuredClone(
@@ -369,6 +412,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         if (destination === "warehouse")
           incoming.set(item, (incoming.get(item) ?? 0) + n);
         actors.add(c.actor);
+        if (source.building_type === pickupType) terminalSources.add(source.id);
         let payload =
           sourceState.belt && n === (sourceState.belt.count ?? 1)
             ? sourceState.belt.id
@@ -449,7 +493,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         delete m.belt;
         m.status = "idle";
       }
-    } else if (t.source.building_type === "bus")
+    } else if (
+      t.source.building_type === "bus" ||
+      t.source.building_type === pickupType
+    )
       s.warehouse[t.item] -= t.quantity;
     else remove(m.output, t.item, t.quantity);
   }
@@ -459,7 +506,9 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     if (
       t.via ||
       t.source.building_type === "bus" ||
-      t.target.building_type === "bus"
+      t.target.building_type === "bus" ||
+      isWarehouseTerminal(t.source.building_type) ||
+      isWarehouseTerminal(t.target.building_type)
     ) {
       const event: ItemTransfer = {
         id: `transfer:${s.tick}:${i}`,
@@ -472,6 +521,12 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         ...(t.via ? { via: endpoint(t.via) } : {}),
       };
       s.transfers.push(event);
+    }
+    if (t.source.building_type === pickupType) {
+      const items = terminalItems(t.source);
+      s.buildings[t.source.id].terminal_cursor =
+        (items.indexOf(t.item) + 1) % items.length;
+      s.buildings[t.source.id].status = "transferring";
     }
     if (t.destination === "belt") {
       m.belt = { id: t.payload, item: t.item, count: t.quantity, progress: 0 };

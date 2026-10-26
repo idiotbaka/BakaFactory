@@ -127,6 +127,8 @@ export default function FactoryEditor(props: Props) {
   const isFixed = (b: BuildingInstance) =>
     b.building_type === "bus" ||
     Boolean(catalog.buildings.find((d) => d.id === b.building_type)?.fixed);
+  const isTerminal = (b: BuildingInstance) =>
+    ["warehouse_pickup", "warehouse_intake"].includes(b.building_type);
   const fixed = selected ? isFixed(selected) : false;
   const preview: Preview | null =
     dragPreview ??
@@ -378,7 +380,7 @@ export default function FactoryEditor(props: Props) {
   function remove(id = latest.current.selectedID) {
     const f = latest.current.factory,
       b = f.buildings.find((b) => b.id === id);
-    if (!b || isFixed(b) || lock.current) return;
+    if (!b || isFixed(b) || isTerminal(b) || lock.current) return;
     void commit(
       () => latest.current.commands.deleteBuilding(f.id, b.id),
       () => null,
@@ -766,6 +768,7 @@ export default function FactoryEditor(props: Props) {
             saving ||
             !selected ||
             fixed ||
+            (selected && isTerminal(selected)) ||
             Boolean(preview) ||
             Boolean(placementDefinition)
           }
@@ -1198,7 +1201,9 @@ export default function FactoryEditor(props: Props) {
             </small>
             <button
               role="menuitem"
-              disabled={isFixed(menuBuilding) || saving}
+              disabled={
+                isFixed(menuBuilding) || isTerminal(menuBuilding) || saving
+              }
               onClick={() => remove(menuBuilding.id)}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1207,6 +1212,9 @@ export default function FactoryEditor(props: Props) {
               <span>删除</span>
             </button>
             {isFixed(menuBuilding) && <small>工厂仓库固定</small>}
+            {isTerminal(menuBuilding) && (
+              <small>仓库终端可移动，不可删除</small>
+            )}
           </div>,
           document.body,
         )}
