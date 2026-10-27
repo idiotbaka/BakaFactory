@@ -11,6 +11,7 @@ import { STEP_SECONDS, isStepValue } from "./simulationTime";
 import { validFluidConfig } from "./fluidConfig";
 import { isWarehouseTerminal, pickupType } from "./warehouseIO";
 import { undergroundType } from "./underground";
+import { canAutoEject } from "./machineOutput";
 
 export const rotations = [0, 90, 180, 270] as const;
 export type Rotation = (typeof rotations)[number];
@@ -122,6 +123,11 @@ export function validTransportConfig(
   )
     return false;
   if (c.enabled !== undefined && typeof c.enabled !== "boolean") return false;
+  if (
+    c.auto_eject !== undefined &&
+    (typeof c.auto_eject !== "boolean" || !canAutoEject(b.building_type))
+  )
+    return false;
   if (
     c.interval !== undefined &&
     (!isStepValue(c.interval, 60) ||

@@ -20,6 +20,7 @@ import { machineBatchLimit, validFeedBatches } from "./machineFeed";
 import { expectedStage, ordersUnlocked } from "./progression";
 import { planWorkshopOrder } from "./orders";
 import { nextOrderInventory } from "./orderInventory";
+import { canAutoEject } from "./machineOutput";
 import {
   workshopBatchLimit,
   workshopOutputFits,
@@ -56,6 +57,7 @@ export type IndustryAction =
   | { type: "order_workshop"; item: string; count: number; signature: string }
   | { type: "cancel_workshop" }
   | { type: "recipe"; id: string; recipe: string }
+  | { type: "auto_eject"; id: string; enabled: boolean }
   | { type: "feed"; id: string; item: string; count: number }
   | { type: "feed_batch"; id: string; batches?: number }
   | { type: "collect_input"; id: string }
@@ -168,7 +170,14 @@ export function applyIndustry(f: LocalFactory, action: IndustryAction) {
   if (!b) throw new Error("设备不存在");
   const m = f.simulation.buildings[b.id],
     d = buildingDefinitions.get(b.building_type)!;
-  if (action.type === "recipe") {
+  if (action.type === "auto_eject") {
+    if (!canAutoEject(b.building_type) || typeof action.enabled !== "boolean")
+      throw new Error("仅生产机器可设置自动弹出，开关必须为布尔值");
+    b.configuration.auto_eject = action.enabled;
+    f.simulation.transfers = (f.simulation.transfers ?? []).filter(
+      (t) => t.source.id !== b.id,
+    );
+  } else if (action.type === "recipe") {
     const r = recipeDefinitions.get(action.recipe);
     if (!r || r.building_type !== b.building_type || !recipeAvailable(f, r.id))
       throw new Error("配方不属于该设备或尚未解锁");

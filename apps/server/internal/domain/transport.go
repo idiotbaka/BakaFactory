@@ -115,6 +115,15 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil {
 				return false
 			}
+		case "auto_eject":
+			var value bool
+			production := false
+			for _, r := range c.Recipes {
+				production = production || r.BuildingType == kind
+			}
+			if definition.Category != "machine" || !production || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil {
+				return false
+			}
 		case "interval":
 			var value float64
 			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil || !validHalf(value) || value < 0.5 || value > 60 {

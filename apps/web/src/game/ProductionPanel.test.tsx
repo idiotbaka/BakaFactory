@@ -38,6 +38,56 @@ function fixture(id = "sorter") {
 }
 
 describe("machine batch refill controls", () => {
+  it("places an independent auto-eject switch below machine enable, defaults off and respects paused UI", () => {
+    const props = fixture();
+    const { rerender } = render(<ProductionInspector {...props} />);
+    const toggle = screen.getByRole("button", { name: "自动弹出：已禁用" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(
+      screen.getByRole("button", { name: "暂停设备" }).nextElementSibling,
+    ).toBe(toggle);
+    fireEvent.click(toggle);
+    expect(props.act).toHaveBeenLastCalledWith({
+      type: "auto_eject",
+      id: "sorter",
+      enabled: true,
+    });
+    props.instance.configuration.auto_eject = true;
+    rerender(<ProductionInspector {...props} />);
+    expect(
+      screen.getByRole("button", { name: "自动弹出：已启用" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "自动弹出：已启用" }));
+    expect(props.act).toHaveBeenLastCalledWith({
+      type: "auto_eject",
+      id: "sorter",
+      enabled: false,
+    });
+    props.act.mockClear();
+    rerender(<ProductionInspector {...props} disabled />);
+    expect(
+      screen.getByRole("button", { name: "自动弹出：已启用" }),
+    ).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "自动弹出：已启用" }));
+    expect(props.act).not.toHaveBeenCalled();
+    for (const type of ["bus", "feeder", "m09"]) {
+      const definition = catalog.buildings.find((b) => b.id === type)!;
+      rerender(
+        <ProductionInspector
+          {...props}
+          definition={definition}
+          instance={{
+            ...props.instance,
+            building_type: type,
+            configuration: {},
+          }}
+        />,
+      );
+      expect(
+        screen.queryByRole("button", { name: /自动弹出/ }),
+      ).not.toBeInTheDocument();
+    }
+  });
   it("defaults to one batch and clamps an oversized entry instead of rejecting the form", () => {
     const props = fixture();
     render(<ProductionInspector {...props} />);

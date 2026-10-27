@@ -1,9 +1,10 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import DiagnosticsPanel from "./DiagnosticsPanel";
 import { createWorld } from "./local/world";
 import { newMachine } from "./local/state";
 import { catalog } from "./local/catalog";
+import { openGameSelect } from "../test/gameSelect";
 describe("factory diagnostics panel", () => {
   it("separates theoretical and confirmed rates and locates a real machine without supplying materials", () => {
     const f = createWorld(
@@ -50,11 +51,11 @@ describe("factory diagnostics panel", () => {
       fireEvent.change(screen.getByLabelText("诊断物品搜索"), {
         target: { value: query },
       });
-      const options = within(screen.getByLabelText("诊断物品")).getAllByRole(
-        "option",
-      );
+      const select = screen.getByRole("combobox", { name: "诊断物品" });
+      const options = openGameSelect(select).getAllByRole("option");
       expect(options).toHaveLength(1);
       expect(options[0]).toHaveTextContent("绝缘线缆");
+      fireEvent.keyDown(select, { key: "Escape" });
       expect(screen.getByText(/web_cable_start/)).toBeInTheDocument();
     }
   });

@@ -1,5 +1,5 @@
 import { STEP_SECONDS, ticksToSeconds, secondsToTicks } from "./simulationTime";
-import { occupancy, contactCell } from "../footprint";
+import { occupancy, contactCell, edgeCells } from "../footprint";
 import type {
   BuildingInstance,
   ItemTransfer,
@@ -34,6 +34,7 @@ import {
   side,
 } from "./transportConfig";
 import { fuelValues } from "./fuel";
+import { autoEject, AUTO_EJECT_BATCH } from "./machineOutput";
 import { isUnderground, isUndergroundEntry } from "./underground";
 import {
   pickupType,
@@ -243,6 +244,25 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           limit: d.batch_size ?? 1,
         });
       }
+    } else if (autoEject(b) && enabled(b)) {
+      const items = sourceItems(b, b);
+      if (!items.length) continue;
+      // A large machine may have two forward edge cells, but shares one
+      // actor and one batch across them. Never route through its footprint.
+      const targets = new Set<string>();
+      for (const cell of edgeCells(b, b.rotation)) {
+        const target = positions.get(`${cell.x},${cell.y}`);
+        if (!target || targets.has(target.id) || isPort(target.building_type))
+          continue;
+        targets.add(target.id);
+        candidates.push({
+          source: b,
+          target,
+          actor: b.id,
+          items,
+          limit: AUTO_EJECT_BATCH,
+        });
+      }
     } else if (b.building_type === pickupType && !m.cooldown) {
       const target = adjacent(b, b.rotation);
       if (target && !isPort(target.building_type)) {
@@ -281,7 +301,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     if (!isUndergroundEntry(c.target)) return [];
     const entry = c.target,
       exit = nodes.get(entry.configuration.underground_peer as string);
-    const anchor = c.via ?? c.source,
+    const anchor = contactCell(c.via ?? c.source, entry),
       [dx, dy] = direction(entry.rotation);
     if (
       !exit ||
@@ -310,7 +330,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
   // An active pickup gets first refusal on its belt's old stock. Otherwise
   // passive output can win on alternating rotations and skip a ready arm.
   // Keep the rotated order between arms; failed pickups reserve nothing.
-  const pickup = (c: Candidate) => c.via && isBelt(c.source.building_type);
+  // Preserve explicit extractors when a machine also ejects automatically;
+  // its passive output can reserve only the stock left by those extractors.
+  const pickup = (c: Candidate) =>
+    c.via && (isBelt(c.source.building_type) || autoEject(c.source));
   candidates = [
     ...candidates.filter(pickup),
     ...candidates.filter((c) => !pickup(c)),
@@ -401,7 +424,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           target.building_type === "bus" ||
           target.building_type === intakeType
         ) {
-          const r = side(target, c.via ?? source),
+          const r = side(target, contactCell(c.via ?? source, target)),
             intake =
               target.building_type === intakeType
                 ? { mode: "input", filter: "" }
@@ -597,6 +620,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     if (
       !tunnels.has(t.candidate) &&
       (t.via ||
+        autoEject(t.source) ||
         t.source.building_type === "bus" ||
         t.target.building_type === "bus" ||
         isWarehouseTerminal(t.source.building_type) ||

@@ -145,6 +145,8 @@ describe("local factory workspace", () => {
       palette.getByRole("button", { name: /^初阶传送带/ }),
     ).toBeInTheDocument();
   });
+  // These multi-transition fixtures render the full 21×21 map repeatedly.
+  // Keep gameplay timer assertions, but allow a bounded wall-clock budget.
   it("hides map operation errors after three seconds and gives repeated errors a fresh lifetime", async () => {
     vi.useFakeTimers();
     prepare();
@@ -154,7 +156,12 @@ describe("local factory workspace", () => {
     const { unmount } = render(
       <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "工作室" }));
+    fireEvent.click(
+      within(screen.getByRole("navigation", { name: "工厂视图" })).getByRole(
+        "button",
+        { name: "工作室" },
+      ),
+    );
     const scavenge = screen.getByRole("button", { name: /拾取 1 包垃圾/ });
     await act(async () => {
       fireEvent.click(scavenge);
@@ -171,7 +178,7 @@ describe("local factory workspace", () => {
     act(() => vi.advanceTimersByTime(1));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     unmount();
-  });
+  }, 15_000);
   it("filters each catalog by phase, locks future structures, previews future items and keeps original shortcuts", () => {
     prepare(true, {
       setup: (f) => {
@@ -263,12 +270,14 @@ describe("local factory workspace", () => {
     const dialog = screen.getByRole("dialog", { name: "P1：工厂开饭了" });
     expect(dialog).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "关闭剧情" }),
+      within(dialog).queryByRole("button", { name: "关闭剧情" }),
     ).not.toBeInTheDocument();
     for (let i = 0; i < 4; i++)
       fireEvent.click(within(dialog).getByRole("button", { name: "下一页" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "完成" }));
-    await vi.waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await act(async () => {
+      fireEvent.click(within(dialog).getByRole("button", { name: "完成" }));
+    });
+    expect(dialog).not.toBeInTheDocument();
     expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(p1StoryID);
     fireEvent.click(screen.getByText("重放剧情"));
     fireEvent.click(screen.getByRole("button", { name: "P1：工厂开饭了" }));
@@ -277,7 +286,7 @@ describe("local factory workspace", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "关闭剧情" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
+  }, 15_000);
   it("keeps P1 replay locked until a real claim and avoids forcing historical or conflicted progress", () => {
     prepare(true, {
       setup: (f) => {
@@ -331,13 +340,16 @@ describe("local factory workspace", () => {
     });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     const hud = within(screen.getByRole("region", { name: "工作室加工" }));
-    fireEvent.click(screen.getByRole("button", { name: "工作室" }));
+    const navigation = within(
+      screen.getByRole("navigation", { name: "工厂视图" }),
+    );
+    fireEvent.click(navigation.getByRole("button", { name: "工作室" }));
     expect(screen.queryByText(/当前进度见顶部横栏/)).not.toBeInTheDocument();
     expect(
       screen.getAllByRole("button", { name: "取消队列并返还未完成原料" }),
     ).toHaveLength(1);
     expect(hud.getByText("第 2 / 3 批")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "仓库" }));
+    fireEvent.click(navigation.getByRole("button", { name: "仓库" }));
     expect(hud.getByText("尚余 2 批（含当前批）")).toBeInTheDocument();
     fireEvent.click(
       hud.getByRole("button", { name: "取消队列并返还未完成原料" }),
@@ -345,11 +357,11 @@ describe("local factory workspace", () => {
     expect(runtimeAct).toHaveBeenCalledExactlyOnceWith({
       type: "cancel_workshop",
     });
-    expect(screen.getByRole("button", { name: "仓库" })).toHaveAttribute(
+    expect(navigation.getByRole("button", { name: "仓库" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-  });
+  }, 15_000);
   it("automatically plays the opening before naming, saves completion and waits for explicit factory creation", async () => {
     prepare(false, { viewedStories: [] });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);

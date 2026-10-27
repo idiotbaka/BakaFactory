@@ -9,6 +9,7 @@ import type { IndustryAction } from "./local/industry";
 import { isSolidTransport } from "./local/transportConfig";
 import { powerPriority, producerKind } from "./local/power";
 import { itemID, selectedRecipe } from "./local/catalog";
+import { autoEject, canAutoEject } from "./local/machineOutput";
 
 export const powerNames = {
   shaft: "轴功",
@@ -70,6 +71,27 @@ export function UtilityInspector({
         >
           {instance.configuration.enabled === false ? "启用设备" : "暂停设备"}
         </button>
+      )}
+      {canAutoEject(definition.id) && (
+        <>
+          <button
+            disabled={disabled}
+            aria-pressed={autoEject(instance)}
+            onClick={() =>
+              act({
+                type: "auto_eject",
+                id: instance.id,
+                enabled: !autoEject(instance),
+              })
+            }
+          >
+            自动弹出：{autoEject(instance) ? "已启用" : "已禁用"}
+          </button>
+          <p>
+            每 0.5 秒向朝向一侧弹出一种产物，最多 6
+            件；目标满载时留在机器内。散装流体仍需管道。
+          </p>
+        </>
       )}
       {generator && (
         <p>
