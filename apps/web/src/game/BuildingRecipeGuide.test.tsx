@@ -60,7 +60,7 @@ describe("building acquisition guide", () => {
     const dialog = show("bus");
     expect(
       dialog.getByText(
-        "创建厂区时自动提供的固定设施，无需合成或消耗安装道具。",
+        "创建厂区时自动提供的内置设施，可长按移动、方向固定且不可删除；无需合成或消耗安装道具。",
       ),
     ).toBeInTheDocument();
     expect(dialog.queryByText(/生产安装道具的配方/)).not.toBeInTheDocument();

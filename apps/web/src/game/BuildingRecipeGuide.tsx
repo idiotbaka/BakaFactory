@@ -192,7 +192,7 @@ export default function BuildingRecipeGuide({
                   <h3>获取方式</h3>
                   {definition.fixed ? (
                     <p>
-                      创建厂区时自动提供的固定设施，无需合成或消耗安装道具。
+                      创建厂区时自动提供的内置设施，可长按移动、方向固定且不可删除；无需合成或消耗安装道具。
                     </p>
                   ) : definition.item ? (
                     <>
@@ -240,7 +240,7 @@ export default function BuildingRecipeGuide({
                   {!related.length && (
                     <p className="no-recipes">
                       {definition.fixed
-                        ? "工厂仓库接收产线物品并计入本区仓库，不执行加工配方。"
+                        ? "工厂仓库接收产线物品并计入共用总仓库，不执行加工配方。"
                         : "该设施不执行加工配方；获取方式见上方。"}
                     </p>
                   )}

@@ -90,7 +90,9 @@ export const homeEndpoint = (r: Robot): Endpoint => ({
   building_id: r.home_station,
 });
 export const warehouseBuilding = (root: LocalFactory, factoryID: string) =>
-  worldIndex(root).byID.get(factoryID)?.buildings.find((b) => b.building_type === "bus");
+  worldIndex(root)
+    .byID.get(factoryID)
+    ?.buildings.find((b) => b.building_type === "bus");
 export function warehouseEndpoint(root: LocalFactory, id: string): Endpoint {
   return {
     factory_id: id,

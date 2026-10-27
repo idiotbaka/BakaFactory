@@ -375,7 +375,9 @@ func TestRelocatedWarehouseCloudRoundTrip(t *testing.T) {
 	if w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie); w.Code != 200 {
 		t.Fatal("relocated warehouse rejected", w.Code, w.Body)
 	}
-	var response struct { Backup domain.CloudSave `json:"backup"` }
+	var response struct {
+		Backup domain.CloudSave `json:"backup"`
+	}
 	w := f.cloudRequest("GET", session, "", cookie)
 	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || !reflect.DeepEqual(response.Backup.Save, save) {
 		t.Fatal("warehouse position or stock changed in cloud roundtrip", err)

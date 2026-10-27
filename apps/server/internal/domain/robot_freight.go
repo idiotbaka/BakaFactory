@@ -141,7 +141,7 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 			}
 			return false
 		}
-		if !d.CrossDistrict || !zones[t.ToFactoryID] || t.ToFactoryID == r.FactoryID || t.RemainingTicks < 0 || t.RemainingTicks > 8 || !footprintInBounds(t.X, t.Y, 1) || !nearWarehouse(r.FactoryID, r.X, r.Y) || !nearWarehouse(t.ToFactoryID, t.X, t.Y) {
+		if !d.CrossDistrict || !zones[t.ToFactoryID] || t.ToFactoryID == r.FactoryID || t.RemainingTicks < 0 || t.RemainingTicks > 8 || !footprintInBounds(t.X, t.Y, nil) || !nearWarehouse(r.FactoryID, r.X, r.Y) || !nearWarehouse(t.ToFactoryID, t.X, t.Y) {
 			return false
 		}
 		dest, exists := factories[t.ToFactoryID]

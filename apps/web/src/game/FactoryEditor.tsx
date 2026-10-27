@@ -900,8 +900,8 @@ export default function FactoryEditor(props: Props) {
             ? dragPreview.definition.id === "bus"
               ? "移动工厂仓库 · 方向固定 · 松开左键确认"
               : dragPreview.definition.id === undergroundType
-              ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
-              : "移动建筑 · 右键旋转 · 松开左键确认"
+                ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
+                : "移动建筑 · 右键旋转 · 松开左键确认"
             : placementDefinition
               ? placingUnderground
                 ? undergroundEntry
@@ -912,8 +912,8 @@ export default function FactoryEditor(props: Props) {
                 ? selected.building_type === "bus"
                   ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
                   : fixed
-                  ? "固定设施，无法编辑"
-                  : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
+                    ? "固定设施，无法编辑"
+                    : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
                 : "点击图鉴连续建造 · 长按建筑移动 · 拖动空格平移"}
         </span>
       </div>
@@ -1394,7 +1394,9 @@ export default function FactoryEditor(props: Props) {
                 {isUnderground(menuBuilding) ? "回收整对出入口" : "删除"}
               </span>
             </button>
-            {isFixed(menuBuilding) && <small>工厂仓库可移动，不可旋转或删除</small>}
+            {isFixed(menuBuilding) && (
+              <small>工厂仓库可移动，不可旋转或删除</small>
+            )}
             {isTerminal(menuBuilding) && (
               <small>仓库终端可移动，不可删除</small>
             )}

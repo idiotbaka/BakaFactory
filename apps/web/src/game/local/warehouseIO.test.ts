@@ -73,7 +73,11 @@ describe("warehouse IO upgrades and actual submissions", () => {
   it("installs purchased terminals next to the warehouse's current position", () => {
     let f = start(2, true);
     f.simulation.warehouse[itemID("基础铁板")] = 30;
-    f = editWorld(f, { kind: "move", id: f.buildings[0].id, placement: { x: 8, y: 8, rotation: 0 } });
+    f = editWorld(f, {
+      kind: "move",
+      id: f.buildings[0].id,
+      placement: { x: 8, y: 8, rotation: 0 },
+    });
     f = actWorld(f, { type: "upgrade_io", id: f.id, terminal: pickupType });
     const terminal = f.buildings.find((b) => b.building_type === pickupType)!;
     expect(Math.abs(terminal.x - 8) + Math.abs(terminal.y - 8)).toBe(1);

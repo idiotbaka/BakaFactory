@@ -528,8 +528,11 @@ describe("factory editor interactions", () => {
   });
   it("drags the warehouse after 50ms while ignoring rotation during the drag and retaining its instance", async () => {
     vi.useFakeTimers();
-    vi.mocked(updateBuilding).mockResolvedValue({ ...original,
-      buildings: original.buildings.map((b) => b.id === "bus" ? { ...b, x: 3, y: 2 } : b),
+    vi.mocked(updateBuilding).mockResolvedValue({
+      ...original,
+      buildings: original.buildings.map((b) =>
+        b.id === "bus" ? { ...b, x: 3, y: 2 } : b,
+      ),
     });
     render(<Harness />);
     const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
@@ -539,8 +542,14 @@ describe("factory editor interactions", () => {
     fireEvent.keyDown(window, { key: "r" });
     fireEvent.mouseDown(window, { button: 2 });
     fireEvent.mouseUp(window, { button: 2 });
-    await act(async () => fireEvent.pointerUp(window, { ...point(3, 2), button: 0, buttons: 0 }));
-    expect(updateBuilding).toHaveBeenCalledExactlyOnceWith(original.id, "bus", { x: 3, y: 2, rotation: 0 });
+    await act(async () =>
+      fireEvent.pointerUp(window, { ...point(3, 2), button: 0, buttons: 0 }),
+    );
+    expect(updateBuilding).toHaveBeenCalledExactlyOnceWith(original.id, "bus", {
+      x: 3,
+      y: 2,
+      rotation: 0,
+    });
     expect(screen.getByLabelText("工厂仓库 WH (3,2)")).toBeInTheDocument();
     expect(screen.getByLabelText("空格 (0,0)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /旋转建筑/ })).toBeDisabled();

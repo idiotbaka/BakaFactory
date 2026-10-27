@@ -841,10 +841,10 @@ export default function FactoryWorkspace({
                           {buildingDefinition.id === "bus"
                             ? "可移动 · 方向固定 · 不可删除"
                             : buildingDefinition.fixed
-                            ? "固定设施"
-                            : isWarehouseTerminal(buildingDefinition.id)
-                              ? "厂区升级安装 · 可移动 · 不可删除"
-                              : "可连续放置 / 移动"}
+                              ? "固定设施"
+                              : isWarehouseTerminal(buildingDefinition.id)
+                                ? "厂区升级安装 · 可移动 · 不可删除"
+                                : "可连续放置 / 移动"}
                         </dd>
                       </div>
                     )}
