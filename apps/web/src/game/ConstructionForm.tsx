@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { supportsLargeSize } from "./footprint";
 import { useState } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
@@ -66,12 +67,13 @@ export default function ConstructionForm({
       </p>
       <label>
         安装设备
-        <select
+        <GameSelect
+          catalog={catalog}
           aria-label="蓝图设备"
           disabled={disabled}
           value={d?.id ?? ""}
-          onChange={(e) => {
-            setType(e.target.value);
+          onValueChange={(choiceValue) => {
+            setType(choiceValue);
             setSize(1);
           }}
         >
@@ -80,20 +82,23 @@ export default function ConstructionForm({
               {d.name}
             </option>
           ))}
-        </select>
+        </GameSelect>
       </label>
       {d && supportsLargeSize(d) && (
         <label>
           占地尺寸
-          <select
+          <GameSelect
+            catalog={catalog}
             aria-label="蓝图占地尺寸"
             value={placementSize}
             disabled={disabled}
-            onChange={(e) => setSize(Number(e.target.value) as 1 | 2)}
+            onValueChange={(choiceValue) =>
+              setSize(Number(choiceValue) as 1 | 2)
+            }
           >
             <option value={1}>1×1</option>
             <option value={2}>2×2</option>
-          </select>
+          </GameSelect>
         </label>
       )}
       <label>
@@ -124,12 +129,13 @@ export default function ConstructionForm({
       </label>
       <label>
         安装方向
-        <select
+        <GameSelect
+          catalog={catalog}
           aria-label="蓝图方向"
           disabled={disabled}
           value={rotation}
-          onChange={(e) =>
-            setRotation(Number(e.target.value) as typeof rotation)
+          onValueChange={(choiceValue) =>
+            setRotation(Number(choiceValue) as typeof rotation)
           }
         >
           {([0, 90, 180, 270] as const).map((n) => (
@@ -137,15 +143,17 @@ export default function ConstructionForm({
               {n}°
             </option>
           ))}
-        </select>
+        </GameSelect>
       </label>
       <label>
         安装后配方
-        <select
+        <GameSelect
+          kind="recipe"
+          catalog={catalog}
           aria-label="蓝图配方"
           disabled={disabled}
           value={recipe?.id ?? ""}
-          onChange={(e) => setRecipeID(e.target.value)}
+          onValueChange={(choiceValue) => setRecipeID(choiceValue)}
         >
           <option value="">暂不配置</option>
           {recipes.map((r) => (
@@ -153,7 +161,7 @@ export default function ConstructionForm({
               {r.name}
             </option>
           ))}
-        </select>
+        </GameSelect>
       </label>
       <small>
         消耗：{catalog.items.find((i) => i.id === d?.item)?.name ?? "设备"} ×

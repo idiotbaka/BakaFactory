@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { useState } from "react";
 import type {
   BuildingDefinition,
@@ -116,13 +117,15 @@ export default function LogisticsInspector({
           {[0, 1].map((index) => (
             <label key={index}>
               {index === 0 ? "第一种物品（必选）" : "第二种物品（可选）"}
-              <select
+              <GameSelect
+                kind="item"
+                catalog={catalog}
                 aria-label={`取货终端物品 ${index + 1}`}
                 disabled={disabled}
                 value={terminalItems(instance)[index] ?? ""}
-                onChange={(e) => {
+                onValueChange={(choiceValue) => {
                   const values = [...terminalItems(instance)];
-                  values[index] = e.target.value;
+                  values[index] = choiceValue;
                   act({
                     type: "transport",
                     id: instance.id,
@@ -142,7 +145,7 @@ export default function LogisticsInspector({
                       {i.name}
                     </option>
                   ))}
-              </select>
+              </GameSelect>
             </label>
           ))}
         </>
@@ -162,32 +165,35 @@ export default function LogisticsInspector({
             return (
               <fieldset key={r}>
                 <legend>{sides[r]}面</legend>
-                <select
+                <GameSelect
+                  kind="item"
+                  catalog={catalog}
                   aria-label={`${sides[r]}面物品`}
                   disabled={disabled}
                   value={value.filter}
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "bus_face",
                       id: instance.id,
                       rotation: r,
                       mode: value.mode,
-                      filter: e.target.value,
+                      filter: choiceValue,
                     })
                   }
                 >
                   {choices("全部物品（仅输入）")}
-                </select>
-                <select
+                </GameSelect>
+                <GameSelect
+                  catalog={catalog}
                   aria-label={`${sides[r]}面模式`}
                   disabled={disabled}
                   value={value.mode}
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "bus_face",
                       id: instance.id,
                       rotation: r,
-                      mode: e.target.value as FaceMode,
+                      mode: choiceValue as FaceMode,
                       filter: value.filter,
                     })
                   }
@@ -197,7 +203,7 @@ export default function LogisticsInspector({
                     输出
                   </option>
                   <option value="closed">关闭</option>
-                </select>
+                </GameSelect>
               </fieldset>
             );
           })}
@@ -207,53 +213,57 @@ export default function LogisticsInspector({
           {(port || chest || belt) && (
             <label>
               过滤物品
-              <select
+              <GameSelect
+                kind="item"
+                catalog={catalog}
                 disabled={disabled}
                 aria-label="物流过滤物品"
                 value={itemFilter(instance)}
-                onChange={(e) =>
+                onValueChange={(choiceValue) =>
                   act({
                     type: "transport",
                     id: instance.id,
-                    filter: e.target.value,
+                    filter: choiceValue,
                   })
                 }
               >
                 {choices("任意固体")}
-              </select>
+              </GameSelect>
             </label>
           )}
           {port && (
             <>
               <label>
                 目标缓存
-                <select
+                <GameSelect
+                  catalog={catalog}
                   aria-label="投料目标缓存"
                   disabled={disabled}
                   value={channel(instance)}
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "transport",
                       id: instance.id,
-                      channel: e.target.value as "input" | "fuel",
+                      channel: choiceValue as "input" | "fuel",
                     })
                   }
                 >
                   <option value="input">配方原料 / 箱子 / 传送带</option>
                   <option value="fuel">炉体或动力机燃料</option>
-                </select>
+                </GameSelect>
               </label>
               <label>
                 传输间隔
-                <select
+                <GameSelect
+                  catalog={catalog}
                   aria-label="传输间隔"
                   disabled={disabled}
                   value={interval(instance)}
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "transport",
                       id: instance.id,
-                      interval: Number(e.target.value),
+                      interval: Number(choiceValue),
                     })
                   }
                 >
@@ -277,7 +287,7 @@ export default function LogisticsInspector({
                         {n} 秒 / 批 · 最多 {definition.batch_size ?? 1} 件
                       </option>
                     ))}
-                </select>
+                </GameSelect>
               </label>
             </>
           )}
@@ -293,21 +303,23 @@ export default function LogisticsInspector({
               ].map((r) => (
                 <label key={r}>
                   {sides[r]}分支
-                  <select
+                  <GameSelect
+                    kind="item"
+                    catalog={catalog}
                     aria-label={`${sides[r]}分支过滤`}
                     disabled={disabled}
                     value={branchFilter(instance, r)}
-                    onChange={(e) =>
+                    onValueChange={(choiceValue) =>
                       act({
                         type: "branch",
                         id: instance.id,
                         rotation: r as Rotation,
-                        filter: e.target.value,
+                        filter: choiceValue,
                       })
                     }
                   >
                     {choices("任意固体（分支不限）")}
-                  </select>
+                  </GameSelect>
                 </label>
               ))}
             </>
@@ -321,11 +333,13 @@ export default function LogisticsInspector({
               </p>
               <label>
                 从仓库存入
-                <select
+                <GameSelect
+                  kind="item"
+                  catalog={catalog}
                   aria-label="箱子存入物品"
                   disabled={disabled}
                   value={depositItem}
-                  onChange={(e) => setDepositItem(e.target.value)}
+                  onValueChange={(choiceValue) => setDepositItem(choiceValue)}
                 >
                   <option value="">选择仓库中的固体</option>
                   {items
@@ -335,7 +349,7 @@ export default function LogisticsInspector({
                         {i.name}（{stock[i.id]}）
                       </option>
                     ))}
-                </select>
+                </GameSelect>
               </label>
               <label>
                 数量

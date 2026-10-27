@@ -1,5 +1,7 @@
+import GameSelect from "./GameSelect";
 import type {
   BuildingDefinition,
+  Catalog,
   BuildingInstance,
   FactoryDetail,
 } from "../api/client";
@@ -16,12 +18,14 @@ export const powerNames = {
 export { default as PowerOverview } from "./EnergyOverview";
 export function UtilityInspector({
   factory,
+  catalog,
   definition,
   instance,
   act,
   disabled,
 }: {
   factory: FactoryDetail;
+  catalog: Catalog;
   definition: BuildingDefinition;
   instance: BuildingInstance;
   act: (action: IndustryAction) => void;
@@ -100,15 +104,16 @@ export function UtilityInspector({
             <>
               <label>
                 负载优先级
-                <select
+                <GameSelect
+                  catalog={catalog}
                   aria-label="负载优先级"
                   disabled={disabled}
                   value={powerPriority(instance)}
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "power_config",
                       id: instance.id,
-                      priority: Number(e.target.value),
+                      priority: Number(choiceValue),
                     })
                   }
                 >
@@ -122,11 +127,12 @@ export function UtilityInspector({
                           : ""}
                     </option>
                   ))}
-                </select>
+                </GameSelect>
               </label>
               <label>
                 供能连接侧
-                <select
+                <GameSelect
+                  catalog={catalog}
                   aria-label="供能连接侧"
                   disabled={disabled}
                   value={
@@ -134,11 +140,11 @@ export function UtilityInspector({
                       ? instance.configuration.power_side
                       : -1
                   }
-                  onChange={(e) =>
+                  onValueChange={(choiceValue) =>
                     act({
                       type: "power_config",
                       id: instance.id,
-                      power_side: Number(e.target.value),
+                      power_side: Number(choiceValue),
                     })
                   }
                 >
@@ -147,7 +153,7 @@ export function UtilityInspector({
                   <option value={90}>南</option>
                   <option value={180}>西</option>
                   <option value={270}>北</option>
-                </select>
+                </GameSelect>
               </label>
             </>
           )}
@@ -197,7 +203,8 @@ export function UtilityInspector({
           />
           <label>
             充放模式
-            <select
+            <GameSelect
+              catalog={catalog}
               aria-label="储能模式"
               disabled={disabled}
               value={
@@ -205,11 +212,11 @@ export function UtilityInspector({
                   ? instance.configuration.battery_mode
                   : "auto"
               }
-              onChange={(e) =>
+              onValueChange={(choiceValue) =>
                 act({
                   type: "power_config",
                   id: instance.id,
-                  battery_mode: e.target.value as
+                  battery_mode: choiceValue as
                     "auto" | "charge" | "discharge" | "hold",
                 })
               }
@@ -218,19 +225,20 @@ export function UtilityInspector({
               <option value="charge">只充电</option>
               <option value="discharge">只放电</option>
               <option value="hold">保留电量</option>
-            </select>
+            </GameSelect>
           </label>
           <label>
             关键负载保留
-            <select
+            <GameSelect
+              catalog={catalog}
               aria-label="储备电量"
               disabled={disabled}
               value={reserve}
-              onChange={(e) =>
+              onValueChange={(choiceValue) =>
                 act({
                   type: "power_config",
                   id: instance.id,
-                  reserve_kj: Number(e.target.value),
+                  reserve_kj: Number(choiceValue),
                 })
               }
             >
@@ -249,7 +257,7 @@ export function UtilityInspector({
                     {n.toLocaleString()} kJ
                   </option>
                 ))}
-            </select>
+            </GameSelect>
           </label>
           <p>
             长按移动设备会完整保留已存电量；若拆除收回仓库，内部储存的电能会消散。

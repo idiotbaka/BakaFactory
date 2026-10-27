@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { ticksToSeconds } from "./local/simulationTime";
 import { containsCell } from "./footprint";
 import type {
@@ -195,6 +196,7 @@ export function ProductionInspector({
           isPowerFacility(definition.id) ||
           definition.energy) && (
           <UtilityInspector
+            catalog={catalog}
             factory={factory}
             definition={definition}
             instance={instance}
@@ -255,7 +257,9 @@ export function ProductionInspector({
                 <div className="machine-actions">
                   <label>
                     生产配方
-                    <select
+                    <GameSelect
+                      kind="recipe"
+                      catalog={catalog}
                       aria-label="生产配方"
                       disabled={disabled}
                       value={
@@ -263,11 +267,11 @@ export function ProductionInspector({
                           ? instance.configuration.recipe_id
                           : ""
                       }
-                      onChange={(e) =>
+                      onValueChange={(choiceValue) =>
                         act({
                           type: "recipe",
                           id: instance.id,
-                          recipe: e.target.value,
+                          recipe: choiceValue,
                         })
                       }
                     >
@@ -288,7 +292,7 @@ export function ProductionInspector({
                             {r.id.toUpperCase()} · {r.name}
                           </option>
                         ))}
-                    </select>
+                    </GameSelect>
                   </label>
                   {recipe?.description && (
                     <p className="production-hint">{recipe.description}</p>

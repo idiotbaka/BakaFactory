@@ -161,7 +161,7 @@ export default function FactoryWorkspace({
         event.altKey ||
         (event.target instanceof HTMLElement &&
           event.target.closest(
-            'input,textarea,select,[contenteditable="true"]',
+            'input,textarea,select,[role="combobox"],[data-game-select-popup],[contenteditable="true"]',
           ))
       )
         return;

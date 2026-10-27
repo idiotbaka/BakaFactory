@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { useState } from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { components } from "../api/schema";
@@ -113,11 +114,13 @@ export default function RobotTaskForm({
         {spec.cross_district && (
           <label>
             取货厂区
-            <select
+            <GameSelect
+              aria-label="取货厂区"
+              catalog={catalog}
               disabled={disabled || busy}
               value={sourceFactory?.id ?? ""}
-              onChange={(e) => {
-                setSourceZone(e.target.value);
+              onValueChange={(choiceValue) => {
+                setSourceZone(choiceValue);
                 setSourceID("");
               }}
             >
@@ -126,31 +129,35 @@ export default function RobotTaskForm({
                   {d.name}
                 </option>
               ))}
-            </select>
+            </GameSelect>
           </label>
         )}
         <label>
           取货位置
-          <select
+          <GameSelect
+            aria-label="取货位置"
+            catalog={catalog}
             disabled={disabled || busy}
             value={source?.id ?? ""}
-            onChange={(e) => setSourceID(e.target.value)}
+            onValueChange={(choiceValue) => setSourceID(choiceValue)}
           >
             {sources.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
             ))}
-          </select>
+          </GameSelect>
         </label>
         {spec.cross_district && (
           <label>
             交货厂区
-            <select
+            <GameSelect
+              aria-label="交货厂区"
+              catalog={catalog}
               disabled={disabled || busy}
               value={targetFactory?.id ?? ""}
-              onChange={(e) => {
-                setTargetZone(e.target.value);
+              onValueChange={(choiceValue) => {
+                setTargetZone(choiceValue);
                 setTargetID("");
               }}
             >
@@ -159,36 +166,41 @@ export default function RobotTaskForm({
                   {d.name}
                 </option>
               ))}
-            </select>
+            </GameSelect>
           </label>
         )}
         <label>
           交货位置
-          <select
+          <GameSelect
+            aria-label="交货位置"
+            catalog={catalog}
             disabled={disabled || busy}
             value={target?.id ?? ""}
-            onChange={(e) => setTargetID(e.target.value)}
+            onValueChange={(choiceValue) => setTargetID(choiceValue)}
           >
             {targets.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
             ))}
-          </select>
+          </GameSelect>
         </label>
         <label>
           运输物品
-          <select
+          <GameSelect
+            kind="item"
+            aria-label="运输物品"
+            catalog={catalog}
             disabled={disabled || busy}
             value={item?.id ?? ""}
-            onChange={(e) => setItemID(e.target.value)}
+            onValueChange={(choiceValue) => setItemID(choiceValue)}
           >
             {items.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
               </option>
             ))}
-          </select>
+          </GameSelect>
         </label>
         <label>
           每趟数量 · 上限 {spec.capacity}
@@ -205,15 +217,19 @@ export default function RobotTaskForm({
         </label>
         <label>
           放入目标的哪个位置
-          <select
+          <GameSelect
+            aria-label="放入目标的哪个位置"
+            catalog={catalog}
             disabled={disabled || busy}
             value={channel}
-            onChange={(e) => setChannel(e.target.value as typeof channel)}
+            onValueChange={(choiceValue) =>
+              setChannel(choiceValue as typeof channel)
+            }
           >
             <option value="auto">按配方 / 燃料接收</option>
             <option value="input">仅配方输入</option>
             <option value="fuel">仅燃料</option>
-          </select>
+          </GameSelect>
         </label>
       </div>
       <label className="robot-repeat">

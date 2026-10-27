@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { useState } from "react";
 import { createCatalogSearch } from "./catalogSearch";
 import type { Catalog, FactoryDetail } from "../api/client";
@@ -111,11 +112,13 @@ export default function RobotPanel({
           <div className="robot-form-grid">
             <label>
               机器人
-              <select
+              <GameSelect
+                kind="item"
+                catalog={catalog}
                 aria-label="部署机器人类型"
                 disabled={disabled}
                 value={definition?.item ?? ""}
-                onChange={(e) => setItem(e.target.value)}
+                onValueChange={(choiceValue) => setItem(choiceValue)}
               >
                 {unlocked.map((d) => (
                   <option key={d.item} value={d.item}>
@@ -123,15 +126,16 @@ export default function RobotPanel({
                     {factory.simulation?.warehouse[d.item] ?? 0}
                   </option>
                 ))}
-              </select>
+              </GameSelect>
             </label>
             <label>
               补能站（机器人返回这里补能）
-              <select
+              <GameSelect
+                catalog={catalog}
                 aria-label="归属补能站"
                 disabled={disabled}
                 value={station?.id ?? ""}
-                onChange={(e) => setStationID(e.target.value)}
+                onValueChange={(choiceValue) => setStationID(choiceValue)}
               >
                 <option value="" disabled>
                   请选择兼容补能站
@@ -142,7 +146,7 @@ export default function RobotPanel({
                     {b.y})
                   </option>
                 ))}
-              </select>
+              </GameSelect>
             </label>
           </div>
           {definition && (
@@ -226,15 +230,16 @@ export default function RobotPanel({
           </label>
           <label>
             显示范围
-            <select
+            <GameSelect
+              catalog={catalog}
               aria-label="机器人显示范围"
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onValueChange={(choiceValue) => setFilter(choiceValue)}
             >
               <option value="all">全部厂区</option>
               <option value="current">当前厂区 / 正在前往</option>
               <option value="attention">暂停 / 等待处理</option>
-            </select>
+            </GameSelect>
           </label>
         </div>
         <p>
@@ -398,15 +403,16 @@ export default function RobotPanel({
             </p>
             <label>
               补能 / 任务优先级
-              <select
+              <GameSelect
+                catalog={catalog}
                 aria-label="机器人优先级"
                 disabled={disabled}
                 value={selected.priority}
-                onChange={(e) =>
+                onValueChange={(choiceValue) =>
                   act({
                     type: "robot_config",
                     id: selected.id,
-                    priority: Number(e.target.value),
+                    priority: Number(choiceValue),
                   })
                 }
               >
@@ -416,7 +422,7 @@ export default function RobotPanel({
                     {n === 1 ? " · 最高" : ""}
                   </option>
                 ))}
-              </select>
+              </GameSelect>
             </label>
             <div className="robot-zones" aria-label="可作业厂区">
               {districts.map((d) => (

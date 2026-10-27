@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import RobotPanel from "./RobotPanel";
 import {
@@ -9,6 +9,7 @@ import {
   districtSummary,
 } from "./local/world";
 import { buildingDefinitions, catalog, itemID } from "./local/catalog";
+import { openGameSelect } from "../test/gameSelect";
 
 const user = {
   id: "robot-guide",
@@ -90,18 +91,22 @@ describe("robot onboarding and task controls", () => {
     expect(
       screen.getByRole("region", { name: "机器人上手指南" }),
     ).toHaveTextContent("初级搬运站");
-    expect(
-      within(screen.getByLabelText("部署机器人类型")).getAllByRole("option"),
-    ).toHaveLength(1);
+    const deployment = openGameSelect(screen.getByLabelText("部署机器人类型"));
+    expect(deployment.getAllByRole("option")).toHaveLength(1);
+    fireEvent.keyDown(screen.getByLabelText("搜索物品"), { key: "Escape" });
     expect(screen.queryByLabelText("取货厂区")).not.toBeInTheDocument();
     expect(screen.queryByText("作业记录与训练")).not.toBeInTheDocument();
     expect(screen.queryByText("蓝图施工 · 安装设备")).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("取货位置"), {
-      target: { value: "box" },
-    });
-    fireEvent.change(screen.getByLabelText("交货位置"), {
-      target: { value: root.buildings[0].id },
-    });
+    fireEvent.click(
+      openGameSelect(screen.getByLabelText("取货位置")).getByRole("option", {
+        name: `${buildingDefinitions.get("chest")!.name} (5,0)`,
+      }),
+    );
+    fireEvent.click(
+      openGameSelect(screen.getByLabelText("交货位置")).getByRole("option", {
+        name: "工厂仓库 (0,0)",
+      }),
+    );
     fireEvent.change(screen.getByLabelText("机器人运输数量"), {
       target: { value: "4" },
     });

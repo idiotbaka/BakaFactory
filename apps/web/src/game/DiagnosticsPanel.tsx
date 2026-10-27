@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { SIMULATION_TPS, ticksToSeconds } from "./local/simulationTime";
 import { useMemo, useState } from "react";
 import type { LocalFactory } from "./local/state";
@@ -155,17 +156,19 @@ export default function DiagnosticsPanel({
       </label>
       <label>
         物品
-        <select
+        <GameSelect
+          kind="item"
+          catalog={catalog}
           aria-label="诊断物品"
           value={selected?.id ?? ""}
-          onChange={(e) => setItem(e.target.value)}
+          onValueChange={(choiceValue) => setItem(choiceValue)}
         >
           {items.map((i) => (
             <option key={i.id} value={i.id}>
               {i.name}
             </option>
           ))}
-        </select>
+        </GameSelect>
       </label>
       {selected && (
         <>

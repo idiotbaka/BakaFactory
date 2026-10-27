@@ -589,7 +589,7 @@
   gap: 12px;
 }
 .robot-panel input:not([type="checkbox"]),
-.robot-panel select {
+.robot-panel .game-select {
   min-width: 0;
   width: 100%;
   min-height: 36px;
@@ -1099,7 +1099,7 @@
   gap: 8px;
   margin-bottom: 12px;
 }
-.machine-actions select {
+.machine-actions .game-select {
   display: block;
   width: 100%;
   min-width: 0;
@@ -1165,7 +1165,7 @@
   padding: 0 4px;
   font-size: 12px;
 }
-.logistics-settings select,
+.logistics-settings .game-select,
 .logistics-settings input {
   min-width: 0;
   width: 100%;
@@ -1663,7 +1663,7 @@
   color: var(--dim);
   flex-shrink: 0;
 }
-.map-caption-actions select {
+.map-caption-actions .game-select {
   width: 142px;
   min-width: 0;
   max-width: 100%;

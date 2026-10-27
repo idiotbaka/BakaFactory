@@ -1,0 +1,216 @@
+button.game-select[role="combobox"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid #3a405c;
+  border-radius: 0;
+  background: linear-gradient(100deg, #101b29, #131425);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: left;
+}
+button.game-select:hover:enabled,
+button.game-select[aria-expanded="true"] {
+  border-color: var(--cyan);
+  background: #112631;
+}
+.game-select-value {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-select-chevron {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 1.5;
+}
+.game-select[aria-expanded="true"] .game-select-chevron {
+  transform: rotate(180deg);
+}
+.game-select-icon,
+.game-select-icon > .definition-icon {
+  display: inline-block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.game-select-icon .definition-icon > .definition-code {
+  display: none;
+}
+.game-select-icon .definition-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.game-select > .game-select-icon,
+.game-select > .game-select-icon > .definition-icon {
+  width: 20px;
+  height: 20px;
+}
+.map-caption-actions button.game-select[role="combobox"] {
+  width: 142px;
+  height: 28px;
+  min-height: 28px;
+  padding: 3px 6px;
+}
+.game-select-popup {
+  position: fixed;
+  z-index: 6000;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #46eff299;
+  border-top: 2px solid var(--cyan);
+  background: #0b1020;
+  box-shadow: 0 12px 32px #0009;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+  contain: layout;
+}
+.game-select-phases {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  padding: 10px 10px 0;
+  flex: none;
+}
+.game-select-phases > button {
+  min-width: 0;
+  padding: 5px 2px;
+  border: 1px solid #333b54;
+  border-radius: 0;
+  background: #131a2c;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+.game-select-phases > button[aria-pressed="true"] {
+  border-color: var(--cyan);
+  background: #16313b;
+  color: var(--cyan);
+}
+.game-select-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--cyan);
+  flex: none;
+}
+.game-select-search > input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid #35415c;
+  border-radius: 0;
+  background: #080e1b;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+}
+.game-select-list {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 5px;
+}
+.game-select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-bottom-color: #232b3d;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.game-select-option.is-active {
+  border-color: #46eff266;
+  background: #132b37;
+}
+.game-select-option[aria-selected="true"] {
+  color: var(--cyan);
+  background: #172b3e;
+}
+.game-select-option[aria-disabled="true"] {
+  color: var(--dim);
+  cursor: not-allowed;
+}
+.game-select-option[aria-disabled="true"] .game-select-icon {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+.game-select-option[aria-disabled="true"] .game-select-equation {
+  color: var(--dim);
+}
+.game-select-option-check {
+  flex: none;
+  width: 12px;
+  color: var(--cyan);
+}
+.game-select-option-title {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px 10px;
+  min-width: 0;
+}
+.game-select-option-title > small,
+.game-select-muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.game-select-recipe {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
+}
+.game-select-equation,
+.game-select-materials,
+.game-select-material {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.game-select-equation {
+  color: var(--text);
+}
+.game-select-arrow {
+  color: var(--pink);
+  margin: 0 3px;
+}
+.game-select-divider {
+  color: var(--dim);
+}
+.game-select-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 7px 10px;
+  border-top: 1px solid var(--line);
+  background: #101728;
+  color: var(--muted);
+  flex: none;
+}
+.game-select-empty {
+  padding: 20px 12px;
+  color: var(--muted);
+}

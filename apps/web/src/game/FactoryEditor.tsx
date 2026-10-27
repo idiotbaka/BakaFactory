@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import {
   occupancy,
   footprintSize,
@@ -930,7 +931,7 @@ export default function FactoryEditor(props: Props) {
         event.isComposing ||
         (event.target instanceof HTMLElement &&
           event.target.closest(
-            'input,textarea,select,[contenteditable="true"]',
+            'input,textarea,select,[role="combobox"],[data-game-select-popup],[contenteditable="true"]',
           ))
       )
         return;
@@ -1240,7 +1241,8 @@ export default function FactoryEditor(props: Props) {
         <span className="map-caption-actions">
           <span>X → / Y ↑</span>
           {props.onSelectDistrict && (
-            <select
+            <GameSelect
+              catalog={catalog}
               aria-label="快捷切换厂区"
               value={factory.id}
               disabled={
@@ -1250,7 +1252,9 @@ export default function FactoryEditor(props: Props) {
                 !!selectionBox ||
                 panning
               }
-              onChange={(event) => props.onSelectDistrict?.(event.target.value)}
+              onValueChange={(choiceValue) =>
+                props.onSelectDistrict?.(choiceValue)
+              }
             >
               {(props.districts?.length
                 ? props.districts
@@ -1260,7 +1264,7 @@ export default function FactoryEditor(props: Props) {
                   {district.name}
                 </option>
               ))}
-            </select>
+            </GameSelect>
           )}
         </span>
       </div>

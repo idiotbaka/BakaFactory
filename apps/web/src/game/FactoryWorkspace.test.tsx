@@ -8,6 +8,7 @@ import type { GameRuntime } from "./local/runtime";
 import { catalog, itemID } from "./local/catalog";
 import { createWorld, districtSummary } from "./local/world";
 import { openingStoryID, p1StoryID } from "./stories/progress";
+import { openGameSelect } from "../test/gameSelect";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
   id: "owner",
@@ -238,8 +239,9 @@ describe("local factory workspace", () => {
     });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     const selector = screen.getByRole("combobox", { name: "快捷切换厂区" });
-    expect(within(selector).getAllByRole("option")).toHaveLength(6);
-    fireEvent.change(selector, { target: { value: destination } });
+    const choices = openGameSelect(selector);
+    expect(choices.getAllByRole("option")).toHaveLength(6);
+    fireEvent.click(choices.getByRole("option", { name: "未命名工厂 2" }));
     await vi.waitFor(() =>
       expect(runtimeWorld).toHaveBeenCalledWith({
         type: "select_district",

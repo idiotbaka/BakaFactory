@@ -1,3 +1,4 @@
+import GameSelect from "./GameSelect";
 import { useState } from "react";
 import type {
   BuildingDefinition,
@@ -83,13 +84,16 @@ export default function FluidInspector({
       </button>
       <label>
         允许流入的介质
-        <select
+        <GameSelect
+          kind="item"
+          aria-label="允许流入的介质"
+          catalog={catalog}
           disabled={disabled}
           value={itemFilter(instance)}
-          onChange={(e) => config({ filter: e.target.value })}
+          onValueChange={(choiceValue) => config({ filter: choiceValue })}
         >
           {options("允许全部兼容流体")}
-        </select>
+        </GameSelect>
       </label>
       <label>
         每 0.5 秒流量上限（0 关闭）
@@ -104,18 +108,20 @@ export default function FluidInspector({
       </label>
       <label>
         向机器投送位置
-        <select
+        <GameSelect
+          aria-label="向机器投送位置"
+          catalog={catalog}
           disabled={disabled}
           value={fluidTarget(instance)}
-          onChange={(e) =>
-            config({ fluid_target: e.target.value as FluidTarget })
+          onValueChange={(choiceValue) =>
+            config({ fluid_target: choiceValue as FluidTarget })
           }
         >
           <option value="auto">自动：配方 → 燃料 → 启动液</option>
           <option value="input">仅配方输入</option>
           <option value="fuel">仅燃料缓存</option>
           <option value="medium">仅液压站启动液</option>
-        </select>
+        </GameSelect>
       </label>
       <label>
         下游该物品库存上限（0 自动）
@@ -153,21 +159,23 @@ export default function FluidInspector({
                   })
                 }
               />
-              <select
+              <GameSelect
+                kind="item"
+                catalog={catalog}
                 aria-label={`${sides[r]}分支介质`}
                 value={fluidBranchFilter(instance, r)}
                 disabled={disabled}
-                onChange={(e) =>
+                onValueChange={(choiceValue) =>
                   act({
                     type: "fluid_branch",
                     id: instance.id,
                     rotation: r as Rotation,
-                    filter: e.target.value,
+                    filter: choiceValue,
                   })
                 }
               >
                 {options("分支不限介质")}
-              </select>
+              </GameSelect>
             </label>
           ))}
           <small>
@@ -177,14 +185,16 @@ export default function FluidInspector({
       )}
       <fieldset>
         <legend>与总仓库手动转移</legend>
-        <select
+        <GameSelect
+          kind="item"
+          catalog={catalog}
           aria-label="存入流体"
           disabled={disabled}
           value={fillItem}
-          onChange={(e) => setFillItem(e.target.value)}
+          onValueChange={(choiceValue) => setFillItem(choiceValue)}
         >
           {options("选择仓库中的流体")}
-        </select>
+        </GameSelect>
         <input
           aria-label="流体数量"
           type="number"
