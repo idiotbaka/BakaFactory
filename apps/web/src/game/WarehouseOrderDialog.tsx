@@ -178,7 +178,7 @@ export default function WarehouseOrderDialog({
             aria-label="下单计划滚动区域"
           >
             <p>
-              使用所有厂区共用的总仓库存量，按已解锁工作室配方顺序加工；副产物可供后续步骤使用。此数量为本次新增加工需求，原有目标成品不抵扣。
+              直接调用所有厂区共用的总仓库存量，按已解锁的工作室配方自动排产；中途产出的副产物会顺带留给后续工序使用。这里填写的是本次新做多少个，不会拿仓库里已有的成品凑数。
             </p>
             {preview.error && <p role="alert">{preview.error}</p>}
             {plan && (
@@ -245,7 +245,7 @@ export default function WarehouseOrderDialog({
                     <h3>还缺少的材料</h3>
                     {materials(plan.missing)}
                     <p>
-                      请先拾荒或用地图设备准备以上材料；机械手不会免费取垃圾，也不会调用工作室外的机器。
+                      请先去拾荒或用厂区里的机器备齐上述材料；机械手只负责操作工作室里的三台基础设备，不会自己去垃圾堆捡垃圾，也没法替你开动外面的产线机器。
                     </p>
                   </section>
                 )}
@@ -291,8 +291,8 @@ export default function WarehouseOrderDialog({
               {busy ? "正在预留材料…" : "确认下单"}
             </button>
             <p>
-              单次最多 {orderLimits.quantity} 个 / {orderLimits.steps}{" "}
-              道工序。订单独占手工队列；取消退回未用材料及已完成产物，已消耗原料不重复返还。
+              单次最多下单 {orderLimits.quantity} 个（不超过 {orderLimits.steps}{" "}
+              道工序）。下单后会占用手工队列；若中途取消，尚未用到的材料和已做好的半成品会退回总仓库。
             </p>
             {p?.workshop && (
               <p role="status">手工队列正在使用，请先完成或取消当前任务。</p>

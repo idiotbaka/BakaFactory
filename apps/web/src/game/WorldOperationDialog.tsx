@@ -154,8 +154,8 @@ export default function WorldOperationDialog({
               </p>
               <p className="world-install-detail">
                 {operation.kind === pickupType
-                  ? "取货终端初装暂停，选好物品后启用；可旋转，不可删除。"
-                  : "存入终端四面均可接货，无需调整朝向；不可删除。"}
+                  ? "新装的取货终端默认暂停，点选它配好要输出的物品后再启用；支持旋转和长按移动，安装后不可拆除。"
+                  : "存入终端四面都能接货，不用调朝向，送进来的固体会直接入库；支持长按移动，安装后不可拆除。"}
               </p>
               <div className="world-dialog-cost">
                 <span>本次消耗</span>

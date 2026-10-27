@@ -69,8 +69,8 @@ export default function LogisticsInspector({
       {definition.id === "underground_belt" && (
         <p>
           {instance.configuration.underground_role === "entry"
-            ? "入口：只从箭头后方收货，立即转交配对出口。"
-            : "出口：向箭头前方送货，不从地面收货。"}
+            ? "地下入口：从箭头后方收货，直接穿过地下送往配对出口。"
+            : "地下出口：把地下送来的物料往箭头前方推出，不从地面直接收货。"}
           {(() => {
             const peer = factory.buildings.find(
               (b) => b.id === instance.configuration.underground_peer,
@@ -79,8 +79,19 @@ export default function LogisticsInspector({
               ? ` 配对端口 (${peer.x}, ${peer.y})，距离 ${Math.abs(peer.x - instance.x) + Math.abs(peer.y - instance.y)} 格。`
               : "";
           })()}
-          无需供能，单批最多 6 件；只能沿原直线移动，距离 1～8
-          格。删除任意端会回收整对及载荷。
+          免动力运行，单批最多 6 件；拖动时只能沿着原直线调整间距（1～8
+          格），拆除任意一端会成对收回并退还带上的物料。
+        </p>
+      )}
+      {belt && definition.id !== "underground_belt" && (
+        <p>
+          沿箭头方向接力运送固体；机器不会自己往带上吐料，请用投料机从机器抓取放到带上，末端可直接连入
+          WH 仓库或收货终端，也能再由投料机喂进下一台机器。
+        </p>
+      )}
+      {port && (
+        <p>
+          从箭头后方抓取机器产物、料箱或传送带上的物料，送往箭头前方的设备、传送带或仓库。即使后方传送带还没走满整格，只要有货就能立刻抓走。
         </p>
       )}
       <button
@@ -99,8 +110,8 @@ export default function LogisticsInspector({
       {definition.id === pickupType ? (
         <>
           <p>
-            向朝向输出，每秒最多 1 件。设置 1～2
-            种固体轮询供料，缺货或拒收时跳过。可拖动 / 旋转，不可删除。
+            从总仓库自动取货并朝箭头前方推出，每秒最多 1 件。可设定 1～2
+            种固体轮流供料（缺货或前方堵住时自动跳过）；支持长按移动和旋转，不可删除。
           </p>
           {[0, 1].map((index) => (
             <label key={index}>
@@ -137,13 +148,14 @@ export default function LogisticsInspector({
         </>
       ) : definition.id === intakeType ? (
         <p>
-          四面均可接收固体，成功送达后直接进入共用总仓库。没有独立库存，无朝向要求；可拖动，不可删除。
+          四面均可接收固体，送达后直接汇入共用总仓库，自身不占独立库存；无朝向要求，支持长按移动，不可删除。
         </p>
       ) : definition.id === "bus" ? (
         <>
           <p>
-            输出面先选择物品，再切换为输出。每面每秒最多 1
-            件，可接投料机或相邻目标；输入面可设置过滤。
+            四面接口可独立配置：想往外供料时，先选定物品再切为「输出」（每面每秒最多
+            1
+            件，可直接连传送带或由投料机抓取）；设为「输入」时可过滤允许入库的物品。
           </p>
           {rotations.map((r) => {
             const value = face(instance, r);
@@ -271,7 +283,9 @@ export default function LogisticsInspector({
           )}
           {definition.role === "splitter" && (
             <>
-              <p>从后方取料，向前 / 侧面轮换输出；堵塞时保留来源物品。</p>
+              <p>
+                从箭头后方接货，按顺序轮流向正前、左侧、右侧三个分支分流；可为各分支单独指定允许通过的物品，下游堵住时物料会留在原处等候。
+              </p>
               {[
                 instance.rotation,
                 (instance.rotation + 90) % 360,
@@ -301,8 +315,9 @@ export default function LogisticsInspector({
           {chest && (
             <>
               <p>
-                {definition.output_slots} 格缓存，每种最多
-                100；外部物品进入此箱，不自动进入总仓库。
+                提供 {definition.output_slots} 格现场缓存（同种物品占 1
+                格，每格最多 100
+                件）。适合在产线中途暂存缓冲；箱内物料不会自动计入总仓库，可随时手动存取或由机器人、投料机搬运。
               </p>
               <label>
                 从仓库存入
@@ -367,8 +382,9 @@ export default function LogisticsInspector({
           )}
           {source && (
             <p>
-              可安装在任意厂区顶部垃圾堆，每 10 秒提取 12
-              包；输出满载时暂停，不设阶段数量上限。
+              只能建在任意厂区最北排（y = 0）紧贴垃圾山的位置，免动力每 10
+              秒自动挖出 12
+              包垃圾；朝向出口接上传送带或投料机即可持续供料，建造数量不限。
             </p>
           )}
         </>

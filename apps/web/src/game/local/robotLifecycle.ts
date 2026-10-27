@@ -65,12 +65,12 @@ export function robotStateHint(r: Robot, paused = false): string {
   if (r.returning) {
     const reason = {
       cancelled: "任务已取消",
-      energy: "保留返程能量后中止作业",
-      complete: "作业已完成",
-      invalid_target: "目标已失效或现场已恢复",
+      energy: "余电仅够返程，暂停手头任务先行回站",
+      complete: "本趟作业已完成",
+      invalid_target: "目标设备已变动或现场已恢复正常",
     }[r.returning];
     const retained = r.service || (r.task && (r.task.repeat || !r.cargo));
-    return `${reason}；${r.cargo ? "携货先送归属 WH，再回补能站" : "继续回归属补能站"}。${r.returning === "energy" && retained ? "保留的任务补满后可继续。" : "本次任务不会重新派发；智能自主调度启用时返站后可接新任务。"}`;
+    return `${reason}；${r.cargo ? "会先把身上的物料交回归属厂 WH 仓库，再回补能站" : "正在返回归属补能站"}。${r.returning === "energy" && retained ? "等充满能量后会继续刚才的任务。" : "本趟任务到此结束；如果开启了智能自主调度，回站后会继续寻找新任务。"}`;
   }
   return (
     (

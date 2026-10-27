@@ -58,7 +58,7 @@ export default function DiagnosticsPanel({
       </p>
       <h3>当前厂区待处理 · {report.issues.length}</h3>
       <p>
-        依据当前确认库存与配置诊断。缺料显示共用总仓库数量，机器仍需实际补料或物流供料；新建空机的缺料提示不授予巡检凭据。
+        汇总当前厂区内缺料、堵料、缺能或停摆的设备。括号内的总仓库存量仅供参考，现场机器仍需手动补料或接通物流供料。
       </p>
       <ul>
         {report.issues.slice(0, 80).map((issue, i) => (
@@ -115,7 +115,9 @@ export default function DiagnosticsPanel({
         ))}
       </ul>
       {!report.networks.length && (
-        <p>暂无导线网络；热能设备与蒸汽启动单独使用真实燃料。</p>
+        <p>
+          本厂暂未铺设动力线网；炭化炉、熔炼炉、锅炉与蒸汽动力机直接使用各自的燃料槽。
+        </p>
       )}
       <h3>当前厂区机器人等待</h3>
       <ul>

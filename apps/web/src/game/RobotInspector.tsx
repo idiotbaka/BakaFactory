@@ -37,12 +37,12 @@ export default function RobotInspector({
       ? factory.buildings.find((b) => b.id === target.building_id)
       : undefined;
   const routeLabel = {
-    idle: "当前无任务路段",
-    transit: "跨区途中，落地后重新规划",
-    missing: "目标已不存在，机器人将返站",
-    congested: "通道被占用，正在等待其他机器人让位",
-    no_path: "当前没有可走通道",
-    ready: "当前行走路线",
+    idle: "当前没有出行路线",
+    transit: "跨区赶路中，抵达后再规划厂内路线",
+    missing: "目标设备已拆除，正在返站",
+    congested: "前方通道被其他机器人挡住，正在等候让路",
+    no_path: "通道被堵死，找不到可走的路线",
+    ready: "当前行进路线",
   };
   return (
     <section className="robot-inspector" aria-label="机器人检视">
@@ -98,8 +98,8 @@ export default function RobotInspector({
         </p>
       )}
       <small>
-        虚线显示当前前往目标的路线。跨区时先显示到 WH
-        的路段，抵达后再显示下一段。
+        地图上的虚线是当前行进路线；跨厂区作业时会先走到本厂 WH
+        仓库，抵达目标厂区后再显示下一段路线。
       </small>
       <div className="machine-actions">
         <button onClick={onLocate}>定位机器人 / 落点</button>

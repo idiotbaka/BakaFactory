@@ -926,6 +926,7 @@ export default function FactoryWorkspace({
                               {recipe.name}
                               <span>{recipe.duration_ms / 1000}s</span>
                             </div>
+                            {recipe.description && <p>{recipe.description}</p>}
                             {ingredients(recipe.inputs)}
                             <div className="recipe-arrow">↓</div>
                             {ingredients(recipe.outputs)}
@@ -952,7 +953,7 @@ export default function FactoryWorkspace({
                   <p className="inspector-note">
                     接通产线，让工厂自行运转。
                     <br />
-                    OUT / IN 箭头后方取料，前方送料。
+                    投料机与管道从箭头后方取料，往前方送料。
                   </p>
                 </>
               )

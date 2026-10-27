@@ -305,7 +305,7 @@
     "tier": 3,
     "stage_final": true,
     "title": "迈向电气化",
-    "description": "制造电气化建设包，完成并领取阶段终局任务奖励后开放 P4。",
+    "description": "制造电气化建设包，拿到电网时代的入场券（P4）。",
     "goal": { "type": "craft_item", "target": "电气化建设包", "count": 1 },
     "rewards": {}
   },
@@ -314,7 +314,7 @@
     "tier": 4,
     "stage_final": true,
     "title": "迈向精密工业",
-    "description": "制造微电子实验许可证，完成并领取阶段终局任务奖励后开放 P5。",
+    "description": "制造微电子实验许可证，拿到洁净晶圆与精密机器人车间的入场券（P5）。",
     "goal": { "type": "craft_item", "target": "微电子实验许可证", "count": 1 },
     "rewards": {}
   },
@@ -323,7 +323,7 @@
     "tier": 5,
     "stage_final": true,
     "title": "迈向认知与觉醒",
-    "description": "制造认知系统项目包，完成并领取阶段终局任务奖励后开放 P6。",
+    "description": "制造认知系统项目包，迈入具身智能总装与觉醒的终局阶段（P6）。",
     "goal": { "type": "craft_item", "target": "认知系统项目包", "count": 1 },
     "rewards": {}
   }

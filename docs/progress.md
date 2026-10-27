@@ -2,6 +2,17 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-27：全量文案去 AI 味与建筑/物流用法说明补全
+
+- 新增 `scripts/gameplay-copy.mjs` 并接入 `scripts/import-gameplay.mjs`，在不修改 `docs/Baka回收厂 游戏设计案 v0.9` 原始文件的前提下，重新生成 `apps/server/internal/catalog/definitions.json`：
+  - 全部 353 种物品移除机械拼接的“· 工艺物品 / 流体工艺单位”后缀，按原料、加工件、燃料（附带具体热值与适用炉体/动力机）、流体介质、阶段里程碑与设备道具编写自然易懂的说明。
+  - 全部 55 台生产机器、29 种物流 / 流体 / 能源设施、WH 仓库及取货 / 存入终端、9 种机器人补充清晰的用途、朝向规则（后方取料 / 前方送料）、速度 / 批量 / 容量与供能连接方式。
+  - 全部 329 条原案配方与 3 条网页适配配方替换内部设定口吻（如“抽象化初级铜合金”“注意 1 硅棒非 1 片”“网页适配：…”等）为面向玩家的加工与用途说明；并在工作室配方卡、机器检视、建筑配方指南弹窗、物品详情浮卡与物品关联配方列表中展示。
+- 润色 `docs/quests.json` 中 P3～P5 终局任务描述，与 P1 / P2 轻松自然的语气统一。
+- 润色前端界面说明：改写 `RobotOverview`、`RobotPanel`、`RobotInspector`、`RobotTaskForm`、`AutonomyControls`、`ConstructionForm`、`WorkPanel`、`local/robotLifecycle`、`LogisticsInspector`、`FluidInspector`、`ProductionPanel`、`PowerPanel`、`WarehouseOrderDialog`、`WorldOperationDialog`、`FactoryWorkspace` 及 `DiagnosticsPanel` / `local/diagnostics` 中的生硬规则腔文案，补充传送带、投料机、分流器、料箱、垃圾提取口、化工泵与管线的现场用法提示。
+
+验证状态：已执行 `npm run import:gameplay`（静态 P6 材料与能源/作业闭包通过）、Prettier、完整 `npm run lint`（含静态资源 / 12px 字号检查、ESLint、TypeScript、Go 格式 / vet）与 `npm run build`（Web / Worker、Go 编译）。按仓库协作约定未启动服务、未代运行自动或浏览器测试；用户可运行 `npm test` 并按 [acceptance.md](acceptance.md#全量文案去-ai-味与建筑物流说明补全待用户执行) 验收。
+
 ## 2026-10-27：工厂仓库可移动与动态跨厂门
 
 - 每厂内置 WH 沿用原实例，可长按 50ms 拖动、松开确认、Esc 取消；方向固定为 0，R / 拖动右键 / 工具栏不能旋转，右键菜单 / Delete / Backspace / 删除按钮不能移除，不开放额外建造。位置说明和状态栏展示真实坐标，不再宣称固定在中心。

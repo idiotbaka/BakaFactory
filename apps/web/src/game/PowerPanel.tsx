@@ -76,7 +76,8 @@ export function UtilityInspector({
         <p>
           工艺功率 {recipe.power_kw ?? 0} kW · 本秒获得 {m.supplied_kw ?? 0} kJ
           <br />
-          工作能量储备 {m.work_energy_kj ?? 0} kJ（不足一秒工时会保留）
+          工作能量储备 {m.work_energy_kj ?? 0}{" "}
+          kJ（供能不足时会先攒够工时再推进）
         </p>
       )}
       {definition.role === "station" && (
@@ -85,7 +86,7 @@ export function UtilityInspector({
           {definition.station_capacity_kj} kJ
           <br />
           机器人共享补给上限 {definition.station_transfer_kw}{" "}
-          kW。只分配已获得的实际能量，满站停止取能；拆站散失储能。
+          kW。从动力网充入实际能量后供站旁机器人取用，充满即止；拆除站点会清空站内余电。
         </p>
       )}
       {hasNetwork && (
@@ -155,8 +156,9 @@ export function UtilityInspector({
       {definition.id === "m21" && (
         <>
           <p>
-            闭环工作液 {m.medium ?? 0} / 10 u；至少 1 u 才能输出液压。先用 R3012
-            混配，再收取并注入；不赠送介质。
+            闭环工作液 {m.medium ?? 0} / 10 u；回路里至少注入 1 u
+            液压工作液并添加液体燃料才能输出液压动力（工作液可先在工业混合器用
+            R3012 调配）。
           </p>
           <button
             disabled={
@@ -177,7 +179,10 @@ export function UtilityInspector({
         </>
       )}
       {definition.id === "m20" && (
-        <p>可用液压或高压蒸汽供能。1 u 蒸汽释放 100 kJ，放入独立燃料缓存。</p>
+        <p>
+          既可接入液压管网，也能直接通入高压蒸汽驱动（每 1 u 高压蒸汽释放 100 kJ
+          动力，进独立燃料槽）。
+        </p>
       )}
       {battery && (
         <>
@@ -246,7 +251,9 @@ export function UtilityInspector({
                 ))}
             </select>
           </label>
-          <p>移动保留电量；拆除仅返还设备，储存电能散失。</p>
+          <p>
+            长按移动设备会完整保留已存电量；若拆除收回仓库，内部储存的电能会消散。
+          </p>
         </>
       )}
     </section>

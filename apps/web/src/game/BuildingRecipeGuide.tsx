@@ -118,6 +118,7 @@ export default function BuildingRecipeGuide({
           {r.id.toUpperCase()} · P{r.tier ?? 1} ·{" "}
           {available ? "阶段条件已满足" : "阶段条件未满足"}
         </p>
+        {r.description && <p>{r.description}</p>}
         <h5>每批原料</h5>
         {materials(r.inputs)}
         <div className="recipe-arrow" aria-hidden="true">

@@ -69,6 +69,12 @@ export default function FluidInspector({
       <small>
         上刻流入 {machine?.flow_in ?? 0} · 流出 {machine?.flow_out ?? 0} u
       </small>
+      {definition.role === "pump" && (
+        <p>
+          化工泵需接通闭环液压动力管（5 kW），每 0.5 秒最多从后方强力抽送 20 u
+          流体到前方，适合主干管线大流量增压。
+        </p>
+      )}
       <button
         disabled={disabled}
         onClick={() => config({ enabled: !enabled(instance) })}
@@ -164,7 +170,9 @@ export default function FluidInspector({
               </select>
             </label>
           ))}
-          <small>按比例轮流分配；轮到的分支满载时等待，避免改变配比。</small>
+          <small>
+            按设定的权重比例轮流向三个方向分流；如果轮到的那个分支满了会暂停等待，确保严格按配比送液。
+          </small>
         </fieldset>
       )}
       <fieldset>
@@ -214,8 +222,8 @@ export default function FluidInspector({
         </button>
       </fieldset>
       <p className="production-hint">
-        箭头后方取机器产物或 WH 指定输出，前方送出；管线之间可从后 /
-        侧接入。每格最多跨越一次，不混液。更换介质前先排空。液压动力管只传功率，物料管道才运输流体。
+        箭头后方可直接抽取机器流体产物或 WH
+        仓库指定输出的流体，往箭头前方送出；管段之间支持从后方或侧面汇入。同一管网每次只走一种流体，切换介质前请先排空。注意：水、油、酸、气等工艺流体走普通管道；液压动力管只用来传导液压能。
       </p>
     </section>
   );

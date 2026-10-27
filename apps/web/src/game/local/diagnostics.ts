@@ -80,22 +80,23 @@ export function diagnoseFactory(f: LocalFactory) {
         );
       if (!claimWork(f, r))
         add(
-          "缺真实作业凭据",
+          "缺机器人作业记录",
           (r.conditions ?? [])
             .map(
               (c) =>
-                `${c.type === "camera_task_history" ? "安装摄像头的有效作业" : "匹配在岗机型"}每批需 ${c.tasks_since_last_claim ?? c.min_verified_task_events ?? 0} 次可消费记录`,
+                `${c.type === "camera_task_history" ? "安装摄像头的视觉作业" : "匹配在岗机型"}每批需消耗 ${c.tasks_since_last_claim ?? c.min_verified_task_events ?? 0} 条实战记录`,
             )
             .join("；"),
         );
       if (canProcess(f, b, true) === "no_energy")
         add(
           "缺能",
-          `${r.power_kw ?? 0} kJ / 有效工时秒，已付工作能量 ${m.work_energy_kj ?? 0} kJ；检查网络、供能侧与实际燃料${d.energy === "heat" || d.id === "m20" ? `（可用燃料 ${fuelAvailable(m, d)} kJ）` : ""}`,
+          `额定功率 ${r.power_kw ?? 0} kW，当前已攒工作能量 ${m.work_energy_kj ?? 0} kJ；请检查动力网络、接入方向与燃料${d.energy === "heat" || d.id === "m20" ? `（可用燃料 ${fuelAvailable(m, d)} kJ）` : ""}`,
         );
       if (productionReady(f, b) === "locked")
-        add("配方未解锁", "检查阶段与首次制造里程碑");
-    } else if (d.role === "production") add("未选配方", "为设备选择已解锁配方");
+        add("配方未解锁", "请检查当前阶段与前置首次制造里程碑");
+    } else if (d.role === "production")
+      add("未选配方", "请为设备选择已解锁的加工配方");
     if (
       [
         "blocked",
@@ -115,7 +116,7 @@ export function diagnoseFactory(f: LocalFactory) {
     )
       add(
         "物流 / 能源等待",
-        `${m.status}；检查方向、白名单、下游容量、介质与供能。等待不表示已经完成物料交付`,
+        `${m.status}；请检查朝向、输入白名单、下游空位、流体介质与动力连接`,
       );
   }
   return {
@@ -174,11 +175,17 @@ export const specialUses = new Map(
         .filter((b) => fuelValues(b)[i.id])
         .map((b) => `${b.name} 燃料：${fuelValues(b)[i.id]} kJ / u`),
       ...(catalog.robots?.some((r) => r.item === i.id)
-        ? ["作为实体部署到兼容补能站，部署后不可同时当仓库本体使用"]
+        ? ["可部署到兼容补能站上岗作业（在岗期间会从总仓库调用 1 台本体）"]
         : []),
-      ...(i.id === itemID("摄像头组件") ? ["机器人摄像头附件"] : []),
-      ...(i.id === itemID("维修备件箱") ? ["实际维护作业耗材"] : []),
-      ...(i.id === itemID("液压工作液") ? ["液压动力站真实启动介质"] : []),
+      ...(i.id === itemID("摄像头组件")
+        ? ["可在归属站给机器人加装视觉摄像头"]
+        : []),
+      ...(i.id === itemID("维修备件箱")
+        ? ["机器人清理设备产物积压时的耗材"]
+        : []),
+      ...(i.id === itemID("液压工作液")
+        ? ["注入液压动力站闭环回路的启动工作液"]
+        : []),
     ],
   ]),
 );

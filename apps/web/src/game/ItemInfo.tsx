@@ -274,6 +274,7 @@ function ItemInfoScope({
                       {recipe.legacy ? " · 旧版兼容配方" : ""}
                     </p>
                     <p>加工设备：{machine?.name ?? recipe.building_type}</p>
+                    {recipe.description && <p>{recipe.description}</p>}
                     {manual && (
                       <p>
                         {workshopMachineAvailable(

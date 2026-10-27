@@ -2,6 +2,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
 import { auditClosure } from "./gameplay-closure.mjs";
+import {
+  buildingCopy,
+  describeItem,
+  describeRecipe,
+  robotCopy,
+} from "./gameplay-copy.mjs";
 import { advanceQuestStages } from "./quest-closure.mjs";
 
 // The supplied design JSON is the import source. Do not copy recipe formulas
@@ -184,7 +190,7 @@ const buildings = d.machines.map((m) => {
           ? "furnace"
           : "assembler",
     color: colors[m.tier - 1],
-    description: m.note,
+    description: buildingCopy[m.code.toLowerCase()] ?? m.note,
     category: "machine",
     fixed: false,
     tier: m.tier,
@@ -225,7 +231,8 @@ const utility = (id, name, nameItem, tier, role, extra = {}) => ({
             ? "splitter"
             : "bus",
   color: colors[tier - 1],
-  description: `${name}：安装消耗 1 个${nameItem}，拆迁完整回收。`,
+  description:
+    buildingCopy[id] ?? `${name}：安装消耗 1 个${nameItem}，拆迁完整回收。`,
   category: "logistics",
   fixed: false,
   tier,
@@ -246,8 +253,6 @@ const utilities = [
     batch_size: 20,
   }),
   utility("waste_port", "垃圾提取口", "初阶自动投料机", 1, "source", {
-    description:
-      "可安装在任意厂区地图顶部垃圾堆，每 10 秒提取 12 包；不设阶段数量上限。",
     code: "JUNK",
     icon: "recycler",
   }),
@@ -273,8 +278,6 @@ const utilities = [
       code: "UG",
       belt_ticks: 1,
       batch_size: 6,
-      description:
-        "一套安装一对同向端口；出口位于入口正前方 1～8 格。无需供能，单批最多 6 件，入地即抵达出口；删除任意端回收整对。",
     },
   ),
   utility("pipe", "流体管道", "流体管道", 2, "pipe", {
@@ -295,7 +298,6 @@ const utilities = [
   }),
   utility("hydraulic_line", "液压动力管", "流体管道", 3, "hydraulic_line", {
     icon: "pressure",
-    description: "闭环动力管连接液压站与负载；物料流体使用普通管道。",
   }),
   utility("hydraulic_belt", "液压输送带", "液压输送带", 3, "belt", {
     belt_ticks: 1,
@@ -437,7 +439,7 @@ const robots = d.robot_specs.map((r, index) => {
     action_ticks,
     cross_district,
     role,
-    description: `${r.limitations}；${r.benefit}`,
+    description: robotCopy[r.name] ?? `${r.limitations}；${r.benefit}`,
   };
 });
 // Quest order is authored recommendation order, independent of recipe order.
@@ -529,12 +531,10 @@ const quests = questSource.map((q) => {
 if (quests.length > 1000) throw new Error("Too many quests");
 if (finalTiers.size !== 5)
   throw new Error("P1–P5 each require one final quest");
-for (const q of quests.filter(
-  (q) => q.stage_final && q.goal.type === "craft_item",
-))
-  for (const r of recipes)
-    if (r.outputs[q.goal.target])
-      r.description = `P${q.tier} 阶段终局任务目标；制造后需完成并领取终局奖励才开放 P${q.tier + 1}，不额外消耗本体。`;
+const machineById = new Map(buildings.map((b) => [b.id, b]));
+const machineByItem = new Map(buildings.map((b) => [b.item, b]));
+for (const r of recipes)
+  r.description = describeRecipe(r, machineById, machineByItem);
 // Short narrative goals replace the source's technical roadmap in the HUD.
 // Unlock rules remain on quest cards and in the progression runtime.
 const stageGoals = [
@@ -565,8 +565,12 @@ const base = {
       code: "D0001",
       icon: "conveyor",
       color: colors[1],
-      description:
-        "成对地下物流端口，一套安装入口和出口；地下路线可交叉并穿过建筑。",
+      description: describeItem(
+        "d0001",
+        "地下传送带出入口",
+        "component",
+        machineByItem,
+      ),
       kind: "component",
       tier: 2,
       source_recipes: ["web_underground_belt"],
@@ -585,10 +589,12 @@ const base = {
               ? "robot"
               : "plate",
       color: colors[Math.max(0, i.earliest_tier - 1)],
-      description:
-        i.id.toLowerCase() === "i0060"
-          ? "可以队列顺序加工工作台中的物品"
-          : `${displayName(i.name)} · ${i.kind === "fluid_or_gas" ? "流体工艺单位" : "工艺物品"}`,
+      description: describeItem(
+        i.id.toLowerCase(),
+        displayName(i.name),
+        i.kind,
+        machineByItem,
+      ),
       kind: i.kind,
       tier: i.name === "流体管道" ? 2 : Math.max(1, i.earliest_tier),
       source_recipes: recipes
@@ -602,8 +608,7 @@ const base = {
   buildings: [
     {
       ...previous.buildings.find((b) => b.id === "bus"),
-      description:
-        "所有厂区 WH 共用同一总仓库；可长按移动，方向固定且不可删除。实际入库统一计数，四面配置与输出速率各自独立。机器仍需实际供料。",
+      description: buildingCopy.bus,
       input_whitelist: [],
       role: "warehouse",
     },
@@ -616,10 +621,7 @@ const base = {
       code: id === "warehouse_pickup" ? "WOUT" : "WIN",
       icon: "bus",
       color: colors[1],
-      description:
-        id === "warehouse_pickup"
-          ? "厂区 IO 升级安装；沿朝向轮询输出 1～2 种指定固体，缺货跳过，每秒最多 1 件。可移动，不可删除。"
-          : "厂区 IO 升级安装；四面接收固体并存入唯一总仓库。可移动，不可删除。",
+      description: buildingCopy[id],
       category: "logistics",
       fixed: false,
       tier: 2,

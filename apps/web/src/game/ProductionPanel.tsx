@@ -41,7 +41,7 @@ export const machineStatuses: Record<string, string> = {
   no_recipe: "请选择配方",
   locked: "阶段尚未解锁",
   no_energy: "缺少动力",
-  condition_required: "等待真实作业记录",
+  condition_required: "等待机器人作业记录",
   storage: "缓存存储",
   disabled: "已暂停",
   generating: "正在供能",
@@ -290,6 +290,9 @@ export function ProductionInspector({
                         ))}
                     </select>
                   </label>
+                  {recipe?.description && (
+                    <p className="production-hint">{recipe.description}</p>
+                  )}
                   <MachineBatchFeed
                     key={`${instance.id}:${recipe?.id ?? ""}`}
                     id={instance.id}
@@ -324,13 +327,13 @@ export function ProductionInspector({
               />
               {!!recipe?.conditions?.length && (
                 <p className="production-hint">
-                  每批完成时消费真实作业凭据：
+                  每完成一批会消耗机器人攒下的实战记录：
                   {recipe.id === "r5048"
-                    ? "40 次匹配搬运"
+                    ? "40 条匹配搬运记录"
                     : recipe.id === "r5049"
-                      ? "20 次巡检／维护"
-                      : "30 次安装摄像头的有效作业"}
-                  ；机器人须仍部署并启用。存量见“机器人 → 真实作业”。
+                      ? "20 条巡检／维护记录"
+                      : "30 条安装摄像头的视觉记录"}
+                  （对应机器人需保持在岗启用，存量见「机器人调度」页）。
                 </p>
               )}
               <DetailedProgress
@@ -348,7 +351,8 @@ export function ProductionInspector({
           )}
           {!instance && (
             <p className="production-hint">
-              放置后点击机器，查看输入、产物与生产进度。每类物品最多占用一格。
+              在地图上放好机器后点击它，就能在这里选配方、补原料或收产物（每种物品占
+              1 格，每格最多 100 件）。
             </p>
           )}
         </>
@@ -381,16 +385,14 @@ export function ProductionInspector({
       {port && (
         <>
           <p className="production-hint">
-            箭头后方取出机器产物或就绪传送带物品，前方送入机器输入、传送带或
-            工厂仓库。目标不接受时，物品留在来源。
+            从箭头后方抓取机器产物、料箱或传送带上的物料，送往箭头前方的设备、传送带或工厂仓库；前方装不下时物料会留在原处。
           </p>
           {route}
         </>
       )}
       {definition.id === "bus" && (
         <p className="production-hint">
-          相邻传送带指向工厂仓库，或通过 OUT / IN
-          将物品送入工厂仓库，即自动计入上方总仓库。
+          相邻传送带指向工厂仓库输入面，或通过投料机、收货终端把物料送进来，都会自动汇入上方的共用总仓库。
         </p>
       )}
     </div>

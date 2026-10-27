@@ -157,11 +157,9 @@ export default function ConstructionForm({
       </label>
       <small>
         消耗：{catalog.items.find((i) => i.id === d?.item)?.name ?? "设备"} ×
-        1（归属厂 WH）。
-        {robot.home_factory_id === factory.id
-          ? `库存 ${factory.simulation?.warehouse[d?.item ?? ""] ?? 0}`
-          : "切换归属厂可查看库存"}
-        ；在建格位预留，保留现场邻格与返程通道。
+        1（从总仓库领取，当前库存{" "}
+        {factory.simulation?.warehouse[d?.item ?? ""] ?? 0}
+        ）。施工期间目标格位会提前预留，请在旁边留出落脚空位和返站通道。
       </small>
       {issue && <p role="status">{issue}</p>}
       {!authorized && <p>请先授权当前厂区。</p>}

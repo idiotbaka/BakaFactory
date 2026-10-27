@@ -347,6 +347,7 @@ export default function IndustryViews({
                             )?.name
                           }
                         </p>
+                        {r.description && <p>{r.description}</p>}
                         {ingredients(r.inputs, true)}
                         {ingredients(r.outputs, false)}
                         <form

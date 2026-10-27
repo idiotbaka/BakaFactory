@@ -202,7 +202,7 @@ export default function RobotPanel({
               {definition.action_ticks} 秒。
             </p>
             <p>
-              新部署的机器人没有能量，需要先在站旁补满。补能站本身也需要接上动力；电动机型的充电效率为
+              刚部署的机器人空电上岗，需要先在归属站旁充满能量才会出发。记得给补能站接通对应动力网；电动机型的充电转换效率为
               88%。
             </p>
           </details>
@@ -376,7 +376,7 @@ export default function RobotPanel({
             </p>
           )}
           {selected.returning && (
-            <p>正在返站；先把携带物品送回仓库，再回补能站。</p>
+            <p>正在返站；如果身上带了物料，会先交回仓库再回补能站停靠。</p>
           )}
           <button
             disabled={disabled}
@@ -394,7 +394,7 @@ export default function RobotPanel({
             <summary>补能优先级与厂区授权</summary>
             <p>
               优先级 1
-              最高，补能或调度资源不足时优先处理。跨区机型只能进入已勾选的厂区。
+              最高，同站排队补能或自动派单时会优先照顾高优先级机器人。支持跨区的机型只能前往已勾选的厂区。
             </p>
             <label>
               补能 / 任务优先级
@@ -431,8 +431,8 @@ export default function RobotPanel({
                     }
                     title={
                       lockedZones.has(d.id)
-                        ? "归属、当前、任务或过境仍使用此厂区，完成返站后才能撤销"
-                        : "授权此机器人使用该厂区"
+                        ? "机器人正停靠、途经或在该厂区执行任务，返站后才能取消勾选"
+                        : "允许这台机器人前往该厂区作业"
                     }
                     checked={selected.allowed_zones.includes(d.id)}
                     onChange={(e) =>
@@ -455,8 +455,8 @@ export default function RobotPanel({
             </div>
             <small>
               {spec.cross_district
-                ? "正在使用的厂区暂时不能取消授权。先取消任务，等机器人回站后再调整。"
-                : "这款机型只在归属厂区工作，无需设置跨区权限。"}
+                ? "正在使用的厂区暂时不能取消勾选；如需调整，请先取消当前任务等它回到站旁。"
+                : "这款机型只在归属厂区内作业，无需配置跨厂区权限。"}
             </small>
           </details>
           <button
@@ -539,10 +539,10 @@ export default function RobotPanel({
             </button>
             <small>
               {factory.id !== selected.home_factory_id
-                ? "请先定位到归属厂检视停靠状态，再召回本体。"
+                ? "请先切换到归属厂区，确认机器人已停靠在补能站旁后再召回。"
                 : robotBusy(selected)
-                  ? "当前仍有任务 / 携货，先取消并实际返站。"
-                  : "停靠补能站后可召回。机器人本体会返还总仓库，已储存的能量不会保留。"}
+                  ? "机器人还在执行任务或携带着物品，请先取消任务等它回到站旁。"
+                  : "停靠在补能站旁时即可召回，机器人本体会退回总仓库（体内余电会清空）。"}
             </small>
           </details>
         </fieldset>
