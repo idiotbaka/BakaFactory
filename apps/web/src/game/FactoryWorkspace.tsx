@@ -1072,7 +1072,13 @@ export default function FactoryWorkspace({
                   </div>
                   <div>
                     <dt>右键拖动框选</dt>
-                    <dd>左键拖动整组；Del / 右键菜单批量删除，Esc 取消选择</dd>
+                    <dd>
+                      左键拖动整组；D / Del / 右键菜单批量删除，Esc 取消选择
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>D / Del</dt>
+                    <dd>删除所选建筑；未选中时进入连续点删，右键 / Esc 退出</dd>
                   </div>
                   <div>
                     <dt>滚轮 / 拖动空格</dt>

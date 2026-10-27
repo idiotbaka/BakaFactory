@@ -126,9 +126,12 @@ export default function FactoryEditor(props: Props) {
   >(null);
   const batchRef = useRef<string[]>([]);
   const [batchIDs, setBatchIDs] = useState<string[]>([]);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const deleteModeRef = useRef(false);
   useLayoutEffect(() => {
     batchRef.current = batchIDs;
-  }, [batchIDs]);
+    deleteModeRef.current = deleteMode;
+  }, [batchIDs, deleteMode]);
   function setBatch(ids: string[]) {
     batchRef.current = ids;
     setBatchIDs(ids);
@@ -171,6 +174,8 @@ export default function FactoryEditor(props: Props) {
     undergroundContext.factoryID !== factory.id ||
     undergroundContext.type !== placementType
   ) {
+    if (undergroundContext.factoryID !== factory.id || placementType)
+      setDeleteMode(false);
     setUndergroundContext({ factoryID: factory.id, type: placementType });
     setUndergroundEntry(null);
     setBatchIDs([]);
@@ -283,6 +288,7 @@ export default function FactoryEditor(props: Props) {
     if (
       event.button !== 0 ||
       latest.current.placementType ||
+      deleteModeRef.current ||
       (definition.fixed && instance.building_type !== "bus") ||
       lock.current ||
       marquee.current ||
@@ -326,6 +332,12 @@ export default function FactoryEditor(props: Props) {
     }, 50);
   }
   function beginPan(event: ReactPointerEvent<HTMLDivElement>) {
+    if (deleteModeRef.current && event.button === 2) {
+      event.preventDefault();
+      exitDeletion();
+      blockContext();
+      return;
+    }
     if (
       event.button === 2 &&
       !latest.current.placementType &&
@@ -590,9 +602,61 @@ export default function FactoryEditor(props: Props) {
       () => null,
     );
   }
+  function exitDeletion() {
+    deleteModeRef.current = false;
+    setDeleteMode(false);
+    setMenu(null);
+    setPointer(null);
+    cancel();
+  }
+  function deleteShortcut() {
+    if (
+      lock.current ||
+      drag.current ||
+      pan.current ||
+      marquee.current ||
+      deleteModeRef.current
+    )
+      return;
+    const f = latest.current.factory;
+    if (
+      batchRef.current.length ||
+      f.buildings.some((b) => b.id === latest.current.selectedID)
+    ) {
+      remove();
+      return;
+    }
+    cancel();
+    suppressClick.current = false;
+    setMenu(null);
+    setCellSelection(null);
+    setUndergroundEntry(null);
+    latest.current.onExitPlacement();
+    latest.current.onSelect(null);
+    deleteModeRef.current = true;
+    setDeleteMode(true);
+  }
+  function deletionIssue(b: BuildingInstance) {
+    if (isFixed(b) || isTerminal(b)) return "该设施不可删除";
+    if (
+      factory.robots?.some(
+        (r) => r.home_factory_id === factory.id && r.home_station === b.id,
+      )
+    )
+      return "该补能站仍绑定机器人，请先召回后再删除";
+    return null;
+  }
   function clickCell(cell: Cell, instance?: BuildingInstance) {
     if (consumeClick() || lock.current) return;
     setMenu(null);
+    if (deleteModeRef.current) {
+      if (instance) {
+        const issue = deletionIssue(instance);
+        if (issue) props.onError(new Error(issue));
+        else remove(instance.id);
+      }
+      return;
+    }
     if (placementDefinition) {
       const issue = placementIssue(
         latest.current.factory,
@@ -683,6 +747,11 @@ export default function FactoryEditor(props: Props) {
   function openMenu(event: React.MouseEvent, instance: BuildingInstance) {
     event.preventDefault();
     event.stopPropagation();
+    if (deleteModeRef.current) {
+      exitDeletion();
+      blockContext();
+      return;
+    }
     if (drag.current || rightChord.current || contextBlocked.current) return;
     if (latest.current.placementType) {
       rotatePlacement();
@@ -715,6 +784,7 @@ export default function FactoryEditor(props: Props) {
     cancel,
     updateBox,
     finishBox,
+    deleteShortcut,
   });
   useLayoutEffect(() => {
     actions.current = {
@@ -728,6 +798,7 @@ export default function FactoryEditor(props: Props) {
       cancel,
       updateBox,
       finishBox,
+      deleteShortcut,
     };
   });
   useEffect(() => {
@@ -851,11 +922,21 @@ export default function FactoryEditor(props: Props) {
     };
     const key = (event: KeyboardEvent) => {
       if (
-        event.target instanceof HTMLElement &&
-        event.target.closest('input,textarea,select,[contenteditable="true"]')
+        event.defaultPrevented ||
+        event.repeat ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.isComposing ||
+        (event.target instanceof HTMLElement &&
+          event.target.closest(
+            'input,textarea,select,[contenteditable="true"]',
+          ))
       )
         return;
       if (event.key === "Escape") {
+        deleteModeRef.current = false;
+        setDeleteMode(false);
         setUndergroundEntry(null);
         batchRef.current = [];
         setBatchIDs([]);
@@ -871,7 +952,16 @@ export default function FactoryEditor(props: Props) {
           actions.current.rotatePlacement();
         else actions.current.rotateSelected();
       } else if (
-        (event.key === "Delete" || event.key === "Backspace") &&
+        (event.key === "Delete" || event.key.toLowerCase() === "d") &&
+        !drag.current &&
+        !pan.current &&
+        !marquee.current
+      ) {
+        event.preventDefault();
+        actions.current.deleteShortcut();
+      } else if (
+        event.key === "Backspace" &&
+        !deleteModeRef.current &&
         !drag.current &&
         !marquee.current &&
         !latest.current.placementType
@@ -1045,12 +1135,23 @@ export default function FactoryEditor(props: Props) {
       ),
     [factory.robots, factory.id],
   );
+  const deletionTarget =
+    deleteMode && pointer?.cell
+      ? buildings.get(`${pointer.cell.x},${pointer.cell.y}`)
+      : undefined;
+  const deletionPeer =
+    deletionTarget && isUnderground(deletionTarget)
+      ? undergroundPeer(deletionTarget, factory.buildings)
+      : undefined;
+  const targetDeletionIssue = deletionTarget
+    ? deletionIssue(deletionTarget)
+    : null;
   return (
     <>
       <div className="editor-controls" aria-label="建筑编辑工具">
         <button
           onClick={() => {
-            cancel();
+            exitDeletion();
             setMenu(null);
             props.onExitPlacement();
             props.onSelect(null);
@@ -1065,6 +1166,7 @@ export default function FactoryEditor(props: Props) {
           onClick={placementDefinition ? rotatePlacement : rotateSelected}
           disabled={
             saving ||
+            deleteMode ||
             batchIDs.length > 0 ||
             (!placementDefinition &&
               (!selected || fixed || isUnderground(selected))) ||
@@ -1075,21 +1177,28 @@ export default function FactoryEditor(props: Props) {
         </button>
         <button
           className="delete-building"
-          onClick={() => remove()}
+          onClick={() => (deleteMode ? exitDeletion() : deleteShortcut())}
+          aria-pressed={deleteMode}
           disabled={
             saving ||
-            (!batchIDs.length &&
-              (!selected || fixed || (selected && isTerminal(selected)))) ||
+            (!deleteMode &&
+              !batchIDs.length &&
+              !!selected &&
+              (fixed || isTerminal(selected))) ||
             Boolean(preview) ||
-            Boolean(placementDefinition)
+            Boolean(selectionBox)
           }
         >
-          {batchIDs.length
-            ? `删除选中 ${batchIDs.length} 个建筑`
-            : selected && isUnderground(selected)
-              ? "回收整对"
-              : "删除建筑"}{" "}
-          <kbd>Del</kbd>
+          {deleteMode
+            ? "退出删除模式"
+            : batchIDs.length
+              ? `删除选中 ${batchIDs.length} 个建筑`
+              : selected && isUnderground(selected)
+                ? "回收整对"
+                : selected
+                  ? "删除建筑"
+                  : "连续删除"}{" "}
+          <kbd>D / Del</kbd>
         </button>
         <button
           onClick={reloadFactory}
@@ -1098,27 +1207,29 @@ export default function FactoryEditor(props: Props) {
           重绘布局
         </button>
         <span>
-          {batchIDs.length
-            ? `已框选 ${batchIDs.length} 个建筑 · 左键拖动整组 · Del / 右键删除 · Esc 取消${dragPreview ? " · 松开左键确认" : ""}`
-            : dragPreview
-              ? dragPreview.definition.id === "bus"
-                ? "移动工厂仓库 · 方向固定 · 松开左键确认"
-                : dragPreview.definition.id === undergroundType
-                  ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
-                  : "移动建筑 · 右键旋转 · 松开左键确认"
-              : placementDefinition
-                ? placingUnderground
-                  ? undergroundEntry
-                    ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
-                    : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
-                  : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
-                : selected
-                  ? selected.building_type === "bus"
-                    ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
-                    : fixed
-                      ? "固定设施，无法编辑"
-                      : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
-                  : "右键拖动框选 · 长按建筑移动 · 拖动空格平移"}
+          {deleteMode
+            ? "连续删除模式 · 左键点击建筑立即回收 · 右键 / Esc 退出"
+            : batchIDs.length
+              ? `已框选 ${batchIDs.length} 个建筑 · 左键拖动整组 · D / Del / 右键删除 · Esc 取消${dragPreview ? " · 松开左键确认" : ""}`
+              : dragPreview
+                ? dragPreview.definition.id === "bus"
+                  ? "移动工厂仓库 · 方向固定 · 松开左键确认"
+                  : dragPreview.definition.id === undergroundType
+                    ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
+                    : "移动建筑 · 右键旋转 · 松开左键确认"
+                : placementDefinition
+                  ? placingUnderground
+                    ? undergroundEntry
+                      ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
+                      : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
+                    : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
+                  : selected
+                    ? selected.building_type === "bus"
+                      ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
+                      : fixed
+                        ? "固定设施，无法编辑"
+                        : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
+                    : "D / Del 连续删除 · 右键拖动框选 · 长按建筑移动 · 拖动空格平移"}
         </span>
       </div>
       <div className="map-caption">
@@ -1170,7 +1281,7 @@ export default function FactoryEditor(props: Props) {
         <small>滚轮缩放 · 拖动空格平移</small>
       </div>
       <div
-        className={`map-viewport ${dragPreview || panning ? "is-dragging" : ""} ${placementDefinition ? "is-placing" : ""}`}
+        className={`map-viewport ${deleteMode ? "is-deleting" : ""} ${dragPreview || panning ? "is-dragging" : ""} ${placementDefinition ? "is-placing" : ""}`}
         ref={viewport}
         tabIndex={0}
         aria-label="工厂地图，可滚轮缩放和拖动空格平移"
@@ -1186,6 +1297,11 @@ export default function FactoryEditor(props: Props) {
         onPointerLeave={() => setPointer(null)}
         onContextMenu={(event) => {
           event.preventDefault();
+          if (deleteModeRef.current) {
+            exitDeletion();
+            blockContext();
+            return;
+          }
           if (drag.current || rightChord.current || contextBlocked.current)
             return;
           if (placementDefinition) rotatePlacement();
@@ -1347,7 +1463,7 @@ export default function FactoryEditor(props: Props) {
                 return (
                   <div
                     key={`${x},${y}`}
-                    className={`map-tile ${instance && batchIDs.includes(instance.id) ? "batch-selected" : ""} ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
+                    className={`map-tile ${instance && (instance.id === deletionTarget?.id || instance.id === deletionPeer?.id) ? (targetDeletionIssue ? "delete-protected" : "delete-target") : ""} ${instance && batchIDs.includes(instance.id) ? "batch-selected" : ""} ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
                     title={`(${x}, ${y})${y === Math.floor(factory.height / 2) ? " · 垃圾堆" : ""}${d ? ` · ${d.name}` : ""}`}
                     data-x={x}
                     data-y={y}
@@ -1392,9 +1508,12 @@ export default function FactoryEditor(props: Props) {
                             robots.get(`${x},${y}`)!.id ===
                             props.selectedRobotID
                           }
-                          onPointerDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => {
+                            if (!deleteMode) e.stopPropagation();
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (deleteMode) return;
                             if (!consumeClick()) {
                               setBatch([]);
                               props.onSelectRobot?.(
@@ -1570,14 +1689,19 @@ export default function FactoryEditor(props: Props) {
       </div>
       <div className="map-statusbar">
         <span>
-          {preview
-            ? (issue ??
-              `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`)
-            : pointer?.cell
-              ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
-              : warehouse
-                ? `■ 工厂仓库 (${warehouse.x},${warehouse.y}) · 长按移动`
-                : "■ 工厂地图"}
+          {deleteMode
+            ? (targetDeletionIssue ??
+              (deletionTarget
+                ? `${isUnderground(deletionTarget) ? "点击回收整对地下出入口" : "点击删除建筑"} (${deletionTarget.x},${deletionTarget.y})`
+                : "左键点击建筑回收 · 空格和机器人不会删除"))
+            : preview
+              ? (issue ??
+                `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`)
+              : pointer?.cell
+                ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
+                : warehouse
+                  ? `■ 工厂仓库 (${warehouse.x},${warehouse.y}) · 长按移动`
+                  : "■ 工厂地图"}
         </span>
         <span>
           {factory.buildings.length} 个建筑实例 /{" "}
@@ -1586,11 +1710,13 @@ export default function FactoryEditor(props: Props) {
         <span role="status">
           {saving
             ? "正在保存…"
-            : placementDefinition
-              ? "连续放置 · Esc 退出"
-              : dragPreview
-                ? "移动预览 · Esc 取消"
-                : "布局已保存在本机"}
+            : deleteMode
+              ? "连续删除 · 右键 / Esc 退出"
+              : placementDefinition
+                ? "连续放置 · Esc 退出"
+                : dragPreview
+                  ? "移动预览 · Esc 取消"
+                  : "布局已保存在本机"}
         </span>
       </div>
       {preview &&

@@ -1,4 +1,26 @@
 /* Editor geometry remains 30px cells, a 25px axis and a 1px grid border. */
+.map-viewport.is-deleting,
+.is-deleting .map-tile > button,
+.is-deleting .map-tile > button.empty-tile {
+  cursor: crosshair;
+}
+.map-tile.delete-target::before,
+.map-tile.delete-protected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--danger);
+  pointer-events: none;
+  z-index: 4;
+}
+.map-tile.delete-protected::before {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+.editor-controls .delete-building[aria-pressed="true"] {
+  border-color: var(--danger);
+  background: #4a2034;
+}
 .batch-selection-box {
   position: absolute;
   pointer-events: none;
