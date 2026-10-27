@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ItemInfoProvider, ItemName, ItemText } from "./ItemInfo";
-import IndustryViews from "./IndustryViews";
+import IndustryViews, { type IndustryView } from "./IndustryViews";
 import QuestPanel from "./QuestPanel";
 import { catalog, itemID, recipeDefinitions } from "./local/catalog";
 import { createLocalFactory } from "./local/state";
@@ -68,7 +69,10 @@ describe("item acquisition popovers", () => {
     const source = within(card.getByRole("region", { name: /^R1039 / }));
     expect(source.getByText("加工设备：自动装配台")).toBeInTheDocument();
     expect(source.getByText(/15 秒 \/ 批/)).toBeInTheDocument();
-    expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
+    expect(source.queryByText(/工作室手工耗时/)).not.toBeInTheDocument();
+    expect(source.getByText("工艺说明").closest("details")).not.toHaveAttribute(
+      "open",
+    );
     expect(
       source.getByRole("button", { name: "机械抓取爪" }).closest("li"),
     ).toHaveTextContent("机械抓取爪 × 1");
@@ -78,6 +82,12 @@ describe("item acquisition popovers", () => {
     expect(
       source.getByRole("button", { name: "分拣料箱" }).closest("li"),
     ).toHaveTextContent("分拣料箱 × 1");
+    expect(
+      source
+        .getByRole("button", { name: "分拣料箱" })
+        .closest("li")
+        ?.querySelector(".definition-icon"),
+    ).toBeInTheDocument();
     fireEvent.click(source.getByRole("button", { name: "机械抓取爪" }));
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     expect(
@@ -89,6 +99,106 @@ describe("item acquisition popovers", () => {
     expect(trigger).toHaveFocus();
     expect(JSON.stringify(factory)).toBe(before);
     expect(act).not.toHaveBeenCalled();
+  });
+
+  it("navigates from a filtered warehouse to the exact workshop recipe without crafting and can repeat the jump", () => {
+    const factory = createLocalFactory(user, "配方导航");
+    factory.simulation.warehouse[itemID("铁铆钉")] = 1;
+    const act = vi.fn();
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        if (this.classList.contains("industry-content"))
+          return new DOMRect(0, 100, 640, 400);
+        if (this.classList.contains("workshop-controls"))
+          return new DOMRect(0, 0, 640, 80);
+        if (this.classList.contains("recipe-card"))
+          return new DOMRect(0, 500, 640, 200);
+        return new DOMRect();
+      },
+    );
+    function Navigation() {
+      const [view, setView] = useState<IndustryView>("warehouse");
+      return (
+        <IndustryViews
+          factory={factory}
+          catalog={catalog}
+          disabled
+          act={act}
+          view={view}
+          onViewChange={setView}
+        >
+          {null}
+        </IndustryViews>
+      );
+    }
+    render(<Navigation />);
+    fireEvent.change(screen.getByLabelText("搜索工作室或仓库"), {
+      target: { value: "铁铆钉" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "铁铆钉" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "工作台合成",
+      }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "手工铁砧锻台" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    const target = screen.getByRole("article", { name: "R1028 铁铆钉" });
+    expect(target).toHaveFocus();
+    expect(target.closest(".industry-content")?.scrollTop).toBe(308);
+    expect(screen.getByLabelText("搜索工作室或仓库")).toHaveValue("");
+    fireEvent.click(within(target).getByRole("button", { name: "铁铆钉" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "工作台合成",
+      }),
+    );
+    expect(target).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(act).not.toHaveBeenCalled();
+    expect(factory.simulation.warehouse[itemID("铁铆钉")]).toBe(1);
+  });
+
+  it("keeps manual recipe links disabled until first craft, stage and milestone requirements are met", () => {
+    const factory = createLocalFactory(user, "配方锁定");
+    const recipe = recipeDefinitions.get("r1039")!;
+    const futureCatalog = {
+      ...catalog,
+      recipes: [{ ...recipe, tier: 2, gate: "i0060" }],
+    };
+    const navigate = vi.fn();
+    const props = {
+      catalog: futureCatalog,
+      industry: factory.simulation.industry,
+      onWorkshopRecipe: navigate,
+      children: <ItemName item="i0059" />,
+    };
+    const { rerender } = render(<ItemInfoProvider {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "初阶自动投料机" }));
+    const button = () =>
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "工作台合成",
+      });
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute(
+      "title",
+      expect.stringContaining("首次制造「自动装配台」"),
+    );
+    factory.simulation.industry!.crafted.i0052 = 1;
+    rerender(<ItemInfoProvider {...props} />);
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute("title", "到达 P2 后解锁");
+    factory.simulation.industry!.stage = 2;
+    rerender(<ItemInfoProvider {...props} />);
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute("title", "请先达成配方的前置里程碑");
+    factory.simulation.industry!.milestones.push("i0060");
+    rerender(<ItemInfoProvider {...props} />);
+    expect(button()).toBeEnabled();
+    fireEvent.click(button());
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(recipe.id);
   });
 
   it("exposes workshop inputs and outputs, distinguishes scavenging from recipes and cleans up when changing views", () => {

@@ -811,19 +811,35 @@
   flex: none;
 }
 .workshop-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
   position: sticky;
   top: 0;
   z-index: 20;
   margin: 0 -16px;
-  padding: 8px 16px 0;
+  padding: 12px 16px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
 }
 .workshop-machine-tabs {
   display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
   gap: 6px;
-  overflow-x: auto;
-  padding: 12px 0;
+}
+.workshop-search {
+  flex: 1 1 180px;
+  min-width: min(180px, 100%);
+  max-width: 100%;
+  margin-left: auto;
+}
+.workshop-recipes .recipe-card:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: -2px;
 }
 .workshop-machine-tab {
   flex: none;
@@ -1409,9 +1425,26 @@
   scrollbar-gutter: stable;
 }
 .catalog-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  scrollbar-gutter: auto;
   grid-area: catalog;
   align-self: stretch;
   border-top-color: #6d4d78;
+}
+.catalog-controls {
+  flex: none;
+  min-width: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.catalog-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .inspector-panel {
   grid-area: inspector;

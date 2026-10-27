@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Catalog, FactoryDetail } from "../api/client";
 import type { IndustryAction } from "./local/industry";
 import {
@@ -82,6 +89,13 @@ export default function IndustryViews({
   const [query, setQuery] = useState("");
   const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
   const [selectedMachine, setSelectedMachine] = useState<string>("m02");
+  const [workshopTarget, setWorkshopTarget] = useState<{
+    id: string;
+    factoryID: string;
+  }>();
+  const content = useRef<HTMLDivElement>(null);
+  const workshopControls = useRef<HTMLElement>(null);
+  const recipeCards = useRef(new Map<string, HTMLElement>());
   const [orderItem, setOrderItem] = useState<string>();
   const closeOrder = useCallback(() => setOrderItem(undefined), []);
   const s = factory.simulation,
@@ -103,6 +117,50 @@ export default function IndustryViews({
       r.building_type === workshopMachine &&
       (r.tier ?? 1) <= (p?.stage ?? 1) &&
       matchesCatalog(r),
+  );
+  const openWorkshopRecipe = (id: string) => {
+    const recipe = catalog.recipes.find((r) => r.id === id);
+    if (
+      !recipe ||
+      !workshopMachineAvailable(p?.crafted, recipe.building_type) ||
+      (recipe.tier ?? 1) > (p?.stage ?? 1) ||
+      (recipe.gate && !p?.milestones.includes(recipe.gate))
+    )
+      return;
+    closeOrder();
+    setQuery("");
+    setSelectedMachine(recipe.building_type);
+    setWorkshopTarget({ id, factoryID: factory.id });
+    onViewChange("workshop");
+  };
+  useLayoutEffect(() => {
+    if (view !== "workshop" || workshopTarget?.factoryID !== factory.id) return;
+    const scroller = content.current;
+    const card = recipeCards.current.get(workshopTarget.id);
+    if (!scroller || !card) return;
+    // Scroll only the central pane and leave room for the wrapping sticky toolbar.
+    scroller.scrollTop = Math.max(
+      0,
+      scroller.scrollTop +
+        card.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top -
+        (workshopControls.current?.getBoundingClientRect().height ?? 0) -
+        12,
+    );
+    card.focus({ preventScroll: true });
+  }, [view, workshopTarget, factory.id]);
+  const searchInput = (
+    <input
+      className={view === "workshop" ? "workshop-search" : undefined}
+      aria-label="搜索工作室或仓库"
+      placeholder="名称 / 编号 / 拼音"
+      title="支持全拼、拼音首字母和部分内容"
+      value={query}
+      onChange={(e) => {
+        setWorkshopTarget(undefined);
+        setQuery(e.target.value);
+      }}
+    />
   );
   const ingredients = (values: Record<string, number>, input: boolean) => (
     <section
@@ -158,6 +216,7 @@ export default function IndustryViews({
               aria-pressed={view === id}
               onClick={() => {
                 closeOrder();
+                setWorkshopTarget(undefined);
                 onViewChange(id);
               }}
             >
@@ -189,8 +248,9 @@ export default function IndustryViews({
           key={`${factory.id}:${view}`}
           catalog={catalog}
           industry={p}
+          onWorkshopRecipe={openWorkshopRecipe}
         >
-          <div className="industry-content">
+          <div className="industry-content" ref={content}>
             <div className="industry-heading">
               <h3>
                 {view === "quests"
@@ -207,19 +267,7 @@ export default function IndustryViews({
                             ? "能量网络"
                             : "物料仓库"}
               </h3>
-              {view !== "power" &&
-                view !== "quests" &&
-                view !== "world" &&
-                view !== "robots" &&
-                view !== "developer" && (
-                  <input
-                    aria-label="搜索工作室或仓库"
-                    placeholder="名称 / 编号 / 拼音"
-                    title="支持全拼、拼音首字母和部分内容"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                )}
+              {view === "warehouse" && searchInput}
             </div>
             <p
               className="industry-goal"
@@ -287,6 +335,7 @@ export default function IndustryViews({
                   </button>
                 </div>
                 <section
+                  ref={workshopControls}
                   className="workshop-controls"
                   aria-label="工作室快捷操作"
                 >
@@ -312,7 +361,10 @@ export default function IndustryViews({
                             type="button"
                             disabled={!unlocked}
                             aria-pressed={id === workshopMachine}
-                            onClick={() => setSelectedMachine(id)}
+                            onClick={() => {
+                              setWorkshopTarget(undefined);
+                              setSelectedMachine(id);
+                            }}
                           >
                             {workshopMachineName(id) ?? machine?.name ?? id}
                           </button>
@@ -320,6 +372,7 @@ export default function IndustryViews({
                       );
                     })}
                   </div>
+                  {searchInput}
                 </section>
                 <div className="workshop-recipes">
                   {recipes.map((r) => {
@@ -335,7 +388,16 @@ export default function IndustryViews({
                         batches >= 1 &&
                         batches <= maximum;
                     return (
-                      <article className="recipe-card" key={r.id}>
+                      <article
+                        className="recipe-card"
+                        key={r.id}
+                        tabIndex={-1}
+                        aria-label={`${r.id.toUpperCase()} ${r.name}`}
+                        ref={(node) => {
+                          if (node) recipeCards.current.set(r.id, node);
+                          else recipeCards.current.delete(r.id);
+                        }}
+                      >
                         <div className="recipe-name">
                           {r.name}
                           <span>手工 {workshopDuration(r)}s</span>

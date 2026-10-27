@@ -18,7 +18,6 @@ import {
   splitItemText,
 } from "./itemInfoModel";
 import {
-  workshopDuration,
   workshopMachineAvailable,
   workshopMachines,
   workshopMachineName,
@@ -45,6 +44,7 @@ const ItemInfoContext = createContext<InfoContext | null>(null);
 export function ItemInfoProvider(props: {
   catalog: Catalog;
   industry?: Industry;
+  onWorkshopRecipe?: (recipe: string) => void;
   children: ReactNode;
 }) {
   const parent = useContext(ItemInfoContext);
@@ -54,10 +54,12 @@ export function ItemInfoProvider(props: {
 function ItemInfoScope({
   catalog,
   industry,
+  onWorkshopRecipe,
   children,
 }: {
   catalog: Catalog;
   industry?: Industry;
+  onWorkshopRecipe?: (recipe: string) => void;
   children: ReactNode;
 }) {
   const index = useMemo(() => createItemInfoIndex(catalog), [catalog]);
@@ -119,7 +121,7 @@ function ItemInfoScope({
           !event.ctrlKey &&
           !event.metaKey &&
           !event.altKey &&
-          (/^[1-6fr]$/i.test(event.key) ||
+          (/^[1-6frd]$/i.test(event.key) ||
             ["Delete", "Backspace"].includes(event.key))
         )
           event.preventDefault();
@@ -151,7 +153,12 @@ function ItemInfoScope({
     <ul className="item-info-materials">
       {Object.entries(values).map(([id, count]) => (
         <li key={id}>
-          <ItemName item={id} /> × {count.toLocaleString()}
+          {index.items.has(id) && (
+            <DefinitionIcon definition={index.items.get(id)!} compact />
+          )}
+          <div>
+            <ItemName item={id} /> <span>× {count.toLocaleString()}</span>
+          </div>
         </li>
       ))}
     </ul>
@@ -262,35 +269,54 @@ function ItemInfoScope({
                 const manual = workshopMachines.some(
                   (id) => id === recipe.building_type,
                 );
+                const machineReady = workshopMachineAvailable(
+                  industry?.crafted,
+                  recipe.building_type,
+                );
+                const workshopLocked = !machineReady
+                  ? `首次制造「${machine?.name ?? recipe.building_type}」后解锁工作室「${workshopMachineName(recipe.building_type)}」功能，无需安装设备。`
+                  : !stageReady
+                    ? `到达 P${recipe.tier} 后解锁`
+                    : !gateReady
+                      ? "请先达成配方的前置里程碑"
+                      : undefined;
                 return (
                   <section
                     className="item-info-recipe"
                     key={recipe.id}
                     aria-label={`${recipe.id.toUpperCase()} ${recipe.name}`}
                   >
-                    <h5>{recipe.name}</h5>
-                    <p>
-                      {recipe.id.toUpperCase()} · {recipe.duration_ms / 1000} 秒
-                      / 批 · P{recipe.tier ?? 1}
-                      {recipe.legacy ? " · 旧版兼容配方" : ""}
-                    </p>
-                    <p>加工设备：{machine?.name ?? recipe.building_type}</p>
-                    {recipe.description && <p>{recipe.description}</p>}
-                    {manual && (
-                      <p>
-                        {workshopMachineAvailable(
-                          industry?.crafted,
-                          recipe.building_type,
-                        )
-                          ? `工作室 → ${workshopMachineName(recipe.building_type) ?? machine?.name ?? recipe.building_type}`
-                          : `首次制造「${machine?.name ?? recipe.building_type}」后解锁工作室「${workshopMachineName(recipe.building_type)}」功能，无需安装设备。`}
-                      </p>
-                    )}
-                    {manual && (
-                      <p>
-                        工作室手工耗时：{workshopDuration(recipe)} 秒 /
-                        批（原配方工时的一半，向下取整且至少 1 秒）。
-                      </p>
+                    <header className="item-info-recipe-heading">
+                      <h5>{recipe.name}</h5>
+                      <span>
+                        P{recipe.tier ?? 1} · {recipe.id.toUpperCase()}
+                      </span>
+                    </header>
+                    <div className="item-info-formula">
+                      <h6>每批原料</h6>
+                      {materials(recipe.inputs)}
+                      <div className="item-info-arrow" aria-hidden="true">
+                        ↓
+                      </div>
+                      <h6>每批产物</h6>
+                      {materials(recipe.outputs)}
+                    </div>
+                    <div className="item-info-machine">
+                      {machine && (
+                        <DefinitionIcon definition={machine} compact />
+                      )}
+                      <div>
+                        <span>
+                          加工设备：{machine?.name ?? recipe.building_type}
+                        </span>
+                        <span>
+                          设备用时 {recipe.duration_ms / 1000} 秒 / 批
+                          {recipe.power_kw ? ` · ${recipe.power_kw} kW` : ""}
+                        </span>
+                      </div>
+                    </div>
+                    {recipe.legacy && (
+                      <p className="item-info-note">旧版兼容配方</p>
                     )}
                     {!stageReady && (
                       <p className="item-info-locked">阶段条件未满足</p>
@@ -302,17 +328,43 @@ function ItemInfoScope({
                         {gateReady ? "已达成" : "未达成"}）。
                       </p>
                     )}
-                    <h6>每批原料</h6>
-                    {materials(recipe.inputs)}
-                    <h6>每批产物</h6>
-                    {materials(recipe.outputs)}
-                    {!!recipe.power_kw && (
-                      <p>额定功率：{recipe.power_kw} kW，需匹配设备能源。</p>
-                    )}
                     {!!recipe.conditions?.length && (
                       <p>
                         完成时还需消费匹配的真实作业凭据，具体要求见设备检视。
                       </p>
+                    )}
+                    {recipe.description && (
+                      <details className="item-info-note">
+                        <summary>工艺说明</summary>
+                        <p>{recipe.description}</p>
+                      </details>
+                    )}
+                    {manual && (
+                      <footer className="item-info-workshop">
+                        <span>
+                          工作室 · {workshopMachineName(recipe.building_type)}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={!!workshopLocked || !onWorkshopRecipe}
+                          title={
+                            workshopLocked ??
+                            (onWorkshopRecipe
+                              ? "前往对应配方，选择批数后加工"
+                              : "当前页面未提供工作室导航")
+                          }
+                          onClick={() => {
+                            if (workshopLocked || !onWorkshopRecipe) return;
+                            setSelected(undefined);
+                            onWorkshopRecipe(recipe.id);
+                          }}
+                        >
+                          工作台合成
+                        </button>
+                        {workshopLocked && (
+                          <p className="item-info-locked">{workshopLocked}</p>
+                        )}
+                      </footer>
                     )}
                   </section>
                 );

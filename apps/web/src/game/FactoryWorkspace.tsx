@@ -465,216 +465,226 @@ export default function FactoryWorkspace({
         )}
         <div className="factory-layout">
           <aside className="catalog-panel" aria-label="实体图鉴">
-            <div className="panel-caption">
-              <div>
-                <small>CONSTRUCTION</small>建造阵列
+            <div className="catalog-controls">
+              <div className="panel-caption">
+                <div>
+                  <small>CONSTRUCTION</small>建造阵列
+                </div>
+                <span>
+                  {placeable.length.toString().padStart(2, "0")} / 模组
+                </span>
               </div>
-              <span>{placeable.length.toString().padStart(2, "0")} / 模组</span>
+              <div className="catalog-tabs" role="group" aria-label="图鉴分类">
+                <button
+                  aria-pressed={tab === "building"}
+                  onClick={() => {
+                    setTab("building");
+                    setSelectedRobotID(null);
+                    setPlacementType(null);
+                    setSelection({ kind: "building", id: "bus" });
+                    setSelectedInstanceID(
+                      factory?.buildings.find((b) => b.building_type === "bus")
+                        ?.id ?? null,
+                    );
+                  }}
+                >
+                  建筑
+                </button>
+                <button
+                  aria-pressed={tab === "logistics"}
+                  onClick={() => {
+                    setTab("logistics");
+                    setSelectedRobotID(null);
+                    setPlacementType(null);
+                    setSelectedInstanceID(null);
+                    const first = placeable.find(
+                      (d) =>
+                        isLogisticsBuilding(d) &&
+                        (d.tier ?? 1) === phaseFor("logistics"),
+                    );
+                    if (first) setSelection({ kind: "building", id: first.id });
+                  }}
+                >
+                  物流
+                </button>
+                <button
+                  aria-pressed={tab === "item"}
+                  onClick={() => {
+                    setTab("item");
+                    setSelectedRobotID(null);
+                    setPlacementType(null);
+                    setSelection({
+                      kind: "item",
+                      id: catalog.items.find(
+                        (i) => !i.legacy && (i.tier ?? 1) === phaseFor("item"),
+                      )!.id,
+                    });
+                    setSelectedInstanceID(null);
+                  }}
+                >
+                  物品
+                </button>
+              </div>
+              <div className="catalog-filters">
+                <input
+                  className="catalog-search"
+                  aria-label="搜索图鉴"
+                  placeholder="名称 / 编号 / 拼音"
+                  title="支持全拼、拼音首字母和部分内容"
+                  value={catalogQuery}
+                  onChange={(e) => setCatalogQuery(e.target.value)}
+                />
+                <div
+                  className="catalog-phase-tabs"
+                  role="group"
+                  aria-label="图鉴阶段"
+                >
+                  {[1, 2, 3, 4, 5, 6].map((tier) => {
+                    const locked = tab !== "item" && tier > stage;
+                    return (
+                      <button
+                        key={tier}
+                        type="button"
+                        aria-pressed={catalogPhase === tier}
+                        disabled={locked}
+                        title={
+                          locked
+                            ? `完成 P${tier - 1} 阶段终局任务并领奖后解锁`
+                            : `查看 P${tier}`
+                        }
+                        onClick={() => {
+                          setCatalogPhases((previous) => ({
+                            ...previous,
+                            [tab]: tier,
+                          }));
+                          setPlacementType(null);
+                        }}
+                      >
+                        P{tier}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-            <div className="catalog-tabs" role="group" aria-label="图鉴分类">
-              <button
-                aria-pressed={tab === "building"}
-                onClick={() => {
-                  setTab("building");
-                  setSelectedRobotID(null);
-                  setPlacementType(null);
-                  setSelection({ kind: "building", id: "bus" });
-                  setSelectedInstanceID(
-                    factory?.buildings.find((b) => b.building_type === "bus")
-                      ?.id ?? null,
-                  );
-                }}
-              >
-                建筑
-              </button>
-              <button
-                aria-pressed={tab === "logistics"}
-                onClick={() => {
-                  setTab("logistics");
-                  setSelectedRobotID(null);
-                  setPlacementType(null);
-                  setSelectedInstanceID(null);
-                  const first = placeable.find(
-                    (d) =>
-                      isLogisticsBuilding(d) &&
-                      (d.tier ?? 1) === phaseFor("logistics"),
-                  );
-                  if (first) setSelection({ kind: "building", id: first.id });
-                }}
-              >
-                物流
-              </button>
-              <button
-                aria-pressed={tab === "item"}
-                onClick={() => {
-                  setTab("item");
-                  setSelectedRobotID(null);
-                  setPlacementType(null);
-                  setSelection({
-                    kind: "item",
-                    id: catalog.items.find(
-                      (i) => !i.legacy && (i.tier ?? 1) === phaseFor("item"),
-                    )!.id,
-                  });
-                  setSelectedInstanceID(null);
-                }}
-              >
-                物品
-              </button>
-            </div>
-            <div className="catalog-filters">
-              <input
-                className="catalog-search"
-                aria-label="搜索图鉴"
-                placeholder="名称 / 编号 / 拼音"
-                title="支持全拼、拼音首字母和部分内容"
-                value={catalogQuery}
-                onChange={(e) => setCatalogQuery(e.target.value)}
-              />
-              <div
-                className="catalog-phase-tabs"
-                role="group"
-                aria-label="图鉴阶段"
-              >
-                {[1, 2, 3, 4, 5, 6].map((tier) => {
-                  const locked = tab !== "item" && tier > stage;
+            <div
+              className="catalog-scroll"
+              tabIndex={0}
+              aria-label="图鉴列表滚动区域"
+            >
+              <div className="catalog-list">
+                {definitions.map((d) => {
+                  const shortcut =
+                    tab !== "item" && !catalogQuery
+                      ? placeable.findIndex((b) => b.id === d.id) + 1
+                      : 0;
+                  const unknown = tab === "item" && !discoveredItems.has(d.id);
                   return (
-                    <button
-                      key={tier}
-                      type="button"
-                      aria-pressed={catalogPhase === tier}
-                      disabled={locked}
-                      title={
-                        locked
-                          ? `完成 P${tier - 1} 阶段终局任务并领奖后解锁`
-                          : `查看 P${tier}`
-                      }
-                      onClick={() => {
-                        setCatalogPhases((previous) => ({
-                          ...previous,
-                          [tab]: tier,
-                        }));
-                        setPlacementType(null);
-                      }}
-                    >
-                      P{tier}
-                    </button>
+                    <div key={d.id} className="catalog-entry-wrap">
+                      <button
+                        className={`catalog-entry${unknown ? " is-undiscovered" : ""}`}
+                        title={
+                          tab === "item"
+                            ? unknown
+                              ? "尚未获得，可查看物品资料"
+                              : "曾经获得"
+                            : undefined
+                        }
+                        style={
+                          {
+                            "--entity-color": unknown
+                              ? "#9699aa"
+                              : entityColor(d),
+                          } as CSSProperties
+                        }
+                        aria-keyshortcuts={
+                          shortcut > 0 && shortcut <= 6
+                            ? String(shortcut)
+                            : undefined
+                        }
+                        draggable={false}
+                        onDragStart={(event) => event.preventDefault()}
+                        aria-pressed={
+                          tab !== "item"
+                            ? placementType === d.id
+                            : selection.kind === tab && selection.id === d.id
+                        }
+                        onClick={() => {
+                          setPlacementSize(1);
+                          setSelection({
+                            kind: tab === "item" ? "item" : "building",
+                            id: d.id,
+                          });
+                          setSelectedRobotID(null);
+                          setSelectedInstanceID(null);
+                          setPlacementType(
+                            tab !== "item" && factory
+                              ? placementType === d.id
+                                ? null
+                                : d.id
+                              : null,
+                          );
+                        }}
+                      >
+                        <DefinitionIcon definition={d} />
+                        <span>
+                          <strong>{d.name}</strong>
+                          <small>
+                            {d.code} /{" "}
+                            {tab !== "item"
+                              ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
+                              : unknown
+                                ? "尚未获得"
+                                : `库存 ${factory?.simulation?.warehouse[d.id] ?? 0}`}
+                          </small>
+                        </span>
+                        {tab !== "item" &&
+                          placementType !== d.id &&
+                          supportsLargeSize(
+                            d as (typeof placeable)[number],
+                          ) && <span className="multi-size-tag">多尺寸</span>}
+                        <span className="entry-arrow" aria-hidden="true">
+                          {placementType === d.id ? (
+                            "◆"
+                          ) : shortcut > 0 && shortcut <= 6 ? (
+                            <kbd>{shortcut}</kbd>
+                          ) : (
+                            "↗"
+                          )}
+                        </span>
+                      </button>
+                      {tab !== "item" &&
+                        placementType === d.id &&
+                        supportsLargeSize(d as (typeof placeable)[number]) && (
+                          <button
+                            type="button"
+                            className="multi-size-tag catalog-size-toggle"
+                            aria-label={`切换 ${d.name} 占地尺寸`}
+                            aria-keyshortcuts="E"
+                            title={`当前尺寸：${placementSize}×${placementSize} · E 键切换尺寸`}
+                            onClick={() =>
+                              setPlacementSize((size) => (size === 1 ? 2 : 1))
+                            }
+                          >
+                            ⇄ 切换为{placementSize === 1 ? "2x2" : "1x1"}
+                          </button>
+                        )}
+                    </div>
                   );
                 })}
+                {!definitions.length && (
+                  <p className="catalog-empty">当前阶段暂无匹配内容。</p>
+                )}
               </div>
+              <p className="catalog-footnote">
+                <span>QUICK BUILD / 连续建造</span>
+                点击或按数字选择模组。
+                <br />
+                左键建造 · 右键旋转
+                <br />
+                再选一次或 <kbd>Esc</kbd> 退出。
+              </p>
             </div>
-            <div className="catalog-list">
-              {definitions.map((d) => {
-                const shortcut =
-                  tab !== "item" && !catalogQuery
-                    ? placeable.findIndex((b) => b.id === d.id) + 1
-                    : 0;
-                const unknown = tab === "item" && !discoveredItems.has(d.id);
-                return (
-                  <div key={d.id} className="catalog-entry-wrap">
-                    <button
-                      className={`catalog-entry${unknown ? " is-undiscovered" : ""}`}
-                      title={
-                        tab === "item"
-                          ? unknown
-                            ? "尚未获得，可查看物品资料"
-                            : "曾经获得"
-                          : undefined
-                      }
-                      style={
-                        {
-                          "--entity-color": unknown
-                            ? "#9699aa"
-                            : entityColor(d),
-                        } as CSSProperties
-                      }
-                      aria-keyshortcuts={
-                        shortcut > 0 && shortcut <= 6
-                          ? String(shortcut)
-                          : undefined
-                      }
-                      draggable={false}
-                      onDragStart={(event) => event.preventDefault()}
-                      aria-pressed={
-                        tab !== "item"
-                          ? placementType === d.id
-                          : selection.kind === tab && selection.id === d.id
-                      }
-                      onClick={() => {
-                        setPlacementSize(1);
-                        setSelection({
-                          kind: tab === "item" ? "item" : "building",
-                          id: d.id,
-                        });
-                        setSelectedRobotID(null);
-                        setSelectedInstanceID(null);
-                        setPlacementType(
-                          tab !== "item" && factory
-                            ? placementType === d.id
-                              ? null
-                              : d.id
-                            : null,
-                        );
-                      }}
-                    >
-                      <DefinitionIcon definition={d} />
-                      <span>
-                        <strong>{d.name}</strong>
-                        <small>
-                          {d.code} /{" "}
-                          {tab !== "item"
-                            ? `库存 ${factory?.simulation?.warehouse[(d as (typeof placeable)[number]).item ?? ""] ?? 0}`
-                            : unknown
-                              ? "尚未获得"
-                              : `库存 ${factory?.simulation?.warehouse[d.id] ?? 0}`}
-                        </small>
-                      </span>
-                      {tab !== "item" &&
-                        placementType !== d.id &&
-                        supportsLargeSize(d as (typeof placeable)[number]) && (
-                          <span className="multi-size-tag">多尺寸</span>
-                        )}
-                      <span className="entry-arrow" aria-hidden="true">
-                        {placementType === d.id ? (
-                          "◆"
-                        ) : shortcut > 0 && shortcut <= 6 ? (
-                          <kbd>{shortcut}</kbd>
-                        ) : (
-                          "↗"
-                        )}
-                      </span>
-                    </button>
-                    {tab !== "item" &&
-                      placementType === d.id &&
-                      supportsLargeSize(d as (typeof placeable)[number]) && (
-                        <button
-                          type="button"
-                          className="multi-size-tag catalog-size-toggle"
-                          aria-label={`切换 ${d.name} 占地尺寸`}
-                          aria-keyshortcuts="E"
-                          title={`当前尺寸：${placementSize}×${placementSize} · E 键切换尺寸`}
-                          onClick={() =>
-                            setPlacementSize((size) => (size === 1 ? 2 : 1))
-                          }
-                        >
-                          ⇄ 切换为{placementSize === 1 ? "2x2" : "1x1"}
-                        </button>
-                      )}
-                  </div>
-                );
-              })}
-              {!definitions.length && (
-                <p className="catalog-empty">当前阶段暂无匹配内容。</p>
-              )}
-            </div>
-            <p className="catalog-footnote">
-              <span>QUICK BUILD / 连续建造</span>
-              点击或按数字选择模组。
-              <br />
-              左键建造 · 右键旋转
-              <br />
-              再选一次或 <kbd>Esc</kbd> 退出。
-            </p>
           </aside>
           <div className="map-panel">
             {!factory ? (

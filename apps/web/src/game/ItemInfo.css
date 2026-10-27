@@ -82,12 +82,15 @@
   color: var(--purple);
 }
 .item-info-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
   margin: 8px 0;
+  padding: 8px 0;
+  border-block: 1px solid var(--line);
 }
 .item-info-facts > div {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 8px;
+  min-width: 0;
 }
 .item-info-facts dt {
   color: var(--muted);
@@ -96,16 +99,112 @@
   margin: 0;
 }
 .item-info-recipe {
-  border-top: 1px solid var(--line);
-  margin-top: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--purple);
+  background: #151827;
+  padding: 10px;
+  margin-top: 12px;
+}
+.item-info-recipe-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+.item-info-recipe-heading h5 {
+  margin: 0;
+  color: var(--cyan);
+}
+.item-info-recipe-heading > span,
+.item-info-note {
+  color: var(--muted);
+}
+.item-info-formula {
+  margin: 10px 0;
+  padding: 8px;
+  background: #0b101d;
+  border: 1px solid var(--line-dim);
+}
+.item-info-formula h6 {
+  margin: 0 0 6px;
+  color: var(--muted);
 }
 .item-info-materials {
   list-style: none;
-  margin: 4px 0;
+  margin: 0;
   padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  gap: 6px;
+}
+.item-info-materials li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px;
+  border: 1px solid var(--line-dim);
+}
+.item-info-materials li > div,
+.item-info-machine > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.item-info-materials li > div > span {
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+.item-info-arrow {
+  margin: 4px 0;
+  color: var(--purple);
+  text-align: center;
+  font-size: 16px;
+}
+.item-info-machine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.item-info-machine > div > span + span {
+  color: var(--muted);
+}
+.item-info-note summary {
+  cursor: pointer;
+}
+.item-info-workshop {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.item-info-workshop > span {
+  flex: 1 1 140px;
+  color: var(--muted);
+}
+.item-info-workshop > button {
+  padding: 6px 10px;
+  font: inherit;
+  border: 1px solid var(--cyan);
+  background: #11232c;
+  color: var(--cyan);
+}
+.item-info-workshop > button:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.item-info-workshop > p {
+  flex-basis: 100%;
+  margin: 0;
 }
 .item-info-locked {
   color: var(--amber);

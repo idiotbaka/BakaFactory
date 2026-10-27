@@ -256,7 +256,7 @@ describe("manual workshop batch controls", () => {
       batches: 1,
     });
   });
-  it("keeps only machine tabs in sticky controls while scavenging stays outside and shows manual duration", () => {
+  it("keeps machine tabs and search in sticky controls while scavenging stays outside and shows manual duration", () => {
     const f = createLocalFactory(user, "固定操作"),
       act = vi.fn();
     render(
@@ -280,6 +280,7 @@ describe("manual workshop batch controls", () => {
     expect(
       controls.getByRole("group", { name: "工作室设备" }),
     ).toBeInTheDocument();
+    expect(controls.getByLabelText("搜索工作室或仓库")).toBeInTheDocument();
     expect(
       controls.queryByRole("button", { name: /拾取 1 包垃圾/ }),
     ).not.toBeInTheDocument();
