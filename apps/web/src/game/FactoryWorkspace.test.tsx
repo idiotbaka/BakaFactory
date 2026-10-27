@@ -258,18 +258,15 @@ describe("local factory workspace", () => {
       },
     });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
-    expect(
-      screen.getByRole("dialog", { name: "P1：工厂开饭了" }),
-    ).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "P1：工厂开饭了" });
+    expect(dialog).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "关闭剧情" }),
     ).not.toBeInTheDocument();
     for (let i = 0; i < 4; i++)
-      fireEvent.click(screen.getByRole("button", { name: "下一页" }));
-    fireEvent.click(screen.getByRole("button", { name: "完成" }));
-    await vi.waitFor(() =>
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-    );
+      fireEvent.click(within(dialog).getByRole("button", { name: "下一页" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "完成" }));
+    await vi.waitFor(() => expect(dialog).not.toBeInTheDocument());
     expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(p1StoryID);
     fireEvent.click(screen.getByText("重放剧情"));
     fireEvent.click(screen.getByRole("button", { name: "P1：工厂开饭了" }));
@@ -417,7 +414,7 @@ describe("local factory workspace", () => {
       screen.getByRole("complementary", { name: "实体图鉴" }),
     );
     fireEvent.click(palette.getByRole("button", { name: "物流" }));
-    const port = palette.getByRole("button", { name: /^垃圾提取口/ });
+    const port = palette.getByRole("button", { name: /垃圾提取口/ });
     fireEvent.click(port);
     const trigger = screen.getByRole("button", { name: "获取来源和关联配方" });
     fireEvent.click(trigger);
@@ -570,7 +567,11 @@ describe("local factory workspace", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /创建第一座工厂/ }));
     await screen.findByRole("heading", { name: "新本机工厂" });
-    expect(screen.getByRole("grid")).toBeInTheDocument();
+    const map = await screen.findByRole("group", { name: /21 × 21 工厂地图/ });
+    expect(map).toBeInTheDocument();
+    expect(
+      within(map).getByRole("button", { name: /工厂仓库 WH \(0,0\)/ }),
+    ).toBeInTheDocument();
     expect(
       within(
         screen.getByRole("complementary", { name: "实体图鉴" }),
@@ -580,10 +581,8 @@ describe("local factory workspace", () => {
   it("persists the power-saving preference", () => {
     prepare();
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /节能模式/ }));
-    expect(screen.getByRole("region", { name: "工厂工作台" })).toHaveClass(
-      "is-eco",
-    );
+    fireEvent.click(screen.getByText(/节能模式/, { selector: "button" }));
+    expect(screen.getByLabelText("工厂工作台")).toHaveClass("is-eco");
     expect(localStorage.getItem("bakafactory:power-saving")).toBe("true");
   });
   it("offers explicit cloud overwrite and restore actions", async () => {

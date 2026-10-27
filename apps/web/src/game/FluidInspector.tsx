@@ -86,7 +86,7 @@ export default function FluidInspector({
         </select>
       </label>
       <label>
-        每秒流量上限（0 关闭）
+        每 0.5 秒流量上限（0 关闭）
         <input
           type="number"
           min={0}

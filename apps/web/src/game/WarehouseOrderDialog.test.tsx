@@ -94,7 +94,9 @@ describe("warehouse order interface", () => {
     ).toHaveTextContent("× 4");
     const outputs = screen.getByRole("region", { name: "最终交付物品" });
     expect(outputs).toHaveTextContent("粗密封圈× 6");
-    expect(outputs.querySelector("svg")).not.toBeNull();
+    expect(
+      outputs.querySelector(`.item-sprite[data-item-id="${ring}"]`),
+    ).not.toBeNull();
     expect(
       screen.getByRole("list", { name: "顺序加工队列" }),
     ).toHaveTextContent("2 批 × 3 秒");

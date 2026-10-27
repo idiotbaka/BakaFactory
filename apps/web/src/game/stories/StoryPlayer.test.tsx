@@ -132,7 +132,7 @@ describe("story playback", () => {
     );
     expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toHaveFocus();
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
-    expect(screen.getByRole("button", { name: "下一页" })).toHaveFocus();
+    expect(screen.getByLabelText("剧情内容滚动区域")).toHaveFocus();
     fireEvent.keyDown(window, { key: "Tab" });
     expect(screen.getByRole("button", { name: "关闭剧情" })).toHaveFocus();
     expect(document.body.style.overflow).toBe("hidden");

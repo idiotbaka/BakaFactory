@@ -1,4 +1,4 @@
-import { STEP_SECONDS, onInterval } from "./simulationTime";
+import { STEP_SECONDS } from "./simulationTime";
 import { occupancy, edgeCells } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { components } from "../../api/schema";
@@ -197,14 +197,7 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
       {
         b,
         demand,
-        needed: Math.min(
-          demand * STEP_SECONDS,
-          Math.max(
-            0,
-            demand * (d.role === "pump" ? 1 : STEP_SECONDS) -
-              (m.work_energy_kj ?? 0),
-          ),
-        ),
+        needed: Math.max(0, demand * STEP_SECONDS - (m.work_energy_kj ?? 0)),
         priority: powerPriority(b),
         transport,
         station,
@@ -353,15 +346,7 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
       const m = s.buildings[r.b.id];
       if (r.station) m.powered = (m.supplied_kw ?? 0) > 0;
       else if (r.transport) {
-        const pump =
-          buildingDefinitions.get(r.b.building_type)?.role === "pump";
-        if (pump && !onInterval(s.tick, 1)) {
-          // The pump pays continuously but transfers whole fluid units on its
-          // own one-second cadence. Show supply without spending that credit twice.
-          m.powered = (m.supplied_kw ?? 0) >= r.demand;
-          continue;
-        }
-        const energy = r.demand * (pump ? 1 : STEP_SECONDS);
+        const energy = r.demand * STEP_SECONDS;
         if ((m.work_energy_kj ?? 0) < energy) continue;
         m.work_energy_kj = (m.work_energy_kj ?? 0) - energy;
         m.powered = true;

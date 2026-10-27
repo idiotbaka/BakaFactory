@@ -171,7 +171,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     }
     if (isBelt(b.building_type))
       return m.belt &&
-        m.belt.progress >= beltTicks(b.building_type) &&
+        // An arm polls the stock already on this cell; only passive belt
+        // output must wait for the cell's full travel time.
+        (isPort(anchor.building_type) ||
+          m.belt.progress >= beltTicks(b.building_type)) &&
         (!filter || m.belt.item === filter) &&
         !isFluid(m.belt.item)
         ? [m.belt.item]
@@ -231,7 +234,6 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
             d.role === "splitter" ? branchFilter(b, r) : itemFilter(b),
           );
         if (!target || !items.length || isPort(target.building_type)) continue;
-        m.status = "blocked";
         candidates.push({
           source,
           target,
@@ -305,6 +307,14 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     const offset = Math.floor(ticksToSeconds(s.tick)) % candidates.length;
     candidates = [...candidates.slice(offset), ...candidates.slice(0, offset)];
   }
+  // An active pickup gets first refusal on its belt's old stock. Otherwise
+  // passive output can win on alternating rotations and skip a ready arm.
+  // Keep the rotated order between arms; failed pickups reserve nothing.
+  const pickup = (c: Candidate) => c.via && isBelt(c.source.building_type);
+  candidates = [
+    ...candidates.filter(pickup),
+    ...candidates.filter((c) => !pickup(c)),
+  ];
   const excluded = new Set<Candidate>();
   const routesFrom = new Map<string, Candidate[]>(),
     routesTo = new Map<string, Candidate[]>();
@@ -319,6 +329,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     ]);
   }
   const select = () => {
+    const failures = new Map<Candidate, "blocked" | "rejected">();
+    const fail = (c: Candidate, status: "blocked" | "rejected") => {
+      if (failures.get(c) !== "blocked") failures.set(c, status);
+    };
     const chosen: Move[] = [],
       beltSources = new Map<string, number>(),
       beltTargets = new Set<string>(),
@@ -345,11 +359,9 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         (targetDef.category === "machine" && !isPort(target.building_type));
       if (
         actors.has(c.actor) ||
-        !usable(target) ||
         (source.building_type === pickupType &&
           terminalSources.has(source.id)) ||
-        (isBelt(source.building_type) && beltSources.has(source.id)) ||
-        !validTarget
+        (isBelt(source.building_type) && beltSources.has(source.id))
       )
         continue;
       // Try every old output stack on this route before giving up. Failed
@@ -368,11 +380,23 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           ),
           destination: Move["destination"],
           inv: Inventory | undefined;
+        // Source reservations are not downstream capacity failures.
+        if (n < 1) continue;
+        if (!usable(target) || !validTarget) {
+          fail(c, "blocked");
+          continue;
+        }
         if (isBelt(target.building_type)) {
-          if (beltTargets.has(target.id)) continue;
+          if (beltTargets.has(target.id)) {
+            fail(c, "blocked");
+            continue;
+          }
           n = Math.min(n, beltCapacity(target.building_type));
           destination = "belt";
-          if (itemFilter(target) && itemFilter(target) !== item) continue;
+          if (itemFilter(target) && itemFilter(target) !== item) {
+            fail(c, "rejected");
+            continue;
+          }
         } else if (
           target.building_type === "bus" ||
           target.building_type === intakeType
@@ -388,8 +412,10 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
             !intake ||
             intake.mode !== "input" ||
             (intake.filter && intake.filter !== item)
-          )
+          ) {
+            fail(c, "rejected");
             continue;
+          }
           destination = "warehouse";
           n = Math.min(
             n,
@@ -410,7 +436,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
                 ? !!fuelValues(targetDef)[item]
                 : !!selectedRecipe(target)?.inputs[item];
           if (!accepts) {
-            if (c.via) s.buildings[c.via.id].status = "rejected";
+            fail(c, "rejected");
             continue;
           }
           const key = `${target.id}:${destination}`;
@@ -426,11 +452,16 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           if (
             !inv.some((stack) => stack.item === item) &&
             inv.length >= (slots ?? 4)
-          )
+          ) {
+            fail(c, "blocked");
             continue;
+          }
           n = Math.min(n, 100 - count(inv, item));
         }
-        if (n < 1) continue;
+        if (n < 1) {
+          fail(c, "blocked");
+          continue;
+        }
         if (inv) {
           add(inv, item, n);
           inputs.set(`${target.id}:${destination}`, inv);
@@ -479,7 +510,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         break;
       }
     }
-    return { chosen, beltSources };
+    return { chosen, beltSources, sources, outgoing, failures };
   };
   // A receiving belt must be completely vacated in this same batch. Partial
   // withdrawals cannot free its cell; full closed loops still move atomically.
@@ -514,6 +545,25 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     plan = select();
   }
   const { chosen } = plan;
+  // Publish only the final plan's diagnostics. A discarded reservation probe
+  // must not leave a false rejection/blockage on an otherwise healthy arm.
+  const successfulActors = new Set(chosen.map((t) => t.actor));
+  const waiting = new Map<string, "blocked" | "rejected">();
+  for (const c of candidates) {
+    if (!c.via || successfulActors.has(c.actor)) continue;
+    const source = s.buildings[c.source.id];
+    const available = c.items.some((item) =>
+      isBelt(c.source.building_type)
+        ? !plan.beltSources.has(c.source.id)
+        : c.source.building_type === "bus" ||
+            c.source.building_type === pickupType
+          ? (s.warehouse[item] ?? 0) - (plan.outgoing.get(item) ?? 0) > 0
+          : count(plan.sources.get(c.source.id) ?? source.output, item) > 0,
+    );
+    if (available && waiting.get(c.actor) !== "blocked")
+      waiting.set(c.actor, plan.failures.get(c) ?? "blocked");
+  }
+  for (const [actor, status] of waiting) s.buildings[actor].status = status;
   // Validate the complete plan before deducting anything. A malformed move
   // must never become an unidentified persisted belt load or receipt.
   for (const move of chosen)

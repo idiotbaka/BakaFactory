@@ -215,7 +215,7 @@ export default function BuildingRecipeGuide({
                       )}
                       {definition.role === "source" && (
                         <p>
-                          仅可安装在起始厂区地图顶部垃圾堆；数量受当前阶段限制。
+                          可安装在任意厂区地图顶部垃圾堆，不设阶段数量上限。
                         </p>
                       )}
                       <h4>生产安装道具的配方（{sources.length}）</h4>

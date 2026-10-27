@@ -1,4 +1,4 @@
-import { ticksToSeconds } from "./simulationTime";
+import { onInterval, ticksToSeconds } from "./simulationTime";
 import { isAdjacent, type Footprint } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
@@ -469,6 +469,8 @@ export function robotJourney(
         );
 }
 export function stepFreight(root: LocalFactory) {
+  // Walking uses every half-second tick. Handling, work and transit retain seconds.
+  const actionDue = onInterval(root.simulation.tick, 1);
   const rows = [...(root.robots ?? [])].sort((a, b) =>
       a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
     ),
@@ -492,6 +494,7 @@ export function stepFreight(root: LocalFactory) {
       return true;
     };
     if (r.transit) {
+      if (!actionDue) continue;
       r.status = "in_transit";
       if (r.transit.remaining_ticks > 0) {
         if (!spend()) continue;
@@ -531,7 +534,7 @@ export function stepFreight(root: LocalFactory) {
     }
     if (!r.task && !r.service && !r.construction && !r.returning) continue;
     if (r.cooldown > 0 && !r.returning) {
-      r.cooldown--;
+      if (actionDue) r.cooldown--;
       continue;
     }
     if (
@@ -547,6 +550,7 @@ export function stepFreight(root: LocalFactory) {
     if (
       !r.returning &&
       r.service &&
+      r.status === "waiting_charge" &&
       at(r, home, r.home_factory_id) &&
       r.energy_kj < d.energy_capacity_kj
     ) {
@@ -556,6 +560,7 @@ export function stepFreight(root: LocalFactory) {
     if (!r.returning && r.task?.phase === "pickup" && !r.cargo) {
       if (
         at(r, home, r.home_factory_id) &&
+        r.status === "waiting_charge" &&
         r.energy_kj < d.energy_capacity_kj
       ) {
         r.status = "waiting_charge";
@@ -596,6 +601,7 @@ export function stepFreight(root: LocalFactory) {
       r.status = r.returning ? "returning" : "moving";
       continue;
     }
+    if (!actionDue) continue;
     if (plan.arrival) {
       if (
         r.energy_kj <

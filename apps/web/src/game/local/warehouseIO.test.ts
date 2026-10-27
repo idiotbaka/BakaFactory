@@ -60,6 +60,10 @@ function node(
 const move = (f: LocalFactory) => {
   for (let tick = 0; tick < 2; tick++) {
     f.simulation.tick++;
+    // The planner fixture advances only this district's logistics, but a
+    // complete world save must retain the shared clock in quiet districts.
+    for (const child of f.districts ?? [])
+      child.simulation.tick = f.simulation.tick;
     advanceTransport(f, f.buildings);
     transferSolids(f, f.buildings);
   }

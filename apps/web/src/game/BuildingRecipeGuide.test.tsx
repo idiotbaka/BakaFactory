@@ -24,8 +24,8 @@ describe("building acquisition guide", () => {
     expect(
       source.getByText(/建筑名称「垃圾提取口」对应道具「初阶自动投料机」/),
     ).toBeInTheDocument();
-    expect(source.getByText("机械抓取爪 × 2")).toBeInTheDocument();
-    expect(source.getByText("低速传动轴 × 2")).toBeInTheDocument();
+    expect(source.getByText("机械抓取爪 × 1")).toBeInTheDocument();
+    expect(source.getByText("低速传动轴 × 1")).toBeInTheDocument();
     expect(source.getByText("分拣料箱 × 1")).toBeInTheDocument();
     expect(source.getByText("初阶自动投料机 × 1")).toBeInTheDocument();
     expect(source.getByText("15 秒 / 批")).toBeInTheDocument();

@@ -74,14 +74,10 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 	if r.Cargo == nil {
 		return false
 	}
-	sources := 0
 	for _, world := range factories {
 		for _, actual := range world.Buildings {
 			if actual.ID == v.ID || world.ID == f.ID && footprintOverlaps(actual.X, actual.Y, actual.Size, v.X, v.Y, v.Size) {
 				return false
-			}
-			if world.ID == f.ID && definitions[actual.BuildingType].Role == "source" {
-				sources++
 			}
 		}
 	}
@@ -99,11 +95,8 @@ func validRobotConstruction(root FactoryDetail, r RobotState, d RobotDefinition,
 		if other.ID != r.ID && (p.ID == v.ID || p.FactoryID == f.ID && footprintOverlaps(p.X, p.Y, p.Size, v.X, v.Y, v.Size)) {
 			return false
 		}
-		if p.FactoryID == f.ID && definitions[p.BuildingType].Role == "source" {
-			sources++
-		}
 	}
-	if b.Role == "source" && (f.ID != root.ID || v.Y != 10 || sources > [6]int{1, 2, 4, 8, 12, 16}[root.Simulation.Industry.Stage-1]) {
+	if b.Role == "source" && v.Y != 10 {
 		return false
 	}
 	return true

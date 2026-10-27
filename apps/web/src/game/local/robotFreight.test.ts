@@ -143,7 +143,33 @@ function total(root: LocalFactory, item = iron) {
 }
 
 describe("physical robot freight", () => {
-  it("moves only one empty ground cell per tick, pays handling time and conserves cargo through save/reload", () => {
+  it("waits for the first full charge but does not restart that gate when passing the station later", () => {
+    let root = setup();
+    const bus = root.buildings[0];
+    bus.configuration.face_180 = { mode: "output", filter: iron };
+    root.simulation.warehouse[iron] = 4;
+    root.simulation.buildings.source.output = [];
+    root.robots![0].energy_kj--;
+    root = assign(root, iron, 4, root.id, bus.id, "target");
+    const origin = { x: root.robots![0].x, y: root.robots![0].y };
+    root = stepWorld(root);
+    expect(root.robots![0]).toMatchObject({
+      ...origin,
+      status: "waiting_charge",
+    });
+    expect(root.simulation.warehouse[iron]).toBe(4);
+    // Explicit paid-energy fixture; the route passes another side of the
+    // station on its way to WH without any station energy available.
+    root.robots![0].energy_kj++;
+    root = until(root, (f) => (f.robots![0].completed_tasks ?? 0) === 1);
+    expect(root.simulation.buildings.target.output).toEqual([
+      { item: iron, count: 4 },
+    ]);
+    expect(root.simulation.buildings.station.station_energy_kj ?? 0).toBe(0);
+    expect(total(root)).toBe(4);
+  });
+
+  it("moves only two empty ground cells per second, pays handling time and conserves cargo through save/reload", () => {
     let root = assign(setup());
     const energy = root.robots![0].energy_kj;
     for (let i = 0; i < 70; i++) {
@@ -152,7 +178,7 @@ describe("physical robot freight", () => {
       const r = root.robots![0];
       expect(
         Math.abs(r.x - before.x) + Math.abs(r.y - before.y),
-      ).toBeLessThanOrEqual(1);
+      ).toBeLessThanOrEqual(2);
       expect(root.buildings.some((b) => b.x === r.x && b.y === r.y)).toBe(
         false,
       );
@@ -275,7 +301,7 @@ describe("physical robot freight", () => {
       expect(root.robots![0].completed_tasks ?? 0).toBe(0);
     }
   });
-  it("routes to the configured WH face and never exceeds one output unit per face per tick", () => {
+  it("routes to the configured WH face and never exceeds one output unit per face per second", () => {
     let root = setup();
     const bus = root.buildings[0];
     bus.configuration.face_180 = { mode: "output", filter: iron };

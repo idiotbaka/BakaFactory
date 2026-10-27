@@ -21,7 +21,11 @@ export const enabled = (b: BuildingInstance) =>
 export const itemFilter = (b: BuildingInstance) =>
   typeof b.configuration.filter === "string" ? b.configuration.filter : "";
 export const interval = (b: BuildingInstance) =>
-  typeof b.configuration.interval === "number" ? b.configuration.interval : 1;
+  typeof b.configuration.interval === "number"
+    ? b.configuration.interval
+    : b.building_type === "feeder"
+      ? STEP_SECONDS
+      : 1;
 export const channel = (b: BuildingInstance) =>
   b.configuration.channel === "fuel" ? "fuel" : "input";
 export const branchFilter = (b: BuildingInstance, rotation: number) =>

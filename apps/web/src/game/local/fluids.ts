@@ -1,4 +1,4 @@
-import { onInterval, ticksToSeconds } from "./simulationTime";
+import { wholeUnitsThisTick } from "./simulationTime";
 import { occupancy } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { LocalFactory } from "./state";
@@ -56,7 +56,6 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
     const [dx, dy] = direction(r);
     return positions.get(`${b.x + dx * offset},${b.y + dy * offset}`);
   };
-  const due = onInterval(s.tick, 1);
   const errors = new Map<string, string>(),
     rank: Record<string, number> = {
       no_connection: 1,
@@ -70,7 +69,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
     if (isFluidNode(b.building_type) || m.flow_in !== undefined) m.flow_in = 0;
     if (isFluidNode(b.building_type) || m.flow_out !== undefined)
       m.flow_out = 0;
-    if (!isFluidNode(b.building_type) || !due) continue;
+    if (!isFluidNode(b.building_type)) continue;
     m.status = !enabled(b)
       ? "disabled"
       : !fluidRate(b) ||
@@ -83,7 +82,6 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
             ? "fluid_stored"
             : "dry";
   }
-  if (!due) return;
   const mark = (b: BuildingInstance, status: string) => {
     if (!isFluidNode(b.building_type) || !activeFluidNode(f, b)) return;
     if ((rank[status] ?? 0) > (rank[errors.get(b.id) ?? ""] ?? 0))
@@ -234,9 +232,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
     { b, kind: "push" as const },
     { b, kind: "pull" as const },
   ]);
-  const offset = actions.length
-    ? Math.floor(ticksToSeconds(s.tick)) % actions.length
-    : 0;
+  const offset = actions.length ? s.tick % actions.length : 0;
   for (const { b, kind } of [
     ...actions.slice(offset),
     ...actions.slice(0, offset),
@@ -264,7 +260,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
           continue;
         source = { b: origin, kind: "warehouse" };
         item = output.filter;
-        rate = Math.min(1, rate);
+        rate = Math.min(wholeUnitsThisTick(1, s.tick), rate);
       } else {
         if (
           buildingDefinitions.get(origin.building_type)?.category !== "machine"

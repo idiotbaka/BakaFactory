@@ -161,16 +161,23 @@ describe("robot map and management integration", () => {
   it("locates the confirmed transit landing and locks authorization until physical return", async () => {
     const initial = prepare(true);
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "机器人" }));
+    fireEvent.click(
+      within(screen.getByRole("navigation", { name: "工厂视图" })).getByRole(
+        "button",
+        { name: "机器人" },
+      ),
+    );
     fireEvent.click(
       screen.getByText("补能优先级与厂区授权", { selector: "summary" }),
     );
     const zones = screen.getByLabelText("可作业厂区");
     expect(
-      within(zones).getByRole("checkbox", { name: /冶炼场/ }),
+      within(zones).getByLabelText(
+        `${initial.districts![0].name}（任务使用中）`,
+      ),
     ).toBeDisabled();
     fireEvent.click(
-      screen.getByRole("button", { name: "在地图查看机器人 / 过境落点" }),
+      screen.getByText("在地图查看机器人 / 过境落点", { selector: "button" }),
     );
     await waitFor(() =>
       expect(world).toHaveBeenCalledWith({
@@ -179,13 +186,11 @@ describe("robot map and management integration", () => {
       }),
     );
     expect(
-      await screen.findByRole("heading", { name: "冶炼场" }),
+      await screen.findByText(initial.districts![0].name, { selector: "h2" }),
     ).toBeInTheDocument();
+    expect(await screen.findByLabelText("机器人检视")).toBeInTheDocument();
     expect(
-      await screen.findByRole("region", { name: "机器人检视" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /选择机器人 ui-robot/ }),
+      screen.queryByLabelText(/选择机器人 ui-robot/),
     ).not.toBeInTheDocument();
     expect(edit).not.toHaveBeenCalled();
   });

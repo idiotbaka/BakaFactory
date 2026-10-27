@@ -367,13 +367,8 @@ export default function LogisticsInspector({
           )}
           {source && (
             <p>
-              顶部垃圾堆每 10 秒提取 12 包；输出满载时暂停。当前阶段最多安装{" "}
-              {
-                [1, 2, 4, 8, 12, 16][
-                  (factory.simulation?.industry?.stage ?? 1) - 1
-                ]
-              }{" "}
-              个。
+              可安装在任意厂区顶部垃圾堆，每 10 秒提取 12
+              包；输出满载时暂停，不设阶段数量上限。
             </p>
           )}
         </>

@@ -107,22 +107,22 @@ describe("shared half-second simulation time", () => {
     expect(step(manual).simulation.industry!.workshop?.progress).toBe(0.5);
   });
 
-  it("supports half-second feeder intervals without changing the default one-second interval", () => {
+  it("supports half-second feeder intervals with twenty-item batches", () => {
     for (const interval of [0.5, 1, 1.5]) {
       let f = start();
       node(f, "source", "chest", 1);
       const port = node(f, "port", "feeder", 2);
       node(f, "target", "chest", 3);
       port.configuration = { interval } as typeof port.configuration;
-      f.simulation.buildings.source.output = [{ item, count: 20 }];
+      f.simulation.buildings.source.output = [{ item, count: 100 }];
       for (let n = 0; n < 6; n++) f = step(f);
-      const transferred = interval === 0.5 ? 6 : interval === 1 ? 3 : 2;
+      const transferred = interval === 0.5 ? 100 : interval === 1 ? 60 : 40;
       expect(f.simulation.buildings.target.output).toEqual([
         { item, count: transferred },
       ]);
-      expect(f.simulation.buildings.source.output[0].count + transferred).toBe(
-        20,
-      );
+      expect(
+        (f.simulation.buildings.source.output[0]?.count ?? 0) + transferred,
+      ).toBe(100);
       expect(
         validateSave(toSave(f), user.id).simulation.buildings.port.cooldown,
       ).toBe(f.simulation.buildings.port.cooldown);
@@ -192,14 +192,12 @@ describe("shared half-second simulation time", () => {
     expect(f.simulation.buildings.box.output).toEqual([{ item, count: 3 }]);
   });
 
-  it("retains explicit one-second fluid and robot action cadences", () => {
+  it("moves fluid and robots every half second", () => {
     let fluid = start();
     node(fluid, "a", "pipe", 2, 0);
     node(fluid, "b", "pipe", 3, 0);
     const water = itemID("净化水");
     fluid.simulation.buildings.a.fluid = { item: water, count: 2 };
-    fluid = step(fluid);
-    expect(fluid.simulation.buildings.b.fluid).toBeUndefined();
     fluid = step(fluid);
     expect(fluid.simulation.buildings.b.fluid).toEqual({
       item: water,
@@ -230,12 +228,12 @@ describe("shared half-second simulation time", () => {
       },
     ];
     robot = stepWorld(robot);
-    expect(robot.robots![0].x).toBe(8);
-    robot = stepWorld(robot);
     expect(robot.robots![0].x).toBe(7);
-    expect(robot.robots![0].energy_kj).toBe(999);
     robot = stepWorld(robot);
-    expect(robot.robots![0].x).toBe(7);
+    expect(robot.robots![0].x).toBe(6);
+    expect(robot.robots![0].energy_kj).toBe(998);
+    robot = stepWorld(robot);
+    expect(robot.robots![0].x).toBe(5);
     expect(robot.robots![0].status).toBe("returning");
   });
 

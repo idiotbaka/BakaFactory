@@ -12,7 +12,7 @@ import {
   validateSave,
   type LocalFactory,
 } from "./state";
-import { simulationSecond as step } from "./testTime";
+import { step } from "./simulation";
 import { fuelAvailable } from "./fuel";
 import type { IndustryAction } from "./industry";
 import type { Rotation } from "./transportConfig";
@@ -67,7 +67,7 @@ function place(
 const act = (f: LocalFactory, action: IndustryAction) =>
   editFactory(f, { kind: "industry", action });
 function advance(f: LocalFactory, n: number) {
-  for (let i = 0; i < n; i++) f = step(f);
+  for (let i = 0; i < n * 2; i++) f = step(f);
   return f;
 }
 function fill(f: LocalFactory, id: string, item: string, count: number) {
@@ -289,8 +289,8 @@ describe("bounded fluid routing and conserved volume", () => {
     f.simulation.buildings.hyd.medium = 1;
     f.simulation.buildings.hyd.fuel = [{ item: oil, count: 1 }];
     f = advance(f, 2);
-    expect(f.simulation.buildings.pump.fluid?.count).toBe(16);
-    expect(f.simulation.buildings.dst.fluid?.count).toBe(4);
+    expect(f.simulation.buildings.pump.fluid?.count).toBe(8);
+    expect(f.simulation.buildings.dst.fluid?.count).toBe(12);
     expect(total(f, water)).toBe(20);
     expect(
       fuelAvailable(
@@ -300,7 +300,7 @@ describe("bounded fluid routing and conserved volume", () => {
     ).toBe(6070);
     f = act(f, { type: "power_config", id: "line", enabled: false });
     f = advance(f, 3);
-    expect(f.simulation.buildings.pump.fluid?.count).toBe(16);
+    expect(f.simulation.buildings.pump.fluid?.count).toBe(8);
     expect(
       fuelAvailable(
         f.simulation.buildings.hyd,
@@ -319,7 +319,7 @@ describe("bounded fluid routing and conserved volume", () => {
       filter: water,
     });
     f.simulation.warehouse[water] = 3;
-    f = step(f);
+    f = advance(f, 1);
     expect(f.simulation.buildings.p.fluid?.count).toBe(1);
     expect(f.simulation.warehouse[water]).toBe(2);
     f = advance(f, 10);

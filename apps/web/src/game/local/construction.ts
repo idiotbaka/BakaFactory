@@ -122,7 +122,6 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
     } catch {
       return false;
     }
-    if (d.role === "source" && f.id !== root.id) return false;
     if (
       (root.robots ?? []).some(
         (other) =>

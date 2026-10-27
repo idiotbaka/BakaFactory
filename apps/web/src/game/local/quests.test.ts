@@ -11,6 +11,7 @@ import { actWorld, createWorld, editWorld, stepWorld } from "./world";
 import { discoverItems } from "./discovery";
 import { syncQuests } from "./quests";
 import { workshopDuration } from "./workshop";
+import { secondsToTicks } from "./simulationTime";
 
 const user = {
   id: "quests",
@@ -107,7 +108,8 @@ describe("open quests and atomic rewards", () => {
     remote.simulation.buildings.assembler.input = Object.entries(
       recipe.inputs,
     ).map(([item, count]) => ({ item, count }));
-    for (let i = 0; i < recipe.duration_ms / 1000; i++) root = stepWorld(root);
+    for (let i = 0; i < secondsToTicks(recipe.duration_ms / 1000); i++)
+      root = stepWorld(root);
     expect(root.simulation.industry!.quests!.completed).toContain("p1_belt");
     expect(root.simulation.warehouse[itemID("手摇传送带")]).toBeUndefined();
     expect(root.districts![0].simulation.industry).toBeUndefined();

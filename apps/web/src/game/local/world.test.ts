@@ -122,7 +122,7 @@ describe("one worker world with independent districts", () => {
     );
     expect(projectFactory(root).districts).toBeUndefined();
   });
-  it("rejects stale editor requests and duplicated garbage sources while allowing shared scavenging", () => {
+  it("rejects stale editor requests while allowing paid district sources and shared scavenging", () => {
     let root = createWorld(user, "回收场");
     root = actWorld(root, {
       type: "select_district",
@@ -140,19 +140,18 @@ describe("one worker world with independent districts", () => {
         root.id,
       ),
     ).toThrow(/切换/);
-    expect(() =>
-      editWorld(root, {
-        kind: "place",
-        id: "source",
-        building_type: "waste_port",
-        placement: { x: 1, y: 10, rotation: 0 },
-      }),
-    ).toThrow(/起始/);
+    root.simulation.warehouse[buildingDefinitions.get("waste_port")!.item!] = 1;
+    root = editWorld(root, {
+      kind: "place",
+      id: "source",
+      building_type: "waste_port",
+      placement: { x: 1, y: 10, rotation: 0 },
+    });
     const before = root.simulation.warehouse[catalog.root_item!] ?? 0;
     root = editWorld(root, { kind: "industry", action: { type: "scavenge" } });
     expect(root.simulation.warehouse[catalog.root_item!]).toBe(before + 1);
     expect(root.districts![0].simulation.warehouse).toEqual({});
-    expect(root.districts![0].buildings).toHaveLength(1);
+    expect(root.districts![0].buildings).toHaveLength(2);
   });
   it("expands with actual headquarters materials, obeys stage limits and preserves the original on failure", () => {
     let root = createWorld(user, "回收场");

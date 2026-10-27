@@ -111,16 +111,16 @@ describe("solid logistics", () => {
     expect(f.simulation.buildings.port.status).toBe("transferring");
     expect(f.simulation.buildings.furnace.input).toEqual([
       { item: sand, count: 100 },
-      { item: powder, count: 1 },
+      { item: powder, count: 20 },
     ]);
     expect(f.simulation.buildings.box.output).toEqual([
       { item: sand, count: 100 },
-      { item: powder, count: 99 },
+      { item: powder, count: 80 },
     ]);
     expect(f.simulation.transfers).toHaveLength(1);
     expect(f.simulation.transfers![0]).toMatchObject({
       item: powder,
-      count: 1,
+      count: 20,
     });
     expect(total(f, sand)).toBe(total(before, sand));
     expect(total(f, powder)).toBe(total(before, powder));
@@ -129,7 +129,7 @@ describe("solid logistics", () => {
     expect(f.simulation.buildings.furnace.status).toBe("working");
     expect(f.simulation.buildings.furnace.input).toContainEqual({
       item: powder,
-      count: 3,
+      count: 100,
     });
     f = advance(f, 12);
     expect(f.simulation.buildings.furnace.output).toContainEqual({
@@ -242,7 +242,7 @@ describe("solid logistics", () => {
     f = transfer(f);
     expect(f.simulation.buildings.furnace.fuel).toContainEqual({
       item: carbon,
-      count: 1,
+      count: 2,
     });
     expect(f.simulation.buildings.furnace.input).toEqual([]);
     expect(total(f, biomass)).toBe(102);
@@ -383,7 +383,7 @@ describe("solid logistics", () => {
     expect(f.simulation.transfers![0].via?.id).toBe("z-port");
     expect(total(f, powder)).toBe(1);
   });
-  it("extracts only at the top edge, caps ports by stage and produces twelve bags per ten active seconds", () => {
+  it("extracts only at the top edge, allows multiple paid ports and produces twelve bags per ten active seconds", () => {
     let f = start();
     f.simulation.warehouse[itemID("初阶自动投料机")] = 2;
     const before = structuredClone(f);
@@ -397,7 +397,7 @@ describe("solid logistics", () => {
     ).toThrow();
     expect(f).toEqual(before);
     f = place(f, "source", "waste_port", 0, 10);
-    expect(() => place(f, "extra", "waste_port", 1, 10)).toThrow();
+    f = place(f, "extra", "waste_port", 1, 10);
     expect(() =>
       editFactory(f, {
         kind: "move",
@@ -408,9 +408,10 @@ describe("solid logistics", () => {
     f = advance(f, 9);
     expect(total(f, itemID("垃圾包"))).toBe(0);
     f = advance(f, 1);
-    expect(total(f, itemID("垃圾包"))).toBe(12);
+    expect(total(f, itemID("垃圾包"))).toBe(24);
     f = act(f, { type: "transport", id: "source", enabled: false });
-    expect(total(advance(f, 100), itemID("垃圾包"))).toBe(12);
+    f = act(f, { type: "transport", id: "extra", enabled: false });
+    expect(total(advance(f, 100), itemID("垃圾包"))).toBe(24);
   });
   it("moves a hand belt exactly one cell after two half-second ticks and atomically advances a full loop", () => {
     let f = place(start(), "slow", "hand_belt", -1, 0);
@@ -519,11 +520,14 @@ describe("solid logistics", () => {
     f = act(f, { type: "transport", id: "port", filter: bag, interval: 3 });
     f = advance(f, 4);
     expect(f.simulation.buildings.machine.input).toEqual([
-      { item: bag, count: 2 },
+      { item: bag, count: 12 },
     ]);
     expect(total(f, bag)).toBe(12);
     expect(total(f, scrap)).toBe(3);
     const invalid = structuredClone(f);
+    // The twenty-item feeder has already removed all twelve bags. Seed a
+    // partial stack explicitly so adding another hundred really overflows.
+    invalid.simulation.buildings.box.output.push({ item: bag, count: 1 });
     invalid.simulation.warehouse[bag] = 100;
     expect(() =>
       act(invalid, { type: "deposit", id: "box", item: bag, count: 100 }),

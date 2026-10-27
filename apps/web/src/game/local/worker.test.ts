@@ -99,8 +99,13 @@ describe("bounded local worker clock", () => {
   it("does not replay missed ticks after a long event-loop stall", () => {
     send({ kind: "permit", enabled: true, validFor: 30000 });
     const now = performance.now();
-    vi.spyOn(performance, "now").mockReturnValue(now + 5000);
-    vi.advanceTimersByTime(1000);
+    const clock = vi.spyOn(performance, "now").mockReturnValue(now + 5000);
+    // Execute the delayed wake once, rather than also executing the fresh
+    // timer scheduled for the next half second after that wake.
+    vi.advanceTimersByTime(500);
     expect(ticks()).toHaveLength(0);
+    clock.mockReturnValue(now + 5500);
+    vi.advanceTimersByTime(500);
+    expect(ticks()).toHaveLength(1);
   });
 });

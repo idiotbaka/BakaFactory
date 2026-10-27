@@ -119,14 +119,14 @@ describe("confirmed logistics visuals", () => {
     expect(store.getSnapshot()[0].epoch).not.toBe(epoch);
     expect(edited.simulation?.buildings.belt.belt?.id).toBe("ore-1");
   });
-  it("ends a slow-belt incoming flight at one third of the cell and represents a batch with one icon", () => {
+  it("ends a slow-belt incoming flight halfway through the cell and represents a batch with one icon", () => {
     const receipt = event(1);
     receipt.target = { ...receipt.target, building_type: "hand_belt" };
     receipt.count = 1;
     const path = transferPath(receipt, 21, 21),
       ends = beltEnds(receipt.target, 21, 21);
     expect(path.at(-1)).toEqual({
-      x: ends.entry.x + (ends.goal.x - ends.entry.x) / 3,
+      x: ends.entry.x + (ends.goal.x - ends.entry.x) / 2,
       y: ends.entry.y,
     });
     const next = snapshot(1, "batch");

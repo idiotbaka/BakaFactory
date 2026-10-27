@@ -91,7 +91,7 @@ function restored(root: LocalFactory) {
 }
 
 describe("paid blueprint construction and physical reclamation", () => {
-  it("installs independent peer blueprints once and reserves source quotas against manual edits", () => {
+  it("installs independent peer blueprints once and allows additional sources alongside paid blueprints", () => {
     let root = setup(2);
     root = actWorld(root, action(root));
     root = actWorld(root, action(root, { id: "peer-site", x: 8, y: 4 }, "r1"));
@@ -126,15 +126,19 @@ describe("paid blueprint construction and physical reclamation", () => {
       }),
     );
     const previous = structuredClone(root);
-    expect(() =>
-      editWorld(root, {
-        kind: "place",
-        id: "overflow-port",
-        building_type: "waste_port",
-        placement: { x: 8, y: 10, rotation: 0 },
-      }),
-    ).toThrow();
-    expect(root).toEqual(previous);
+    root = editWorld(root, {
+      kind: "place",
+      id: "overflow-port",
+      building_type: "waste_port",
+      placement: { x: 8, y: 10, rotation: 0 },
+    });
+    expect(
+      root.buildings.filter((b) => b.building_type === "waste_port"),
+    ).toHaveLength(16);
+    expect(root.simulation.warehouse[port]).toBe(0);
+    expect(
+      previous.buildings.filter((b) => b.building_type === "waste_port"),
+    ).toHaveLength(15);
   });
   it("refuses a blueprint that cuts the last physical return corridor", () => {
     let root = setup(2);

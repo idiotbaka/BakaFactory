@@ -659,14 +659,8 @@ export function validateSave(
   const sources = factory.buildings.filter(
     (b) => buildingDefinitions.get(b.building_type)?.role === "source",
   );
-  if (
-    sources.some((b) => b.y !== 10) ||
-    sources.length > [1, 2, 4, 8, 12, 16][factory.simulation.industry.stage - 1]
-  )
-    return fail(
-      `${root}.buildings`,
-      "垃圾提取口不在顶部或超过当前阶段数量上限",
-    );
+  if (sources.some((b) => b.y !== 10))
+    return fail(`${root}.buildings`, "垃圾提取口必须位于地图顶部垃圾堆");
   if (f.districts !== undefined) {
     if (!Array.isArray(f.districts) || f.districts.length > 99)
       return fail(`${root}.districts`, "分厂必须是数组且最多 99 项");
@@ -705,13 +699,7 @@ export function validateSave(
         owner,
         { ...context, path: childPath },
       );
-      if (
-        districtIDs.has(child.id) ||
-        child.buildings.some(
-          (b) => buildingDefinitions.get(b.building_type)?.role === "source",
-        )
-      )
-        return fail(childPath, "分厂 ID 重复或含不允许的垃圾提取口");
+      if (districtIDs.has(child.id)) return fail(childPath, "分厂 ID 重复");
       districtIDs.add(child.id);
       delete child.simulation.industry;
       return child;

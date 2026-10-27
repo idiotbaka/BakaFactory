@@ -280,7 +280,16 @@ export function applyRobotAction(root: LocalFactory, action: RobotAction) {
       if (action.priority !== undefined) r.priority = action.priority;
       if (action.allowed_zones !== undefined)
         r.allowed_zones = action.allowed_zones;
-      r.status = r.enabled ? "idle" : "paused";
+      // Active status is also the departure/handling phase. Configuration or
+      // pause must not turn an in-flight task into a fresh charging departure.
+      if (
+        !r.task &&
+        !r.service &&
+        !r.construction &&
+        !r.transit &&
+        !r.returning
+      )
+        r.status = r.enabled ? "idle" : "paused";
     }
   }
   if (!validRobotWorld(root))
@@ -365,14 +374,17 @@ export function chargeRobots(root: LocalFactory) {
             budget -= n;
             state.status = "refueling";
           }
-          r.status =
-            r.energy_kj === d.energy_capacity_kj
-              ? "charged"
-              : n > 0
-                ? "charging"
-                : r.energy_kj
-                  ? "idle"
-                  : "no_energy";
+          // A passing robot may receive paid energy, but remains in its
+          // current task phase rather than restarting the full-charge gate.
+          if (!r.task && !r.service && !r.construction && !r.returning)
+            r.status =
+              r.energy_kj === d.energy_capacity_kj
+                ? "charged"
+                : n > 0
+                  ? "charging"
+                  : r.energy_kj
+                    ? "idle"
+                    : "no_energy";
         }
     }
 }

@@ -5,6 +5,7 @@ import { createWorld, editWorld, stepWorld, actWorld } from "./world";
 import { toSave, validateSave, type LocalFactory } from "./state";
 import { planWorkshopOrder } from "./orders";
 import { initialIndustry } from "./industry";
+import { secondsToTicks } from "./simulationTime";
 
 const user = {
   id: "orders",
@@ -40,7 +41,7 @@ function place(f: LocalFactory, item = ring, count = 5) {
   });
 }
 function advance(f: LocalFactory, n: number) {
-  for (let i = 0; i < n; i++) f = stepWorld(f);
+  for (let i = 0; i < secondsToTicks(n); i++) f = stepWorld(f);
   return f;
 }
 const recipe = (

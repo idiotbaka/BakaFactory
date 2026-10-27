@@ -177,8 +177,8 @@ describe("paired underground conveyors", () => {
     });
     expect(f.simulation.buildings.destination.belt).toBeUndefined();
     run(f);
-    expect(f.simulation.buildings["in-out"].belt?.count).toBe(5);
-    expect(f.simulation.buildings.destination.belt?.count).toBe(1);
+    expect(f.simulation.buildings["in-out"].belt?.count).toBe(4);
+    expect(f.simulation.buildings.destination.belt?.count).toBe(2);
     expect(f.simulation.transfers).toHaveLength(0); // No fictitious underground flight.
   });
   it("keeps old source stock when exit is blocked, rejects side and reverse surface entry, and honors entry filter", () => {

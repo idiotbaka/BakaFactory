@@ -96,7 +96,7 @@ function factory(tick: number): FactoryDetail {
     },
   };
 }
-function view(detail: FactoryDetail, tickRate = 2) {
+function view(detail: FactoryDetail, tickRate = 2, zoom = 1) {
   return (
     <SimulationAnimationProvider
       factoryID={detail.id}
@@ -106,6 +106,7 @@ function view(detail: FactoryDetail, tickRate = 2) {
       <ConveyorItemsLayer
         factory={detail}
         catalog={definitions as unknown as Catalog}
+        zoom={zoom}
       />
     </SimulationAnimationProvider>
   );
@@ -148,3 +149,48 @@ it.each([2, 4])(
     ]);
   },
 );
+
+it("shows confirmed counts at 120%, reuses the moving node and keeps screen text size fixed", () => {
+  const detail = factory(1);
+  detail.buildings[2].building_type = "flexible_belt";
+  const payload = detail.simulation!.buildings.conveyor.belt!;
+  payload.count = 20;
+  const { container, rerender } = render(view(detail, 2, 1.19));
+  const icon = container.querySelector<HTMLElement>(".conveyor-payload")!;
+  expect(icon.querySelector(".conveyor-payload-count")).toBeNull();
+  rerender(view(detail, 2, 1.2));
+  const count = icon.querySelector(".conveyor-payload-count")!;
+  expect(count.textContent).toBe("20");
+  const before = icon.style.transform;
+  frame(250);
+  expect(icon.style.transform).not.toBe(before);
+  expect(icon.querySelector(".conveyor-payload-count")).toBe(count);
+  expect(container.querySelector(".conveyor-payload")).toBe(icon);
+  const position = icon.style.transform;
+  rerender(view(detail, 2, 2));
+  expect(icon.style.transform).toBe(position);
+  expect(
+    container
+      .querySelector<HTMLElement>(".conveyor-items-layer")!
+      .style.getPropertyValue("--payload-label-scale"),
+  ).toBe("0.5");
+  const changed = structuredClone(detail);
+  changed.simulation!.buildings.conveyor.belt!.count = 100;
+  rerender(view(changed, 2, 2));
+  expect(count.textContent).toBe("100");
+  expect(icon.style.transform).toBe(position);
+  rerender(view(changed, 2, 1.19));
+  expect(icon.querySelector(".conveyor-payload-count")).toBeNull();
+  expect(changed.simulation!.buildings.conveyor.belt!.count).toBe(100);
+});
+
+it("shows the implicit single item and removes the number before an absorption animation", () => {
+  const { container, rerender } = render(view(factory(1), 2, 1.2));
+  expect(container.querySelector(".conveyor-payload-count")?.textContent).toBe(
+    "1",
+  );
+  now = 500;
+  rerender(view(factory(2), 2, 1.2));
+  expect(container.querySelector(".conveyor-payload-count")).toBeNull();
+  expect(container.querySelector(".conveyor-payload")).not.toBeNull();
+});

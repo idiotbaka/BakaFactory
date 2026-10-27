@@ -37,7 +37,7 @@ describe("persistent obtained-item history", () => {
       configuration: {},
     });
     f.simulation.buildings.source = newMachine();
-    f.simulation.buildings.source.progress = 9;
+    f.simulation.buildings.source.progress = 9.5;
     const old = structuredClone(f);
     f = stepWorld(f);
     expect(old.simulation.industry!.discovered_items).not.toContain(

@@ -128,7 +128,7 @@ describe("developer tools", () => {
     fireEvent.click(screen.getByRole("button", { name: "闭环诊断" }));
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /最近 7 个运行 tick/ }),
+      screen.getByRole("heading", { name: /最近 3.5 秒/ }),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /\(2,0\)/ }));
     expect(onLocateBuilding).toHaveBeenCalledWith("machine");

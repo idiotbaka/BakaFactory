@@ -33,16 +33,7 @@ export function validatePlacement(
   if (f.buildings.some((b) => overlaps(b, p)))
     throw new Error("目标格子已被占用");
   if ((d.tier ?? 1) > stage) throw new Error("该设备所属阶段尚未解锁");
-  if (d.role === "source") {
-    if (p.y !== 10) throw new Error("垃圾提取口必须安装在地图顶部垃圾堆");
-    if (
-      f.buildings.filter(
-        (b) => buildingDefinitions.get(b.building_type)?.role === "source",
-      ).length >= [1, 2, 4, 8, 12, 16][stage - 1]
-    )
-      throw new Error(
-        `当前阶段最多安装 ${[1, 2, 4, 8, 12, 16][stage - 1]} 个垃圾提取口`,
-      );
-  }
+  if (d.role === "source" && p.y !== 10)
+    throw new Error("垃圾提取口必须安装在地图顶部垃圾堆");
   return d;
 }

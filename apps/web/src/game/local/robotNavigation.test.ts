@@ -1,3 +1,4 @@
+import { stepWorld as stepTick } from "./world";
 import { worldSecond as stepWorld } from "./testTime";
 import { describe, it, expect } from "vitest";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
@@ -113,7 +114,7 @@ describe("robot navigation and lifecycle integration", () => {
     expect(route.status).toBe("ready");
     expect(route.points.length).toBeGreaterThan(1);
     expect(root).toEqual(before);
-    root = stepWorld(root);
+    root = stepTick(root);
     expect(root.robots![0]).toMatchObject(route.points[1]);
     expect(root.robots![0].energy_kj).toBe(before.robots![0].energy_kj - 1);
     expect(previewRobotRoute(root, "missing")).toBeUndefined();

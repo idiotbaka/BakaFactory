@@ -200,7 +200,9 @@ describe("manual workshop batch controls", () => {
     expect(outputs.getByText("存 0 / 产 3")).toBeInTheDocument();
     expect(outputs.getAllByRole("listitem")).toHaveLength(9);
     expect(
-      outputs.getAllByRole("listitem").every((row) => row.querySelector("svg")),
+      outputs
+        .getAllByRole("listitem")
+        .every((row) => row.querySelector(".item-sprite[data-item-id]")),
     ).toBe(true);
   });
   it("validates current material limits and integer counts before submitting a real quantity", () => {

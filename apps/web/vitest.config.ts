@@ -6,5 +6,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     clearMocks: true,
+    // Each editor fixture renders a full 21×21 map. Bound concurrent jsdom
+    // environments so the normal test command does not exhaust CPU / memory.
+    maxWorkers: 2,
   },
 });

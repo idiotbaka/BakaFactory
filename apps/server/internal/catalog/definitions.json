@@ -1092,7 +1092,8 @@
         "r2001",
         "r2006",
         "r2011",
-        "web_pipe_early"
+        "web_pipe_early",
+        "web_underground_belt"
       ]
     },
     {
@@ -1398,8 +1399,7 @@
         "r2034",
         "r2040",
         "r2045",
-        "r3019",
-        "web_underground_belt"
+        "r3019"
       ]
     },
     {
@@ -6807,7 +6807,8 @@
       "input_slots": 12,
       "output_slots": 12,
       "stack_limit": 100,
-      "input_whitelist": []
+      "input_whitelist": [],
+      "batch_size": 20
     },
     {
       "id": "waste_port",
@@ -6815,7 +6816,7 @@
       "code": "JUNK",
       "icon": "recycler",
       "color": "#ffc879",
-      "description": "安装在地图顶部垃圾堆，每 10 秒提取 12 包；每个阶段有提取口数量上限。",
+      "description": "可安装在任意厂区地图顶部垃圾堆，每 10 秒提取 12 包；不设阶段数量上限。",
       "category": "logistics",
       "fixed": false,
       "tier": 1,
@@ -11680,7 +11681,7 @@
       "building_type": "m08",
       "tier": 2,
       "duration_ms": 12000,
-      "inputs": { "i0049": 2, "i0068": 2 },
+      "inputs": { "i0049": 2, "i0045": 2 },
       "outputs": { "d0001": 1 },
       "description": "制造一套成对地下端口，入口正前方 1～8 格放置出口，无额外地下行程。",
       "power_kw": 0,

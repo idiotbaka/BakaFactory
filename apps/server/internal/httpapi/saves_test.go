@@ -82,6 +82,12 @@ func TestIndustrialSaveRoundTripAndBounds(t *testing.T) {
 	child.Simulation.Warehouse = map[string]int64{item("净化水"): 500}
 	child.Buildings = append(child.Buildings, domain.BuildingInstance{ID: "station", FactoryID: child.ID, BuildingType: "charge_station", X: 2, Configuration: json.RawMessage(`{}`)})
 	child.Simulation.Buildings["station"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, StationEnergyKJ: 123, Status: "storage"}
+	// Child factories may hold more sources than the former P4 quota of eight.
+	for x := 0; x < 10; x++ {
+		id := fmt.Sprintf("source:%d", x)
+		child.Buildings = append(child.Buildings, domain.BuildingInstance{ID: id, FactoryID: child.ID, BuildingType: "waste_port", X: x, Y: 10, Configuration: json.RawMessage(`{}`)})
+		child.Simulation.Buildings[id] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "idle"}
+	}
 	save.Factory.Districts = []domain.FactoryDetail{child}
 	save.Factory.ActiveDistrictID = child.ID
 	save.Factory.Robots = []domain.RobotState{{ID: "robot", Item: item("电动物流机器人"), HomeFactoryID: child.ID, HomeStation: "station", FactoryID: child.ID, X: 3, EnergyKJ: 88, ChargeRemainder: 12, Enabled: true, AllowedZones: []string{save.Factory.ID, child.ID}, Priority: 2, Status: "charging"}}

@@ -24,6 +24,7 @@ import { questVisible } from "./local/questRules";
 import { orderRecipes } from "./local/orders";
 import type { Observation } from "./local/observations";
 import type { DistrictSummary, WorldAction } from "./local/world";
+import { DEFAULT_TPS } from "./local/tickRate";
 
 export type IndustryView =
   | "factory"
@@ -44,7 +45,7 @@ export default function IndustryViews({
   world,
   view: requestedView,
   developerToolsVisible = false,
-  tickRate = 1,
+  tickRate = DEFAULT_TPS,
   onTickRateChange,
   onViewChange,
   selectedRobotID,

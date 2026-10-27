@@ -160,7 +160,9 @@ describe("quest interface", () => {
     expect(
       reward.getByRole("button", { name: "手摇传送带" }),
     ).toBeInTheDocument();
-    expect(ready.getByRole("listitem")).toHaveTextContent("手摇传送带 × 15");
+    expect(ready.getByRole("listitem")).toHaveTextContent(
+      /手摇传送带\s*×\s*15/,
+    );
     fireEvent.click(ready.getByRole("button", { name: "领取奖励" }));
     expect(world).toHaveBeenCalledWith({ type: "claim_quest", id: "p1_belt" });
     expect(
@@ -226,7 +228,7 @@ describe("quest interface", () => {
     p.quests!.completed.push(
       ...catalog
         .quests!.filter((q) => q.tier === 2 && !q.stage_final)
-        .slice(0, 9)
+        .slice(0, 10)
         .map((q) => q.id),
     );
     rerender(<QuestPanel {...props} />);
@@ -320,7 +322,7 @@ describe("quest interface", () => {
         catalog={catalog}
       />,
     );
-    expect(screen.getByRole("status")).toHaveTextContent("简易熔炼炉");
+    expect(screen.getByRole("status")).toHaveTextContent("欢迎来到青铜时代");
     rerender(<QuestNotifications notices={[]} catalog={catalog} />);
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
   });

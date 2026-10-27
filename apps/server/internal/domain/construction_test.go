@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -11,6 +12,24 @@ func constructionFixture() (FactoryDetail, Catalog) {
 	f := FactoryDetail{Factory: Factory{ID: "home"}, Buildings: []BuildingInstance{{ID: "wh", BuildingType: "bus"}, {ID: "s", BuildingType: "station", X: 4}}, Simulation: Simulation{Industry: &IndustryState{Stage: 6}}, Districts: []FactoryDetail{{Factory: Factory{ID: "away"}, Buildings: []BuildingInstance{{ID: "wh-away", BuildingType: "bus"}}}}}
 	f.Robots = []RobotState{{ID: "r", Item: "smart", HomeFactoryID: "home", HomeStation: "s", FactoryID: "home", X: 5, EnergyKJ: 100, Enabled: true, AllowedZones: []string{"home", "away"}, Priority: 3, Status: "constructing", WorkProgress: 9, Cargo: &Stack{Item: "device", Count: 1}, Construction: &RobotConstruction{ID: "site", FactoryID: "away", BuildingType: "machine", X: 6, Y: 2, Rotation: 90}}}
 	return f, c
+}
+func TestSourcesAllowChildFactoryAndMoreThanOldQuota(t *testing.T) {
+	f, c := constructionFixture()
+	f.Robots[0].Construction.BuildingType = "source"
+	f.Robots[0].Construction.Y = 10
+	for x := -10; x <= 10; x++ {
+		if x == 6 {
+			continue
+		}
+		f.Districts[0].Buildings = append(f.Districts[0].Buildings, BuildingInstance{ID: fmt.Sprintf("source:%d", x), BuildingType: "source", X: x, Y: 10})
+	}
+	if !validRobotWorld(f, c) {
+		t.Fatal("valid child source blueprint rejected by old quota")
+	}
+	f.Robots[0].Construction.Y = 9
+	if validRobotWorld(f, c) {
+		t.Fatal("source outside top row accepted")
+	}
 }
 func TestConstructionWorldBoundsAndReturnStates(t *testing.T) {
 	f, c := constructionFixture()
@@ -31,9 +50,9 @@ func TestConstructionWorldBoundsAndReturnStates(t *testing.T) {
 		"existing cell": func(f *FactoryDetail) { f.Robots[0].Construction.X = 0; f.Robots[0].Construction.Y = 0 },
 		"permissions":   func(f *FactoryDetail) { f.Robots[0].AllowedZones = []string{"home"} },
 		"recipe":        func(f *FactoryDetail) { v := "unknown"; f.Robots[0].Construction.RecipeID = &v },
-		"source child": func(f *FactoryDetail) {
+		"source off edge": func(f *FactoryDetail) {
 			f.Robots[0].Construction.BuildingType = "source"
-			f.Robots[0].Construction.Y = 10
+			f.Robots[0].Construction.Y = 9
 		},
 		"duplicate site": func(f *FactoryDetail) { r := f.Robots[0]; r.ID = "peer"; r.X = 3; f.Robots = append(f.Robots, r) },
 		"landing": func(f *FactoryDetail) {

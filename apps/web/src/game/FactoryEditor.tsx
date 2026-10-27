@@ -1024,7 +1024,11 @@ export default function FactoryEditor(props: Props) {
             role="group"
             aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定工厂仓库`}
           >
-            <ConveyorItemsLayer factory={factory} catalog={catalog} />
+            <ConveyorItemsLayer
+              factory={factory}
+              catalog={catalog}
+              zoom={camera.zoom}
+            />
             {((undergroundEntry && placingUnderground) || selectedPeer) && (
               <svg
                 className="underground-link-layer"

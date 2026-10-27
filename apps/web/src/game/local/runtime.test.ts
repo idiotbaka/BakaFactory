@@ -7,6 +7,7 @@ import {
 } from "../../api/client";
 import { GameRuntime, type GameView } from "./runtime";
 import { workshopDuration } from "./workshop";
+import { secondsToTicks } from "./simulationTime";
 import { readLocal, writeLocal, type LocalRecord } from "./storage";
 import {
   createLocalFactory,
@@ -519,7 +520,8 @@ describe("local persistence and cloud lifecycle", () => {
     const duration = workshopDuration(
       catalog.recipes.find((r) => r.id === "r1001")!,
     );
-    for (let i = 0; i < duration; i++) FakeWorker.instances[0].tick();
+    for (let i = 0; i < secondsToTicks(duration); i++)
+      FakeWorker.instances[0].tick();
     expect(view.questNotices).toEqual([{ sequence: 1, id: "p1_sort_waste" }]);
     await game.world({ type: "claim_quest", id: "p1_sort_waste" });
     expect(saved!.save!.factory.simulation!.industry!.quests!.claimed).toEqual([

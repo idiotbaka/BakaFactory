@@ -21,6 +21,7 @@ import { beltTicks } from "./local/catalog";
 import { undergroundType } from "./local/underground";
 import ItemSprite from "./ItemSprite";
 import { itemSpriteURL } from "./itemSprites";
+import { MACHINE_NAME_MIN_ZOOM } from "./machineMapNames";
 
 type Track = Motion & {
   building: TransferEndpoint;
@@ -28,18 +29,20 @@ type Track = Motion & {
   segment: string;
   completed: boolean;
 };
-function ItemVisual({
+const ItemVisual = memo(function ItemVisual({
   visual,
   width,
   height,
   catalog,
   finish,
+  showCounts,
 }: {
   visual: VisualItem;
   width: number;
   height: number;
   catalog: Catalog;
   finish: (payloadID: string, eventID: string) => void;
+  showCounts: boolean;
 }) {
   const element = useRef<HTMLSpanElement>(null);
   const track = useRef<Track | null>(null);
@@ -179,15 +182,22 @@ function ItemVisual({
           />
         </svg>
       )}
+      {showCounts && belt && (
+        <span className="conveyor-payload-count">
+          {belt.payload.count ?? 1}
+        </span>
+      )}
     </span>
   );
-}
+});
 function ConveyorItemsLayer({
   factory,
   catalog,
+  zoom = 1,
 }: {
   factory: FactoryDetail;
   catalog: Catalog;
+  zoom?: number;
 }) {
   const [store] = useState(() => new LogisticsVisualStore(factory));
   const visuals = useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -202,7 +212,11 @@ function ConveyorItemsLayer({
     return () => document.removeEventListener("visibilitychange", visibility);
   }, [store]);
   return (
-    <div className="conveyor-items-layer" aria-hidden="true">
+    <div
+      className="conveyor-items-layer"
+      aria-hidden="true"
+      style={{ "--payload-label-scale": 1 / zoom } as CSSProperties}
+    >
       {visuals.map((visual) => (
         <ItemVisual
           key={visual.id}
@@ -211,6 +225,7 @@ function ConveyorItemsLayer({
           height={factory.height}
           catalog={catalog}
           finish={store.finish}
+          showCounts={Math.round(zoom * 100) >= MACHINE_NAME_MIN_ZOOM * 100}
         />
       ))}
     </div>

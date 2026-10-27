@@ -191,7 +191,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 	if err := sim.Validate(c); err != nil {
 		return bad()
 	}
-	stage, sources := 1, 0
+	stage := 1
 	if sim.Industry != nil {
 		stage = sim.Industry.Stage
 	}
@@ -228,14 +228,6 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			return bad()
 		}
 	}
-	for _, b := range f.Buildings {
-		if limits[b.BuildingType].Role == "source" {
-			sources++
-		}
-	}
-	if sources > []int{1, 2, 4, 8, 12, 16}[stage-1] {
-		return bad()
-	}
 	if f.Districts != nil || f.ActiveDistrictID != "" {
 		if sim.Industry == nil || len(f.Districts)+1 > []int{6, 12, 24, 40, 70, 100}[stage-1] {
 			return bad()
@@ -247,11 +239,6 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			}
 			if child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || child.Simulation.TickRate != sim.TickRate || factoryIDs[child.ID] {
 				return bad()
-			}
-			for _, b := range child.Buildings {
-				if limits[b.BuildingType].Role == "source" {
-					return bad()
-				}
 			}
 			factoryIDs[child.ID] = true
 			child.Simulation.Industry = sim.Industry

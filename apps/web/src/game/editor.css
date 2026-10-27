@@ -551,6 +551,20 @@
   background: none;
   box-shadow: none;
 }
+.conveyor-payload-count {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: max-content;
+  padding: 0 2px;
+  font: 12px/14px var(--mono);
+  color: #fff;
+  background: #101220e6;
+  transform: translateX(-50%) scale(var(--payload-label-scale, 1));
+  transform-origin: top center;
+  pointer-events: none;
+  user-select: none;
+}
 .factory-grid .definition-icon.compact {
   display: block;
   width: 28px;

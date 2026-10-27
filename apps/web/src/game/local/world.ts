@@ -1,4 +1,3 @@
-import { onInterval } from "./simulationTime";
 import { overlaps, containsCell } from "../footprint";
 import type { User } from "../../api/client";
 import {
@@ -8,7 +7,7 @@ import {
   type LocalFactory,
 } from "./state";
 import { step } from "./simulation";
-import { buildingDefinitions, itemID } from "./catalog";
+import { itemID } from "./catalog";
 import { store } from "./inventory";
 import { applyRobotAction, chargeRobots, type RobotAction } from "./robots";
 import { stepFreight } from "./robotFreight";
@@ -183,7 +182,7 @@ export function stepWorld(current: LocalFactory): LocalFactory {
   chargeRobots(root);
   syncIncidents(root);
   dispatchRobots(root);
-  if (onInterval(root.simulation.tick, 1)) stepFreight(root);
+  stepFreight(root);
   syncQuests(root);
   return root;
 }
@@ -255,11 +254,6 @@ export function editWorld(
     )
   )
     return verify(editFactory(current, edit));
-  if (
-    edit.kind === "place" &&
-    buildingDefinitions.get(edit.building_type)?.role === "source"
-  )
-    throw new Error("垃圾提取口只允许建在起始回收场");
   const child = current.districts![index];
   const next = editFactory(
     {
