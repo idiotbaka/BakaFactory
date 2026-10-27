@@ -89,12 +89,12 @@ export const homeEndpoint = (r: Robot): Endpoint => ({
   factory_id: r.home_factory_id,
   building_id: r.home_station,
 });
+export const warehouseBuilding = (root: LocalFactory, factoryID: string) =>
+  worldIndex(root).byID.get(factoryID)?.buildings.find((b) => b.building_type === "bus");
 export function warehouseEndpoint(root: LocalFactory, id: string): Endpoint {
   return {
     factory_id: id,
-    building_id: worldFactories(root)
-      .find((f) => f.id === id)!
-      .buildings.find((b) => b.building_type === "bus")!.id,
+    building_id: warehouseBuilding(root, id)!.id,
   };
 }
 export function emptyCell(f: LocalFactory, p: { x: number; y: number }) {
@@ -178,7 +178,8 @@ export function journey(
   const route = path(source, from, gate, occupied);
   if (!route) return;
   let best: { arrival: Point; end: Point; cost: number } | undefined;
-  for (const p of adjacentCells({ x: 0, y: 0 })) {
+  const destinationGate = warehouseBuilding(root, dest.id)!;
+  for (const p of adjacentCells(destinationGate)) {
     const arrival = { ...p, factory_id: dest.id };
     if (!emptyCell(dest, p) || occupied?.has(cellKey(arrival))) continue;
     const tail = path(dest, arrival, building, occupied, dock);

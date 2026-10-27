@@ -687,7 +687,7 @@ export default function FactoryWorkspace({
                 <p>
                   为工厂命名，接入 21 × 21 的专属地块，
                   <br />
-                  从中心的工厂仓库，开启你的自动化帝国。
+                  从工厂仓库，开启你的自动化帝国。
                 </p>
                 <form onSubmit={(event) => void create(event)}>
                   <label htmlFor="factory-name">
@@ -838,8 +838,10 @@ export default function FactoryWorkspace({
                       <div>
                         <dt>位置规则</dt>
                         <dd>
-                          {buildingDefinition.fixed
-                            ? "中心固定"
+                          {buildingDefinition.id === "bus"
+                            ? "可移动 · 方向固定 · 不可删除"
+                            : buildingDefinition.fixed
+                            ? "固定设施"
                             : isWarehouseTerminal(buildingDefinition.id)
                               ? "厂区升级安装 · 可移动 · 不可删除"
                               : "可连续放置 / 移动"}

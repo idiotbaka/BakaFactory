@@ -137,6 +137,7 @@ export default function FactoryEditor(props: Props) {
   const rotation =
     orientation.type === placementType ? orientation.rotation : 0;
   const selected = factory.buildings.find((b) => b.id === selectedID);
+  const warehouse = factory.buildings.find((b) => b.building_type === "bus");
   const selectedPeer =
     selected && isUnderground(selected)
       ? undergroundPeer(selected, factory.buildings)
@@ -255,7 +256,7 @@ export default function FactoryEditor(props: Props) {
     if (
       event.button !== 0 ||
       latest.current.placementType ||
-      definition.fixed ||
+      (definition.fixed && instance.building_type !== "bus") ||
       lock.current ||
       drag.current
     )
@@ -380,6 +381,7 @@ export default function FactoryEditor(props: Props) {
   function rotateDrag() {
     const p = drag.current;
     if (!p) return;
+    if (p.definition.id === "bus") return;
     if (p.definition.id === undergroundType) {
       latest.current.onError(
         new Error("已安装地下端口须保持共同朝向；更换方向请回收整对后重建"),
@@ -895,7 +897,9 @@ export default function FactoryEditor(props: Props) {
         </button>
         <span>
           {dragPreview
-            ? dragPreview.definition.id === undergroundType
+            ? dragPreview.definition.id === "bus"
+              ? "移动工厂仓库 · 方向固定 · 松开左键确认"
+              : dragPreview.definition.id === undergroundType
               ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
               : "移动建筑 · 右键旋转 · 松开左键确认"
             : placementDefinition
@@ -905,8 +909,10 @@ export default function FactoryEditor(props: Props) {
                   : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
                 : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
               : selected
-                ? fixed
-                  ? "工厂仓库固定，无法编辑"
+                ? selected.building_type === "bus"
+                  ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
+                  : fixed
+                  ? "固定设施，无法编辑"
                   : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
                 : "点击图鉴连续建造 · 长按建筑移动 · 拖动空格平移"}
         </span>
@@ -1022,7 +1028,7 @@ export default function FactoryEditor(props: Props) {
           <div
             className="factory-grid"
             role="group"
-            aria-label={`${factory.width} × ${factory.height} 工厂地图，中心 (0,0) 为固定工厂仓库`}
+            aria-label={`${factory.width} × ${factory.height} 工厂地图，X 向右、Y 向上`}
           >
             <ConveyorItemsLayer
               factory={factory}
@@ -1301,7 +1307,9 @@ export default function FactoryEditor(props: Props) {
               `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`)
             : pointer?.cell
               ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
-              : "■ 工厂仓库固定于 (0,0)"}
+              : warehouse
+                ? `■ 工厂仓库 (${warehouse.x},${warehouse.y}) · 长按移动`
+                : "■ 工厂地图"}
         </span>
         <span>
           {factory.buildings.length} 个建筑实例 /{" "}
@@ -1386,7 +1394,7 @@ export default function FactoryEditor(props: Props) {
                 {isUnderground(menuBuilding) ? "回收整对出入口" : "删除"}
               </span>
             </button>
-            {isFixed(menuBuilding) && <small>工厂仓库固定</small>}
+            {isFixed(menuBuilding) && <small>工厂仓库可移动，不可旋转或删除</small>}
             {isTerminal(menuBuilding) && (
               <small>仓库终端可移动，不可删除</small>
             )}

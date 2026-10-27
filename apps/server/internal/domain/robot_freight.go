@@ -132,7 +132,16 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 		return false
 	}
 	if t := r.Transit; t != nil {
-		if !d.CrossDistrict || !zones[t.ToFactoryID] || t.ToFactoryID == r.FactoryID || t.RemainingTicks < 0 || t.RemainingTicks > 8 || t.X < -1 || t.X > 1 || t.Y < -1 || t.Y > 1 || t.X*t.X+t.Y*t.Y != 1 || r.X*r.X+r.Y*r.Y != 1 {
+		nearWarehouse := func(factoryID string, x, y int) bool {
+			for _, b := range factories[factoryID].Buildings {
+				if b.BuildingType == "bus" {
+					dx, dy := x-b.X, y-b.Y
+					return dx*dx+dy*dy == 1
+				}
+			}
+			return false
+		}
+		if !d.CrossDistrict || !zones[t.ToFactoryID] || t.ToFactoryID == r.FactoryID || t.RemainingTicks < 0 || t.RemainingTicks > 8 || !footprintInBounds(t.X, t.Y, 1) || !nearWarehouse(r.FactoryID, r.X, r.Y) || !nearWarehouse(t.ToFactoryID, t.X, t.Y) {
 			return false
 		}
 		dest, exists := factories[t.ToFactoryID]

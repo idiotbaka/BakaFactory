@@ -29,6 +29,7 @@ import {
   journey,
   returnCost,
   warehouseEndpoint,
+  warehouseBuilding,
   worldFactories,
   type Endpoint,
   type Point,
@@ -175,8 +176,10 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
   } else if (r.cargo && !r.returning && !r.construction) return false;
   if (r.transit !== undefined) {
     const t = r.transit;
+    if (!obj(t)) return false;
+    const origin = warehouseBuilding(root, r.factory_id),
+      destination = warehouseBuilding(root, t.to_factory_id);
     if (
-      !obj(t) ||
       !keys(t, ["to_factory_id", "x", "y", "remaining_ticks"]) ||
       !d.cross_district ||
       !r.allowed_zones.includes(t.to_factory_id) ||
@@ -184,8 +187,10 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
       !int(t.remaining_ticks, 8) ||
       !Number.isInteger(t.x) ||
       !Number.isInteger(t.y) ||
-      Math.abs(t.x) + Math.abs(t.y) !== 1 ||
-      Math.abs(r.x) + Math.abs(r.y) !== 1 ||
+      !origin ||
+      !destination ||
+      !isAdjacent(origin, r) ||
+      !isAdjacent(destination, t) ||
       !worldFactories(root).some(
         (f) => f.id === t.to_factory_id && emptyCell(f, t),
       )

@@ -57,7 +57,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 		}
 		if b.BuildingType == "bus" {
 			buses++
-			if b.X != 0 || b.Y != 0 || b.Rotation != 0 {
+            if b.Rotation != 0 {
 				return bad()
 			}
 		}

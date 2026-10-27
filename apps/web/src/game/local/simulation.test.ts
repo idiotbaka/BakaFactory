@@ -178,7 +178,7 @@ describe("client authoritative simulation", () => {
     expect(total(removed)).toBe(total(f));
     const bus = f.buildings.find((b) => b.building_type === "bus")!;
     expect(() => editFactory(f, { kind: "delete", id: bus.id })).toThrow(
-      "工厂仓库固定",
+      "不能删除",
     );
     expect(() =>
       editFactory(f, {

@@ -233,6 +233,12 @@ export function editWorld(
   )
     throw new Error("该补能站仍绑定机器人，请先召回后再移动或拆除");
   const verify = (next: LocalFactory) => {
+    if (
+      edit.kind === "move" &&
+      worldFactories(current).find((f) => f.id === id)?.buildings.some((b) => b.id === edit.id && b.building_type === "bus") &&
+      current.robots?.some((r) => r.transit && (r.factory_id === id || r.transit.to_factory_id === id))
+    )
+      throw new Error("该厂有机器人跨区运输中，请等待抵达后再移动工厂仓库");
     if ((next.robots ?? []).some((r) => !constructionValid(next, r)))
       throw new Error("该编辑与在建蓝图的位置、数量或解锁限制冲突");
     if (
@@ -327,11 +333,12 @@ export function actWorld(
       throw new Error("当前阶段该类终端已达上限");
     // Deterministic search near WH, excluding complete footprints, robots,
     // landing reservations and construction. Also preserve safe return routes.
+    const warehouse = f.buildings.find((b) => b.building_type === "bus")!;
     const cells = Array.from({ length: 441 }, (_, i) => ({
       x: (i % 21) - 10,
       y: 10 - Math.floor(i / 21),
     })).sort(
-      (a, b) => Math.abs(a.x) + Math.abs(a.y) - Math.abs(b.x) - Math.abs(b.y),
+      (a, b) => Math.abs(a.x - warehouse.x) + Math.abs(a.y - warehouse.y) - Math.abs(b.x - warehouse.x) - Math.abs(b.y - warehouse.y),
     );
     const id = crypto.randomUUID();
     const p = cells.find((p) => {

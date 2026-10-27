@@ -253,8 +253,8 @@ export function validateSave(
     ids.add(b.id);
     if (b.building_type === "bus") {
       buses++;
-      if (b.x !== 0 || b.y !== 0 || b.rotation !== 0)
-        return fail(buildingPath, "WH 必须位于原点且方向为 0");
+      if (b.rotation !== 0)
+        return fail(buildingPath, "WH 方向必须固定为 0");
     }
     const m = sim.buildings[b.id];
     const machinePath = `${root}.simulation.buildings[${b.id}]`;
@@ -846,11 +846,13 @@ export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
     if (!b) throw new Error("建筑不存在");
     if (
       edit.kind === "delete" &&
-      ["warehouse_pickup", "warehouse_intake"].includes(b.building_type)
+      ["bus", "warehouse_pickup", "warehouse_intake"].includes(b.building_type)
     )
-      throw new Error("仓库终端可以移动，但不能删除");
-    if (catalog.buildings.find((d) => d.id === b.building_type)?.fixed)
-      throw new Error("工厂仓库固定，不能移动、旋转或删除");
+      throw new Error("工厂仓库和仓库终端可以移动，但不能删除");
+    if (b.building_type === "bus" && edit.kind === "move" && edit.placement.rotation !== 0)
+      throw new Error("工厂仓库方向固定，不能旋转");
+    if (b.building_type !== "bus" && buildingDefinitions.get(b.building_type)?.fixed)
+      throw new Error("该固定设施不能移动、旋转或删除");
     if (edit.kind === "move") {
       if (
         buildingDefinitions.get(b.building_type)?.role === "source" &&

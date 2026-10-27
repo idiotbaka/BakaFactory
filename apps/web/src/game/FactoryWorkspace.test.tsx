@@ -559,7 +559,7 @@ describe("local factory workspace", () => {
     expect(miner).toHaveAttribute("aria-pressed", "false");
     expect(commands.placeBuilding).not.toHaveBeenCalled();
   });
-  it("creates a local factory and retains the fixed warehouse", async () => {
+  it("creates a local factory with one warehouse initially at the origin and no warehouse build tool", async () => {
     prepare(false);
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     fireEvent.change(screen.getByLabelText("工厂名称"), {

@@ -364,6 +364,32 @@ func uploadBody(t *testing.T, base int, save domain.GameSave) string {
 	}
 	return string(raw)
 }
+func TestRelocatedWarehouseCloudRoundTrip(t *testing.T) {
+	f := newAuthFixture(t, false)
+	registered := f.request("POST", "/api/v1/auth/register", credentials("moved_warehouse", "correct-password"), nil)
+	user := userFrom(t, registered, 201)
+	cookie := registered.Result().Cookies()[0]
+	session := heartbeatID(t, f, cookie)
+	save := sampleSave(user.ID)
+	save.Factory.Buildings[0].X, save.Factory.Buildings[0].Y = 8, -8
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie); w.Code != 200 {
+		t.Fatal("relocated warehouse rejected", w.Code, w.Body)
+	}
+	var response struct { Backup domain.CloudSave `json:"backup"` }
+	w := f.cloudRequest("GET", session, "", cookie)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || !reflect.DeepEqual(response.Backup.Save, save) {
+		t.Fatal("warehouse position or stock changed in cloud roundtrip", err)
+	}
+	save.Factory.Buildings[0].Rotation = 90
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 400 {
+		t.Fatal("warehouse rotation accepted", w.Code, w.Body)
+	}
+	w = f.cloudRequest("GET", session, "", cookie)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 1 || response.Backup.Save.Factory.Buildings[0].Rotation != 0 {
+		t.Fatal("rejected warehouse edit overwrote backup", err)
+	}
+}
+
 func TestCloudSaveSingleSlotOwnershipAndSessionRevocation(t *testing.T) {
 	f := newAuthFixture(t, false)
 	registered := f.request("POST", "/api/v1/auth/register", credentials("local_player", "correct-password"), nil)
@@ -442,7 +468,7 @@ func TestCloudSaveInputOriginAndFormatBoundaries(t *testing.T) {
 	save := sampleSave(user.ID)
 	for _, change := range []func(*domain.GameSave){
 		func(s *domain.GameSave) { s.FormatVersion = 99 },
-		func(s *domain.GameSave) { s.Factory.Buildings[0].X = 1 },
+		func(s *domain.GameSave) { s.Factory.Buildings[0].Rotation = 90 },
 		func(s *domain.GameSave) { s.Factory.Simulation.Warehouse["iron_ore"] = domain.MaxSafeInteger + 1 },
 		func(s *domain.GameSave) { s.Factory.Simulation.Tick = -1 },
 		func(s *domain.GameSave) { delete(s.Factory.Simulation.Buildings, "bus") },

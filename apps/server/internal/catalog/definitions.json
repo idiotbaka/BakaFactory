@@ -5055,7 +5055,7 @@
       "code": "WH",
       "icon": "bus",
       "color": "#c8ed9c",
-      "description": "所有厂区 WH 共用同一总仓库；实际入库统一计数，端口方向、过滤与输出速率各自独立。机器仍需实际供料。",
+      "description": "所有厂区 WH 共用同一总仓库；可长按移动，方向固定且不可删除。实际入库统一计数，四面配置与输出速率各自独立。机器仍需实际供料。",
       "category": "logistics",
       "fixed": true,
       "input_slots": 4,

@@ -603,7 +603,7 @@ const base = {
     {
       ...previous.buildings.find((b) => b.id === "bus"),
       description:
-        "所有厂区 WH 共用同一总仓库；实际入库统一计数，端口方向、过滤与输出速率各自独立。机器仍需实际供料。",
+        "所有厂区 WH 共用同一总仓库；可长按移动，方向固定且不可删除。实际入库统一计数，四面配置与输出速率各自独立。机器仍需实际供料。",
       input_whitelist: [],
       role: "warehouse",
     },

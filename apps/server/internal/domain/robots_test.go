@@ -57,6 +57,28 @@ func TestRobotFreightJSONAndWorldBounds(t *testing.T) {
 		t.Fatal("in-transit cargo rejected")
 	}
 	encoded, _ := json.Marshal(r)
+	t.Run("relocated_warehouse_transit", func(t *testing.T) {
+		moved := f
+		moved.Buildings = append([]BuildingInstance(nil), f.Buildings...)
+		moved.Districts = append([]FactoryDetail(nil), f.Districts...)
+		moved.Districts[0].Buildings = append([]BuildingInstance(nil), f.Districts[0].Buildings...)
+		moved.Buildings[0].X, moved.Buildings[0].Y = -4, 3
+		moved.Districts[0].Buildings[0].X, moved.Districts[0].Buildings[0].Y = 6, -5
+		var robot RobotState
+		if err := json.Unmarshal(encoded, &robot); err != nil {
+			t.Fatal(err)
+		}
+		robot.X, robot.Y = -3, 3
+		robot.Transit.X, robot.Transit.Y = 7, -5
+		moved.Robots = []RobotState{robot}
+		if !validRobotWorld(moved, c) {
+			t.Fatal("transit beside relocated warehouses rejected")
+		}
+		robot.Transit.X, robot.Transit.Y = 1, 0
+		if validRobotWorld(moved, c) {
+			t.Fatal("old origin landing accepted after warehouse relocation")
+		}
+	})
 	var decoded RobotState
 	if err := json.Unmarshal(encoded, &decoded); err != nil || !reflect.DeepEqual(decoded, r) {
 		t.Fatal("freight round trip", err)

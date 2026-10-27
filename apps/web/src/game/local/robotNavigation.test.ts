@@ -94,6 +94,36 @@ function until(root: LocalFactory, condition: (f: LocalFactory) => boolean) {
   return root;
 }
 describe("robot navigation and lifecycle integration", () => {
+  it("uses relocated warehouses for cross-factory gates and keeps confirmed transit positions stable", () => {
+    let root = setup();
+    const away = root.districts![0].id;
+    root = editWorld(root, { kind: "move", id: root.buildings[0].id, placement: { x: -3, y: -3, rotation: 0 } });
+    root = actWorld(root, { type: "select_district", id: away });
+    root = editWorld(root, { kind: "move", id: root.districts![0].buildings[0].id, placement: { x: 6, y: 6, rotation: 0 } });
+    root = actWorld(root, { type: "select_district", id: root.id });
+    root = actWorld(root, { type: "robot_config", id: "r0", allowed_zones: [root.id, away] });
+    root = assign(root, away);
+    root = until(root, (f) => !!f.robots![0].transit);
+    const robot = root.robots![0];
+    expect(Math.abs(robot.x + 3) + Math.abs(robot.y + 3)).toBe(1);
+    expect(Math.abs(robot.transit!.x - 6) + Math.abs(robot.transit!.y - 6)).toBe(1);
+    root = validateSave(toSave(root), user.id);
+    for (const id of [root.id, away]) {
+      const selected = actWorld(root, { type: "select_district", id });
+      const district = [selected, ...selected.districts!].find((d) => d.id === id)!;
+      const warehouse = district.buildings[0];
+      const before = structuredClone(selected);
+      expect(() => editWorld(selected, { kind: "move", id: warehouse.id,
+        placement: { x: warehouse.x + 2, y: warehouse.y + 2, rotation: 0 } })).toThrow("跨区运输中");
+      expect(selected).toEqual(before);
+    }
+    root = until(root, (f) => (f.robots![0].completed_tasks ?? 0) === 1);
+    expect(root.simulation.warehouse[iron]).toBe(8);
+    expect(root.districts![0].simulation.warehouse).toEqual({});
+    root = editWorld(root, { kind: "move", id: root.buildings[0].id, placement: { x: -4, y: -3, rotation: 0 } });
+    expect(root.buildings[0]).toMatchObject({ x: -4, y: -3 });
+  });
+
   it("explains retained energy returns without promising a cancelled single freight will restart", () => {
     const root = assign(setup()),
       r = root.robots![0];

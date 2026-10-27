@@ -511,14 +511,13 @@ describe("factory editor interactions", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(screen.getByLabelText("采矿机 MIN (1,1)")).toBeInTheDocument();
   });
-  it("dismisses menus on outside interaction and Escape, and protects the center Bus", () => {
+  it("dismisses menus on outside interaction and Escape, and prevents warehouse rotation / deletion", () => {
     render(<Harness />);
     const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
     fireEvent.contextMenu(bus, { button: 2 });
     expect(screen.getByRole("menuitem", { name: "删除" })).toBeDisabled();
     fireEvent.keyDown(window, { key: "Delete" });
-    hold(bus);
-    fireEvent.pointerUp(window, { ...point(), button: 0, buttons: 0 });
+    fireEvent.keyDown(window, { key: "r" });
     expect(updateBuilding).not.toHaveBeenCalled();
     expect(deleteBuilding).not.toHaveBeenCalled();
     fireEvent.pointerDown(document.body, { button: 0 });
@@ -526,6 +525,27 @@ describe("factory editor interactions", () => {
     fireEvent.contextMenu(bus, { button: 2 });
     fireEvent.keyDown(window, { key: "Escape" });
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+  it("drags the warehouse after 50ms while ignoring rotation during the drag and retaining its instance", async () => {
+    vi.useFakeTimers();
+    vi.mocked(updateBuilding).mockResolvedValue({ ...original,
+      buildings: original.buildings.map((b) => b.id === "bus" ? { ...b, x: 3, y: 2 } : b),
+    });
+    render(<Harness />);
+    const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
+    fireEvent.pointerDown(bus, { ...point(0, 0), button: 0 });
+    act(() => vi.advanceTimersByTime(50));
+    fireEvent.pointerMove(window, point(3, 2));
+    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.mouseDown(window, { button: 2 });
+    fireEvent.mouseUp(window, { button: 2 });
+    await act(async () => fireEvent.pointerUp(window, { ...point(3, 2), button: 0, buttons: 0 }));
+    expect(updateBuilding).toHaveBeenCalledExactlyOnceWith(original.id, "bus", { x: 3, y: 2, rotation: 0 });
+    expect(screen.getByLabelText("工厂仓库 WH (3,2)")).toBeInTheDocument();
+    expect(screen.getByLabelText("空格 (0,0)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /旋转建筑/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /删除建筑/ })).toBeDisabled();
+    expect(deleteBuilding).not.toHaveBeenCalled();
   });
   it("zooms around the pointer and preserves placement coordinates after zoom and pan", async () => {
     vi.mocked(placeBuilding).mockResolvedValue(addBuilding(3, 2));
