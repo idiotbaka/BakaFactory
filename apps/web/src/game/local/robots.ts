@@ -1,3 +1,4 @@
+import { wholeUnitsThisTick } from "./simulationTime";
 import { containsCell } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
@@ -301,7 +302,12 @@ export function chargeRobots(root: LocalFactory) {
     rows.push(r);
     stations.set(r.home_station, rows);
   }
-  for (const r of root.robots)
+  for (const r of root.robots) {
+    if (
+      r.enabled &&
+      (r.task || r.service || r.construction || r.transit || r.returning)
+    )
+      continue;
     r.status = !r.enabled
       ? "paused"
       : r.energy_kj >= robotDefinitions.get(r.item)!.energy_capacity_kj
@@ -309,6 +315,7 @@ export function chargeRobots(root: LocalFactory) {
         : r.energy_kj
           ? "idle"
           : "no_energy";
+  }
   for (const f of factories(root))
     for (const station of f.buildings) {
       const sd = buildingDefinitions.get(station.building_type)!;
@@ -316,8 +323,9 @@ export function chargeRobots(root: LocalFactory) {
       const state = f.simulation.buildings[station.id];
       let budget = Math.min(
         state.station_energy_kj ?? 0,
-        sd.station_transfer_kw ?? 0,
+        wholeUnitsThisTick(sd.station_transfer_kw ?? 0, root.simulation.tick),
       );
+      budget = Math.floor(budget);
       const candidates = (docks.get(f.id)?.get(station.id) ?? [])
         .filter(
           (r) =>

@@ -68,7 +68,7 @@ function factory(tick: number): FactoryDetail {
     buildings,
     simulation: {
       tick,
-      tick_rate: 1,
+      tick_rate: 2,
       warehouse: {},
       transfers: tick ? [transfer] : [],
       buildings: {
@@ -96,7 +96,7 @@ function factory(tick: number): FactoryDetail {
     },
   };
 }
-function view(detail: FactoryDetail, tickRate = 1) {
+function view(detail: FactoryDetail, tickRate = 2) {
   return (
     <SimulationAnimationProvider
       factoryID={detail.id}
@@ -111,7 +111,7 @@ function view(detail: FactoryDetail, tickRate = 1) {
   );
 }
 
-it.each([1, 4])(
+it.each([2, 4])(
   "keeps one continuous item and confirmed inventory at %s TPS",
   (tickRate) => {
     const { container, rerender } = render(view(factory(0), tickRate));

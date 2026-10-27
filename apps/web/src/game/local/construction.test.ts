@@ -1,6 +1,7 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, expect, it } from "vitest";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
-import { actWorld, createWorld, editWorld, stepWorld } from "./world";
+import { actWorld, createWorld, editWorld } from "./world";
 import { toSave, validateSave, type LocalFactory } from "./state";
 import { plannedBuildings, journey, homeEndpoint } from "./robotRoutes";
 import type { ConstructionAction } from "./construction";

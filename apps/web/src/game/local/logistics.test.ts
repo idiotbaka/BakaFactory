@@ -63,7 +63,7 @@ function place(
 const act = (f: LocalFactory, action: IndustryAction) =>
   editFactory(f, { kind: "industry", action });
 const advance = (f: LocalFactory, n: number) => {
-  for (let i = 0; i < n; i++) f = step(f);
+  for (let i = 0; i < n * 2; i++) f = step(f);
   return f;
 };
 const total = (f: LocalFactory, item: string) =>
@@ -79,7 +79,7 @@ const total = (f: LocalFactory, item: string) =>
   );
 // Isolate the transport planner from generation/energy allocation. These
 // fixtures explicitly grant power and present ready belts; network tests own
-// the right to grant it, and step tests below own real one/three-second timing.
+// the right to grant it, and step tests below own real half/one-second timing.
 function transfer(f: LocalFactory) {
   const next = structuredClone(f);
   next.simulation.tick++;
@@ -338,7 +338,7 @@ describe("solid logistics", () => {
       id: "held",
       item: sand,
       count: 1,
-      progress: 3,
+      progress: 2,
     };
     f.simulation.buildings.split.powered = true;
     f = transfer(f);
@@ -370,7 +370,7 @@ describe("solid logistics", () => {
       id: "held",
       item: sand,
       count: 1,
-      progress: 3,
+      progress: 2,
     };
     f.simulation.buildings["a-split"].powered = true;
     f = transfer(f);
@@ -407,12 +407,12 @@ describe("solid logistics", () => {
     ).toThrow();
     f = advance(f, 9);
     expect(total(f, itemID("垃圾包"))).toBe(0);
-    f = step(f);
+    f = advance(f, 1);
     expect(total(f, itemID("垃圾包"))).toBe(12);
     f = act(f, { type: "transport", id: "source", enabled: false });
     expect(total(advance(f, 100), itemID("垃圾包"))).toBe(12);
   });
-  it("moves a hand belt exactly one cell after three ticks and atomically advances a full loop", () => {
+  it("moves a hand belt exactly one cell after two half-second ticks and atomically advances a full loop", () => {
     let f = place(start(), "slow", "hand_belt", -1, 0);
     f.simulation.buildings.slow.belt = {
       id: "bag",
@@ -420,7 +420,7 @@ describe("solid logistics", () => {
       count: 1,
       progress: 0,
     };
-    f = advance(f, 2);
+    f = step(f);
     expect(f.simulation.warehouse[itemID("垃圾包")] ?? 0).toBe(0);
     f = step(f);
     expect(f.simulation.warehouse[itemID("垃圾包")]).toBe(1);
@@ -480,7 +480,7 @@ describe("solid logistics", () => {
     let f = place(start(), "belt", "hand_belt", -1, 0);
     const item = itemID("垃圾包");
     const bus = f.buildings[0].id;
-    f.simulation.buildings.belt.belt = { id: "bag", item, progress: 3 };
+    f.simulation.buildings.belt.belt = { id: "bag", item, progress: 2 };
     f = act(f, {
       type: "bus_face",
       id: bus,
@@ -580,14 +580,14 @@ describe("solid logistics", () => {
       progress: 1,
     };
     f = transfer(f);
-    expect(f.simulation.buildings.fast.belt?.count).toBe(2);
-    expect(f.simulation.buildings.slow.belt?.count).toBe(1);
+    expect(f.simulation.buildings.fast.belt?.count).toBe(1);
+    expect(f.simulation.buildings.slow.belt?.count).toBe(2);
     expect(f.simulation.buildings.slow.belt?.id).not.toBe("batch");
     expect(total(f, item)).toBe(3);
-    f.simulation.buildings.slow.belt!.progress = 3;
+    f.simulation.buildings.slow.belt!.progress = 2;
     f = transfer(f);
-    expect(f.simulation.warehouse[item]).toBe(1);
-    expect(f.simulation.buildings.fast.belt?.count).toBe(1);
+    expect(f.simulation.warehouse[item]).toBe(2);
+    expect(f.simulation.buildings.fast.belt).toBeUndefined();
     expect(total(f, item)).toBe(3);
     expect(() => validateSave(toSave(f), user.id)).not.toThrow();
     f = editFactory(f, { kind: "delete", id: "fast" });

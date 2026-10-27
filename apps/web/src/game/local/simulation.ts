@@ -16,8 +16,9 @@ import { enabled } from "./transportConfig";
 import { transferFluids } from "./fluids";
 import { claimWork } from "./workLedger";
 import { recordFactoryOutput, recordQuestEvent, syncQuests } from "./quests";
+import { STEP_SECONDS } from "./simulationTime";
 
-// Deterministic single-second transition, with no clock, DOM, network or disk.
+// Deterministic fixed-duration transition, with no clock, DOM, network or disk.
 // Production settles first; transport reads that stock, plans once and commits.
 export function step(
   current: LocalFactory,
@@ -80,7 +81,7 @@ export function step(
       m.status = "no_energy";
       continue;
     }
-    m.progress++;
+    m.progress += STEP_SECONDS;
     if (m.progress >= m.duration) {
       if (!claimWork(f, r, true)) {
         m.status = "condition_required";

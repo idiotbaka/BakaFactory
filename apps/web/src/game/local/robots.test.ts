@@ -1,3 +1,4 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, expect, it } from "vitest";
 import {
   buildingDefinitions,
@@ -11,7 +12,6 @@ import {
   createWorld,
   editWorld,
   projectFactory,
-  stepWorld,
   type WorldAction,
 } from "./world";
 import { robotDefinitions } from "./robots";
@@ -189,7 +189,8 @@ describe("robot bodies, real charging and save boundaries", () => {
     root.simulation.buildings.generator.energy_kj = 2; // Previously paid output, one kJ goes to shaft loss.
     root = stepWorld(root);
     expect(root.robots![0].energy_kj).toBe(1);
-    expect(root.simulation.buildings.station.supplied_kw).toBe(1);
+    expect(root.simulation.buildings.station.supplied_kw).toBe(0);
+    expect(root.simulation.buildings.station.station_energy_kj).toBe(0.5);
     expect(fuel(root, "m09")).toBe(0);
     root = advance(root, 3);
     expect(root.robots![0].energy_kj).toBe(1);

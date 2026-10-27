@@ -12,7 +12,7 @@ import {
   validateSave,
   type LocalFactory,
 } from "./state";
-import { step } from "./simulation";
+import { simulationSecond as step } from "./testTime";
 import { fuelAvailable } from "./fuel";
 import type { IndustryAction } from "./industry";
 import type { Rotation } from "./transportConfig";

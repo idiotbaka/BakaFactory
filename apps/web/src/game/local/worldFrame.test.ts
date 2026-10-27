@@ -153,7 +153,7 @@ describe("incremental world snapshots and immutable quiet factories", () => {
     ).toEqual(after);
   });
   it("ships a real construction layout change and invalidates the endpoint index atomically", () => {
-    const root = setup();
+    const root = stepWorld(setup());
     station(root);
     const type = "m03",
       endpoint = { factory_id: root.id, building_id: "site" };

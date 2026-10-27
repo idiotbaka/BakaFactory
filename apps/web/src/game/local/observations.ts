@@ -1,3 +1,4 @@
+import { secondsToTicks } from "./simulationTime";
 import type { LocalFactory } from "./state";
 import { allDistricts } from "./world";
 export type Observation = {
@@ -61,7 +62,7 @@ export class Observations {
         0,
       ),
     });
-    this.rows = this.rows.slice(-60);
+    this.rows = this.rows.slice(-secondsToTicks(60));
   }
   snapshot(): Observation {
     const result: Observation = {

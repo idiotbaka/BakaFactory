@@ -1,3 +1,4 @@
+import { secondsToTicks } from "./simulationTime";
 import type { BuildingInstance, MachineState } from "../../api/client";
 import type { LocalFactory } from "./state";
 import type { components } from "../../api/schema";
@@ -64,4 +65,4 @@ export function validIncident(value: unknown, tick: number): boolean {
   );
 }
 export const matureIncident = (m: MachineState, tick: number) =>
-  !!m.incident && tick - m.incident.since_tick >= 5;
+  !!m.incident && tick - m.incident.since_tick >= secondsToTicks(5);

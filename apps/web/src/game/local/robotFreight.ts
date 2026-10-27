@@ -1,3 +1,4 @@
+import { ticksToSeconds } from "./simulationTime";
 import { isAdjacent, type Footprint } from "../footprint";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
@@ -471,7 +472,9 @@ export function stepFreight(root: LocalFactory) {
   const rows = [...(root.robots ?? [])].sort((a, b) =>
       a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
     ),
-    offset = rows.length ? root.simulation.tick % rows.length : 0;
+    offset = rows.length
+      ? Math.floor(ticksToSeconds(root.simulation.tick)) % rows.length
+      : 0;
   const ordered = [...rows.slice(offset), ...rows.slice(0, offset)].sort(
     (a, b) => a.priority - b.priority,
   );

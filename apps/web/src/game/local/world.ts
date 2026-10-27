@@ -1,3 +1,4 @@
+import { onInterval } from "./simulationTime";
 import { overlaps, containsCell } from "../footprint";
 import type { User } from "../../api/client";
 import {
@@ -182,7 +183,7 @@ export function stepWorld(current: LocalFactory): LocalFactory {
   chargeRobots(root);
   syncIncidents(root);
   dispatchRobots(root);
-  stepFreight(root);
+  if (onInterval(root.simulation.tick, 1)) stepFreight(root);
   syncQuests(root);
   return root;
 }

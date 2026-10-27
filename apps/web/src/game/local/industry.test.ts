@@ -8,7 +8,8 @@ import {
   type LocalFactory,
 } from "./state";
 import type { IndustryAction } from "./industry";
-import { step } from "./simulation";
+import { step as stepTick } from "./simulation";
+import { simulationSecond as step } from "./testTime";
 import { workshopDuration, workshopMachineAvailable } from "./workshop";
 import { claimQuest } from "./quests";
 
@@ -38,7 +39,7 @@ const install = (f: LocalFactory, type: string) => {
 };
 
 describe("recycling gameplay", () => {
-  it("finishes an odd-duration manual batch in three ticks while the installed machine still needs seven", () => {
+  it("finishes an odd-duration manual batch in three seconds while the installed machine still needs seven", () => {
     const r = recipeDefinitions.get("r1002")!;
     expect(r.duration_ms).toBe(7000);
     let manual = start();
@@ -104,7 +105,7 @@ describe("recycling gameplay", () => {
       remaining: 2,
     });
     f.simulation.warehouse[product] = 0;
-    f = step(f);
+    f = stepTick(f);
     expect(f.simulation.industry!.workshop).toMatchObject({
       progress: 0,
       remaining: 1,
@@ -531,7 +532,7 @@ describe("recycling gameplay", () => {
     };
     delete old.factory.simulation.industry;
     const upgraded = validateSave(old, user.id);
-    expect(upgraded.simulation.tick).toBe(3);
+    expect(upgraded.simulation.tick).toBe(6);
     expect(upgraded.simulation.buildings.legacy.output[0].count).toBe(3);
     expect(upgraded.simulation.industry?.stage).toBe(1);
     expect(toSave(upgraded).rules_version).toBe(3);

@@ -12,7 +12,7 @@ import {
   validateSave,
   type LocalFactory,
 } from "./state";
-import { step } from "./simulation";
+import { simulationSecond as step } from "./testTime";
 import { fuelAvailable } from "./fuel";
 import type { IndustryAction } from "./industry";
 
@@ -114,7 +114,8 @@ describe("power networks and conserved energy", () => {
     expect(f.simulation.buildings.load.progress).toBe(0);
     expect(f.simulation.buildings.load.work_energy_kj).toBe(160);
     f = step(f);
-    expect(f.simulation.buildings.load.work_energy_kj).toBe(320);
+    expect(f.simulation.buildings.load.progress).toBe(0.5);
+    expect(f.simulation.buildings.load.work_energy_kj).toBe(80);
     const restored = validateSave(toSave(f), user.id);
     expect(step(restored)).toEqual(step(f));
     f = step(f);
@@ -158,8 +159,8 @@ describe("power networks and conserved energy", () => {
       4,
     );
     const critical = act(f, { type: "power_config", id: "load", priority: 1 });
-    const priorityResult = advance(critical, 2);
-    expect(priorityResult.simulation.buildings.load.work_energy_kj).toBe(320);
+    const priorityResult = advance(critical, 1);
+    expect(priorityResult.simulation.buildings.load.work_energy_kj).toBe(160);
     expect(priorityResult.simulation.buildings.other.work_energy_kj ?? 0).toBe(
       0,
     );
@@ -276,7 +277,7 @@ describe("power networks and conserved energy", () => {
     f = step(f);
     expect(f.simulation.buildings.battery.charge_kj).toBe(15000);
     expect(f.simulation.buildings.battery.charge_remainder).toBe(0);
-    expect(remainingFuel(f, "gen")).toBe(6398);
+    expect(remainingFuel(f, "gen")).toBe(6398.5);
     f = place(f, "load", "m30", 3, 1);
     f = configure(
       f,

@@ -1,4 +1,5 @@
 import type { MachineState } from "../api/client";
+import { STEP_SECONDS } from "./local/simulationTime";
 export type Point = { x: number; y: number };
 export type Motion = { points: Point[]; startedAt: number; duration: number };
 export function productionProgress(
@@ -6,7 +7,9 @@ export function productionProgress(
   phase: number,
 ): number {
   const extra =
-    machine.status === "working" ? Math.min(1, Math.max(0, phase)) : 0;
+    machine.status === "working"
+      ? Math.min(1, Math.max(0, phase)) * STEP_SECONDS
+      : 0;
   return Math.min(machine.duration, Math.max(0, machine.progress + extra));
 }
 export function sampleMotion(motion: Motion, now: number): Point {

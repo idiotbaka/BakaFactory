@@ -1,3 +1,4 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, expect, it } from "vitest";
 import {
   buildingDefinitions,
@@ -21,7 +22,6 @@ import {
   createWorld,
   editWorld,
   expansionCost,
-  stepWorld,
 } from "./world";
 
 const user = {

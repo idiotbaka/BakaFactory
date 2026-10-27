@@ -1,3 +1,4 @@
+import { SIMULATION_TPS } from "./simulationTime";
 import {
   catalog,
   buildingDefinitions,
@@ -55,7 +56,7 @@ export function benchmarkFixture(o: BenchmarkOptions): LocalFactory {
         buildings: [],
         simulation: {
           tick: 0,
-          tick_rate: 1,
+          tick_rate: SIMULATION_TPS,
           buildings: {},
           warehouse: { [itemID("基础铁板")]: 1000000 },
           transfers: [],
@@ -271,6 +272,6 @@ export function runBenchmark(o: BenchmarkOptions) {
     frame_json_bytes: stats(frames),
     full_json_bytes: stats(full),
     sampling:
-      "每个有效 tick 一个样本；样本有限，不能用平均值保证任意设备的 1 TPS",
+      "每个有效 tick 一个样本；样本有限，不能用平均值保证任意设备的 2 TPS",
   };
 }

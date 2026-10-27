@@ -1,3 +1,4 @@
+import { STEP_SECONDS, ticksToSeconds, secondsToTicks } from "./simulationTime";
 import { occupancy, contactCell } from "../footprint";
 import type {
   BuildingInstance,
@@ -72,7 +73,7 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
   for (const b of ordered) {
     const m = s.buildings[b.id],
       d = buildingDefinitions.get(b.building_type)!;
-    if (m.cooldown > 0) m.cooldown--;
+    if (m.cooldown > 0) m.cooldown = Math.max(0, m.cooldown - STEP_SECONDS);
     if (b.building_type === "bus" || isWarehouseTerminal(b.building_type)) {
       m.status = enabled(b) ? "warehouse" : "disabled";
       continue;
@@ -93,10 +94,16 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
       continue;
     }
     if (isBelt(b.building_type)) {
-      m.duration = beltTicks(b.building_type);
+      m.duration = ticksToSeconds(beltTicks(b.building_type));
       if (m.belt) {
-        m.belt.progress = Math.min(m.duration, m.belt.progress + 1);
-        m.status = m.belt.progress >= m.duration ? "blocked" : "transporting";
+        m.belt.progress = Math.min(
+          beltTicks(b.building_type),
+          m.belt.progress + 1,
+        );
+        m.status =
+          m.belt.progress >= beltTicks(b.building_type)
+            ? "blocked"
+            : "transporting";
       } else m.status = "idle";
     } else if (isPort(b.building_type))
       m.status = m.cooldown > 0 ? "transferring" : "no_source";
@@ -108,7 +115,7 @@ export function advanceTransport(f: LocalFactory, ordered: BuildingInstance[]) {
         m.status = "output_full";
         continue;
       }
-      m.progress++;
+      m.progress += STEP_SECONDS;
       m.status = "working";
       if (m.progress >= 10) {
         m.output = output;
@@ -143,7 +150,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     const m = s.buildings[b.id];
     if (isUndergroundEntry(b)) return [];
     if (b.building_type === pickupType) {
-      if (side(b, anchor) !== b.rotation) return [];
+      if (m.cooldown || side(b, anchor) !== b.rotation) return [];
       const items = terminalItems(b),
         cursor = (m.terminal_cursor ?? 0) % items.length;
       return [...items.slice(cursor), ...items.slice(0, cursor)].filter(
@@ -213,7 +220,8 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         d.role === "splitter"
           ? [b.rotation, (b.rotation + 90) % 360, (b.rotation + 270) % 360]
           : [b.rotation];
-      const offset = s.tick % branches.length;
+      const offset =
+        Math.floor(s.tick / secondsToTicks(interval(b))) % branches.length;
       const rotated = [...branches.slice(offset), ...branches.slice(0, offset)];
       for (const r of rotated) {
         const target = adjacent(b, r),
@@ -233,7 +241,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           limit: d.batch_size ?? 1,
         });
       }
-    } else if (b.building_type === pickupType) {
+    } else if (b.building_type === pickupType && !m.cooldown) {
       const target = adjacent(b, b.rotation);
       if (target && !isPort(target.building_type)) {
         const [dx, dy] = direction(b.rotation);
@@ -292,7 +300,9 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
     return [route];
   });
   if (candidates.length) {
-    const offset = s.tick % candidates.length;
+    // A one-second producer becomes ready on even ticks. Rotating by raw
+    // half-ticks would always favor the same actor when there are two peers.
+    const offset = Math.floor(ticksToSeconds(s.tick)) % candidates.length;
     candidates = [...candidates.slice(offset), ...candidates.slice(0, offset)];
   }
   const excluded = new Set<Candidate>();
@@ -559,6 +569,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       s.buildings[t.source.id].terminal_cursor =
         (items.indexOf(t.item) + 1) % items.length;
       s.buildings[t.source.id].status = "transferring";
+      s.buildings[t.source.id].cooldown = 1;
     }
     if (t.destination === "belt") {
       m.belt = { id: t.payload, item: t.item, count: t.quantity, progress: 0 };
@@ -576,6 +587,8 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       actor.status = "transferring";
     }
   }
+  for (const t of chosen)
+    if (t.source.building_type === "bus") s.buildings[t.source.id].cooldown = 1;
   // Receipt storage is O(entities), with one visual event per actor/face; these are a
   // bounded cosmetic log, not an inventory or throughput source.
   s.transfers = s.transfers.slice(-3 * ordered.length);

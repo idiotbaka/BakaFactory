@@ -61,7 +61,8 @@ describe("one shared warehouse across every WH", () => {
       }),
     ).toThrow(/工作室正在加工/);
     expect(root).toEqual(before);
-    for (let i = 0; i < workshopDuration(recipe); i++) root = stepWorld(root);
+    for (let i = 0; i < workshopDuration(recipe) * 2; i++)
+      root = stepWorld(root);
     expect(root.simulation.industry!.workshop!.remaining).toBe(1);
     expect(root.simulation.industry!.workshop!.progress).toBe(0);
     for (const [item, n] of Object.entries(recipe.outputs))
@@ -184,7 +185,7 @@ describe("one shared warehouse across every WH", () => {
     expect(root.districts![0].simulation.buildings.dismantler.input).toEqual([
       { item: wire, count: 2 },
     ]);
-    for (let i = 0; i < recipeDefinitions.get("r1007")!.duration_ms / 1000; i++)
+    for (let i = 0; i < recipeDefinitions.get("r1007")!.duration_ms / 500; i++)
       root = stepWorld(root);
     expect(root.simulation.warehouse[copper] ?? 0).toBe(0);
     root = editWorld(root, {
@@ -262,7 +263,7 @@ describe("one shared warehouse across every WH", () => {
       item: water,
       count: 2,
     };
-    root = stepWorld(root);
+    root = stepWorld(stepWorld(root));
     expect(root.simulation.warehouse[water]).toBe(2);
     expect(root.simulation.industry!.quests!.automated_received).toBe(2);
     expect(projectFactory(root).simulation.warehouse[water]).toBe(2);
@@ -310,7 +311,7 @@ describe("one shared warehouse across every WH", () => {
       }),
     ).toThrow(/工作室正在加工/);
     expect(root).toEqual(occupied);
-    for (let i = 0; i < 3; i++) root = stepWorld(root);
+    for (let i = 0; i < 6; i++) root = stepWorld(root);
     expect(projectFactory(root).simulation.industry!.workshop!.remaining).toBe(
       1,
     );

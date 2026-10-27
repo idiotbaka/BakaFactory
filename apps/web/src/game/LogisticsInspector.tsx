@@ -245,7 +245,20 @@ export default function LogisticsInspector({
                     })
                   }
                 >
-                  {[...new Set([1, 2, 3, 5, 10, 30, 60, interval(instance)])]
+                  {[
+                    ...new Set([
+                      0.5,
+                      1,
+                      1.5,
+                      2,
+                      3,
+                      5,
+                      10,
+                      30,
+                      60,
+                      interval(instance),
+                    ]),
+                  ]
                     .sort((a, b) => a - b)
                     .map((n) => (
                       <option key={n} value={n}>

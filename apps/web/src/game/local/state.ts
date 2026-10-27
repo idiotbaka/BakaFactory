@@ -1,3 +1,5 @@
+import { SIMULATION_TPS, STEP_SECONDS, isStepValue } from "./simulationTime";
+import { upgradeClock } from "./clockUpgrade";
 import { footprintCells, inBounds, overlaps, validSize } from "../footprint";
 import type {
   BuildingInstance,
@@ -91,7 +93,7 @@ export function createLocalFactory(user: User, name: string): LocalFactory {
     buildings: [bus],
     simulation: {
       tick: 0,
-      tick_rate: 1,
+      tick_rate: SIMULATION_TPS,
       buildings: { [bus.id]: newMachine() },
       warehouse: {},
       transfers: [],
@@ -150,6 +152,25 @@ export function validateSave(
   if (![1, 2, 3].includes(value.rules_version as number))
     return fail("rules_version", "仅支持规则版本 1 / 2 / 3");
   if (!object(value.factory)) return fail(root, "缺少有效工厂对象");
+  if (
+    object(value.factory.simulation) &&
+    value.factory.simulation.tick_rate === 1
+  ) {
+    let upgraded: LocalFactory;
+    try {
+      upgraded = upgradeClock(value.factory as unknown as LocalFactory);
+    } catch {
+      return fail(root, "旧时钟存档结构无效");
+    }
+    return validateSave(
+      {
+        ...value,
+        factory: upgraded,
+      },
+      owner,
+      context,
+    );
+  }
   const f = value.factory;
   const sharedWarehouse = value.rules_version === 3;
   if (
@@ -175,10 +196,10 @@ export function validateSave(
   const sim = f.simulation;
   if (!integer(sim.tick))
     return fail(`${root}.simulation.tick`, "tick 必须为非负安全整数");
-  if (sim.tick_rate !== 1)
+  if (sim.tick_rate !== SIMULATION_TPS)
     return fail(
       `${root}.simulation.tick_rate`,
-      "存档 tick_rate 必须为 1，开发者倍速不应写入存档",
+      "存档 tick_rate 必须为 2，开发者倍速不应写入存档",
     );
   if (!object(sim.buildings))
     return fail(`${root}.simulation.buildings`, "机器状态必须为对象");
@@ -243,8 +264,11 @@ export function validateSave(
       ["duration", 100000],
       ["cooldown", 60],
     ] as const)
-      if (!integer(m[field], max))
-        return fail(`${machinePath}.${field}`, `必须为 0～${max} 的安全整数`);
+      if (!isStepValue(m[field], max))
+        return fail(
+          `${machinePath}.${field}`,
+          `必须为 0～${max} 且符合字段精度的数值`,
+        );
     if (typeof m.status !== "string")
       return fail(`${machinePath}.status`, "状态必须为字符串");
     const definition = buildingDefinitions.get(b.building_type)!;
@@ -279,8 +303,18 @@ export function validateSave(
       ["flow_out", 80],
       ["fluid_cursor", 29],
     ] as const) {
-      if (m[field] !== undefined && !integer(m[field], max))
-        return fail(`${machinePath}.${field}`, `必须为 0～${max} 的安全整数`);
+      if (
+        m[field] !== undefined &&
+        !(field === "work_energy_kj" ||
+        field === "station_energy_kj" ||
+        field === "charge_kj"
+          ? isStepValue(m[field], max)
+          : integer(m[field], max))
+      )
+        return fail(
+          `${machinePath}.${field}`,
+          `必须为 0～${max} 且符合字段精度的数值`,
+        );
     }
     if (
       (m.powered !== undefined && typeof m.powered !== "boolean") ||
@@ -318,10 +352,10 @@ export function validateSave(
     }
     if ((m.energy_kj as number) > 0 && !Object.keys(validFuels).length)
       return fail(`${machinePath}.energy_kj`, "非燃料设备不能持有炉体余热");
-    if (m.energy_kj !== undefined && !integer(m.energy_kj, 16000))
+    if (m.energy_kj !== undefined && !isStepValue(m.energy_kj, 16000))
       return fail(
         `${machinePath}.energy_kj`,
-        "炉体余热必须为 0～16000 的安全整数",
+        "炉体余热必须为 0～16000 且为 0.5 kJ 的整数倍",
       );
     if (m.fuel !== undefined && !Array.isArray(m.fuel))
       return fail(`${machinePath}.fuel`, "燃料缓存必须是数组");
@@ -450,7 +484,7 @@ export function validateSave(
         "stored_kj",
       ])
         if (
-          !integer(
+          !(field === "stored_kj" ? isStepValue : integer)(
             n[field],
             field === "producers" || field === "consumers"
               ? ids.size
@@ -574,7 +608,10 @@ export function validateSave(
         (r.tier ?? 1) > p.stage ||
         // Keep the original duration as the legacy save envelope. A retained
         // progress beyond the manual duration settles only one batch next tick.
-        !integer(p.workshop.progress, r.duration_ms / 1000 - 1)
+        !isStepValue(
+          p.workshop.progress,
+          Math.max(1, r.duration_ms / 1000) - STEP_SECONDS,
+        )
       )
         return fail(
           `${root}.simulation.industry.workshop`,
@@ -646,7 +683,8 @@ export function validateSave(
           (!object(value.simulation.warehouse) ||
             Object.keys(value.simulation.warehouse).length > 0)) ||
         value.simulation.industry !== undefined ||
-        value.simulation.tick !== sim.tick
+        value.simulation.tick !== sim.tick ||
+        value.simulation.tick_rate !== sim.tick_rate
       )
         return fail(
           childPath,

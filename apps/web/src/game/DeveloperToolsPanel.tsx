@@ -86,7 +86,9 @@ function TickRateControl({
   return (
     <section className="developer-tools" aria-label="模拟倍速">
       <h3>模拟倍速</h3>
-      <p>当前 {tickRate} TPS · 默认 1 TPS</p>
+      <p>
+        当前 {tickRate} TPS · 默认 {DEFAULT_TPS} TPS
+      </p>
       <form
         className="developer-tick-rate"
         noValidate
@@ -116,15 +118,15 @@ function TickRateControl({
           disabled={disabled}
           onClick={() => apply(DEFAULT_TPS)}
         >
-          恢复 1 TPS
+          恢复 {DEFAULT_TPS} TPS
         </button>
       </form>
       <p>
-        支持 1～{MAX_TPS} 的整数。每 tick
-        仍推进一秒游戏时间；高倍速的实际速度取决于设备负载。
+        支持 {DEFAULT_TPS}～{MAX_TPS} 的整数。每 tick 推进 0.5
+        秒游戏时间；高倍速的实际速度取决于设备负载。
       </p>
       <p>
-        仅当前页面有效，刷新、换账号或关闭开发者工具后恢复 1
+        仅当前页面有效，刷新、换账号或关闭开发者工具后恢复 {DEFAULT_TPS}
         TPS；后台、断网和暂停时不运行，也不补算时间。
       </p>
       {error && <p role="alert">{error}</p>}

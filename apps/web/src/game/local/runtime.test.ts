@@ -54,7 +54,7 @@ class FakeWorker {
   onerror: (() => void) | null = null;
   factory: LocalFactory | null = null;
   enabled = false;
-  tickRate = 1;
+  tickRate = 2;
   constructor() {
     FakeWorker.instances.push(this);
   }
@@ -63,7 +63,7 @@ class FakeWorker {
       this.factory = command.factory ? initializeWorld(command.factory) : null;
     else if (command.kind === "permit") {
       this.enabled = command.enabled;
-      this.tickRate = command.tickRate ?? 1;
+      this.tickRate = command.tickRate ?? 2;
     } else {
       if (command.kind === "create")
         this.factory = createWorld(command.user, command.name);
@@ -163,7 +163,7 @@ describe("local persistence and cloud lifecycle", () => {
   it("controls session-only TPS through permits, preserves save rules and resets when tools close or runtime restarts", async () => {
     await game.start();
     await game.create("倍速测试");
-    expect(view.tickRate).toBe(1);
+    expect(view.tickRate).toBe(2);
     expect(() => game.setTickRate(4)).toThrow("开发者工具");
     await game.setDeveloperToolsVisible(true);
     const revision = view.factory!.revision;
@@ -171,19 +171,19 @@ describe("local persistence and cloud lifecycle", () => {
     expect(view.tickRate).toBe(4);
     expect(FakeWorker.instances[0].tickRate).toBe(4);
     expect(view.factory!.revision).toBe(revision);
-    expect(view.factory!.simulation.tick_rate).toBe(1);
+    expect(view.factory!.simulation.tick_rate).toBe(2);
     expect(() => game.setTickRate(0)).toThrow("整数");
     expect(view.tickRate).toBe(4);
     await game.act({ type: "scavenge" });
     expect(saved).not.toHaveProperty("tickRate");
     expect(saved!.save).not.toHaveProperty("tickRate");
-    expect(saved!.save!.factory.simulation!.tick_rate).toBe(1);
+    expect(saved!.save!.factory.simulation!.tick_rate).toBe(2);
     window.dispatchEvent(new Event("offline"));
     expect(FakeWorker.instances[0].enabled).toBe(false);
     expect(() => game.setTickRate(2)).toThrow("在线运行");
     await game.setDeveloperToolsVisible(false);
-    expect(view.tickRate).toBe(1);
-    expect(FakeWorker.instances[0].tickRate).toBe(1);
+    expect(view.tickRate).toBe(2);
+    expect(FakeWorker.instances[0].tickRate).toBe(2);
     await game.close();
     game = new GameRuntime(
       user,
@@ -193,7 +193,7 @@ describe("local persistence and cloud lifecycle", () => {
       expired,
     );
     await game.start();
-    expect(view.tickRate).toBe(1);
+    expect(view.tickRate).toBe(2);
   });
   it("defaults developer visibility off, serializes toggles with world saves and restores the local-only preference", async () => {
     await game.start();
@@ -642,7 +642,7 @@ describe("local persistence and cloud lifecycle", () => {
       await vi.advanceTimersByTimeAsync(0);
     }
   });
-  it("backs up a complete reconstructed world before the five-tick autosave and pauses on a missing frame", async () => {
+  it("backs up a complete reconstructed world before the five-second autosave and pauses on a missing frame", async () => {
     await game.start();
     await game.create("增量世界");
     const worker = FakeWorker.instances[0];

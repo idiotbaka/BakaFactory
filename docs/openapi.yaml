@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: BakaFactory API
   version: 0.2.0
-  description: Client-authoritative 1 TPS simulation, single-login accounts and one cloud backup per account. Game state is stored in IndexedDB. Cookie authentication and allowed Origin required for mutations. Factory editing is local; legacy factory paths are retired.
+  description: Client-authoritative 2 TPS simulation, single-login accounts and one cloud backup per account. Game state is stored in IndexedDB. Cookie authentication and allowed Origin required for mutations. Factory editing is local; legacy factory paths are retired.
 paths:
   /api/v1/game/heartbeat:
     post:
@@ -353,7 +353,7 @@ components:
             fluid_rate: { type: integer, minimum: 0, maximum: 20 }
             role: { type: string }
             belt_ticks: { type: integer, minimum: 1 }
-            batch_size: { type: integer, minimum: 1, maximum: 6 }
+            batch_size: { type: integer, minimum: 1, maximum: 100 }
             legacy: { type: boolean }
             input_whitelist:
               type: array
@@ -376,14 +376,16 @@ components:
         batches_completed:
           { type: integer, minimum: 0, maximum: 9007199254740991 }
         incident: { $ref: "#/components/schemas/WorkIncident" }
-        energy_kj: { type: integer, minimum: 0, maximum: 16000 }
-        station_energy_kj: { type: integer, minimum: 0, maximum: 30000 }
-        work_energy_kj: { type: integer, minimum: 0, maximum: 1000 }
+        energy_kj: { type: number, multipleOf: 0.5, minimum: 0, maximum: 16000 }
+        station_energy_kj:
+          { type: number, multipleOf: 0.5, minimum: 0, maximum: 30000 }
+        work_energy_kj:
+          { type: number, multipleOf: 0.5, minimum: 0, maximum: 1000 }
         powered: { type: boolean }
         generated_kw: { type: integer, minimum: 0, maximum: 1000 }
         power_demand_kw: { type: integer, minimum: 0, maximum: 1000 }
         network_id: { type: string, maxLength: 160 }
-        charge_kj: { type: integer, minimum: 0, maximum: 30000 }
+        charge_kj: { type: number, multipleOf: 0.5, minimum: 0, maximum: 30000 }
         charge_remainder: { type: integer, minimum: 0, maximum: 99 }
         medium: { type: integer, minimum: 0, maximum: 10 }
         fluid: { $ref: "#/components/schemas/FluidVolume" }
@@ -402,9 +404,9 @@ components:
           type: array
           maxItems: 12
           items: { $ref: "#/components/schemas/ItemStack" }
-        progress: { type: integer, minimum: 0 }
-        duration: { type: integer, minimum: 0 }
-        cooldown: { type: integer, minimum: 0, maximum: 60 }
+        progress: { type: number, multipleOf: 0.5, minimum: 0 }
+        duration: { type: number, multipleOf: 0.5, minimum: 0 }
+        cooldown: { type: number, multipleOf: 0.5, minimum: 0, maximum: 60 }
         supplied_kw: { type: integer, minimum: 0, maximum: 1000 }
         status: { type: string }
         belt:
@@ -418,7 +420,7 @@ components:
               }
             item: { type: string }
             progress: { type: integer, minimum: 0, maximum: 3 }
-            count: { type: integer, minimum: 1, maximum: 6 }
+            count: { type: integer, minimum: 1, maximum: 100 }
     TransferEndpoint:
       type: object
       required: [id, building_type, x, y, rotation]
@@ -437,7 +439,7 @@ components:
           type: string
           description: Same identity as the conveyor payload if present
         item: { type: string }
-        count: { type: integer, minimum: 1, maximum: 6 }
+        count: { type: integer, minimum: 1, maximum: 100 }
         tick: { type: integer, format: int64, minimum: 0 }
         source: { $ref: "#/components/schemas/TransferEndpoint" }
         target: { $ref: "#/components/schemas/TransferEndpoint" }
@@ -447,7 +449,12 @@ components:
       required: [tick, tick_rate, buildings, warehouse]
       properties:
         tick: { type: integer, format: int64, minimum: 0 }
-        tick_rate: { type: integer, enum: [1] }
+        tick_rate:
+          {
+            type: integer,
+            enum: [1, 2],
+            description: "2 TPS; 1 is accepted only for legacy saves.",
+          }
         industry: { $ref: "#/components/schemas/IndustryState" }
         networks:
           type: array
@@ -488,7 +495,7 @@ components:
             additionalProperties: { type: integer, format: int64 },
           }
         duration_ms:
-          { type: integer, format: int64, minimum: 1000, multipleOf: 1000 }
+          { type: integer, format: int64, minimum: 500, multipleOf: 500 }
     Catalog:
       type: object
       required: [version, items, buildings, recipes]
@@ -748,7 +755,8 @@ components:
         loss_kw: { type: integer, minimum: 0, maximum: 1000000000 }
         charge_kw: { type: integer, minimum: 0, maximum: 1000000000 }
         discharge_kw: { type: integer, minimum: 0, maximum: 1000000000 }
-        stored_kj: { type: integer, minimum: 0, maximum: 1000000000 }
+        stored_kj:
+          { type: number, multipleOf: 0.5, minimum: 0, maximum: 1000000000 }
     FluidVolume:
       type: object
       required: [item, count]
@@ -901,7 +909,7 @@ components:
           required: [recipe_id, progress]
           properties:
             recipe_id: { type: string }
-            progress: { type: integer, minimum: 0 }
+            progress: { type: number, multipleOf: 0.5, minimum: 0 }
             remaining:
               type: integer
               minimum: 1

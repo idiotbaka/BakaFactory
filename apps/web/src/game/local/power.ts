@@ -1,3 +1,4 @@
+import { STEP_SECONDS, onInterval } from "./simulationTime";
 import { occupancy, edgeCells } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { components } from "../../api/schema";
@@ -181,7 +182,8 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
     const demand = station
       ? Math.min(
           d.power_kw ?? 0,
-          (d.station_capacity_kj ?? 0) - (m.station_energy_kj ?? 0),
+          ((d.station_capacity_kj ?? 0) - (m.station_energy_kj ?? 0)) /
+            STEP_SECONDS,
         )
       : transport
         ? (d.power_kw ?? 0)
@@ -195,7 +197,14 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
       {
         b,
         demand,
-        needed: Math.max(0, demand - (m.work_energy_kj ?? 0)),
+        needed: Math.min(
+          demand * STEP_SECONDS,
+          Math.max(
+            0,
+            demand * (d.role === "pump" ? 1 : STEP_SECONDS) -
+              (m.work_energy_kj ?? 0),
+          ),
+        ),
         priority: powerPriority(b),
         transport,
         station,
@@ -233,7 +242,8 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
         b.building_type === "m21" && !(s.buildings[b.id].medium ?? 0)
           ? 0
           : Math.min(
-              buildingDefinitions.get(b.building_type)!.power_kw ?? 0,
+              (buildingDefinitions.get(b.building_type)!.power_kw ?? 0) *
+                STEP_SECONDS,
               fuelAvailable(
                 s.buildings[b.id],
                 buildingDefinitions.get(b.building_type)!,
@@ -248,7 +258,8 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
           ? 0
           : Math.min(
               s.buildings[b.id].charge_kj ?? 0,
-              buildingDefinitions.get(b.building_type)?.transfer_kw ?? 100,
+              (buildingDefinitions.get(b.building_type)?.transfer_kw ?? 100) *
+                STEP_SECONDS,
             ),
       ]),
     );
@@ -259,7 +270,7 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
       producers: generators.length,
       consumers: requests.length,
       capacity_kw: [...genBudget.values(), ...batteryBudget.values()].reduce(
-        (a, n) => a + n,
+        (a, n) => a + n / STEP_SECONDS,
         0,
       ),
       demand_kw: requests.reduce((sum, r) => sum + r.demand, 0),
@@ -283,7 +294,7 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
         ) {
           genBudget.set(b.id, genBudget.get(b.id)! - n);
           s.buildings[b.id].generated_kw =
-            (s.buildings[b.id].generated_kw ?? 0) + n;
+            (s.buildings[b.id].generated_kw ?? 0) + n / STEP_SECONDS;
           remaining -= n;
         }
         if (!remaining) break;
@@ -304,11 +315,11 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
           );
           if (n) {
             m.charge_kj = (m.charge_kj ?? 0) - n;
-            m.generated_kw = (m.generated_kw ?? 0) + n;
+            m.generated_kw = (m.generated_kw ?? 0) + n / STEP_SECONDS;
             batteryBudget.set(b.id, batteryBudget.get(b.id)! - n);
             remaining -= n;
             discharged.add(b.id);
-            net.discharge_kw += n;
+            net.discharge_kw += n / STEP_SECONDS;
           }
           if (!remaining) break;
         }
@@ -316,9 +327,12 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
     };
     const needsEnergy = requests.some((r) => r.needed > 0),
       overhead =
-        g.kind === "shaft" && needsEnergy ? Math.ceil(g.wires.length / 12) : 0;
-    const maySupply = !overhead || net.capacity_kw > overhead;
-    if (maySupply && overhead) net.loss_kw = take(overhead, 1, false);
+        g.kind === "shaft" && needsEnergy
+          ? Math.ceil(g.wires.length / 12) * STEP_SECONDS
+          : 0;
+    const maySupply = !overhead || net.capacity_kw * STEP_SECONDS > overhead;
+    if (maySupply && overhead)
+      net.loss_kw = take(overhead, 1, false) / STEP_SECONDS;
     if (maySupply)
       for (let priority = 1; priority <= 6; priority++) {
         for (const r of rotate(
@@ -331,15 +345,25 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
             m = s.buildings[r.b.id];
           if (r.station) m.station_energy_kj = (m.station_energy_kj ?? 0) + n;
           else m.work_energy_kj = (m.work_energy_kj ?? 0) + n;
-          m.supplied_kw = n;
-          net.supplied_kw += n;
+          m.supplied_kw = n / STEP_SECONDS;
+          net.supplied_kw += n / STEP_SECONDS;
         }
       }
     for (const r of requests) {
       const m = s.buildings[r.b.id];
       if (r.station) m.powered = (m.supplied_kw ?? 0) > 0;
-      else if (r.transport && (m.work_energy_kj ?? 0) >= r.demand) {
-        m.work_energy_kj = (m.work_energy_kj ?? 0) - r.demand;
+      else if (r.transport) {
+        const pump =
+          buildingDefinitions.get(r.b.building_type)?.role === "pump";
+        if (pump && !onInterval(s.tick, 1)) {
+          // The pump pays continuously but transfers whole fluid units on its
+          // own one-second cadence. Show supply without spending that credit twice.
+          m.powered = (m.supplied_kw ?? 0) >= r.demand;
+          continue;
+        }
+        const energy = r.demand * (pump ? 1 : STEP_SECONDS);
+        if ((m.work_energy_kj ?? 0) < energy) continue;
+        m.work_energy_kj = (m.work_energy_kj ?? 0) - energy;
         m.powered = true;
       }
     }
@@ -357,12 +381,13 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
         (m.charge_kj ?? 0) < capacity
       ) {
         const input = Math.min(
-          d.transfer_kw ?? 100,
+          (d.transfer_kw ?? 100) * STEP_SECONDS,
           Math.ceil(
             ((capacity - (m.charge_kj ?? 0)) * 100 -
               (m.charge_remainder ?? 0)) /
-              88,
-          ),
+              88 /
+              STEP_SECONDS,
+          ) * STEP_SECONDS,
         );
         const n = take(input, 6, false),
           scaled = n * 88 + (m.charge_remainder ?? 0);
@@ -371,8 +396,8 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
           (m.charge_kj ?? 0) + Math.floor(scaled / 100),
         );
         m.charge_remainder = m.charge_kj === capacity ? 0 : scaled % 100;
-        m.supplied_kw = n;
-        net.charge_kw += n;
+        m.supplied_kw = n / STEP_SECONDS;
+        net.charge_kw += n / STEP_SECONDS;
       }
       m.status = discharged.has(b.id)
         ? "discharging"

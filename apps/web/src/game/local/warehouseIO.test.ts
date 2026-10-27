@@ -58,9 +58,11 @@ function node(
   return f.buildings.at(-1)!;
 }
 const move = (f: LocalFactory) => {
-  f.simulation.tick++;
-  advanceTransport(f, f.buildings);
-  transferSolids(f, f.buildings);
+  for (let tick = 0; tick < 2; tick++) {
+    f.simulation.tick++;
+    advanceTransport(f, f.buildings);
+    transferSolids(f, f.buildings);
+  }
 };
 
 describe("warehouse IO upgrades and actual submissions", () => {
@@ -171,7 +173,7 @@ describe("terminal transfers", () => {
       item = itemID("基础铁板");
     const b = node(f, "pickup", pickupType, 3, 3, { output_items: [item] });
     node(f, "front", "hand_belt", 4, 3);
-    f.simulation.buildings.front.belt = { id: "occupied", item, progress: 3 };
+    f.simulation.buildings.front.belt = { id: "occupied", item, progress: 2 };
     node(f, "side", "item_output", 3, 4, {}, 270);
     node(f, "side-chest", "chest", 3, 5);
     f.simulation.warehouse[item] = 5;
@@ -235,7 +237,7 @@ describe("terminal transfers", () => {
       f.simulation.buildings[`belt${i}`].belt = {
         id: `payload${i}`,
         item,
-        progress: 3,
+        progress: 2,
       };
     }
     move(f);

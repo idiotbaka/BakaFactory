@@ -2,10 +2,11 @@ package domain
 
 import (
 	"fmt"
+	"math"
 )
 
-const TickRate = 1
-const TickDurationMS = 1000
+const TickRate = 2
+const TickDurationMS = 1000 / TickRate
 const InventorySlots = 12
 const StackLimit = 100
 
@@ -24,27 +25,27 @@ type MachineState struct {
 	TerminalCursor   *int          `json:"terminal_cursor,omitempty"`
 	BatchesCompleted int64         `json:"batches_completed,omitempty"`
 	Incident         *WorkIncident `json:"incident,omitempty"`
-	StationEnergyKJ  int           `json:"station_energy_kj,omitempty"`
+	StationEnergyKJ  float64       `json:"station_energy_kj,omitempty"`
 	Fluid            *FluidVolume  `json:"fluid,omitempty"`
 	FlowIn           int           `json:"flow_in,omitempty"`
 	FlowOut          int           `json:"flow_out,omitempty"`
 	FluidCursor      int           `json:"fluid_cursor,omitempty"`
-	WorkEnergyKJ     int           `json:"work_energy_kj,omitempty"`
+	WorkEnergyKJ     float64       `json:"work_energy_kj,omitempty"`
 	Powered          bool          `json:"powered,omitempty"`
 	GeneratedKW      int           `json:"generated_kw,omitempty"`
 	PowerDemandKW    int           `json:"power_demand_kw,omitempty"`
 	NetworkID        string        `json:"network_id,omitempty"`
-	ChargeKJ         int           `json:"charge_kj,omitempty"`
+	ChargeKJ         float64       `json:"charge_kj,omitempty"`
 	ChargeRemainder  int           `json:"charge_remainder,omitempty"`
 	Medium           int           `json:"medium,omitempty"`
 	SuppliedKW       int           `json:"supplied_kw,omitempty"`
 	Fuel             Inventory     `json:"fuel,omitempty"`
-	EnergyKJ         int           `json:"energy_kj,omitempty"`
+	EnergyKJ         float64       `json:"energy_kj,omitempty"`
 	Input            Inventory     `json:"input"`
 	Output           Inventory     `json:"output"`
-	Progress         int           `json:"progress"`
-	Duration         int           `json:"duration"`
-	Cooldown         int           `json:"cooldown"`
+	Progress         float64       `json:"progress"`
+	Duration         float64       `json:"duration"`
+	Cooldown         float64       `json:"cooldown"`
 	Status           string        `json:"status"`
 	Belt             *BeltItem     `json:"belt,omitempty"`
 }
@@ -80,21 +81,21 @@ type Simulation struct {
 	Industry  *IndustryState           `json:"industry,omitempty"`
 }
 type PowerNetwork struct {
-	ID          string `json:"id"`
-	Kind        string `json:"kind"`
-	Producers   int    `json:"producers"`
-	Consumers   int    `json:"consumers"`
-	CapacityKW  int    `json:"capacity_kw"`
-	DemandKW    int    `json:"demand_kw"`
-	SuppliedKW  int    `json:"supplied_kw"`
-	LossKW      int    `json:"loss_kw"`
-	ChargeKW    int    `json:"charge_kw"`
-	DischargeKW int    `json:"discharge_kw"`
-	StoredKJ    int    `json:"stored_kj"`
+	ID          string  `json:"id"`
+	Kind        string  `json:"kind"`
+	Producers   int     `json:"producers"`
+	Consumers   int     `json:"consumers"`
+	CapacityKW  int     `json:"capacity_kw"`
+	DemandKW    int     `json:"demand_kw"`
+	SuppliedKW  int     `json:"supplied_kw"`
+	LossKW      int     `json:"loss_kw"`
+	ChargeKW    int     `json:"charge_kw"`
+	DischargeKW int     `json:"discharge_kw"`
+	StoredKJ    float64 `json:"stored_kj"`
 }
 type WorkshopJob struct {
 	RecipeID  string         `json:"recipe_id"`
-	Progress  int            `json:"progress"`
+	Progress  float64        `json:"progress"`
 	Remaining *int           `json:"remaining,omitempty"`
 	Total     *int           `json:"total,omitempty"`
 	Order     *WorkshopOrder `json:"order,omitempty"`
@@ -108,6 +109,10 @@ type IndustryState struct {
 	Milestones      []string           `json:"milestones"`
 	Crafted         map[string]int64   `json:"crafted"`
 	Workshop        *WorkshopJob       `json:"workshop,omitempty"`
+}
+
+func validHalf(value float64) bool {
+	return !math.IsNaN(value) && !math.IsInf(value, 0) && value*2 == math.Trunc(value*2)
 }
 
 func (s Simulation) Validate(c Catalog) error {
@@ -126,6 +131,11 @@ func (s Simulation) Validate(c Catalog) error {
 	for _, m := range s.Buildings {
 		if m == nil || m.Input == nil || m.Output == nil || m.Progress < 0 || m.Progress > 100000 || m.Duration < 0 || m.Duration > 100000 || m.Cooldown < 0 || m.Cooldown > 60 || m.SuppliedKW < 0 || m.SuppliedKW > 1000 {
 			return fmt.Errorf("invalid machine state")
+		}
+		for _, value := range []float64{m.Progress, m.Duration, m.Cooldown, m.EnergyKJ, m.WorkEnergyKJ, m.StationEnergyKJ, m.ChargeKJ} {
+			if !validHalf(value) {
+				return fmt.Errorf("invalid half-step value")
+			}
 		}
 		if m.BatchesCompleted < 0 || m.BatchesCompleted > MaxSafeInteger || !validWorkIncident(m.Incident, s.Tick) {
 			return fmt.Errorf("invalid work incident")
@@ -151,7 +161,7 @@ func (s Simulation) Validate(c Catalog) error {
 				seen[stack.Item] = true
 			}
 		}
-		if m.Belt != nil && (!items[m.Belt.Item] || m.Belt.Progress < 0 || m.Belt.Progress > 3 || m.Belt.Count != nil && (*m.Belt.Count < 1 || *m.Belt.Count > 6)) {
+		if m.Belt != nil && (!items[m.Belt.Item] || m.Belt.Progress < 0 || m.Belt.Progress > 3 || m.Belt.Count != nil && (*m.Belt.Count < 1 || *m.Belt.Count > 100)) {
 			return fmt.Errorf("invalid conveyor payload")
 		}
 		if m.Belt != nil {
@@ -168,7 +178,10 @@ func (s Simulation) Validate(c Catalog) error {
 		if n.ID == "" || len(n.ID) > 160 || (n.Kind != "shaft" && n.Kind != "hydraulic" && n.Kind != "electric") || n.Producers < 0 || n.Producers > len(s.Buildings) || n.Consumers < 0 || n.Consumers > len(s.Buildings) {
 			return fmt.Errorf("invalid power network")
 		}
-		for _, value := range []int{n.CapacityKW, n.DemandKW, n.SuppliedKW, n.LossKW, n.ChargeKW, n.DischargeKW, n.StoredKJ} {
+		if !validHalf(n.StoredKJ) || n.StoredKJ < 0 || n.StoredKJ > 1000000000 {
+			return fmt.Errorf("invalid network storage")
+		}
+		for _, value := range []int{n.CapacityKW, n.DemandKW, n.SuppliedKW, n.LossKW, n.ChargeKW, n.DischargeKW} {
 			if value < 0 || value > 1000000000 {
 				return fmt.Errorf("invalid network ledger")
 			}
@@ -180,7 +193,7 @@ func (s Simulation) Validate(c Catalog) error {
 		}
 	}
 	for _, event := range s.Transfers {
-		if event.Count != nil && (*event.Count < 1 || *event.Count > 6) {
+		if event.Count != nil && (*event.Count < 1 || *event.Count > 100) {
 			return fmt.Errorf("invalid transfer batch")
 		}
 	}
@@ -231,7 +244,7 @@ func (s Simulation) Validate(c Catalog) error {
 			for _, r := range c.Recipes {
 				// Preserve old pre-bonus queues up to the original recipe duration.
 				// The client settles at most one retained batch on its next tick.
-				if r.ID == p.Workshop.RecipeID && workshopMachineAvailable(c, p, r.BuildingType) && r.Tier <= p.Stage && p.Workshop.Progress >= 0 && int64(p.Workshop.Progress) < r.DurationMS/1000 {
+				if r.ID == p.Workshop.RecipeID && workshopMachineAvailable(c, p, r.BuildingType) && r.Tier <= p.Stage && validHalf(p.Workshop.Progress) && p.Workshop.Progress >= 0 && p.Workshop.Progress < max(1, float64(r.DurationMS)/1000) {
 					valid = true
 				}
 			}

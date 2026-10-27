@@ -71,7 +71,7 @@ describe("bounded local worker clock", () => {
     vi.advanceTimersByTime(100);
     expect(ticks()).toHaveLength(0);
   });
-  it.each([0, -1, 1.5, 61, NaN, Infinity])(
+  it.each([0, -1, 1, 1.5, 61, NaN, Infinity])(
     "rejects invalid TPS %s before enabling the timer",
     (tickRate) => {
       send({ kind: "permit", enabled: true, validFor: 30000, tickRate });
@@ -80,21 +80,21 @@ describe("bounded local worker clock", () => {
       expect(ticks()).toHaveLength(0);
     },
   );
-  it("runs exactly one tick per second and never calculates while paused", () => {
+  it("runs exactly two ticks per second and never calculates while paused", () => {
     send({ kind: "permit", enabled: true, validFor: 30000 });
     vi.advanceTimersByTime(3000);
-    expect(ticks()).toHaveLength(3);
+    expect(ticks()).toHaveLength(6);
     send({ kind: "permit", enabled: false, validFor: 0 });
     vi.advanceTimersByTime(4 * 60 * 60 * 1000);
-    expect(ticks()).toHaveLength(3);
+    expect(ticks()).toHaveLength(6);
     send({ kind: "permit", enabled: true, validFor: 30000 });
     vi.advanceTimersByTime(1000);
-    expect(ticks()).toHaveLength(4);
+    expect(ticks()).toHaveLength(8);
   });
   it("stops without another heartbeat even if the main thread cannot send a pause", () => {
     send({ kind: "permit", enabled: true, validFor: 3000 });
     vi.advanceTimersByTime(10000);
-    expect(ticks()).toHaveLength(2);
+    expect(ticks()).toHaveLength(5);
   });
   it("does not replay missed ticks after a long event-loop stall", () => {
     send({ kind: "permit", enabled: true, validFor: 30000 });

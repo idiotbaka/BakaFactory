@@ -6,7 +6,7 @@ import {
   recipeDefinitions,
 } from "./catalog";
 import { createLocalFactory, editFactory, toSave, validateSave } from "./state";
-import { step } from "./simulation";
+import { simulationSecond as step } from "./testTime";
 import { actWorld, createWorld, editWorld, stepWorld } from "./world";
 import { discoverItems } from "./discovery";
 import { syncQuests } from "./quests";

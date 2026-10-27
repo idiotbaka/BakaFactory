@@ -1,3 +1,4 @@
+import { STEP_SECONDS } from "./simulationTime";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import {
@@ -242,7 +243,7 @@ export function stepWorkshop(f: LocalFactory) {
   const duration = workshopDuration(r);
   // Output overflow is backpressure; do not lose a reserved batch on a tick.
   if (!workshopOutputFits(p, f.simulation.warehouse)) return;
-  job.progress++;
+  job.progress += STEP_SECONDS;
   if (job.progress >= duration) {
     if (job.order) {
       const order = job.order;

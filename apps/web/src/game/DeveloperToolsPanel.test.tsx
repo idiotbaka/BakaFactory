@@ -30,7 +30,7 @@ describe("developer tools", () => {
     };
     const { rerender } = render(<IndustryViews {...props} />);
     const input = screen.getByLabelText("模拟 TPS");
-    expect(input).toHaveValue(1);
+    expect(input).toHaveValue(2);
     fireEvent.change(input, { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "应用 TPS" }));
     expect(onTickRateChange).toHaveBeenCalledWith(4);
@@ -43,11 +43,11 @@ describe("developer tools", () => {
     fireEvent.click(screen.getByRole("button", { name: "应用 TPS" }));
     expect(screen.getByRole("alert")).toHaveTextContent("整数");
     expect(onTickRateChange).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "恢复 1 TPS" }));
-    expect(onTickRateChange).toHaveBeenLastCalledWith(1);
+    fireEvent.click(screen.getByRole("button", { name: "恢复 2 TPS" }));
+    expect(onTickRateChange).toHaveBeenLastCalledWith(2);
     rerender(<IndustryViews {...props} tickRate={4} disabled />);
     expect(screen.getByRole("button", { name: "应用 TPS" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "恢复 1 TPS" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "恢复 2 TPS" })).toBeDisabled();
   });
   it("hides the entry and developer content by default, including a stale selected view", () => {
     const factory = createWorld(user, "默认隐藏"),

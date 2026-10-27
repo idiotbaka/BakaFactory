@@ -25,7 +25,7 @@ describe("save validation diagnostics", () => {
     });
     world.simulation.buildings.belt = {
       ...newMachine(),
-      belt: { id: "payload:1:0", item: "i0028", count: 1, progress: 3 },
+      belt: { id: "payload:1:0", item: "i0028", count: 1, progress: 2 },
     };
     return toSave(world);
   };
@@ -33,7 +33,7 @@ describe("save validation diagnostics", () => {
     { item: undefined },
     { item: null },
     { item: "unknown-item" },
-    { count: 2 },
+    { count: 3 },
     { progress: 4 },
     { id: "" },
   ])("rejects invalid loads without repairing the input: %j", (fields) => {
@@ -57,7 +57,7 @@ describe("save validation diagnostics", () => {
       source: "本机 IndexedDB",
       path: "factory.simulation.buildings[belt].belt.item",
       reason: "载荷必须为已知固体物品",
-      details: { item_type: "undefined", count: 1, capacity: 1 },
+      details: { item_type: "undefined", count: 1, capacity: 2 },
     });
     expect(save).toEqual(before);
   });
@@ -113,7 +113,7 @@ describe("save validation diagnostics", () => {
   it("reports an exact belt field and its limits for validly identified loads", () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const save = withLoad();
-    save.factory.simulation!.buildings.belt.belt!.count = 2;
+    save.factory.simulation!.buildings.belt.belt!.count = 3;
     expect(() =>
       validateSave(save, user.id, { source: "本机 IndexedDB" }),
     ).toThrow();
@@ -121,7 +121,7 @@ describe("save validation diagnostics", () => {
       source: "本机 IndexedDB",
       path: "factory.simulation.buildings[belt].belt.count",
       reason: "载荷数量超出带容量",
-      details: { count: 2, capacity: 1, progress: 3, max_progress: 3 },
+      details: { count: 3, capacity: 2, progress: 2, max_progress: 2 },
     });
   });
   it("logs the source and exact nested machine field once without modifying the save", () => {
@@ -140,7 +140,7 @@ describe("save validation diagnostics", () => {
       {
         source: "本机 IndexedDB",
         path: `factory.districts[1].simulation.buildings[${bus}].cooldown`,
-        reason: "必须为 0～60 的安全整数",
+        reason: "必须为 0～60 且符合字段精度的数值",
       },
     );
     expect(save).toEqual(before);
@@ -178,7 +178,7 @@ describe("save validation diagnostics", () => {
     expect(() =>
       validateSave(save, user.id, { source: "本机 IndexedDB" }),
     ).not.toThrow();
-    Object.assign(save.factory.simulation!, { tick_rate: 2 });
+    Object.assign(save.factory.simulation!, { tick_rate: 3 });
     expect(() => validateSave(save, user.id)).toThrow();
     expect(log).not.toHaveBeenCalled();
   });

@@ -1,3 +1,4 @@
+import { ticksToSeconds } from "./local/simulationTime";
 import { containsCell } from "./footprint";
 import type {
   BuildingDefinition,
@@ -354,8 +355,8 @@ export function ProductionInspector({
       )}
       {isBelt(definition.id) && (
         <p className="production-hint">
-          容量 {beltCapacity(definition.id)} 件 · 每 {beltTicks(definition.id)}{" "}
-          秒 1 格
+          容量 {beltCapacity(definition.id)} 件 · 每{" "}
+          {ticksToSeconds(beltTicks(definition.id))} 秒 1 格
           {machine?.belt ? (
             <>
               <br />

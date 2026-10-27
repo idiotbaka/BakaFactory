@@ -159,7 +159,7 @@ func (c Catalog) Validate() error {
 			return fmt.Errorf("invalid or duplicate building: %s", d.ID)
 		}
 		buildings[d.ID] = true
-		if d.InputSlots < 1 || d.InputSlots > 12 || d.OutputSlots < 1 || d.OutputSlots > 12 || d.StackLimit != 100 || (d.Item != "" && !items[d.Item]) || d.Tier < 0 || d.Tier > 6 || d.PowerKW < 0 || d.BatchSize < 0 || d.BatchSize > 6 {
+		if d.InputSlots < 1 || d.InputSlots > 12 || d.OutputSlots < 1 || d.OutputSlots > 12 || d.StackLimit != 100 || (d.Item != "" && !items[d.Item]) || d.Tier < 0 || d.Tier > 6 || d.PowerKW < 0 || d.BatchSize < 0 || d.BatchSize > 100 {
 			return fmt.Errorf("invalid inventory limits: %s", d.ID)
 		}
 		if d.PowerKW > 1000 || d.CapacityKJ < 0 || d.CapacityKJ > 30000 || d.TransferKW < 0 || d.TransferKW > 1000 || (d.Role == "battery" && (d.CapacityKJ == 0 || d.TransferKW == 0)) {

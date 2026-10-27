@@ -1,3 +1,4 @@
+import { secondsToTicks } from "./simulationTime";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import { catalog, buildingDefinitions, selectedRecipe } from "./catalog";
@@ -60,7 +61,11 @@ export function validAutonomy(root: LocalFactory, r: Robot): boolean {
       ) ||
       !Number.isSafeInteger(a.next_tick) ||
       a.next_tick < 0 ||
-      a.next_tick > Math.min(Number.MAX_SAFE_INTEGER, root.simulation.tick + 5))
+      a.next_tick >
+        Math.min(
+          Number.MAX_SAFE_INTEGER,
+          root.simulation.tick + secondsToTicks(5),
+        ))
   )
     return false;
   if (r.behavior_log === undefined) return true;
@@ -213,7 +218,10 @@ export function dispatchRobots(root: LocalFactory) {
       Math.abs(r.x - station.x) + Math.abs(r.y - station.y) !== 1
     )
       continue;
-    cfg.next_tick = Math.min(Number.MAX_SAFE_INTEGER, root.simulation.tick + 5);
+    cfg.next_tick = Math.min(
+      Number.MAX_SAFE_INTEGER,
+      root.simulation.tick + secondsToTicks(5),
+    );
     let assigned = false;
     for (const { f, b } of ordered) {
       if (--budget < 0) break;
@@ -283,7 +291,11 @@ export function dispatchRobots(root: LocalFactory) {
         }
       if (assigned) break;
       const incident = m.incident;
-      if (!incident || root.simulation.tick - incident.since_tick < 5) continue;
+      if (
+        !incident ||
+        root.simulation.tick - incident.since_tick < secondsToTicks(5)
+      )
+        continue;
       for (const kind of ["maintain", "inspect"] as const) {
         if (
           !cfg[kind] ||

@@ -73,7 +73,7 @@ func TestAutonomyStateBounds(t *testing.T) {
 	if validRobotAutonomy(r, RobotDefinition{Role: "carrier"}, 10) {
 		t.Fatal("non-smart autonomy accepted")
 	}
-	r.Autonomy.NextTick = 16
+	r.Autonomy.NextTick = 21
 	if validRobotAutonomy(r, d, 10) {
 		t.Fatal("unbounded future dispatch accepted")
 	}

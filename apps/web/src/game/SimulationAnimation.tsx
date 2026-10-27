@@ -14,7 +14,7 @@ import { productionProgress } from "./animationMath";
 import { DEFAULT_TPS, tickIntervalMs } from "./local/tickRate";
 
 const ClockContext = createContext<AnimationClock | null>(null);
-const StepMsContext = createContext(1000);
+const StepMsContext = createContext(tickIntervalMs(DEFAULT_TPS));
 export function SimulationAnimationProvider({
   factoryID,
   simulation,
@@ -65,7 +65,13 @@ export function useSimulationFrame(
   const latest = useRef(paint);
   useLayoutEffect(() => {
     latest.current = paint;
-    paint(clock?.frame() ?? { now: performance.now(), phase: 0, stepMs: 1000 });
+    paint(
+      clock?.frame() ?? {
+        now: performance.now(),
+        phase: 0,
+        stepMs: tickIntervalMs(DEFAULT_TPS),
+      },
+    );
     clock?.requestFrame();
   }, [paint, clock]);
   useLayoutEffect(

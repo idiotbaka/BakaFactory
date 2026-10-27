@@ -32,7 +32,7 @@ function add(
   });
 }
 function advance(f: LocalFactory, n: number) {
-  for (let i = 0; i < n; i++) f = step(f);
+  for (let i = 0; i < n * 2; i++) f = step(f);
   return f;
 }
 function total(f: LocalFactory) {
@@ -66,7 +66,7 @@ describe("client authoritative simulation", () => {
       f = add(f, `line-${i}`, types[i], -10 + i);
     const start = structuredClone(f);
     f = advance(f, 20);
-    expect(f.simulation.tick).toBe(20);
+    expect(f.simulation.tick).toBe(40);
     expect(f.simulation.warehouse.gear).toBeGreaterThanOrEqual(1);
     expect(total(f)).toBe(20);
     expect(start.simulation.tick).toBe(0);
@@ -78,7 +78,7 @@ describe("client authoritative simulation", () => {
     f = advance(f, 3);
     expect(f.simulation.buildings.f.input[0].count).toBe(2);
     expect(f.simulation.buildings.f.output).toEqual([]);
-    f = step(f);
+    f = advance(f, 1);
     expect(f.simulation.buildings.f.input[0].count).toBe(1);
     expect(f.simulation.buildings.f.output).toEqual([
       { item: "iron_plate", count: 1 },

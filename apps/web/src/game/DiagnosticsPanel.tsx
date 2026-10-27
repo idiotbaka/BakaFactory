@@ -1,3 +1,4 @@
+import { SIMULATION_TPS, ticksToSeconds } from "./local/simulationTime";
 import { useMemo, useState } from "react";
 import type { LocalFactory } from "./local/state";
 import { catalog, itemDefinitions, buildingDefinitions } from "./local/catalog";
@@ -76,9 +77,11 @@ export default function DiagnosticsPanel({
       {report.issues.length > 80 && (
         <p>仅显示前 80 条，先处理当前问题后其余项目会继续显示。</p>
       )}
-      <h3>实际制造与物流 · 最近 {observation?.ticks ?? 0} 个运行 tick</h3>
+      <h3>
+        实际制造与物流 · 最近 {ticksToSeconds(observation?.ticks ?? 0)} 秒
+      </h3>
       <p>
-        世界范围制造统计，最多 60 个有效 tick；刷新 /
+        世界范围制造统计，最多 60 秒游戏时间；刷新 /
         恢复云存档重置观察窗口，暂停不计秒。固体 /
         流体是逐格转移量，不能当作净产量；搬运按成功交空载荷计趟。
       </p>
@@ -93,7 +96,11 @@ export default function DiagnosticsPanel({
           .map(([id, n]) => (
             <li key={id}>
               {itemDefinitions.get(id)?.name}：制造 {n} ·{" "}
-              {number((n * 60) / Math.max(1, observation?.ticks ?? 0))} u / 分钟
+              {number(
+                (n * 60 * SIMULATION_TPS) /
+                  Math.max(1, observation?.ticks ?? 0),
+              )}{" "}
+              u / 分钟
             </li>
           ))}
       </ul>

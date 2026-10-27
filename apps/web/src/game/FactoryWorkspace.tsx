@@ -1,3 +1,4 @@
+import { DEFAULT_TPS } from "./local/tickRate";
 import { supportsLargeSize, footprintSize } from "./footprint";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
@@ -422,7 +423,7 @@ export default function FactoryWorkspace({
               {factory?.simulation && (
                 <span className="simulation-clock">
                   Tick {factory.simulation.tick.toLocaleString()} ·{" "}
-                  {game.tickRate ?? 1} TPS
+                  {game.tickRate ?? DEFAULT_TPS} TPS
                 </span>
               )}
             </div>

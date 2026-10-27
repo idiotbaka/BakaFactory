@@ -1,3 +1,4 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, expect, it } from "vitest";
 import {
   catalog,
@@ -5,7 +6,7 @@ import {
   itemID,
   recipeDefinitions,
 } from "./catalog";
-import { createWorld, editWorld, actWorld, stepWorld } from "./world";
+import { createWorld, editWorld, actWorld } from "./world";
 import { toSave, validateSave, type LocalFactory } from "./state";
 import { dispatchRobots } from "./robotAutonomy";
 
@@ -136,7 +137,7 @@ describe("deterministic authorized robot dispatch", () => {
     expect(advance(root, 3)).toEqual(advance(saved, 3));
     dispatchRobots(root);
     expect(root.robots![0].task?.target.building_id).toBe("urgent");
-    root.robots![0].autonomy!.next_tick = root.simulation.tick + 6;
+    root.robots![0].autonomy!.next_tick = root.simulation.tick + 11;
     expect(() => validateSave(toSave(root), user.id)).toThrow();
     const wrong = setup();
     wrong.robots![0].item = itemID("电动物流机器人");

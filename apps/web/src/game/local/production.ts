@@ -9,6 +9,7 @@ import { canAddAll, count } from "./inventory";
 import { enabled } from "./transportConfig";
 import { fuelAvailable, spendFuel } from "./fuel";
 import { claimWork } from "./workLedger";
+import { STEP_SECONDS } from "./simulationTime";
 
 export function recipeAvailable(f: LocalFactory, id: string) {
   // Use the shared index, never infer a machine/recipe from its display name.
@@ -64,13 +65,14 @@ export function canProcess(
     need = workDemand(b);
   if (!need) return "working";
   if (d.energy === "heat")
-    return fuelAvailable(m, d) >= need ? "working" : "no_energy";
+    return fuelAvailable(m, d) >= need * STEP_SECONDS ? "working" : "no_energy";
   if (!workKind(b)) return "working";
   const credit = m.work_energy_kj ?? 0;
+  const energy = need * STEP_SECONDS;
   if (
-    credit >= need ||
+    credit >= energy ||
     (d.energy === "steam_or_hydraulic" &&
-      credit + fuelAvailable(m, d) >= need) ||
+      credit + fuelAvailable(m, d) >= energy) ||
     (preview && (m.supplied_kw ?? 0) >= need)
   )
     return "working";
@@ -79,10 +81,10 @@ export function canProcess(
 export function consumeWorkEnergy(f: LocalFactory, b: BuildingInstance) {
   const m = f.simulation.buildings[b.id],
     d = buildingDefinitions.get(b.building_type)!,
-    need = workDemand(b);
+    need = workDemand(b) * STEP_SECONDS;
   if (d.energy === "heat") {
     if (!spendFuel(m, d, need)) return false;
-    m.supplied_kw = need;
+    m.supplied_kw = need / STEP_SECONDS;
   } else if (workKind(b) && need) {
     const fromCredit = Math.min(need, m.work_energy_kj ?? 0),
       missing = need - fromCredit;
@@ -92,7 +94,7 @@ export function consumeWorkEnergy(f: LocalFactory, b: BuildingInstance) {
     )
       return false;
     m.work_energy_kj = (m.work_energy_kj ?? 0) - fromCredit;
-    m.supplied_kw = (m.supplied_kw ?? 0) + missing;
+    m.supplied_kw = (m.supplied_kw ?? 0) + missing / STEP_SECONDS;
   }
   m.powered = true;
   return true;

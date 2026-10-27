@@ -42,7 +42,7 @@ func TestWorkshopPreBonusProgressCompatibility(t *testing.T) {
 		t.Fatal("pre-bonus progress must remain cloud-backup compatible", err)
 	}
 	for _, progress := range []int{-1, 10} {
-		p.Workshop.Progress = progress
+		p.Workshop.Progress = float64(progress)
 		if s.Validate(c) == nil {
 			t.Fatal("invalid original progress envelope accepted", progress)
 		}

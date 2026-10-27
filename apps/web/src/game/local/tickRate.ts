@@ -1,4 +1,5 @@
-export const DEFAULT_TPS = 1;
+import { SIMULATION_TPS } from "./simulationTime";
+export const DEFAULT_TPS = SIMULATION_TPS;
 export const MAX_TPS = 60;
 
 export function validateTickRate(value: number): number {

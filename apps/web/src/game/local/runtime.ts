@@ -1,3 +1,4 @@
+import { secondsToTicks } from "./simulationTime";
 import {
   ApiError,
   downloadSave,
@@ -425,7 +426,8 @@ export class GameRuntime {
         () => request.resolve(event.factory),
         (error) => request.reject(error),
       );
-    else if (event.factory.simulation.tick % 5 === 0) this.persistAutomatic();
+    else if (event.factory.simulation.tick % secondsToTicks(5) === 0)
+      this.persistAutomatic();
   }
   private persistAutomatic() {
     if (this.autoSaving) {

@@ -117,7 +117,7 @@ describe("read-only diagnostics and durable game outcomes", () => {
   it("counts only confirmed production deltas, bounds the window and ignores duplicate / edited ticks", () => {
     const o = new Observations();
     let before = createWorld(user, "观察");
-    for (let n = 0; n < 70; n++) {
+    for (let n = 0; n < 140; n++) {
       const next = structuredClone(before);
       next.simulation.tick++;
       recordCraft(next, { [itemID("基础铁板")]: 2 });
@@ -125,10 +125,10 @@ describe("read-only diagnostics and durable game outcomes", () => {
       o.record(before, next);
       before = next;
     }
-    expect(o.snapshot().ticks).toBe(60);
-    expect(o.snapshot().produced[itemID("基础铁板")]).toBe(120);
+    expect(o.snapshot().ticks).toBe(120);
+    expect(o.snapshot().produced[itemID("基础铁板")]).toBe(240);
     o.record(before, structuredClone(before));
-    expect(o.snapshot().ticks).toBe(60);
+    expect(o.snapshot().ticks).toBe(120);
     o.clear();
     expect(o.snapshot().ticks).toBe(0);
   });

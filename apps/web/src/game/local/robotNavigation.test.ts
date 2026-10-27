@@ -1,12 +1,7 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, it, expect } from "vitest";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
-import {
-  actWorld,
-  createWorld,
-  editWorld,
-  stepWorld,
-  projectFactory,
-} from "./world";
+import { actWorld, createWorld, editWorld, projectFactory } from "./world";
 import { previewRobotRoute } from "./robotNavigation";
 import {
   robotBusy,

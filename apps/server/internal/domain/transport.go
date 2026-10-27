@@ -116,8 +116,8 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 				return false
 			}
 		case "interval":
-			var value int
-			if json.Unmarshal(raw, &value) != nil || value < 1 || value > 60 {
+			var value float64
+			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil || !validHalf(value) || value < 0.5 || value > 60 {
 				return false
 			}
 		case "channel":

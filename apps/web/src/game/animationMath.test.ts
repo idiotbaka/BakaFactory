@@ -11,10 +11,10 @@ const machine: MachineState = {
 };
 describe("client-only bounded visual prediction", () => {
   it("draws fractional seconds without advancing more than one confirmed interval", () => {
-    expect(productionProgress(machine, 0.5)).toBe(2.5);
-    expect(productionProgress(machine, 5)).toBe(3);
+    expect(productionProgress(machine, 0.5)).toBe(2.25);
+    expect(productionProgress(machine, 5)).toBe(2.5);
     expect(productionProgress(machine, -1)).toBe(2);
-    expect(productionProgress({ ...machine, progress: 3 }, 1)).toBe(4);
+    expect(productionProgress({ ...machine, progress: 3.5 }, 1)).toBe(4);
     expect(machine.progress).toBe(2);
     expect(machine.output).toEqual([]);
   });

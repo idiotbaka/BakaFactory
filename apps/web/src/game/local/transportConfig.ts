@@ -7,6 +7,7 @@ import {
   isBelt,
   isChest,
 } from "./catalog";
+import { STEP_SECONDS, isStepValue } from "./simulationTime";
 import { validFluidConfig } from "./fluidConfig";
 import { isWarehouseTerminal, pickupType } from "./warehouseIO";
 import { undergroundType } from "./underground";
@@ -119,8 +120,8 @@ export function validTransportConfig(
   if (c.enabled !== undefined && typeof c.enabled !== "boolean") return false;
   if (
     c.interval !== undefined &&
-    (!Number.isInteger(c.interval) ||
-      (c.interval as number) < 1 ||
+    (!isStepValue(c.interval, 60) ||
+      (c.interval as number) < STEP_SECONDS ||
       (c.interval as number) > 60)
   )
     return false;

@@ -60,17 +60,17 @@ describe("one worker world with independent districts", () => {
       id: root.districts![0].id,
     });
     const duration = workshopDuration(recipeDefinitions.get("r1001")!);
-    for (let i = 0; i < duration; i++) root = stepWorld(root);
+    for (let i = 0; i < duration * 2; i++) root = stepWorld(root);
     expect(root.simulation.industry!.workshop).toMatchObject({
       total: 2,
       remaining: 1,
       progress: 0,
     });
     expect(root.simulation.warehouse[iron]).toBe(3);
-    expect(root.districts!.every((d) => d.simulation.tick === duration)).toBe(
-      true,
-    );
-    for (let i = 0; i < duration; i++) root = stepWorld(root);
+    expect(
+      root.districts!.every((d) => d.simulation.tick === duration * 2),
+    ).toBe(true);
+    for (let i = 0; i < duration * 2; i++) root = stepWorld(root);
     expect(root.simulation.industry!.workshop).toBeUndefined();
     expect(root.simulation.warehouse[iron]).toBe(6);
   });
@@ -103,11 +103,11 @@ describe("one worker world with independent districts", () => {
       action: { type: "feed_batch", id: "sorter" },
     });
     root = stepWorld(root);
-    expect(root.simulation.industry!.workshop?.progress).toBe(1);
+    expect(root.simulation.industry!.workshop?.progress).toBe(0.5);
     expect(allDistricts(root).map((f) => f.simulation.tick)).toEqual([
       1, 1, 1, 1, 1, 1,
     ]);
-    for (let i = 0; i < 9; i++) root = stepWorld(root);
+    for (let i = 0; i < 19; i++) root = stepWorld(root);
     expect(root.simulation.warehouse[iron]).toBe(3);
     expect(
       root.districts![0].simulation.buildings.sorter.output.find(

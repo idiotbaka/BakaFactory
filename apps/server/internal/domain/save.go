@@ -68,6 +68,9 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 		if m := f.Simulation.Buildings[b.ID]; m != nil && m.Belt != nil {
 			d := limits[b.BuildingType]
 			duration, capacity := d.BeltTicks, d.BatchSize
+			if f.Simulation.TickRate == 1 && b.BuildingType == "hand_belt" {
+				duration = 3
+			}
 			if duration == 0 {
 				duration = 1
 			}
@@ -90,7 +93,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			return bad()
 		}
 		if m := f.Simulation.Buildings[b.ID]; m != nil {
-			if m.StationEnergyKJ < 0 || m.StationEnergyKJ > limits[b.BuildingType].StationCapacityKJ {
+			if m.StationEnergyKJ < 0 || m.StationEnergyKJ > float64(limits[b.BuildingType].StationCapacityKJ) {
 				return bad()
 			}
 			if m.FluidCursor > 0 && limits[b.BuildingType].Role != "valve" {
@@ -111,7 +114,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 					}
 				}
 			}
-			if m.ChargeKJ > limits[b.BuildingType].CapacityKJ || (m.ChargeRemainder > 0 && limits[b.BuildingType].Role != "battery") || m.Medium > 0 && b.BuildingType != "m21" {
+			if m.ChargeKJ > float64(limits[b.BuildingType].CapacityKJ) || (m.ChargeRemainder > 0 && limits[b.BuildingType].Role != "battery") || m.Medium > 0 && b.BuildingType != "m21" {
 				return bad()
 			}
 			allowed := map[string]bool{}
@@ -172,7 +175,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 	if !validUndergroundPairs(f) {
 		return bad()
 	}
-	if buses != 1 || sim.TickRate != 1 || sim.Tick > MaxSafeInteger || len(sim.Buildings) != len(ids) || sim.Warehouse == nil || sim.Transfers == nil || len(sim.Transfers) > 3*len(ids) {
+	if buses != 1 || (sim.TickRate != 1 && sim.TickRate != TickRate) || sim.Tick > MaxSafeInteger || len(sim.Buildings) != len(ids) || sim.Warehouse == nil || sim.Transfers == nil || len(sim.Transfers) > 3*len(ids) {
 		return bad()
 	}
 	for id := range ids {
@@ -242,7 +245,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			if s.RulesVersion == 3 && len(child.Simulation.Warehouse) != 0 {
 				return bad()
 			}
-			if child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || factoryIDs[child.ID] {
+			if child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || child.Simulation.TickRate != sim.TickRate || factoryIDs[child.ID] {
 				return bad()
 			}
 			for _, b := range child.Buildings {

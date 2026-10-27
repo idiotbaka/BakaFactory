@@ -6789,8 +6789,8 @@
       "output_slots": 12,
       "stack_limit": 100,
       "input_whitelist": [],
-      "belt_ticks": 3,
-      "batch_size": 1
+      "belt_ticks": 2,
+      "batch_size": 2
     },
     {
       "id": "feeder",
@@ -6894,7 +6894,7 @@
       "stack_limit": 100,
       "input_whitelist": [],
       "belt_ticks": 1,
-      "batch_size": 1,
+      "batch_size": 2,
       "energy": "shaft",
       "power_kw": 1
     },
@@ -7008,7 +7008,7 @@
       "stack_limit": 100,
       "input_whitelist": [],
       "belt_ticks": 1,
-      "batch_size": 2,
+      "batch_size": 10,
       "energy": "hydraulic",
       "power_kw": 2
     },
@@ -7284,7 +7284,7 @@
       "stack_limit": 100,
       "input_whitelist": [],
       "belt_ticks": 1,
-      "batch_size": 3,
+      "batch_size": 20,
       "energy": "electric",
       "power_kw": 2
     },
@@ -7305,7 +7305,7 @@
       "stack_limit": 100,
       "input_whitelist": [],
       "belt_ticks": 1,
-      "batch_size": 5,
+      "batch_size": 50,
       "energy": "electric",
       "power_kw": 3
     },
@@ -7326,7 +7326,7 @@
       "stack_limit": 100,
       "input_whitelist": [],
       "belt_ticks": 1,
-      "batch_size": 6,
+      "batch_size": 100,
       "energy": "electric",
       "power_kw": 4
     },

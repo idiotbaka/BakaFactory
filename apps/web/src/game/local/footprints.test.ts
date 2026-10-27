@@ -200,7 +200,7 @@ describe("multi-cell footprints", () => {
       f.simulation.buildings.source.belt = {
         id: "payload",
         item,
-        progress: 3,
+        progress: 2,
         count: 1,
       };
       transferSolids(f, f.buildings);
@@ -324,7 +324,9 @@ describe("multi-cell footprints", () => {
     ];
     allocatePower(f, f.buildings);
     expect(f.simulation.buildings.machine.supplied_kw).toBe(recipe.power_kw);
-    expect(f.simulation.buildings.machine.work_energy_kj).toBe(recipe.power_kw);
+    expect(f.simulation.buildings.machine.work_energy_kj).toBe(
+      recipe.power_kw! * 0.5,
+    );
     expect(f.simulation.networks!.reduce((n, g) => n + g.demand_kw, 0)).toBe(
       recipe.power_kw,
     );

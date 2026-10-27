@@ -239,8 +239,8 @@ const utility = (id, name, nameItem, tier, role, extra = {}) => ({
 });
 const utilities = [
   utility("hand_belt", "手摇传送带", "手摇传送带", 1, "belt", {
-    belt_ticks: 3,
-    batch_size: 1,
+    belt_ticks: 2,
+    batch_size: 2,
   }),
   utility("feeder", "自动投料机", "初阶自动投料机", 1, "port"),
   utility("waste_port", "垃圾提取口", "初阶自动投料机", 1, "source", {
@@ -257,7 +257,7 @@ const utilities = [
   utility("shaft", "传动轴", "低速传动轴", 2, "shaft", { icon: "shaft" }),
   utility("mechanical_belt", "机械传送带", "机械传送带", 2, "belt", {
     belt_ticks: 1,
-    batch_size: 1,
+    batch_size: 2,
     energy: "shaft",
     power_kw: 1,
   }),
@@ -297,7 +297,7 @@ const utilities = [
   }),
   utility("hydraulic_belt", "液压输送带", "液压输送带", 3, "belt", {
     belt_ticks: 1,
-    batch_size: 2,
+    batch_size: 10,
     energy: "hydraulic",
     power_kw: 2,
   }),
@@ -377,19 +377,19 @@ const utilities = [
   }),
   utility("electric_belt", "电动传送带", "电动传送带", 4, "belt", {
     belt_ticks: 1,
-    batch_size: 3,
+    batch_size: 20,
     energy: "electric",
     power_kw: 2,
   }),
   utility("precision_belt", "高速精密传送带", "高速精密传送带", 5, "belt", {
     belt_ticks: 1,
-    batch_size: 5,
+    batch_size: 50,
     energy: "electric",
     power_kw: 3,
   }),
   utility("flexible_belt", "柔性立体输送带", "柔性立体输送带", 6, "belt", {
     belt_ticks: 1,
-    batch_size: 6,
+    batch_size: 100,
     energy: "electric",
     power_kw: 4,
   }),

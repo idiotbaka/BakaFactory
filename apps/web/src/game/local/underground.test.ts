@@ -189,7 +189,7 @@ describe("paired underground conveyors", () => {
       id: "next",
       item,
       count: 1,
-      progress: 3,
+      progress: 2,
     };
     f.simulation.buildings["in-out"].belt = {
       id: "held",

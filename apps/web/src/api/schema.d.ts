@@ -348,8 +348,11 @@ export interface components {
         Simulation: {
             /** Format: int64 */
             tick: number;
-            /** @enum {integer} */
-            tick_rate: 1;
+            /**
+             * @description 2 TPS; 1 is accepted only for legacy saves.
+             * @enum {integer}
+             */
+            tick_rate: 1 | 2;
             industry?: components["schemas"]["IndustryState"];
             networks?: components["schemas"]["PowerNetwork"][];
             /** @description Confirmed port and Bus transfers from the last three ticks. Cosmetic only; clients deduplicate and never replay on initial load. */

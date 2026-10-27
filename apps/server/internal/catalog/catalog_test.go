@@ -4,6 +4,19 @@ import (
 	"testing"
 )
 
+func TestHalfSecondRecipeDurations(t *testing.T) {
+	for _, duration := range []int64{500, 1000, 1500} {
+		c, err := Load()
+		if err != nil {
+			t.Fatal(err)
+		}
+		c.Recipes[0].DurationMS = duration
+		if err := c.Validate(); err != nil {
+			t.Fatalf("duration %d: %v", duration, err)
+		}
+	}
+}
+
 func TestCatalogValidation(t *testing.T) {
 	valid, err := Load()
 	if err != nil {
@@ -12,7 +25,7 @@ func TestCatalogValidation(t *testing.T) {
 	if len(valid.Items) != 356 || len(valid.Buildings) != 93 || len(valid.Recipes) != 335 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 32 {
 		t.Fatal("missing production definitions")
 	}
-	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "fractional_second", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity"} {
+	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "off_grid_duration", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity"} {
 		t.Run(name, func(t *testing.T) {
 			c, err := Load()
 			if err != nil {
@@ -31,8 +44,8 @@ func TestCatalogValidation(t *testing.T) {
 				c.Recipes[0].DurationMS = 0
 			case "subsecond_duration":
 				c.Recipes[0].DurationMS = 900
-			case "fractional_second":
-				c.Recipes[0].DurationMS = 1500
+			case "off_grid_duration":
+				c.Recipes[0].DurationMS = 1250
 			case "missing_bus":
 				c.Buildings = c.Buildings[1:]
 			case "invalid_color":

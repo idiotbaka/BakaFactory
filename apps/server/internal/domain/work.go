@@ -49,7 +49,7 @@ func (v *RobotBehavior) UnmarshalJSON(data []byte) error {
 }
 func validRobotAutonomy(r RobotState, d RobotDefinition, tick int64) bool {
 	if a := r.Autonomy; a != nil {
-		if d.Role != "smart" || a.NextTick < 0 || a.NextTick > min(MaxSafeInteger, tick+5) {
+		if d.Role != "smart" || a.NextTick < 0 || a.NextTick > min(MaxSafeInteger, tick+5*TickRate) {
 			return false
 		}
 	}

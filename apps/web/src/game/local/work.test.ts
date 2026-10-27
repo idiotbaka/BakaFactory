@@ -1,3 +1,4 @@
+import { worldSecond as stepWorld } from "./testTime";
 import { describe, expect, it } from "vitest";
 import {
   catalog,
@@ -5,7 +6,7 @@ import {
   itemID,
   recipeDefinitions,
 } from "./catalog";
-import { createWorld, editWorld, actWorld, stepWorld } from "./world";
+import { createWorld, editWorld, actWorld } from "./world";
 import { toSave, validateSave, type LocalFactory } from "./state";
 import { claimWork, recordWork } from "./workLedger";
 import { robotDefinitions } from "./robots";
