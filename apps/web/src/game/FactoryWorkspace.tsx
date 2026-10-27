@@ -1071,6 +1071,10 @@ export default function FactoryWorkspace({
                     <dd>打开删除菜单</dd>
                   </div>
                   <div>
+                    <dt>右键拖动框选</dt>
+                    <dd>左键拖动整组；Del / 右键菜单批量删除，Esc 取消选择</dd>
+                  </div>
+                  <div>
                     <dt>滚轮 / 拖动空格</dt>
                     <dd>缩放 / 平移地图</dd>
                   </div>

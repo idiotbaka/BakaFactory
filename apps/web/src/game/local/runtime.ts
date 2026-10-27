@@ -38,6 +38,13 @@ import {
 } from "./world";
 
 export type EditorCommands = {
+  moveBuildings?: (
+    factory: string,
+    ids: string[],
+    dx: number,
+    dy: number,
+  ) => Promise<FactoryDetail>;
+  deleteBuildings?: (factory: string, ids: string[]) => Promise<FactoryDetail>;
   placeUnderground?: (
     factory: string,
     entry: BuildingPlacement,
@@ -805,6 +812,18 @@ export class GameRuntime {
       }),
     deleteBuilding: (factoryID, id) =>
       this.command({ kind: "edit", factoryID, edit: { kind: "delete", id } }),
+    moveBuildings: (factoryID, ids, dx, dy) =>
+      this.command({
+        kind: "edit",
+        factoryID,
+        edit: { kind: "batch_move", ids, dx, dy },
+      }),
+    deleteBuildings: (factoryID, ids) =>
+      this.command({
+        kind: "edit",
+        factoryID,
+        edit: { kind: "batch_delete", ids },
+      }),
     getFactory: async () => {
       if (!this.view.factory) throw new Error("请先创建工厂");
       return structuredClone(this.view.factory);

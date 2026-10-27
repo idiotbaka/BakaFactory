@@ -1,4 +1,32 @@
 /* Editor geometry remains 30px cells, a 25px axis and a 1px grid border. */
+.batch-selection-box {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid var(--cyan);
+  background: #46eff21a;
+  z-index: 15;
+}
+.map-tile.batch-selected {
+  box-shadow: inset 0 0 0 2px var(--cyan);
+  background-color: #46eff226;
+}
+.map-tile.batch-selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--cyan);
+  pointer-events: none;
+  z-index: 4;
+}
+.map-tile.batch-selected.drop-invalid::before {
+  border-color: var(--danger);
+}
+.batch-move-preview {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.65;
+  z-index: 10;
+}
 .editor-controls {
   display: flex;
   align-items: center;

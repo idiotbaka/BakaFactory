@@ -155,9 +155,9 @@ describe("robot navigation and lifecycle integration", () => {
     r.returning = "energy";
     r.cargo = { item: iron, count: 1 };
     r.task!.phase = "deliver";
-    expect(robotStateHint(r)).toContain("本次任务不会重新派发");
+    expect(robotStateHint(r)).toContain("本趟任务到此结束");
     r.task!.repeat = true;
-    expect(robotStateHint(r)).toContain("保留的任务补满后可继续");
+    expect(robotStateHint(r)).toContain("等充满能量后会继续刚才的任务");
     r.enabled = false;
     expect(robotStateHint(r)).toContain("启用后");
     expect(robotStateHint(r, true)).toContain("世界已暂停");

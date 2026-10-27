@@ -4,6 +4,7 @@ import {
   containsCell,
   supportsLargeSize,
 } from "./footprint";
+import { batchMoveIssue, rectangleSelection } from "./batchSelection";
 import {
   useEffect,
   useLayoutEffect,
@@ -77,6 +78,7 @@ export type RobotFocus = {
 };
 type Pointer = { clientX: number; clientY: number; cell: Cell | null };
 type Preview = Pointer & {
+  groupIDs?: string[];
   size: 1 | 2;
   definition: BuildingDefinition;
   instanceID?: string;
@@ -97,6 +99,15 @@ type Pan = {
   capture: HTMLElement;
 };
 type Menu = { id: string; x: number; y: number };
+type Marquee = {
+  pointerID: number;
+  startX: number;
+  startY: number;
+  x: number;
+  y: number;
+  active: boolean;
+  capture: HTMLElement;
+};
 
 export default function FactoryEditor(props: Props) {
   const latest = useRef(props);
@@ -109,6 +120,19 @@ export default function FactoryEditor(props: Props) {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1.25 });
   const drag = useRef<Drag | null>(null),
     pan = useRef<Pan | null>(null);
+  const marquee = useRef<Marquee | null>(null);
+  const [selectionBox, setSelectionBox] = useState<
+    (Marquee & { left: number; top: number }) | null
+  >(null);
+  const batchRef = useRef<string[]>([]);
+  const [batchIDs, setBatchIDs] = useState<string[]>([]);
+  useLayoutEffect(() => {
+    batchRef.current = batchIDs;
+  }, [batchIDs]);
+  function setBatch(ids: string[]) {
+    batchRef.current = ids;
+    setBatchIDs(ids);
+  }
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lock = useRef(false),
     mounted = useRef(false),
@@ -149,6 +173,7 @@ export default function FactoryEditor(props: Props) {
   ) {
     setUndergroundContext({ factoryID: factory.id, type: placementType });
     setUndergroundEntry(null);
+    setBatchIDs([]);
   }
   const isFixed = (b: BuildingInstance) =>
     b.building_type === "bus" ||
@@ -227,9 +252,10 @@ export default function FactoryEditor(props: Props) {
       clearTimeout(timer.current);
       timer.current = null;
     }
-    const pending = drag.current ?? pan.current;
+    const pending = drag.current ?? pan.current ?? marquee.current;
     drag.current = null;
     pan.current = null;
+    marquee.current = null;
     if (pending) {
       if (pending.active && mounted.current) suppressNextClick();
       try {
@@ -241,6 +267,7 @@ export default function FactoryEditor(props: Props) {
     if (mounted.current) {
       setDragPreview(null);
       setPanning(false);
+      setSelectionBox(null);
     }
   }
   function consumeClick() {
@@ -258,13 +285,19 @@ export default function FactoryEditor(props: Props) {
       latest.current.placementType ||
       (definition.fixed && instance.building_type !== "bus") ||
       lock.current ||
+      marquee.current ||
       drag.current
     )
       return;
     suppressClick.current = false;
     setMenu(null);
+    const groupIDs = batchRef.current.includes(instance.id)
+      ? [...batchRef.current]
+      : undefined;
+    if (!groupIDs) setBatch([]);
     props.onSelect(instance);
     const p: Drag = {
+      groupIDs,
       definition,
       size: footprintSize(instance),
       offset: (() => {
@@ -294,8 +327,30 @@ export default function FactoryEditor(props: Props) {
   }
   function beginPan(event: ReactPointerEvent<HTMLDivElement>) {
     if (
+      event.button === 2 &&
+      !latest.current.placementType &&
+      !drag.current &&
+      !pan.current &&
+      !lock.current
+    ) {
+      event.preventDefault();
+      contextBlocked.current = false;
+      setMenu(null);
+      marquee.current = {
+        pointerID: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        x: event.clientX,
+        y: event.clientY,
+        active: false,
+        capture: event.currentTarget,
+      };
+      return;
+    }
+    if (
       event.button !== 0 ||
       drag.current ||
+      marquee.current ||
       pan.current ||
       (event.target instanceof Element && event.target.closest(".occupied"))
     )
@@ -311,6 +366,62 @@ export default function FactoryEditor(props: Props) {
       active: false,
       capture: event.currentTarget,
     };
+  }
+  function boxCell(x: number, y: number): Cell {
+    const rect = viewport.current!.getBoundingClientRect(),
+      c = cameraRef.current,
+      f = latest.current.factory;
+    return {
+      x:
+        Math.floor(
+          (x - rect.left - c.x) / (TILE_SIZE * c.zoom) - GRID_INSET / TILE_SIZE,
+        ) - Math.floor(f.width / 2),
+      y:
+        Math.floor(f.height / 2) -
+        Math.floor(
+          (y - rect.top - c.y) / (TILE_SIZE * c.zoom) - GRID_INSET / TILE_SIZE,
+        ),
+    };
+  }
+  function updateBox(event: PointerEvent) {
+    const box = marquee.current;
+    if (!box || box.pointerID !== event.pointerId) return false;
+    box.x = event.clientX;
+    box.y = event.clientY;
+    if (Math.hypot(box.x - box.startX, box.y - box.startY) >= 4)
+      box.active = true;
+    if (box.active) {
+      try {
+        box.capture.setPointerCapture?.(box.pointerID);
+      } catch {
+        /* Window fallback. */
+      }
+      setMenu(null);
+      blockContext();
+      const rect = box.capture.getBoundingClientRect();
+      setSelectionBox({ ...box, left: rect.left, top: rect.top });
+    }
+    return true;
+  }
+  function finishBox(clientX: number, clientY: number) {
+    const box = marquee.current;
+    if (!box) return;
+    if (box.active) {
+      const { factory: f, catalog: c } = latest.current;
+      setBatch(
+        rectangleSelection(
+          f,
+          c.buildings,
+          boxCell(box.startX, box.startY),
+          boxCell(clientX, clientY),
+        ),
+      );
+      latest.current.onSelect(null);
+      setCellSelection(null);
+      setMenu(null);
+      blockContext();
+    }
+    cancel();
   }
   async function commit(
     action: () => Promise<FactoryDetail>,
@@ -346,15 +457,22 @@ export default function FactoryEditor(props: Props) {
     };
     const f = latest.current.factory,
       originalEnd = f.buildings.find((b) => b.id === p.instanceID),
-      issue =
-        placementIssue(f, p.cell, p.instanceID, p.definition.id, p.size) ??
-        (originalEnd && p.cell
-          ? undergroundMoveIssue(
-              originalEnd,
-              { ...p.cell, rotation: p.rotation },
-              f.buildings,
-            )
-          : null);
+      issue = p.groupIDs
+        ? batchMoveIssue(
+            f,
+            p.groupIDs,
+            p.cell && originalEnd
+              ? { x: p.cell.x - originalEnd.x, y: p.cell.y - originalEnd.y }
+              : null,
+          )
+        : (placementIssue(f, p.cell, p.instanceID, p.definition.id, p.size) ??
+          (originalEnd && p.cell
+            ? undergroundMoveIssue(
+                originalEnd,
+                { ...p.cell, rotation: p.rotation },
+                f.buildings,
+              )
+            : null));
     cancel();
     if (issue) {
       latest.current.onError(new Error(issue));
@@ -362,6 +480,25 @@ export default function FactoryEditor(props: Props) {
     }
     const cell = p.cell!,
       original = f.buildings.find((b) => b.id === p.instanceID);
+    if (p.groupIDs && original) {
+      const dx = cell.x - original.x,
+        dy = cell.y - original.y;
+      if (!dx && !dy) return;
+      void commit(
+        () => {
+          if (!latest.current.commands.moveBuildings)
+            throw new Error("批量移动命令不可用");
+          return latest.current.commands.moveBuildings(
+            f.id,
+            p.groupIDs!,
+            dx,
+            dy,
+          );
+        },
+        () => null,
+      );
+      return;
+    }
     if (
       original?.x === cell.x &&
       original.y === cell.y &&
@@ -381,6 +518,7 @@ export default function FactoryEditor(props: Props) {
   function rotateDrag() {
     const p = drag.current;
     if (!p) return;
+    if (p.groupIDs) return;
     if (p.definition.id === "bus") return;
     if (p.definition.id === undergroundType) {
       latest.current.onError(
@@ -406,6 +544,7 @@ export default function FactoryEditor(props: Props) {
     }));
   }
   function rotateSelected() {
+    if (batchRef.current.length) return;
     const f = latest.current.factory,
       b = f.buildings.find((b) => b.id === latest.current.selectedID);
     if (!b || isFixed(b) || lock.current) return;
@@ -426,6 +565,23 @@ export default function FactoryEditor(props: Props) {
     );
   }
   function remove(id = latest.current.selectedID) {
+    if (batchRef.current.length && !lock.current) {
+      const ids = [...batchRef.current];
+      void commit(
+        async () => {
+          if (!latest.current.commands.deleteBuildings)
+            throw new Error("批量删除命令不可用");
+          const result = await latest.current.commands.deleteBuildings(
+            latest.current.factory.id,
+            ids,
+          );
+          if (mounted.current) setBatch([]);
+          return result;
+        },
+        () => null,
+      );
+      return;
+    }
     const f = latest.current.factory,
       b = f.buildings.find((b) => b.id === id);
     if (!b || isFixed(b) || isTerminal(b) || lock.current) return;
@@ -503,6 +659,8 @@ export default function FactoryEditor(props: Props) {
             ?.id ?? null,
       );
     } else {
+      if (instance && batchRef.current.includes(instance.id)) return;
+      setBatch([]);
       const robot = latest.current.factory.robots?.find(
         (r) =>
           (!r.transit &&
@@ -531,6 +689,7 @@ export default function FactoryEditor(props: Props) {
       return;
     }
     if (pan.current?.active || lock.current) return;
+    if (!batchRef.current.includes(instance.id)) setBatch([]);
     props.onSelect(instance);
     setMenu({
       id: instance.id,
@@ -554,6 +713,8 @@ export default function FactoryEditor(props: Props) {
     center,
     hit,
     cancel,
+    updateBox,
+    finishBox,
   });
   useLayoutEffect(() => {
     actions.current = {
@@ -565,6 +726,8 @@ export default function FactoryEditor(props: Props) {
       center,
       hit,
       cancel,
+      updateBox,
+      finishBox,
     };
   });
   useEffect(() => {
@@ -597,6 +760,11 @@ export default function FactoryEditor(props: Props) {
           });
     resize?.observe(viewport.current!);
     const move = (event: PointerEvent) => {
+      if (actions.current.updateBox(event)) {
+        if (event.pointerType === "mouse" && (event.buttons & 2) === 0)
+          actions.current.finishBox(event.clientX, event.clientY);
+        return;
+      }
       const p = drag.current,
         view = pan.current;
       if (p?.pointerID === event.pointerId) {
@@ -630,6 +798,13 @@ export default function FactoryEditor(props: Props) {
       }
     };
     const up = (event: PointerEvent) => {
+      if (
+        event.button === 2 &&
+        marquee.current?.pointerID === event.pointerId
+      ) {
+        actions.current.finishBox(event.clientX, event.clientY);
+        return;
+      }
       if (event.button !== 0) return;
       if (drag.current?.pointerID === event.pointerId)
         actions.current.finish(event.clientX, event.clientY);
@@ -644,6 +819,8 @@ export default function FactoryEditor(props: Props) {
       }
     };
     const mouseUp = (event: MouseEvent) => {
+      if (event.button === 2 && marquee.current)
+        actions.current.finishBox(event.clientX, event.clientY);
       if (event.button === 2 && rightChord.current) {
         rightChord.current = false;
         blockContext();
@@ -659,7 +836,8 @@ export default function FactoryEditor(props: Props) {
     const lost = (event: PointerEvent) => {
       if (
         drag.current?.pointerID === event.pointerId ||
-        pan.current?.pointerID === event.pointerId
+        pan.current?.pointerID === event.pointerId ||
+        marquee.current?.pointerID === event.pointerId
       ) {
         rightChord.current = false;
         actions.current.cancel();
@@ -679,6 +857,8 @@ export default function FactoryEditor(props: Props) {
         return;
       if (event.key === "Escape") {
         setUndergroundEntry(null);
+        batchRef.current = [];
+        setBatchIDs([]);
         actions.current.cancel();
         setMenu(null);
         setPointer(null);
@@ -693,6 +873,7 @@ export default function FactoryEditor(props: Props) {
       } else if (
         (event.key === "Delete" || event.key === "Backspace") &&
         !drag.current &&
+        !marquee.current &&
         !latest.current.placementType
       ) {
         event.preventDefault();
@@ -704,7 +885,7 @@ export default function FactoryEditor(props: Props) {
     };
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
-      if (drag.current) return;
+      if (drag.current || marquee.current) return;
       const rect = viewport.current!.getBoundingClientRect(),
         c = cameraRef.current;
       const pixels =
@@ -788,37 +969,53 @@ export default function FactoryEditor(props: Props) {
       menuRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
   }, [menu]);
 
-  const issue = preview
-    ? (placementIssue(
-        factory,
-        preview.cell,
-        preview.instanceID,
-        preview.definition.id,
-        preview.size,
-      ) ??
-      (preview.cell && preview.instanceID
-        ? (() => {
-            const b = factory.buildings.find(
-              (b) => b.id === preview.instanceID,
-            );
-            return b
-              ? undergroundMoveIssue(
-                  b,
-                  { ...preview.cell!, rotation: preview.rotation },
-                  factory.buildings,
-                )
-              : null;
-          })()
-        : placingUnderground &&
-            undergroundEntry &&
-            preview.cell &&
-            !undergroundSpan(
-              { ...undergroundEntry, rotation },
-              { ...preview.cell, rotation },
-            )
-          ? "出口须位于入口正前方 1～8 格"
-          : null))
-    : null;
+  const groupOrigin = factory.buildings.find(
+    (b) => b.id === preview?.instanceID,
+  );
+  const groupDelta =
+    preview?.cell && groupOrigin
+      ? { x: preview.cell.x - groupOrigin.x, y: preview.cell.y - groupOrigin.y }
+      : null;
+  const groupPreview =
+    preview?.groupIDs && groupDelta
+      ? factory.buildings
+          .filter((b) => preview.groupIDs!.includes(b.id))
+          .map((b) => ({ ...b, x: b.x + groupDelta.x, y: b.y + groupDelta.y }))
+      : [];
+  const groupTargets = occupancy(groupPreview);
+  const issue = preview?.groupIDs
+    ? batchMoveIssue(factory, preview.groupIDs, groupDelta)
+    : preview
+      ? (placementIssue(
+          factory,
+          preview.cell,
+          preview.instanceID,
+          preview.definition.id,
+          preview.size,
+        ) ??
+        (preview.cell && preview.instanceID
+          ? (() => {
+              const b = factory.buildings.find(
+                (b) => b.id === preview.instanceID,
+              );
+              return b
+                ? undergroundMoveIssue(
+                    b,
+                    { ...preview.cell!, rotation: preview.rotation },
+                    factory.buildings,
+                  )
+                : null;
+            })()
+          : placingUnderground &&
+              undergroundEntry &&
+              preview.cell &&
+              !undergroundSpan(
+                { ...undergroundEntry, rotation },
+                { ...preview.cell, rotation },
+              )
+            ? "出口须位于入口正前方 1～8 格"
+            : null))
+      : null;
   const buildings = useMemo(
     () => occupancy(factory.buildings),
     [factory.buildings],
@@ -858,6 +1055,7 @@ export default function FactoryEditor(props: Props) {
             props.onExitPlacement();
             props.onSelect(null);
             setCellSelection(null);
+            setBatch([]);
           }}
           disabled={saving}
         >
@@ -867,6 +1065,7 @@ export default function FactoryEditor(props: Props) {
           onClick={placementDefinition ? rotatePlacement : rotateSelected}
           disabled={
             saving ||
+            batchIDs.length > 0 ||
             (!placementDefinition &&
               (!selected || fixed || isUnderground(selected))) ||
             Boolean(dragPreview)
@@ -879,14 +1078,17 @@ export default function FactoryEditor(props: Props) {
           onClick={() => remove()}
           disabled={
             saving ||
-            !selected ||
-            fixed ||
-            (selected && isTerminal(selected)) ||
+            (!batchIDs.length &&
+              (!selected || fixed || (selected && isTerminal(selected)))) ||
             Boolean(preview) ||
             Boolean(placementDefinition)
           }
         >
-          {selected && isUnderground(selected) ? "回收整对" : "删除建筑"}{" "}
+          {batchIDs.length
+            ? `删除选中 ${batchIDs.length} 个建筑`
+            : selected && isUnderground(selected)
+              ? "回收整对"
+              : "删除建筑"}{" "}
           <kbd>Del</kbd>
         </button>
         <button
@@ -896,25 +1098,27 @@ export default function FactoryEditor(props: Props) {
           重绘布局
         </button>
         <span>
-          {dragPreview
-            ? dragPreview.definition.id === "bus"
-              ? "移动工厂仓库 · 方向固定 · 松开左键确认"
-              : dragPreview.definition.id === undergroundType
-                ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
-                : "移动建筑 · 右键旋转 · 松开左键确认"
-            : placementDefinition
-              ? placingUnderground
-                ? undergroundEntry
-                  ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
-                  : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
-                : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
-              : selected
-                ? selected.building_type === "bus"
-                  ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
-                  : fixed
-                    ? "固定设施，无法编辑"
-                    : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
-                : "点击图鉴连续建造 · 长按建筑移动 · 拖动空格平移"}
+          {batchIDs.length
+            ? `已框选 ${batchIDs.length} 个建筑 · 左键拖动整组 · Del / 右键删除 · Esc 取消${dragPreview ? " · 松开左键确认" : ""}`
+            : dragPreview
+              ? dragPreview.definition.id === "bus"
+                ? "移动工厂仓库 · 方向固定 · 松开左键确认"
+                : dragPreview.definition.id === undergroundType
+                  ? "沿原直线移动端口 · 保持 1～8 格 · 松开左键确认"
+                  : "移动建筑 · 右键旋转 · 松开左键确认"
+              : placementDefinition
+                ? placingUnderground
+                  ? undergroundEntry
+                    ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
+                    : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
+                  : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
+                : selected
+                  ? selected.building_type === "bus"
+                    ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
+                    : fixed
+                      ? "固定设施，无法编辑"
+                      : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
+                  : "右键拖动框选 · 长按建筑移动 · 拖动空格平移"}
         </span>
       </div>
       <div className="map-caption">
@@ -932,6 +1136,7 @@ export default function FactoryEditor(props: Props) {
                 props.districtSwitchDisabled ||
                 saving ||
                 !!dragPreview ||
+                !!selectionBox ||
                 panning
               }
               onChange={(event) => props.onSelectDistrict?.(event.target.value)}
@@ -952,13 +1157,13 @@ export default function FactoryEditor(props: Props) {
         <span aria-label="当前缩放">{Math.round(camera.zoom * 100)}%</span>
         <button
           onClick={() => center(true)}
-          disabled={Boolean(dragPreview) || panning}
+          disabled={Boolean(dragPreview) || panning || !!selectionBox}
         >
           适应地图
         </button>
         <button
           onClick={() => center()}
-          disabled={Boolean(dragPreview) || panning}
+          disabled={Boolean(dragPreview) || panning || !!selectionBox}
         >
           居中放大
         </button>
@@ -984,7 +1189,13 @@ export default function FactoryEditor(props: Props) {
           if (drag.current || rightChord.current || contextBlocked.current)
             return;
           if (placementDefinition) rotatePlacement();
-          else setMenu(null);
+          else if (batchRef.current.length) {
+            setMenu({
+              id: batchRef.current[0],
+              x: Math.max(8, Math.min(event.clientX, window.innerWidth - 180)),
+              y: Math.max(8, Math.min(event.clientY, window.innerHeight - 116)),
+            });
+          } else setMenu(null);
         }}
       >
         <div
@@ -1035,6 +1246,29 @@ export default function FactoryEditor(props: Props) {
               catalog={catalog}
               zoom={camera.zoom}
             />
+            {groupPreview.map((b) => (
+              <span
+                key={b.id}
+                className="batch-move-preview"
+                aria-hidden="true"
+                style={{
+                  left: (b.x + Math.floor(factory.width / 2)) * TILE_SIZE,
+                  top: (Math.floor(factory.height / 2) - b.y) * TILE_SIZE,
+                  width: TILE_SIZE * footprintSize(b),
+                  height: TILE_SIZE * footprintSize(b),
+                }}
+              >
+                <BuildingVisual
+                  definition={buildingDefinitions.get(b.building_type)!}
+                  x={b.x}
+                  y={b.y}
+                  rotation={b.rotation}
+                  buildings={groupTargets}
+                  instanceID={b.id}
+                  undergroundExit={b.configuration.underground_role === "exit"}
+                />
+              </span>
+            ))}
             {((undergroundEntry && placingUnderground) || selectedPeer) && (
               <svg
                 className="underground-link-layer"
@@ -1096,12 +1330,13 @@ export default function FactoryEditor(props: Props) {
                 const instance = buildings.get(`${x},${y}`),
                   d =
                     instance && buildingDefinitions.get(instance.building_type);
-                const target =
-                    preview?.cell &&
-                    containsCell(
-                      { ...preview.cell, size: preview.size },
-                      { x, y },
-                    ),
+                const target = preview?.groupIDs
+                    ? groupTargets.has(`${x},${y}`)
+                    : preview?.cell &&
+                      containsCell(
+                        { ...preview.cell, size: preview.size },
+                        { x, y },
+                      ),
                   anchor = instance?.x === x && instance?.y === y,
                   highlight =
                     anchor &&
@@ -1112,7 +1347,7 @@ export default function FactoryEditor(props: Props) {
                 return (
                   <div
                     key={`${x},${y}`}
-                    className={`map-tile ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
+                    className={`map-tile ${instance && batchIDs.includes(instance.id) ? "batch-selected" : ""} ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
                     title={`(${x}, ${y})${y === Math.floor(factory.height / 2) ? " · 垃圾堆" : ""}${d ? ` · ${d.name}` : ""}`}
                     data-x={x}
                     data-y={y}
@@ -1160,10 +1395,12 @@ export default function FactoryEditor(props: Props) {
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (!consumeClick())
+                            if (!consumeClick()) {
+                              setBatch([]);
                               props.onSelectRobot?.(
                                 robots.get(`${x},${y}`)!.id,
                               );
+                            }
                           }}
                         >
                           <svg
@@ -1184,7 +1421,10 @@ export default function FactoryEditor(props: Props) {
                       <button
                         className="building-art-button"
                         aria-label={`${d.name} ${d.code} (${x},${y})`}
-                        aria-pressed={instance.id === selectedID}
+                        aria-pressed={
+                          instance.id === selectedID ||
+                          batchIDs.includes(instance.id)
+                        }
                         tabIndex={anchor ? 0 : -1}
                         disabled={saving}
                         onPointerDown={(event) => begin(event, d, instance)}
@@ -1246,6 +1486,7 @@ export default function FactoryEditor(props: Props) {
                     )}
                     {target &&
                       preview &&
+                      !preview.groupIDs &&
                       preview.cell?.x === x &&
                       preview.cell?.y === y && (
                         <span
@@ -1292,13 +1533,40 @@ export default function FactoryEditor(props: Props) {
           </div>
         </div>
         <MachineNameLayer
-          factory={factory}
+          factory={
+            preview?.groupIDs
+              ? {
+                  ...factory,
+                  buildings: factory.buildings.map(
+                    (b) => groupPreview.find((p) => p.id === b.id) ?? b,
+                  ),
+                }
+              : factory
+          }
           catalog={catalog}
           camera={camera}
           preview={
-            preview ? { ...preview, invalid: Boolean(issue) } : undefined
+            preview && !preview.groupIDs
+              ? { ...preview, invalid: Boolean(issue) }
+              : undefined
           }
         />
+        {selectionBox && (
+          <div
+            className="batch-selection-box"
+            aria-label="建筑框选范围"
+            style={{
+              left:
+                Math.min(selectionBox.startX, selectionBox.x) -
+                selectionBox.left,
+              top:
+                Math.min(selectionBox.startY, selectionBox.y) -
+                selectionBox.top,
+              width: Math.abs(selectionBox.x - selectionBox.startX),
+              height: Math.abs(selectionBox.y - selectionBox.startY),
+            }}
+          />
+        )}
       </div>
       <div className="map-statusbar">
         <span>
@@ -1347,7 +1615,9 @@ export default function FactoryEditor(props: Props) {
             />
             <span className="drag-ghost-details">
               <span>
-                {preview.definition.name} · {preview.rotation}°
+                {preview.groupIDs
+                  ? `移动 ${preview.groupIDs.length} 个建筑`
+                  : `${preview.definition.name} · ${preview.rotation}°`}
               </span>
               <span>
                 当前尺寸：{preview.size}×{preview.size}
@@ -1383,7 +1653,9 @@ export default function FactoryEditor(props: Props) {
             <button
               role="menuitem"
               disabled={
-                isFixed(menuBuilding) || isTerminal(menuBuilding) || saving
+                (!batchIDs.length &&
+                  (isFixed(menuBuilding) || isTerminal(menuBuilding))) ||
+                saving
               }
               onClick={() => remove(menuBuilding.id)}
             >
@@ -1391,7 +1663,11 @@ export default function FactoryEditor(props: Props) {
                 <path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7" />
               </svg>
               <span>
-                {isUnderground(menuBuilding) ? "回收整对出入口" : "删除"}
+                {batchIDs.length
+                  ? `删除选中 ${batchIDs.length} 个建筑`
+                  : isUnderground(menuBuilding)
+                    ? "回收整对出入口"
+                    : "删除"}
               </span>
             </button>
             {isFixed(menuBuilding) && (

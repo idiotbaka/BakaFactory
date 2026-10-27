@@ -1,4 +1,9 @@
 import { SIMULATION_TPS, STEP_SECONDS, isStepValue } from "./simulationTime";
+import {
+  batchEligible,
+  batchMoveIssue,
+  expandSelection,
+} from "../batchSelection";
 import { upgradeClock } from "./clockUpgrade";
 import { footprintCells, inBounds, overlaps, validSize } from "../footprint";
 import type {
@@ -763,12 +768,59 @@ export type Edit =
     }
   | { kind: "move"; id: string; placement: BuildingPlacement }
   | { kind: "delete"; id: string }
+  | { kind: "batch_move"; ids: string[]; dx: number; dy: number }
+  | { kind: "batch_delete"; ids: string[] }
   | { kind: "industry"; action: IndustryAction };
 
 export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
-  const f = structuredClone(current);
+  return editFactoryDraft(structuredClone(current), edit);
+}
+
+function editFactoryDraft(f: LocalFactory, edit: Edit): LocalFactory {
+  const revision = f.revision;
   if (f.revision >= Number.MAX_SAFE_INTEGER)
     throw new Error("存档版本已达到上限");
+  if (edit.kind === "batch_move" || edit.kind === "batch_delete") {
+    if (!edit.ids.length || edit.ids.length > f.buildings.length)
+      throw new Error("请先框选建筑");
+    const group = expandSelection(f.buildings, edit.ids);
+    if (group.some((b) => !batchEligible(f, b, catalog.buildings)))
+      throw new Error("框选包含受保护设施，请重新框选");
+    if (edit.kind === "batch_move") {
+      if (!Number.isSafeInteger(edit.dx) || !Number.isSafeInteger(edit.dy))
+        throw new Error("移动偏移无效");
+      const issue = batchMoveIssue(
+        f,
+        group.map((b) => b.id),
+        { x: edit.dx, y: edit.dy },
+      );
+      if (issue) throw new Error(issue);
+      for (const b of group) {
+        b.x += edit.dx;
+        b.y += edit.dy;
+      }
+      if (!validUndergroundPairs(f.buildings)) throw new Error("建筑配对无效");
+      const ids = new Set(group.map((b) => b.id));
+      f.simulation.transfers = (f.simulation.transfers ?? []).filter(
+        (t) =>
+          !ids.has(t.source.id) &&
+          !ids.has(t.target.id) &&
+          (!t.via || !ids.has(t.via.id)),
+      );
+      f.revision++;
+      return f;
+    }
+    // Reuse the existing conservation/refund rules on an unpublished clone.
+    // Paired demolition removes both ends; skip an already reclaimed peer.
+    let next = f;
+    for (const b of group) {
+      if (!next.buildings.some((n) => n.id === b.id)) continue;
+      next.revision = revision;
+      next = editFactoryDraft(next, { kind: "delete", id: b.id });
+    }
+    next.revision = revision + 1;
+    return next;
+  }
   if (edit.kind === "industry") {
     applyIndustry(f, edit.action);
     syncQuests(f);

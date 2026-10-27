@@ -1,4 +1,5 @@
 import { overlaps, containsCell } from "../footprint";
+import { expandSelection } from "../batchSelection";
 import type { User } from "../../api/client";
 import {
   createLocalFactory,
@@ -194,6 +195,16 @@ export function editWorld(
   const id = target ?? current.active_district_id ?? current.id;
   if (id !== (current.active_district_id ?? current.id))
     throw new Error("厂区已切换，请重新操作");
+  const batchIDs = new Set(
+    edit.kind === "batch_move" || edit.kind === "batch_delete"
+      ? expandSelection(
+          worldFactories(current).find((f) => f.id === id)!.buildings,
+          edit.ids,
+        ).map((b) => b.id)
+      : edit.kind === "move" || edit.kind === "delete"
+        ? [edit.id]
+        : [],
+  );
   const shape =
     edit.kind === "place" || edit.kind === "move"
       ? {
@@ -207,11 +218,16 @@ export function editWorld(
         }
       : undefined;
   const shapes =
-    edit.kind === "place_underground"
-      ? [edit.entry, edit.exit]
-      : shape
-        ? [shape]
-        : [];
+    edit.kind === "batch_move"
+      ? worldFactories(current)
+          .find((f) => f.id === id)!
+          .buildings.filter((b) => batchIDs.has(b.id))
+          .map((b) => ({ ...b, x: b.x + edit.dx, y: b.y + edit.dy }))
+      : edit.kind === "place_underground"
+        ? [edit.entry, edit.exit]
+        : shape
+          ? [shape]
+          : [];
   for (const endpoint of shapes) {
     if (plannedBuildings(current, id).some((b) => overlaps(b, endpoint)))
       throw new Error("该格已预留施工蓝图，请先取消施工");
@@ -226,9 +242,12 @@ export function editWorld(
       throw new Error("该格有机器人停靠，请先召回或移走机器人");
   }
   if (
-    (edit.kind === "delete" || edit.kind === "move") &&
+    (edit.kind === "delete" ||
+      edit.kind === "move" ||
+      edit.kind === "batch_move" ||
+      edit.kind === "batch_delete") &&
     current.robots?.some(
-      (r) => r.home_factory_id === id && r.home_station === edit.id,
+      (r) => r.home_factory_id === id && batchIDs.has(r.home_station),
     )
   )
     throw new Error("该补能站仍绑定机器人，请先召回后再移动或拆除");
@@ -251,6 +270,7 @@ export function editWorld(
     if (
       (edit.kind === "place" ||
         edit.kind === "place_underground" ||
+        edit.kind === "batch_move" ||
         edit.kind === "move") &&
       !routeEditsSafe(current, next)
     )

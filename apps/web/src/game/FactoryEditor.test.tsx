@@ -285,6 +285,178 @@ function addBuilding(
     ],
   };
 }
+describe("batch map gestures", () => {
+  const moveBuildings = vi.fn(),
+    deleteBuildings = vi.fn();
+  function setupBatch(factory = original) {
+    const onError = vi.fn(),
+      onChange = vi.fn();
+    render(
+      <FactoryEditor
+        factory={factory}
+        catalog={catalog}
+        selectedID={null}
+        placementType={null}
+        commands={{
+          deleteBuilding,
+          getFactory,
+          placeBuilding,
+          updateBuilding,
+          moveBuildings,
+          deleteBuildings,
+        }}
+        onSelect={vi.fn()}
+        onExitPlacement={vi.fn()}
+        onChange={onChange}
+        onError={onError}
+      />,
+    );
+    return { onError, onChange };
+  }
+  function box(a = point(0, 3), b = point(3, 0)) {
+    fireEvent.pointerDown(area(), { ...a, button: 2, buttons: 2 });
+    fireEvent.pointerMove(window, { ...b, buttons: 2 });
+    expect(screen.getByLabelText("建筑框选范围")).toBeInTheDocument();
+    fireEvent.pointerUp(window, { ...b, button: 2, buttons: 0 });
+  }
+  it("right-drags to select buildings, excludes WH and opens an immediate batch menu", async () => {
+    setupBatch();
+    box();
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(2);
+    expect(
+      document.querySelector('.map-tile[data-x="0"][data-y="0"]'),
+    ).not.toHaveClass("batch-selected");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    fireEvent.pointerDown(building, { ...point(1, 1), button: 2, buttons: 2 });
+    fireEvent.pointerUp(window, { ...point(1, 1), button: 2, buttons: 0 });
+    fireEvent.contextMenu(building, point(1, 1));
+    deleteBuildings.mockResolvedValue(original);
+    await act(async () =>
+      fireEvent.click(
+        screen.getByRole("menuitem", { name: "删除选中 2 个建筑" }),
+      ),
+    );
+    expect(deleteBuildings).toHaveBeenCalledExactlyOnceWith(original.id, [
+      "miner-a",
+      "miner-b",
+    ]);
+    expect(deleteBuilding).not.toHaveBeenCalled();
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(0);
+  });
+  it("drags the group with one command, previews every target and preserves relative offsets", async () => {
+    vi.useFakeTimers();
+    setupBatch();
+    box();
+    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    fireEvent.pointerDown(building, { ...point(1, 1), button: 0 });
+    act(() => vi.advanceTimersByTime(50));
+    fireEvent.pointerMove(window, point(2, 1));
+    expect(document.querySelectorAll(".batch-move-preview")).toHaveLength(2);
+    fireEvent.keyDown(window, { key: "r" });
+    expect(updateBuilding).not.toHaveBeenCalled();
+    moveBuildings.mockResolvedValue(original);
+    await act(async () =>
+      fireEvent.pointerUp(window, { ...point(2, 1), button: 0, buttons: 0 }),
+    );
+    expect(moveBuildings).toHaveBeenCalledExactlyOnceWith(
+      original.id,
+      ["miner-a", "miner-b"],
+      1,
+      0,
+    );
+    expect(updateBuilding).not.toHaveBeenCalled();
+  });
+  it("rejects a colliding group without a command and keeps the selection for retry", () => {
+    vi.useFakeTimers();
+    const { onError } = setupBatch();
+    box();
+    fireEvent.pointerDown(screen.getByLabelText("采矿机 MIN (1,1)"), {
+      ...point(1, 1),
+      button: 0,
+    });
+    act(() => vi.advanceTimersByTime(50));
+    fireEvent.pointerMove(window, point(0, 0));
+    expect(document.querySelectorAll(".drop-invalid").length).toBeGreaterThan(
+      0,
+    );
+    fireEvent.pointerUp(window, { ...point(0, 0), button: 0, buttons: 0 });
+    expect(moveBuildings).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalled();
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(2);
+  });
+  it("deletes with Del, protects input fields, and clears selection with Escape", async () => {
+    setupBatch();
+    box();
+    const input = document.createElement("input");
+    document.body.append(input);
+    fireEvent.keyDown(input, { key: "Delete" });
+    expect(deleteBuildings).not.toHaveBeenCalled();
+    input.remove();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(0);
+    box();
+    deleteBuildings.mockResolvedValue(original);
+    await act(async () => fireEvent.keyDown(window, { key: "Delete" }));
+    expect(deleteBuildings).toHaveBeenCalledExactlyOnceWith(original.id, [
+      "miner-a",
+      "miner-b",
+    ]);
+  });
+  it("selects the full large footprint and the off-rectangle tunnel peer", () => {
+    const factory = structuredClone(original);
+    factory.buildings.push(
+      {
+        id: "large",
+        factory_id: factory.id,
+        building_type: "m08",
+        x: 3,
+        y: 4,
+        size: 2,
+        rotation: 0,
+        configuration: {},
+      },
+      {
+        id: "entry",
+        factory_id: factory.id,
+        building_type: "underground_belt",
+        x: 4,
+        y: 2,
+        rotation: 0,
+        configuration: { underground_peer: "exit", underground_role: "entry" },
+      },
+      {
+        id: "exit",
+        factory_id: factory.id,
+        building_type: "underground_belt",
+        x: 7,
+        y: 2,
+        rotation: 0,
+        configuration: { underground_peer: "entry", underground_role: "exit" },
+      },
+    );
+    setupBatch(factory);
+    box(point(4, 3), point(4, 2));
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(6);
+    expect(
+      screen.getByText("删除选中 3 个建筑").closest("button"),
+    ).toBeEnabled();
+  });
+  it("cancels an unfinished rectangle on pointer loss and preserves simple right-click menus", () => {
+    setupBatch();
+    fireEvent.pointerDown(area(), { ...point(0, 3), button: 2, buttons: 2 });
+    fireEvent.pointerMove(window, { ...point(3, 0), buttons: 2 });
+    fireEvent.pointerCancel(window, point());
+    expect(screen.queryByLabelText("建筑框选范围")).not.toBeInTheDocument();
+    expect(document.querySelectorAll(".batch-selected")).toHaveLength(0);
+    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    fireEvent.pointerDown(building, { ...point(1, 1), button: 2, buttons: 2 });
+    fireEvent.pointerUp(window, { ...point(1, 1), button: 2, buttons: 0 });
+    fireEvent.contextMenu(building, point(1, 1));
+    expect(screen.getByRole("menuitem", { name: "删除" })).toBeInTheDocument();
+  });
+});
+
 describe("factory editor interactions", () => {
   it("continuously places with clicks, rotates previews, and exits with the same palette tool", async () => {
     const first = addBuilding(3, 2, 90),
