@@ -47,6 +47,30 @@ const furnace: TransferEndpoint = {
   y: 0,
   rotation: 0,
 };
+
+it.each([
+  [0, 12, 0],
+  [90, 0, 12],
+  [180, -12, 0],
+  [270, 0, -12],
+] as const)(
+  "moves underground exit visuals toward the same screen edge as ground belts at %s degrees",
+  (rotation, dx, dy) => {
+    const ends = beltEnds(
+      { ...belt, building_type: "underground_belt", rotation },
+      21,
+      21,
+    );
+    expect(ends.goal).toEqual({ x: ends.center.x + dx, y: ends.center.y + dy });
+    expect(ends.entry).toEqual({
+      x: ends.center.x - dx,
+      y: ends.center.y - dy,
+    });
+    expect(ends).toEqual(
+      beltEnds({ ...belt, building_type: "hand_belt", rotation }, 21, 21),
+    );
+  },
+);
 function event(
   tick: number,
   payload = "ore-1",

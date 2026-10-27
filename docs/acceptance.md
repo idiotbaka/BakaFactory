@@ -1,5 +1,9 @@
 # 用户启动与验收
 
+## 地下传送带竖向方向
+
+用户运行 `npm run dev`，按 [竖向修复专项](underground-belts.md#验收待用户执行) 检查：朝下入口在上、出口在下，朝上入口在下、出口在上，反向落点均拒绝；入口预览、已安装图形、出口物品移动和实际物流方向一致。东西向仍正常；刷新已有竖向线路保留配对与载荷，仅纠正箭头显示。自动测试 / 编译实际状态见 [进度](progress.md)，不将其代替浏览器验收。
+
 ## 投料机半秒取货与阻塞诊断
 
 由用户运行 `npm run dev`；默认 2 TPS，不开启开发者倍速。纯模拟回归可单独运行 `npm run test --workspace @bakafactory/web -- src/game/local/feederPickup.test.ts`，本轮实际执行结果见 [进度](progress.md)。

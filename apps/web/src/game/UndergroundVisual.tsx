@@ -15,7 +15,7 @@ function UndergroundVisual({
       shapeRendering="crispEdges"
       aria-hidden="true"
     >
-      <g transform={`rotate(${-rotation} 15 15)`}>
+      <g transform={`rotate(${rotation} 15 15)`}>
         <path d="M0 7H30V23H0Z" fill="#080b17" />
         <path d="M0 7H30V10H0ZM0 20H30V23H0Z" fill="#657184" />
         <path d="M1 8H29V9H1ZM1 21H29V22H1Z" fill="#b4c6cd" />

@@ -11,6 +11,41 @@ const catalog = definitions as unknown as Catalog;
 const definition = (id: string) => catalog.buildings.find((b) => b.id === id)!;
 const buildings = new Map();
 
+it.each([0, 90, 180, 270] as const)(
+  "draws underground entries, exits and tool icons in the same direction as ground belts at %s degrees",
+  (rotation) => {
+    const base = { x: 2, y: 2, buildings, rotation };
+    const { container } = render(
+      <>
+        <BuildingVisual {...base} definition={definition("hand_belt")} />
+        <BuildingVisual
+          {...base}
+          definition={definition("underground_belt")}
+          undergroundExit={false}
+        />
+        <BuildingVisual
+          {...base}
+          definition={definition("underground_belt")}
+          undergroundExit
+        />
+        <DefinitionIcon
+          definition={definition("underground_belt")}
+          rotation={rotation}
+        />
+      </>,
+    );
+    const ground = container.querySelector(".route-belt > g")!;
+    expect(ground).toHaveAttribute("transform", `rotate(${rotation} 15 15)`);
+    const tunnels = container.querySelectorAll(".underground-visual > g");
+    expect(tunnels).toHaveLength(3);
+    for (const tunnel of tunnels)
+      expect(tunnel).toHaveAttribute(
+        "transform",
+        ground.getAttribute("transform"),
+      );
+  },
+);
+
 it("keeps the facade upright and rotates only a code arrow on the map", () => {
   const base = { definition: definition("m11"), x: 0, y: 0, buildings };
   const { container, rerender } = render(

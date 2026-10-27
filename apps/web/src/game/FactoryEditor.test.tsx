@@ -24,6 +24,56 @@ const deleteBuilding = vi.fn(),
   placeBuilding = vi.fn(),
   updateBuilding = vi.fn();
 const catalog = definitions as unknown as Catalog;
+
+it.each([
+  [90, 4, -4, 6],
+  [270, -4, 4, -6],
+] as const)(
+  "places the vertical underground exit in front of the displayed %s degree arrow",
+  async (rotation, entryY, exitY, behindY) => {
+    const placeUnderground = vi.fn().mockResolvedValue(original),
+      onError = vi.fn();
+    render(
+      <FactoryEditor
+        commands={{
+          deleteBuilding,
+          getFactory,
+          placeBuilding,
+          updateBuilding,
+          placeUnderground,
+        }}
+        factory={original}
+        catalog={catalog}
+        selectedID={null}
+        placementType="underground_belt"
+        onExitPlacement={vi.fn()}
+        onSelect={vi.fn()}
+        onChange={vi.fn()}
+        onError={onError}
+      />,
+    );
+    for (let i = 0; i < rotation / 90; i++)
+      fireEvent.keyDown(window, { key: "r" });
+    fireEvent.click(screen.getByLabelText(`空格 (-4,${entryY})`));
+    const preview = screen.getByLabelText(`入口预览 (-4,${entryY})，尚未安装`);
+    expect(preview.querySelector(".underground-visual > g")).toHaveAttribute(
+      "transform",
+      `rotate(${rotation} 15 15)`,
+    );
+    fireEvent.click(screen.getByLabelText(`空格 (-4,${behindY})`));
+    expect(placeUnderground).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalled();
+    await act(async () =>
+      fireEvent.click(screen.getByLabelText(`空格 (-4,${exitY})`)),
+    );
+    expect(placeUnderground).toHaveBeenCalledExactlyOnceWith(
+      original.id,
+      { x: -4, y: entryY, rotation },
+      { x: -4, y: exitY, rotation },
+    );
+  },
+);
+
 it("marks an underground entrance without editing and commits only a valid second click", async () => {
   const placeUnderground = vi.fn().mockResolvedValue(original),
     onError = vi.fn();

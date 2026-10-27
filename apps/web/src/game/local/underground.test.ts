@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BuildingInstance, BuildingPlacement } from "../../api/client";
-import { catalog, direction, itemID } from "./catalog";
+import { catalog, itemID } from "./catalog";
 import {
   createLocalFactory,
   editFactory,
@@ -75,13 +75,19 @@ const run = (f: LocalFactory) => {
 };
 
 describe("paired underground conveyors", () => {
-  it.each([0, 90, 180, 270] as const)(
-    "places distance 8 atomically with rotation %s and rejects distance 9",
-    (rotation) => {
-      const [dx, dy] = direction(rotation),
-        f = start();
-      const entry = { x: -dx * 4, y: 3 - dy * 4, rotation },
-        exit = { x: dx * 4, y: 3 + dy * 4, rotation };
+  // Explicit world coordinates: y decreases toward the bottom of the map.
+  // Do not derive the expected placement from the direction helper under test.
+  it.each([
+    [0, -4, 2, 4, 2, 1, 0],
+    [90, 2, 6, 2, -2, 0, -1],
+    [180, 4, 2, -4, 2, -1, 0],
+    [270, 2, -2, 2, 6, 0, 1],
+  ] as const)(
+    "places, reloads and transports distance 8 with rotation %s and rejects backward / distance 9 exits",
+    (rotation, x, y, exitX, exitY, dx, dy) => {
+      const f = start(),
+        entry = { x, y, rotation },
+        exit = { x: exitX, y: exitY, rotation };
       const next = pair(f, entry, exit);
       expect(validUndergroundPairs(next.buildings)).toBe(true);
       expect(next.simulation.warehouse[undergroundItem]).toBe(1);
@@ -90,6 +96,31 @@ describe("paired underground conveyors", () => {
         pair(f, entry, { ...exit, x: exit.x + dx, y: exit.y + dy }),
       ).toThrow();
       expect(f.simulation.warehouse[undergroundItem]).toBe(2);
+      expect(() =>
+        pair(f, entry, { ...entry, x: x - dx, y: y - dy }),
+      ).toThrow();
+      let restored = validateSave(toSave(next), user.id);
+      const item = itemID("基础铁板");
+      node(restored, "source", "hand_belt", x - dx, y - dy, rotation);
+      node(restored, "target", "chest", exitX + dx, exitY + dy);
+      restored.simulation.buildings.source.belt = {
+        id: "load",
+        item,
+        count: 2,
+        progress: 2,
+      };
+      run(restored);
+      expect(restored.simulation.buildings["in-out"].belt).toMatchObject({
+        id: "load",
+        count: 2,
+      });
+      expect(restored.simulation.buildings.target.output).toEqual([]);
+      restored = validateSave(toSave(restored), user.id);
+      run(restored);
+      expect(restored.simulation.buildings.target.output).toEqual([
+        { item, count: 2 },
+      ]);
+      expect(restored.simulation.buildings["in-out"].belt).toBeUndefined();
     },
   );
   it("rejects partial placement, locked stage, occupied ends and missing kit without mutation", () => {

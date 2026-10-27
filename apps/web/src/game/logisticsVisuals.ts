@@ -9,7 +9,6 @@ import type {
 import type { Point } from "./animationMath";
 import { TILE_SIZE } from "./editorGeometry";
 import { isBelt, beltTicks } from "./local/catalog";
-import { undergroundType } from "./local/underground";
 
 export type VisualItem = {
   id: string;
@@ -40,16 +39,12 @@ export function beltEnds(
   height: number,
 ) {
   const center = tileCenter(tile, width, height);
-  const rotation =
-    tile.building_type === undergroundType
-      ? (360 - tile.rotation) % 360
-      : tile.rotation;
   const [dx, dy] = [
     [1, 0],
     [0, 1],
     [-1, 0],
     [0, -1],
-  ][rotation / 90];
+  ][tile.rotation / 90];
   return {
     center,
     entry: { x: center.x - dx * 12, y: center.y - dy * 12 },
