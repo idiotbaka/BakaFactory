@@ -6,6 +6,7 @@ import {
   workshopDuration,
   workshopMachineAvailable,
   workshopMachines,
+  workshopMachineName,
 } from "./local/workshop";
 
 export default function BuildingRecipeGuide({
@@ -129,7 +130,7 @@ export default function BuildingRecipeGuide({
         <p>
           加工设备：{machine?.name ?? r.building_type}。
           {inWorkshop
-            ? `可在任意厂区「工作室 → ${machine?.name ?? r.building_type}」加工。`
+            ? `可在任意厂区「工作室 → ${workshopMachineName(r.building_type) ?? machine?.name ?? r.building_type}」加工。`
             : `安装${machine?.name ?? r.building_type}后，选择此配方并提供原料及所需动力。`}
         </p>
         {workshopMachines.some((id) => id === r.building_type) && (
@@ -140,7 +141,11 @@ export default function BuildingRecipeGuide({
         )}
         {!inWorkshop &&
           workshopMachines.some((id) => id === r.building_type) && (
-            <p>首次制造该加工设备后，也可解锁工作室的同名子分类。</p>
+            <p>
+              首次制造该加工设备「{machine?.name ?? r.building_type}
+              」后，即可解锁工作室的「{workshopMachineName(r.building_type)}
+              」功能，无需安装设备。
+            </p>
           )}
         {r.gate && <p>前置里程碑：首次制造{itemName(r.gate)}。</p>}
         {!!r.power_kw && <p>额定功率：{r.power_kw} kW，需匹配设备能源。</p>}

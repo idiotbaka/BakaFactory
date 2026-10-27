@@ -898,7 +898,7 @@ it("renders one facade and retains the grab offset when moving from a covered fo
   expect(
     document.querySelectorAll('.building-map-visual[data-building-id="m08"]'),
   ).toHaveLength(1);
-  const covered = screen.getByRole("button", { name: "手工装配台 M08 (5,3)" });
+  const covered = screen.getByRole("button", { name: "自动装配台 M08 (5,3)" });
   fireEvent.pointerDown(covered, { ...point(5, 3), button: 0 });
   act(() => vi.advanceTimersByTime(50));
   fireEvent.pointerMove(window, point(7, 5));

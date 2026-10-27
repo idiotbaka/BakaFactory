@@ -158,10 +158,10 @@ describe("quest interface", () => {
     const ready = within(screen.getByRole("article", { name: "给我自己动！" }));
     const reward = within(ready.getByRole("listitem"));
     expect(
-      reward.getByRole("button", { name: "手摇传送带" }),
+      reward.getByRole("button", { name: "初阶传送带" }),
     ).toBeInTheDocument();
     expect(ready.getByRole("listitem")).toHaveTextContent(
-      /手摇传送带\s*×\s*15/,
+      /初阶传送带\s*×\s*15/,
     );
     fireEvent.click(ready.getByRole("button", { name: "领取奖励" }));
     expect(world).toHaveBeenCalledWith({ type: "claim_quest", id: "p1_belt" });

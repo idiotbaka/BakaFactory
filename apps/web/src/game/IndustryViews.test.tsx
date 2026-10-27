@@ -113,9 +113,9 @@ describe("manual workshop batch controls", () => {
       tabs = within(screen.getByRole("group", { name: "工作室设备" }));
     expect(tabs.getAllByRole("button").map((b) => b.textContent)).toEqual([
       "手动分拣台",
-      "铁砧锻台",
+      "手工铁砧锻台",
       "手工工作台",
-      "简易拆解台",
+      "手工拆解台",
       "手摇破碎机",
       "手工装配台",
     ]);
@@ -126,12 +126,12 @@ describe("manual workshop batch controls", () => {
     expect(
       screen.queryByLabelText(`${makeDevice.name}加工批数`),
     ).not.toBeInTheDocument();
-    expect(tabs.getByRole("button", { name: "简易拆解台" })).toBeDisabled();
+    expect(tabs.getByRole("button", { name: "手工拆解台" })).toBeDisabled();
     expect(tabs.getByRole("button", { name: "手摇破碎机" })).toBeDisabled();
     expect(tabs.getByRole("button", { name: "手工装配台" })).toBeDisabled();
-    expect(
-      screen.getAllByTitle("至少需要生产 1 次该设备后才能解锁"),
-    ).toHaveLength(3);
+    expect(screen.getAllByTitle(/首次制造「自动.+」后解锁工作室/)).toHaveLength(
+      3,
+    );
     fireEvent.click(tabs.getByRole("button", { name: "手工工作台" }));
     expect(
       screen.getByLabelText(`${makeDevice.name}加工批数`),
@@ -142,8 +142,8 @@ describe("manual workshop batch controls", () => {
     f.simulation.industry!.crafted[dismantler] = 1;
     f.simulation.warehouse[dismantler] = 0;
     rerender(<IndustryViews {...props} />);
-    expect(tabs.getByRole("button", { name: "简易拆解台" })).toBeEnabled();
-    fireEvent.click(tabs.getByRole("button", { name: "简易拆解台" }));
+    expect(tabs.getByRole("button", { name: "手工拆解台" })).toBeEnabled();
+    fireEvent.click(tabs.getByRole("button", { name: "手工拆解台" }));
     expect(
       screen.getByLabelText(`${extract.name}加工批数`),
     ).toBeInTheDocument();

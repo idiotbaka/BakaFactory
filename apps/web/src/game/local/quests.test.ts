@@ -56,11 +56,11 @@ describe("open quests and atomic rewards", () => {
       "p1_warehouse_delivery",
     );
     root = actWorld(root, { type: "claim_quest", id: "p1_warehouse_delivery" });
-    expect(root.simulation.warehouse[itemID("手摇传送带")]).toBe(20);
+    expect(root.simulation.warehouse[itemID("初阶传送带")]).toBe(20);
     expect(root.simulation.warehouse[itemID("分拣料箱")]).toBe(6);
     expect(root.simulation.warehouse[itemID("初阶自动投料机")]).toBe(6);
     expect(
-      root.districts![0].simulation.warehouse[itemID("手摇传送带")] ?? 0,
+      root.districts![0].simulation.warehouse[itemID("初阶传送带")] ?? 0,
     ).toBe(0);
     expect(
       validateSave(toSave(root), user.id).simulation.industry!.quests!
@@ -83,7 +83,7 @@ describe("open quests and atomic rewards", () => {
     expect(restored.simulation.industry!.quests!.claimed).not.toContain(
       "p1_warehouse_delivery",
     );
-    expect(restored.simulation.warehouse[itemID("手摇传送带")] ?? 0).toBe(0);
+    expect(restored.simulation.warehouse[itemID("初阶传送带")] ?? 0).toBe(0);
     expect(p.quests!.claimed).not.toContain("p1_free_hands");
     const modern = structuredClone(root);
     modern.simulation.industry!.quests!.automated_received = 0;
@@ -111,7 +111,7 @@ describe("open quests and atomic rewards", () => {
     for (let i = 0; i < secondsToTicks(recipe.duration_ms / 1000); i++)
       root = stepWorld(root);
     expect(root.simulation.industry!.quests!.completed).toContain("p1_belt");
-    expect(root.simulation.warehouse[itemID("手摇传送带")]).toBeUndefined();
+    expect(root.simulation.warehouse[itemID("初阶传送带")]).toBeUndefined();
     expect(root.districts![0].simulation.industry).toBeUndefined();
     expect(
       root.districts![0].simulation.buildings.assembler.output,
@@ -170,7 +170,7 @@ describe("open quests and atomic rewards", () => {
   });
   it("supports out-of-order acquisition, headquarters delivery, repeat rejection and save restoration", () => {
     let root = createWorld(user, "奖励");
-    const belt = itemID("手摇传送带");
+    const belt = itemID("初阶传送带");
     discoverItems(root, [belt]);
     syncQuests(root);
     expect(root.simulation.industry!.quests!.completed).toEqual(["p1_belt"]);
@@ -248,10 +248,10 @@ describe("open quests and atomic rewards", () => {
       { [itemID("垃圾包")]: 120 },
       { [itemID("废铜线")]: 20, [itemID("铁质碎片")]: 40 },
       { [itemID("粗铁锭")]: 40, [itemID("简易齿轮")]: 40 },
-      { [itemID("手摇传送带")]: 15 },
+      { [itemID("初阶传送带")]: 15 },
       { [buildingDefinitions.get("feeder")!.item!]: 5 },
       {
-        [itemID("手摇传送带")]: 20,
+        [itemID("初阶传送带")]: 20,
         [itemID("分拣料箱")]: 6,
         [itemID("初阶自动投料机")]: 6,
       },

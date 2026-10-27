@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { pinyin } from "pinyin-pro";
 import { format } from "prettier";
+import earlyMachineNames from "../apps/web/src/game/earlyMachineNames.json" with { type: "json" };
 
 const source = new URL(
   "../apps/server/internal/catalog/definitions.json",
@@ -14,11 +15,12 @@ const definitions = JSON.parse(await readFile(source, "utf8"));
 // Include recipes and robot models too, since their search fields use names
 // from the same catalog. Names are deduplicated, with deterministic ordering.
 const names = [
-  ...new Set(
-    ["items", "buildings", "recipes", "robots"].flatMap((group) =>
+  ...new Set([
+    ...["items", "buildings", "recipes", "robots"].flatMap((group) =>
       (definitions[group] ?? []).map((entry) => entry.name),
     ),
-  ),
+    ...Object.values(earlyMachineNames).map((entry) => entry.workshop),
+  ]),
 ].sort();
 const index = Object.fromEntries(
   names.map((name) => {

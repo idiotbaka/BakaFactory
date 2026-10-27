@@ -21,6 +21,7 @@ import {
   workshopDuration,
   workshopMachineAvailable,
   workshopMachines,
+  workshopMachineName,
 } from "./local/workshop";
 import "./ItemInfo.css";
 
@@ -281,8 +282,8 @@ function ItemInfoScope({
                           industry?.crafted,
                           recipe.building_type,
                         )
-                          ? `工作室 → ${machine?.name ?? recipe.building_type}`
-                          : `首次制造${machine?.name ?? recipe.building_type}后解锁工作室同名分类。`}
+                          ? `工作室 → ${workshopMachineName(recipe.building_type) ?? machine?.name ?? recipe.building_type}`
+                          : `首次制造「${machine?.name ?? recipe.building_type}」后解锁工作室「${workshopMachineName(recipe.building_type)}」功能，无需安装设备。`}
                       </p>
                     )}
                     {manual && (

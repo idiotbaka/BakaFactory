@@ -224,7 +224,7 @@ describe("P2 production and logistics quests", () => {
     expect(f.simulation.industry!.quests!.completed).toContain("p2_expansion");
     const produced = { ...f.simulation.industry!.crafted };
     f = actWorld(f, { type: "claim_quest", id: "p2_expansion" });
-    expect(f.simulation.warehouse[itemID("手摇传送带")]).toBe(36);
+    expect(f.simulation.warehouse[itemID("初阶传送带")]).toBe(36);
     expect(f.simulation.industry!.crafted).toEqual(produced);
     expect(() =>
       actWorld(f, { type: "claim_quest", id: "p2_expansion" }),

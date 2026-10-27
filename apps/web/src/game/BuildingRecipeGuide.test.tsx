@@ -30,7 +30,9 @@ describe("building acquisition guide", () => {
     expect(source.getByText("初阶自动投料机 × 1")).toBeInTheDocument();
     expect(source.getByText("15 秒 / 批")).toBeInTheDocument();
     expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
-    expect(source.getByText(/首次制造该加工设备后/)).toBeInTheDocument();
+    expect(
+      source.getByText(/首次制造该加工设备「自动装配台」后/),
+    ).toBeInTheDocument();
     expect(
       dialog.getByText("该设施不执行加工配方；获取方式见上方。"),
     ).toBeInTheDocument();
@@ -42,14 +44,14 @@ describe("building acquisition guide", () => {
       dialog.getByRole("region", { name: "关联加工配方" }),
     );
     expect(
-      source.getByRole("heading", { name: /设备·手工装配台/ }),
+      source.getByRole("heading", { name: /自动装配台/ }),
     ).toBeInTheDocument();
     expect(source.getByText(/工作室 → 手工工作台/)).toBeInTheDocument();
     expect(
       related.getByRole("heading", { name: /初阶自动投料机/ }),
     ).toBeInTheDocument();
     expect(
-      related.queryByRole("heading", { name: /设备·手工装配台/ }),
+      related.queryByRole("heading", { name: /自动装配台/ }),
     ).not.toBeInTheDocument();
     expect(related.getAllByText(/阶段条件未满足/).length).toBeGreaterThan(0);
     expect(related.getAllByText(/前置里程碑：首次制造/).length).toBeGreaterThan(

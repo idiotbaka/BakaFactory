@@ -36,7 +36,7 @@ describe("catalog search", () => {
   );
 
   it("uses word context for polyphonic names and keeps English and digits", () => {
-    expect(createCatalogSearch("chuansong")({ name: "手摇传送带" })).toBe(true);
+    expect(createCatalogSearch("chuansong")({ name: "初阶传送带" })).toBe(true);
     expect(createCatalogSearch("ftbyc")({ name: "发条搬运车" })).toBe(true);
     expect(
       createCatalogSearch("zz")({ name: "未知目录名称", code: "ZZ-12" }),

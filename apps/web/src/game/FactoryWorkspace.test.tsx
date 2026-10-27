@@ -122,14 +122,14 @@ describe("local factory workspace", () => {
       ).not.toBeInTheDocument();
     }
     fireEvent.click(palette.getByRole("button", { name: "建筑" }));
-    fireEvent.change(search, { target: { value: "sggzt" } });
+    fireEvent.change(search, { target: { value: "zdgzt" } });
     expect(
-      palette.getByRole("button", { name: /^手工工作台/ }),
+      palette.getByRole("button", { name: /^自动工作台/ }),
     ).toBeInTheDocument();
     fireEvent.click(palette.getByRole("button", { name: "物流" }));
     fireEvent.change(search, { target: { value: "chuansong" } });
     expect(
-      palette.getByRole("button", { name: /^手摇传送带/ }),
+      palette.getByRole("button", { name: /^初阶传送带/ }),
     ).toBeInTheDocument();
     expect(
       palette.queryByRole("button", { name: /^机械传送带/ }),
@@ -142,7 +142,7 @@ describe("local factory workspace", () => {
     ).toHaveLength(0);
     fireEvent.change(search, { target: { value: "" } });
     expect(
-      palette.getByRole("button", { name: /^手摇传送带/ }),
+      palette.getByRole("button", { name: /^初阶传送带/ }),
     ).toBeInTheDocument();
   });
   it("hides map operation errors after three seconds and gives repeated errors a fresh lifetime", async () => {
@@ -194,7 +194,7 @@ describe("local factory workspace", () => {
     ).toBeInTheDocument();
     fireEvent.click(phases.getByRole("button", { name: "P1" }));
     expect(
-      palette.getByRole("button", { name: /^手摇传送带/ }),
+      palette.getByRole("button", { name: /^初阶传送带/ }),
     ).toBeInTheDocument();
     expect(
       palette.queryByRole("button", { name: /^流体管道/ }),
@@ -226,7 +226,7 @@ describe("local factory workspace", () => {
       "true",
     );
     expect(
-      palette.getByRole("button", { name: /^手工工作台/ }),
+      palette.getByRole("button", { name: /^自动工作台/ }),
     ).toHaveAttribute("aria-pressed", "true");
   });
   it("dispatches the map's quick district selector through the same world operation", async () => {
@@ -453,13 +453,13 @@ describe("local factory workspace", () => {
       screen.getByRole("complementary", { name: "实体图鉴" }),
     );
     expect(
-      palette.queryByRole("button", { name: /^手摇传送带/ }),
+      palette.queryByRole("button", { name: /^初阶传送带/ }),
     ).not.toBeInTheDocument();
     fireEvent.click(palette.getByRole("button", { name: "物流" }));
     expect(
-      palette.queryByRole("button", { name: /^手工工作台/ }),
+      palette.queryByRole("button", { name: /^自动工作台/ }),
     ).not.toBeInTheDocument();
-    const belt = palette.getByRole("button", { name: /^手摇传送带/ });
+    const belt = palette.getByRole("button", { name: /^初阶传送带/ });
     fireEvent.click(belt);
     expect(belt).toHaveAttribute("aria-pressed", "true");
     fireEvent.keyDown(window, { key: "1" });
@@ -468,7 +468,7 @@ describe("local factory workspace", () => {
       "true",
     );
     expect(
-      palette.getByRole("button", { name: /^手工工作台/ }),
+      palette.getByRole("button", { name: /^自动工作台/ }),
     ).toHaveAttribute("aria-pressed", "true");
   });
   it("shows stock for discovered items, including spent discoveries, while preserving undiscovered inspection and order", () => {
@@ -542,7 +542,7 @@ describe("local factory workspace", () => {
       </>,
     );
     const palette = screen.getByRole("complementary", { name: "实体图鉴" });
-    const miner = within(palette).getByRole("button", { name: /^手工工作台/ });
+    const miner = within(palette).getByRole("button", { name: /^自动工作台/ });
     fireEvent.keyDown(screen.getByLabelText("备注"), { key: "1" });
     expect(miner).toHaveAttribute("aria-pressed", "false");
     fireEvent.keyDown(window, { key: "1", ctrlKey: true });
@@ -628,11 +628,11 @@ it("advertises multi-size machines, switches with E or the card control, ignores
   const palette = within(
     screen.getByRole("complementary", { name: "实体图鉴" }),
   );
-  const card = palette.getByRole("button", { name: /^手工装配台/ });
+  const card = palette.getByRole("button", { name: /^自动装配台/ });
   expect(card).toHaveTextContent("多尺寸");
   fireEvent.click(card);
   const toggle = palette.getByRole("button", {
-    name: "切换 手工装配台 占地尺寸",
+    name: "切换 自动装配台 占地尺寸",
   });
   expect(toggle).toHaveTextContent("⇄ 切换为2x2");
   expect(toggle).toHaveClass("multi-size-tag");
@@ -649,13 +649,13 @@ it("advertises multi-size machines, switches with E or the card control, ignores
   expect(card).toHaveAttribute("aria-pressed", "true");
   expect(toggle).toHaveTextContent("⇄ 切换为2x2");
   fireEvent.keyDown(window, { key: "e" });
-  fireEvent.click(palette.getByRole("button", { name: /^手动分拣台/ }));
+  fireEvent.click(palette.getByRole("button", { name: /^自动分拣台/ }));
   expect(
     palette.queryByRole("button", { name: /切换 .* 占地尺寸/ }),
   ).toBeNull();
   fireEvent.click(card);
   expect(
-    palette.getByRole("button", { name: "切换 手工装配台 占地尺寸" }),
+    palette.getByRole("button", { name: "切换 自动装配台 占地尺寸" }),
   ).toHaveTextContent("⇄ 切换为2x2");
   expect(screen.getByText("支持尺寸").nextElementSibling).toHaveTextContent(
     "1×1 / 2×2",

@@ -7,6 +7,7 @@ import {
   describeItem,
   describeRecipe,
   robotCopy,
+  earlyMachineNames,
 } from "./gameplay-copy.mjs";
 import { advanceQuestStages } from "./quest-closure.mjs";
 
@@ -24,7 +25,36 @@ const previous = JSON.parse(await readFile(target, "utf8"));
 const names = new Map(d.items.map((i) => [i.name, i.id.toLowerCase()]));
 names.set("流水线机械手", names.get("机械启动套件"));
 names.set("地下传送带出入口", "d0001");
-const displayName = (value) => value.replaceAll("机械启动套件", "流水线机械手");
+const renamedNames = new Map([
+  ["机械启动套件", "流水线机械手"],
+  ["手摇传送带", "初阶传送带"],
+  ...d.machines.flatMap((m) => {
+    const renamed = earlyMachineNames[m.code.toLowerCase()];
+    return renamed
+      ? [
+          [m.item, renamed.name],
+          [m.name, renamed.name],
+        ]
+      : [];
+  }),
+]);
+const namePattern = new RegExp(
+  [...renamedNames.keys()]
+    .sort((a, b) => b.length - a.length)
+    .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|"),
+  "g",
+);
+const displayName = (value) =>
+  value.replace(namePattern, (name) => renamedNames.get(name));
+// Keep source-name references for importing the untouched v0.9 formulas,
+// while authored quests and new content use the current display names.
+for (const [name, id] of [...names]) {
+  const alias = displayName(name);
+  if (names.has(alias) && names.get(alias) !== id)
+    throw new Error(`Conflicting item name: ${alias}`);
+  names.set(alias, id);
+}
 const item = (name) => {
   const id = names.get(name);
   if (!id) throw new Error(`Unknown design item: ${name}`);
@@ -180,7 +210,7 @@ const buildings = d.machines.map((m) => {
     ...(multiSizeMachines.has(m.code.toLowerCase())
       ? { supported_sizes: [1, 2] }
       : {}),
-    name: m.name,
+    name: displayName(m.name),
     code: m.code,
     icon: ["M09", "M21", "M28"].includes(m.code)
       ? "generator"
@@ -245,7 +275,7 @@ const utility = (id, name, nameItem, tier, role, extra = {}) => ({
   ...extra,
 });
 const utilities = [
-  utility("hand_belt", "手摇传送带", "手摇传送带", 1, "belt", {
+  utility("hand_belt", "初阶传送带", "初阶传送带", 1, "belt", {
     belt_ticks: 2,
     batch_size: 2,
   }),
@@ -710,7 +740,7 @@ const lines = [
   "",
   "工作室便捷加工保留初始 M01/M02/M07；M03 / M04 / M08 在累计制造对应设备至少 1 次后开放共用手工队列，不要求安装且不消耗解锁设备。仅持有、拆回或查看设备不算制造；工作室运行层每批耗时为 max(1, floor(duration_ms / 2000)) 秒，原始 duration_ms 留给地图机器，不改导入配方工时。材料和 1～100 批预留 / 取消规则保持；UI 超限自动回填当前库存上限，Worker 原子复核。旧队列保留原工时范围内的进度，达到新工时时下一运行 tick 最多结算当前一批。不开放热能炉或其他机器。starting_machines 仍只有原三种，不额外赠设备或独立队列。界面按 M02 / M07 / M01 / M03 / M04 / M08 分组，仅设备子分类在工作室滚动区内吸顶，垃圾堆正常滚动，库存 / 每批原料及产物用物品卡显示。",
   "",
-  "网页适配增加 web_pipe_early：P2 手工装配台使用粗铜丝 3、粗密封圈 2、基础铁板 1，原配方 12 秒（工作室 6 秒）制造 4 管道，解除蒸汽启动依赖 P3 液压管道的前置环；原有 R3045 保留。流体管道物品与设施最低阶段改为 P2，来源去向包含新增配方。液压带复用原案已有道具与配方，没有新增同名替代品。",
+  "网页适配增加 web_pipe_early：P2 自动装配台使用粗铜丝 3、粗密封圈 2、基础铁板 1，原配方 12 秒（工作室 6 秒）制造 4 管道，解除蒸汽启动依赖 P3 液压管道的前置环；原有 R3045 保留。流体管道物品与设施最低阶段改为 P2，来源去向包含新增配方。液压带复用原案已有道具与配方，没有新增同名替代品。",
   "",
   "F1 新增 web_cable_start：P4 M08 在首次制造电气化建设包后，用粗铜丝 5、绝缘胶 2，原配方 15 秒（工作室 7 秒）制造 2 绝缘线缆，解除原 R4008 / R4009 与电网互相依赖。原案高效配方保留，不赠送线缆或电量。闭包涵盖真实燃料、蒸汽 / 工作液、兼容补能站与可积累作业条件；仅证明存在启动路线，不证明数量、布局、吞吐或已游玩通过。",
   "F2 只读诊断区分名义速率与最近 60 秒（120 tick） 的确认制造 / 物流；永久智能机器人里程碑及已制造许可证反馈主目标 / 沙盒目标。F3 增量传输未变布局与安静分厂，主线程仍保存完整世界；行业进度单次克隆、世界端点和需求 / 来源承诺索引，慢自动保存合并。独立合成测量可配置规模 / 种子，尚未执行，不宣称百厂性能达标。",

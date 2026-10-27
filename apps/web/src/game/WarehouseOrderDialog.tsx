@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { Catalog, FactoryDetail } from "../api/client";
 import DefinitionIcon from "./DefinitionIcon";
 import { orderLimits, planWorkshopOrder } from "./local/orders";
-import { workshopDuration } from "./local/workshop";
+import { workshopDuration, workshopMachineName } from "./local/workshop";
 import type { IndustryAction } from "./local/industry";
 
 export type PlaceWorkshopOrder = (
@@ -212,11 +212,10 @@ export default function WarehouseOrderDialog({
                         </header>
                         <p>
                           {recipe.id.toUpperCase()} ·{" "}
-                          {
+                          {workshopMachineName(recipe.building_type) ??
                             catalog.buildings.find(
                               (b) => b.id === recipe.building_type,
-                            )?.name
-                          }{" "}
+                            )?.name}{" "}
                           · {step.batches} 批 × {workshopDuration(recipe)} 秒
                         </p>
                         <small>本工序原料</small>

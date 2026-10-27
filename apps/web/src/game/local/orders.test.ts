@@ -290,7 +290,7 @@ describe("paid order queue and conservation", () => {
   });
   it("executes a multi-recipe dependency chain and retains the surplus intermediate parts", () => {
     const f = root(),
-      belt = itemID("手摇传送带");
+      belt = itemID("初阶传送带");
     Object.assign(f.simulation.warehouse, { i0045: 4, i0049: 4 });
     const plan = planWorkshopOrder(
       f.simulation.industry,

@@ -7,6 +7,7 @@ import {
   workshopMachineAvailable,
   workshopDuration,
   clampWorkshopBatches,
+  workshopMachineName,
 } from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
 import { createCatalogSearch } from "./catalogSearch";
@@ -304,7 +305,7 @@ export default function IndustryViews({
                           title={
                             unlocked
                               ? undefined
-                              : "至少需要生产 1 次该设备后才能解锁"
+                              : `首次制造「${machine?.name ?? id}」后解锁工作室「${workshopMachineName(id) ?? id}」`
                           }
                         >
                           <button
@@ -313,7 +314,7 @@ export default function IndustryViews({
                             aria-pressed={id === workshopMachine}
                             onClick={() => setSelectedMachine(id)}
                           >
-                            {machine?.name ?? id}
+                            {workshopMachineName(id) ?? machine?.name ?? id}
                           </button>
                         </span>
                       );
@@ -341,11 +342,10 @@ export default function IndustryViews({
                         </div>
                         <p>
                           {r.id.toUpperCase()} ·{" "}
-                          {
+                          {workshopMachineName(r.building_type) ??
                             catalog.buildings.find(
                               (b) => b.id === r.building_type,
-                            )?.name
-                          }
+                            )?.name}
                         </p>
                         {r.description && <p>{r.description}</p>}
                         {ingredients(r.inputs, true)}

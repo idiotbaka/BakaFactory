@@ -3,7 +3,7 @@
     "id": "p1_sort_waste",
     "tier": 1,
     "title": "开局一对爪，材料全靠捡",
-    "description": "在工作室加工分拣一次垃圾包",
+    "description": "在工作室的手动分拣台加工分拣一次垃圾包",
     "goal": { "type": "workshop_recipe", "target": "r1001", "count": 1 },
     "rewards": { "简易支架": 10 }
   },
@@ -11,16 +11,16 @@
     "id": "p1_dismantler",
     "tier": 1,
     "title": "逆向工程",
-    "description": "合成一个设备道具：简易拆解台",
-    "goal": { "type": "obtain_item", "target": "设备·简易拆解台", "count": 1 },
+    "description": "合成一个设备道具：自动拆解台（首次制造后解锁工作室中的手工拆解台功能）",
+    "goal": { "type": "obtain_item", "target": "自动拆解台", "count": 1 },
     "rewards": { "粗铁片": 20 }
   },
   {
     "id": "p1_crusher",
     "tier": 1,
     "title": "手摇曲柄",
-    "description": "合成一个设备道具：手摇破碎机",
-    "goal": { "type": "obtain_item", "target": "设备·手摇破碎机", "count": 1 },
+    "description": "合成一个设备道具：自动破碎机（首次制造后解锁工作室中的手摇破碎机功能）",
+    "goal": { "type": "obtain_item", "target": "自动破碎机", "count": 1 },
     "rewards": { "垃圾包": 120 }
   },
   {
@@ -35,17 +35,17 @@
     "id": "p1_assembler",
     "tier": 1,
     "title": "这是？工作台！",
-    "description": "合成一个设备道具：手工装配台",
-    "goal": { "type": "obtain_item", "target": "设备·手工装配台", "count": 1 },
+    "description": "合成一个设备道具：自动装配台（首次制造后解锁工作室中的手工装配台功能）",
+    "goal": { "type": "obtain_item", "target": "自动装配台", "count": 1 },
     "rewards": { "粗铁锭": 40, "简易齿轮": 40 }
   },
   {
     "id": "p1_belt",
     "tier": 1,
     "title": "给我自己动！",
-    "description": "合成一个物流道具：手摇传送带",
-    "goal": { "type": "obtain_item", "target": "手摇传送带", "count": 1 },
-    "rewards": { "手摇传送带": 15 }
+    "description": "合成一个物流道具：初阶传送带",
+    "goal": { "type": "obtain_item", "target": "初阶传送带", "count": 1 },
+    "rewards": { "初阶传送带": 15 }
   },
   {
     "id": "p1_feeder",
@@ -61,7 +61,7 @@
     "title": "工厂的一小步",
     "description": "向工厂仓库自动化输送任意一个物品",
     "goal": { "type": "automated_delivery", "target": "bus", "count": 1 },
-    "rewards": { "手摇传送带": 20, "分拣料箱": 6, "初阶自动投料机": 6 }
+    "rewards": { "初阶传送带": 20, "分拣料箱": 6, "初阶自动投料机": 6 }
   },
   {
     "id": "p1_free_hands",
@@ -84,7 +84,7 @@
       "items": ["生物炭"],
       "count": 100
     },
-    "rewards": { "手摇传送带": 24, "初阶自动投料机": 4 }
+    "rewards": { "初阶传送带": 24, "初阶自动投料机": 4 }
   },
   {
     "id": "p2_iron",
@@ -97,7 +97,7 @@
       "items": ["粗铁锭", "基础铁板"],
       "count": 100
     },
-    "rewards": { "手摇传送带": 24, "分拣料箱": 4, "低速传动轴": 9 }
+    "rewards": { "初阶传送带": 24, "分拣料箱": 4, "低速传动轴": 9 }
   },
   {
     "id": "p2_nonferrous",
@@ -249,7 +249,7 @@
     "title": "工厂必须扩张！",
     "description": "扩建到 10 个厂区。",
     "goal": { "type": "district_count", "target": "world", "count": 10 },
-    "rewards": { "手摇传送带": 36, "初阶自动投料机": 8, "分拣料箱": 6 }
+    "rewards": { "初阶传送带": 36, "初阶自动投料机": 8, "分拣料箱": 6 }
   },
   {
     "id": "p2_first_screen",

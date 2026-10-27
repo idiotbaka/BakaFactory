@@ -23,7 +23,7 @@ describe("item acquisition popovers", () => {
   it("resolves whole canonical names and facility aliases without rewriting quest text", () => {
     const index = createItemInfoIndex(catalog);
     const text =
-      "初阶自动投料机；自动投料机或垃圾提取口。设备·简易拆解台 / 简易拆解台";
+      "初阶自动投料机；自动投料机或垃圾提取口。自动拆解台 / 自动拆解台";
     const parts = splitItemText(text, index);
     expect(parts.map((part) => part.text).join("")).toBe(text);
     expect(
@@ -32,8 +32,8 @@ describe("item acquisition popovers", () => {
       ["初阶自动投料机", "i0059"],
       ["自动投料机", "i0059"],
       ["垃圾提取口", "i0059"],
-      ["设备·简易拆解台", "i0017"],
-      ["简易拆解台", "i0017"],
+      ["自动拆解台", "i0017"],
+      ["自动拆解台", "i0017"],
     ]);
     // Repeated renders must not inherit the global regex cursor.
     expect(splitItemText(text, index)).toEqual(parts);
@@ -66,7 +66,7 @@ describe("item acquisition popovers", () => {
       card.getByText(/安装用途：自动投料机、垃圾提取口/),
     ).toBeInTheDocument();
     const source = within(card.getByRole("region", { name: /^R1039 / }));
-    expect(source.getByText("加工设备：手工装配台")).toBeInTheDocument();
+    expect(source.getByText("加工设备：自动装配台")).toBeInTheDocument();
     expect(source.getByText(/15 秒 \/ 批/)).toBeInTheDocument();
     expect(source.getByText(/工作室手工耗时：7 秒 \/ 批/)).toBeInTheDocument();
     expect(

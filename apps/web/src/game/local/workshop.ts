@@ -1,7 +1,11 @@
 import type { components } from "../../api/schema";
 import { recipeDefinitions, buildingDefinitions, catalog } from "./catalog";
 import { nextOrderInventory } from "./orderInventory";
+import earlyMachineNames from "../earlyMachineNames.json";
 type Industry = components["schemas"]["IndustryState"];
+const names: Readonly<Record<string, { name: string; workshop: string }>> =
+  earlyMachineNames;
+export const workshopMachineName = (id: string) => names[id]?.workshop;
 
 export const workshopMachines = [
   "m02",
