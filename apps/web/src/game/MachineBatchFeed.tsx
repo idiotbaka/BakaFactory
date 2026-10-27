@@ -32,15 +32,17 @@ export default function MachineBatchFeed({
         definition.stack_limit,
       )
     : 0;
+  function feed(batches: number) {
+    if (disabled || !recipe || maximum < 1) return;
+    setRaw(String(batches));
+    act({ type: "feed_batch", id, batches });
+  }
   return (
     <form
       className="machine-batch-feed"
       onSubmit={(event) => {
         event.preventDefault();
-        if (disabled || !recipe || !valid || maximum < 1) return;
-        const batches = Math.min(requested, maximum);
-        setRaw(String(batches));
-        act({ type: "feed_batch", id, batches });
+        if (valid) feed(Math.min(requested, maximum));
       }}
     >
       <input
@@ -61,6 +63,18 @@ export default function MachineBatchFeed({
         disabled={disabled || !recipe || !valid || maximum < 1}
       >
         从仓库补足原料
+      </button>
+      <button
+        type="button"
+        disabled={disabled || !recipe || maximum < 1}
+        title={
+          maximum > 0
+            ? `补足至当前最多 ${maximum} 批，包含已有原料`
+            : "当前无法补足一批"
+        }
+        onClick={() => feed(maximum)}
+      >
+        补足至最大
       </button>
       <p className="production-hint">
         {!recipe

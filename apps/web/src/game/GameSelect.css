@@ -4,6 +4,11 @@ button.game-select[role="combobox"] {
   gap: 8px;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
+  /* Long selected labels must not contribute their intrinsic width to an
+     ancestor's automatic Grid / Flex minimum size. */
+  contain: inline-size;
+  overflow: hidden;
   min-height: 36px;
   padding: 7px 9px;
   border: 1px solid #3a405c;
@@ -14,6 +19,10 @@ button.game-select[role="combobox"] {
   line-height: 18px;
   text-align: left;
 }
+label:has(> .game-select) {
+  min-width: 0;
+  max-width: 100%;
+}
 button.game-select:hover:enabled,
 button.game-select[aria-expanded="true"] {
   border-color: var(--cyan);
@@ -21,6 +30,7 @@ button.game-select[aria-expanded="true"] {
 }
 .game-select-value {
   min-width: 0;
+  max-width: 100%;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -1096,6 +1096,10 @@
 }
 .machine-actions {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -1107,11 +1111,13 @@
   font-size: 12px;
 }
 .machine-actions label {
+  min-width: 0;
+  max-width: 100%;
   font-size: 12px;
 }
 .machine-batch-feed {
   display: grid;
-  grid-template-columns: minmax(56px, 72px) minmax(0, 1fr);
+  grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 1fr);
   align-items: start;
   gap: 6px;
 }
@@ -1127,6 +1133,8 @@
 }
 .machine-batch-feed button {
   min-width: 0;
+  align-self: stretch;
+  padding: 7px 6px;
   line-height: 18px;
 }
 .machine-batch-feed .production-hint {

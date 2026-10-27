@@ -2,6 +2,23 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-27：机器一键补足至最大
+
+- 在共享 `MachineBatchFeed` 的原补料按钮右侧新增“补足至最大”，直接使用当前 `machineBatchLimit` 上限并回填批数；不依赖手动输入的有效性，无配方、无原料需求、暂停或无法补齐一批时禁用。
+- 普通 / 最大补料共用现有 `feed_batch` 操作，Worker 继续按执行时库存、已有输入和容量限额，原子扣收实际缺量；不改玩法、协议或存档。按钮排为输入 / 普通补料 / 最大补料三列，文字允许换行、字号至少 12px，提示跨三列，保留之前的选择框限宽修复。
+- 说明和用户步骤同步至 [编辑器](editor.md)、[视觉约定](visual-style.md) 与 [最大补料验收](acceptance.md#机器补足至最大待用户执行)。
+
+验证状态：完整 `npm run lint`（资源 / 12px、ESLint、TypeScript、Go 格式 / vet）、`npm run build`（Web / Worker 与 Go 编译）、Prettier 和 `git diff --check` 通过。Vite 主脚本约 528.56 kB，保留原超过 500 kB 的提示，构建成功。按用户要求未编写 / 运行测试，未启动服务或访问真实游戏数据库，实机验收由用户执行。
+
+## 2026-10-27：长配方选择框撑宽检视区修复
+
+- 根据长配方截图定位生产操作区 Grid 的隐式自动最小列宽：长名称使 label / 列宽膨胀，`width: 100%` 的选择框和同区按钮随父列一起超出检视可见区域。
+- 共享 GameSelect 限制 `max-width: 100%`、保留 `min-width: 0` 并加入 inline-size containment，隔离选中文字的固有宽度；直接包裹控件的 label 同样允许收缩并限制最大宽度，覆盖全站下拉。
+- 生产操作区显式单列 `minmax(0, 1fr)` 并限制自身 / label 宽度，说明允许换行。保持文本省略、悬停全文、箭头、字体及原固定工作台；Portal 列表继续按视口独立限宽，不裁切整个侧栏来掩盖内容。
+- 无业务回调、配置、玩法或存档变更；说明与手动步骤见 [自定义下拉](custom-selects.md) 和 [长配方验收](acceptance.md#长配方选择框宽度待用户执行)。
+
+验证状态：完整 `npm run lint`（资源 / 12px、ESLint、TypeScript、Go 格式 / vet）、`npm run build`（Web / Worker 与 Go 编译）、Prettier 和 `git diff --check` 均通过。Vite 主脚本仍约 528.38 kB，保留原超过 500 kB 的提示，构建成功。沿用用户安排，未启动服务、未执行自动 / 浏览器 / HTTP 冒烟测试，未访问真实游戏数据库；实机布局由用户按长配方专项验收。
+
 ## 2026-10-27：全站自定义下拉、物品筛选与配方图示
 
 - 新增 `GameSelect.tsx` / `GameSelect.css`，将 9 个业务组件中共 33 处原生 select 改为统一受控 combobox / listbox；原 option 仅作声明数据，不挂载原生列表，回调改为明确的 `onValueChange`，不伪造 change 事件。
