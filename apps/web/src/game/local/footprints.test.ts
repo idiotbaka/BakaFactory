@@ -301,11 +301,9 @@ describe("multi-cell footprints", () => {
     "attaches an energy network at $x/$y including non-anchor edges",
     (edge) => {
       let f = place(start(), "machine", "m32", { ...square, rotation: 0 });
-      f = place(f, "wire", "cable", edge);
-      f.buildings.find((b) => b.id === "machine")!.configuration.power_side =
-        edge.rotation;
+      f = place(f, "gen", "m28", edge);
       allocatePower(f, f.buildings);
-      expect(f.simulation.buildings.machine.network_id).toBe("electric:wire");
+      expect(f.simulation.buildings.machine.network_id).toBe("electric:gen");
     },
   );
   it("supplies real power through the lower contact without multiplying machine demand", () => {
@@ -363,16 +361,15 @@ describe("multi-cell footprints", () => {
       expect(plan.route.every((p) => emptyCell(f, p))).toBe(true);
     },
   );
-  it("selects one network among multiple edges and never bridges separate grids", () => {
+  it("bridges separate sides of a 2x2 machine into a single shared region network", () => {
     let f = place(start(), "machine", "m32", { ...square, rotation: 0 });
-    f = place(f, "east", "cable", { x: 6, y: 3, rotation: 0 });
+    f = place(f, "east", "m28", { x: 6, y: 3, rotation: 0 });
     f = place(f, "west", "cable", { x: 3, y: 4, rotation: 0 });
     allocatePower(f, f.buildings);
-    expect(f.simulation.networks).toHaveLength(2);
+    expect(f.simulation.networks).toHaveLength(1);
     expect(f.simulation.buildings.machine.network_id).toBe("electric:east");
-    f.buildings.find((b) => b.id === "machine")!.configuration.power_side = 180;
-    allocatePower(f, f.buildings);
-    expect(f.simulation.buildings.machine.network_id).toBe("electric:west");
+    expect(f.simulation.buildings.west.network_id).toBe("electric:east");
+    expect(f.simulation.buildings.west.status).toBe("connected");
   });
   it("blocks all four cells in paths and unloads from the far lower-right edge", () => {
     let f = place(start(), "machine", "m08", { ...square, rotation: 0 });

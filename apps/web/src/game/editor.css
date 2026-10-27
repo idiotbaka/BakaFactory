@@ -802,3 +802,51 @@
   width: calc(var(--footprint-size, 1) * 30px + 6px);
   height: calc(var(--footprint-size, 1) * 30px + 6px);
 }
+.camera-controls .power-region-toggle[aria-pressed="true"] {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: #132a36;
+}
+.power-region-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+}
+.power-region-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.power-region-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 8px;
+  border: 1px solid var(--region-stroke, var(--cyan));
+  background: rgba(11, 16, 30, 0.9);
+  color: #eeedf9;
+  font: 400 12px/16px var(--mono);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.power-region-title {
+  color: var(--region-stroke, var(--cyan));
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+.power-region-line {
+  color: #c3c2db;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+.power-region-line.is-warning {
+  color: var(--danger);
+}

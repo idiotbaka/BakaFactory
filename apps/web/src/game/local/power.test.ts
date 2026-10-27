@@ -183,7 +183,7 @@ describe("power networks and conserved energy", () => {
     expect(remainingFuel(f, "gen")).toBe(6400);
     expect(f.simulation.buildings.load.status).toBe("output_full");
     f = act(f, { type: "collect", id: "load" });
-    f = act(f, { type: "power_config", id: "wire", enabled: false });
+    f = editFactory(f, { kind: "delete", id: "wire" });
     f.simulation.buildings.load.powered = true;
     f.simulation.buildings.load.supplied_kw = 1000;
     f = step(f);
@@ -192,24 +192,48 @@ describe("power networks and conserved energy", () => {
     expect(f.simulation.buildings.load.status).toBe("no_energy");
     expect(remainingFuel(f, "gen")).toBe(6400);
   });
-  it("does not bridge separate grids through a machine and honors the chosen connection side", () => {
-    let f = place(start(), "gen", "m28", 1);
-    f = place(f, "left", "cable", 2);
-    f = place(f, "load", "m30", 3);
-    f = place(f, "right", "cable", 4);
-    f.simulation.buildings.gen.fuel = [{ item: itemID("液体燃料"), count: 1 }];
+  it("conducts shaft, hydraulic and electric power across any orthogonally touching buildings including disabled ones, without bridging diagonals", () => {
+    let f = place(start(), "shaftGen", "m09", 1, 0);
+    f = place(f, "disabledRelay", "m01", 2, 0);
+    f = act(f, { type: "power_config", id: "disabledRelay", enabled: false });
+    f = place(f, "chestRelay", "chest", 3, 0);
+    f = place(f, "elecGen", "m28", 3, 1);
+    f = place(f, "shaftBelt1", "mechanical_belt", 4, 0);
+    f = place(f, "shaftBelt2", "mechanical_belt", 5, 0);
+    f = place(f, "elecLoad", "m30", 6, 0);
+    f = place(f, "diagonalLoad", "m10", 7, 1);
+    f.simulation.buildings.shaftGen.fuel = [
+      { item: itemID("固体燃料块"), count: 1 },
+    ];
+    f.simulation.buildings.elecGen.fuel = [
+      { item: itemID("液体燃料"), count: 1 },
+    ];
+    f.simulation.buildings.shaftBelt1.belt = {
+      id: "b1",
+      item: itemID("铁质碎片"),
+      count: 2,
+      progress: 0,
+    };
     f = configure(
       f,
-      "load",
+      "elecLoad",
       catalog.recipes.find((r) => r.building_type === "m30")!.id,
     );
+    f = configure(
+      f,
+      "diagonalLoad",
+      catalog.recipes.find((r) => r.building_type === "m10")!.id,
+    );
+    f.buildings.find((b) => b.id === "elecLoad")!.configuration.power_side = 0;
     f = step(f);
-    expect(f.simulation.buildings.load.progress).toBe(0);
-    expect(remainingFuel(f, "gen")).toBe(6400);
-    f = act(f, { type: "power_config", id: "load", power_side: 180 });
-    f = step(f);
-    expect(f.simulation.buildings.load.progress).toBe(1);
-    expect(f.simulation.networks).toHaveLength(2);
+    expect(f.simulation.buildings.elecLoad.progress).toBe(1);
+    expect(f.simulation.buildings.shaftBelt2.belt?.count).toBe(2);
+    expect(f.simulation.buildings.diagonalLoad.progress).toBe(0);
+    expect(f.simulation.buildings.diagonalLoad.network_id).toBeUndefined();
+    expect(f.simulation.networks?.map((n) => n.kind)).toEqual([
+      "shaft",
+      "electric",
+    ]);
   });
   it("stores 88% at the input rate, stops charging with the generator off, and discharges only real energy", () => {
     let f = place(start(), "gen", "m28", 2);

@@ -27,7 +27,7 @@ const mask = (ports: number[]) =>
 
 export function buildingConnections(
   kind: RouteKind,
-  definition: BuildingDefinition,
+  _definition: BuildingDefinition,
   context: ConnectionContext,
 ) {
   if (kind === "belt") {
@@ -54,14 +54,9 @@ export function buildingConnections(
     const neighbor = context.buildings.get(
       `${context.x + dx},${context.y + dy}`,
     );
-    // A machine never visually bridges two independent conductor networks.
-    // Enabled state and derived power are not evidence of a successful transfer.
-    if (
-      neighbor &&
-      neighbor.id !== context.instanceID &&
-      neighbor.building_type === definition.id
-    )
-      ports |= bits[side];
+    // Any orthogonally adjacent building conducts region power; wire graphics
+    // extend into touching buildings to show the shared region connection.
+    if (neighbor && neighbor.id !== context.instanceID) ports |= bits[side];
   }
   return ports
     ? { ports, open: ports, rotation: 0 }

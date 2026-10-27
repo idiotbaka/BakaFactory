@@ -280,8 +280,8 @@ describe("bounded fluid routing and conserved volume", () => {
       ),
       "hyd",
       "m21",
-      2,
-      0,
+      3,
+      -1,
     );
     f.simulation.buildings.src.output = [{ item: water, count: 20 }];
     f = step(f);
@@ -298,7 +298,7 @@ describe("bounded fluid routing and conserved volume", () => {
         buildingDefinitions.get("m21")!,
       ),
     ).toBe(6070);
-    f = act(f, { type: "power_config", id: "line", enabled: false });
+    f = editFactory(f, { kind: "delete", id: "line" });
     f = advance(f, 3);
     expect(f.simulation.buildings.pump.fluid?.count).toBe(8);
     expect(

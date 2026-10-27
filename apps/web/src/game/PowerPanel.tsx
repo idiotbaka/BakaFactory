@@ -57,7 +57,7 @@ export function UtilityInspector({
       aria-label="能源设置"
     >
       <h4>能源与运行</h4>
-      {!isSolidTransport(definition.id) && (
+      {!isSolidTransport(definition.id) && !conduit && (
         <button
           disabled={disabled}
           aria-pressed={instance.configuration.enabled !== false}
@@ -71,6 +71,9 @@ export function UtilityInspector({
         >
           {instance.configuration.enabled === false ? "启用设备" : "暂停设备"}
         </button>
+      )}
+      {conduit && (
+        <p>导能方块始终保持导通，可桥接上下左右相邻的任意建筑组网。</p>
       )}
       {canAutoEject(definition.id) && (
         <>
@@ -123,61 +126,33 @@ export function UtilityInspector({
               : "尚未连接能量网络"}
           </p>
           {!conduit && (
-            <>
-              <label>
-                负载优先级
-                <GameSelect
-                  catalog={catalog}
-                  aria-label="负载优先级"
-                  disabled={disabled}
-                  value={powerPriority(instance)}
-                  onValueChange={(choiceValue) =>
-                    act({
-                      type: "power_config",
-                      id: instance.id,
-                      priority: Number(choiceValue),
-                    })
-                  }
-                >
-                  {[1, 2, 3, 4, 5, 6].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                      {n === 1
-                        ? " · 关键供能 / 供料"
-                        : n === 6
-                          ? " · 可延后负载"
-                          : ""}
-                    </option>
-                  ))}
-                </GameSelect>
-              </label>
-              <label>
-                供能连接侧
-                <GameSelect
-                  catalog={catalog}
-                  aria-label="供能连接侧"
-                  disabled={disabled}
-                  value={
-                    typeof instance.configuration.power_side === "number"
-                      ? instance.configuration.power_side
-                      : -1
-                  }
-                  onValueChange={(choiceValue) =>
-                    act({
-                      type: "power_config",
-                      id: instance.id,
-                      power_side: Number(choiceValue),
-                    })
-                  }
-                >
-                  <option value={-1}>自动（东 / 南 / 西 / 北）</option>
-                  <option value={0}>东</option>
-                  <option value={90}>南</option>
-                  <option value={180}>西</option>
-                  <option value={270}>北</option>
-                </GameSelect>
-              </label>
-            </>
+            <label>
+              负载优先级
+              <GameSelect
+                catalog={catalog}
+                aria-label="负载优先级"
+                disabled={disabled}
+                value={powerPriority(instance)}
+                onValueChange={(choiceValue) =>
+                  act({
+                    type: "power_config",
+                    id: instance.id,
+                    priority: Number(choiceValue),
+                  })
+                }
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                    {n === 1
+                      ? " · 关键供能 / 供料"
+                      : n === 6
+                        ? " · 可延后负载"
+                        : ""}
+                  </option>
+                ))}
+              </GameSelect>
+            </label>
           )}
         </>
       )}

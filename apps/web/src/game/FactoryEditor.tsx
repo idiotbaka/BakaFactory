@@ -29,6 +29,7 @@ import type { RobotRoute } from "./local/robotNavigation";
 import type { DistrictSummary } from "./local/world";
 import BuildingVisual from "./BuildingVisual";
 import MachineNameLayer from "./MachineNameLayer";
+import PowerRegionLayer from "./PowerRegionLayer";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import UndergroundVisual from "./UndergroundVisual";
 import {
@@ -128,6 +129,7 @@ export default function FactoryEditor(props: Props) {
   const batchRef = useRef<string[]>([]);
   const [batchIDs, setBatchIDs] = useState<string[]>([]);
   const [deleteMode, setDeleteMode] = useState(false);
+  const [showPowerRegions, setShowPowerRegions] = useState(false);
   const deleteModeRef = useRef(false);
   useLayoutEffect(() => {
     batchRef.current = batchIDs;
@@ -1283,6 +1285,14 @@ export default function FactoryEditor(props: Props) {
           居中放大
         </button>
         <small>滚轮缩放 · 拖动空格平移</small>
+        <button
+          type="button"
+          className="power-region-toggle"
+          aria-pressed={showPowerRegions}
+          onClick={() => setShowPowerRegions((v) => !v)}
+        >
+          {showPowerRegions ? "隐藏组网" : "显示组网"}
+        </button>
       </div>
       <div
         className={`map-viewport ${deleteMode ? "is-deleting" : ""} ${dragPreview || panning ? "is-dragging" : ""} ${placementDefinition ? "is-placing" : ""}`}
@@ -1674,6 +1684,9 @@ export default function FactoryEditor(props: Props) {
               : undefined
           }
         />
+        {showPowerRegions && (
+          <PowerRegionLayer factory={factory} camera={camera} />
+        )}
         {selectionBox && (
           <div
             className="batch-selection-box"

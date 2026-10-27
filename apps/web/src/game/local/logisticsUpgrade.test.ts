@@ -186,7 +186,7 @@ describe("logistics gameplay upgrades", () => {
     f = step(f);
     expect(f.simulation.buildings.gen.energy_kj).toBe(5);
     expect(f.simulation.buildings.tank.fluid?.count).toBe(8);
-    f.buildings.find((b) => b.id === wire.id)!.configuration.enabled = false;
+    f.buildings = f.buildings.filter((b) => b.id !== wire.id);
     f = step(f);
     expect(f.simulation.buildings.gen.energy_kj).toBe(5);
     expect(f.simulation.buildings.tank.fluid?.count).toBe(8);

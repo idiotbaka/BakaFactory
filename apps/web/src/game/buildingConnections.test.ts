@@ -109,7 +109,7 @@ describe("production building connection selection", () => {
       rotation: 0,
     });
   });
-  it("does not connect conductor tiles through machines or another energy kind", () => {
+  it("connects conductor tiles to any adjacent placed building", () => {
     const nodes = [
       neighbor(0, 0, { building_type: "m09" }),
       neighbor(0, 1, { building_type: "shaft" }),
@@ -117,6 +117,10 @@ describe("production building connection selection", () => {
     ];
     expect(
       buildingConnections("shaft", definition("shaft"), context(0, nodes)),
-    ).toEqual({ ports: PORT_S, open: PORT_S, rotation: 0 });
+    ).toEqual({
+      ports: PORT_E | PORT_S | PORT_W,
+      open: PORT_E | PORT_S | PORT_W,
+      rotation: 0,
+    });
   });
 });

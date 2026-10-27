@@ -91,7 +91,7 @@ export function diagnoseFactory(f: LocalFactory) {
       if (canProcess(f, b, true) === "no_energy")
         add(
           "缺能",
-          `额定功率 ${r.power_kw ?? 0} kW，当前已攒工作能量 ${m.work_energy_kj ?? 0} kJ；请检查动力网络、接入方向与燃料${d.energy === "heat" || d.id === "m20" ? `（可用燃料 ${fuelAvailable(m, d)} kJ）` : ""}`,
+          `额定功率 ${r.power_kw ?? 0} kW，当前已攒工作能量 ${m.work_energy_kj ?? 0} kJ；请检查所在组网动力源与燃料${d.energy === "heat" || d.id === "m20" ? `（可用燃料 ${fuelAvailable(m, d)} kJ）` : ""}`,
         );
       if (productionReady(f, b) === "locked")
         add("配方未解锁", "请检查当前阶段与前置首次制造里程碑");

@@ -1,17 +1,16 @@
 import { STEP_SECONDS } from "./simulationTime";
-import { occupancy, edgeCells } from "../footprint";
+import { powerNetworkID, powerRegions } from "./powerRegions";
 import type { BuildingInstance } from "../../api/client";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import {
   buildingDefinitions,
-  direction,
   isBelt,
   isPort,
   itemID,
   selectedRecipe,
 } from "./catalog";
-import { enabled, rotations } from "./transportConfig";
+import { enabled } from "./transportConfig";
 import { fuelAvailable, spendFuel } from "./fuel";
 import { productionReady, workDemand, workKind } from "./production";
 
@@ -33,7 +32,7 @@ export const producerKind = (type: string): PowerKind | undefined =>
       : type === "m28"
         ? "electric"
         : undefined;
-const wireKind = (type: string): PowerKind | undefined =>
+export const wireKind = (type: string): PowerKind | undefined =>
   type === "shaft"
     ? "shaft"
     : type === "hydraulic_line"
@@ -41,6 +40,12 @@ const wireKind = (type: string): PowerKind | undefined =>
       : type === "cable"
         ? "electric"
         : undefined;
+export const powerUseKind = (b: BuildingInstance): PowerKind | undefined =>
+  producerKind(b.building_type)
+    ? b.building_type === "m21" && workDemand(b) > 0
+      ? "hydraulic"
+      : undefined
+    : workKind(b);
 export const isPowerFacility = (type: string) =>
   !!wireKind(type) ||
   !!producerKind(type) ||
@@ -66,81 +71,33 @@ export function powerPriority(b: BuildingInstance) {
   return outputs && strategicItems.some((id) => outputs[id]) ? 1 : 3;
 }
 
-// Only conductor tiles connect a grid. A machine touching separate grids uses
-// one explicit/first cardinal side; it never silently bridges those grids.
+// Any orthogonally touching buildings form one region; each energy source in a
+// region powers all consumers of that energy kind across the whole region.
 function groupsFor(ordered: BuildingInstance[]) {
-  const positions = occupancy(ordered);
   const groups: Group[] = [];
-  for (const kind of kinds) {
-    const membership = new Map<string, Group>();
-    for (const start of ordered) {
-      if (
-        wireKind(start.building_type) !== kind ||
-        !enabled(start) ||
-        membership.has(start.id)
-      )
-        continue;
-      const group: Group = {
-          id: `${kind}:${start.id}`,
-          kind,
-          wires: [],
-          members: [],
-        },
-        queue = [start];
-      membership.set(start.id, group);
-      for (let index = 0; index < queue.length; index++) {
-        const b = queue[index];
-        group.wires.push(b);
-        for (const r of rotations) {
-          const [dx, dy] = direction(r),
-            next = positions.get(`${b.x + dx},${b.y + dy}`);
-          if (
-            next &&
-            wireKind(next.building_type) === kind &&
-            enabled(next) &&
-            !membership.has(next.id)
-          ) {
-            membership.set(next.id, group);
-            queue.push(next);
-          }
-        }
-      }
-      groups.push(group);
-    }
-    for (const b of ordered) {
-      if (!enabled(b) || wireKind(b.building_type)) continue;
-      const d = buildingDefinitions.get(b.building_type)!,
-        consumerKind = workKind(b) ?? (d.energy === kind ? kind : undefined);
-      if (
-        producerKind(b.building_type) !== kind &&
-        consumerKind !== kind &&
-        !(kind === "electric" && d.role === "battery")
-      )
-        continue;
-      const side =
-        typeof b.configuration.power_side === "number" &&
-        b.configuration.power_side !== -1
-          ? [b.configuration.power_side]
-          : rotations;
-      let group: Group | undefined;
-      for (const r of side) {
-        for (const p of edgeCells(b, r)) {
-          const next = positions.get(`${p.x},${p.y}`);
-          group = next && membership.get(next.id);
-          if (group) break;
-        }
-        if (group) break;
-      }
-      if (!group && b.building_type === "m21" && kind === "hydraulic") {
-        group = {
-          id: `hydraulic:internal:${b.id}`,
-          kind,
-          wires: [],
-          members: [],
-        };
-        groups.push(group);
-      }
-      group?.members.push(b);
+  for (const region of powerRegions(ordered)) {
+    for (const kind of kinds) {
+      const hasSource = region.buildings.some(
+        (b) =>
+          producerKind(b.building_type) === kind ||
+          (kind === "electric" &&
+            buildingDefinitions.get(b.building_type)?.role === "battery"),
+      );
+      if (!hasSource) continue;
+      groups.push({
+        id: powerNetworkID(kind, region.id),
+        kind,
+        wires: region.buildings.filter(
+          (b) => wireKind(b.building_type) === kind,
+        ),
+        members: region.buildings.filter(
+          (b) =>
+            producerKind(b.building_type) === kind ||
+            powerUseKind(b) === kind ||
+            (kind === "electric" &&
+              buildingDefinitions.get(b.building_type)?.role === "battery"),
+        ),
+      });
     }
   }
   return groups;
@@ -155,7 +112,8 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
     m.power_demand_kw = 0;
     m.powered = false;
     delete m.network_id;
-    if (isPowerFacility(b.building_type))
+    if (wireKind(b.building_type)) m.status = "no_network";
+    else if (isPowerFacility(b.building_type))
       m.status = enabled(b) ? "no_network" : "disabled";
     if (
       buildingDefinitions.get(b.building_type)?.role === "station" &&
@@ -217,14 +175,16 @@ export function allocatePower(f: LocalFactory, ordered: BuildingInstance[]) {
     });
     const generators = rotate(
       g.members
-        .filter((b) => producerKind(b.building_type) === g.kind)
+        .filter((b) => enabled(b) && producerKind(b.building_type) === g.kind)
         .sort(compare),
       s.tick,
     );
     const batteries = rotate(
       g.members
         .filter(
-          (b) => buildingDefinitions.get(b.building_type)?.role === "battery",
+          (b) =>
+            enabled(b) &&
+            buildingDefinitions.get(b.building_type)?.role === "battery",
         )
         .sort(compare),
       s.tick,

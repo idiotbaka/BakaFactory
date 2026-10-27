@@ -911,4 +911,30 @@ it("renders one facade and retains the grab offset when moving from a covered fo
     rotation: 0,
     size: 2,
   });
-});
+}, 15000);
+it("toggles the power region overlay from the camera controls bar", () => {
+  render(
+    <FactoryEditor
+      commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+      factory={original}
+      catalog={catalog}
+      selectedID={null}
+      placementType={null}
+      onExitPlacement={vi.fn()}
+      onSelect={vi.fn()}
+      onChange={vi.fn()}
+      onError={vi.fn()}
+    />,
+  );
+  const toggle = screen.getByRole("button", { name: "显示组网" });
+  expect(toggle).toHaveAttribute("aria-pressed", "false");
+  expect(screen.queryByLabelText("工厂组网覆盖层")).toBeNull();
+  fireEvent.click(toggle);
+  expect(screen.getByRole("button", { name: "隐藏组网" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  expect(screen.getByLabelText("工厂组网覆盖层")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "隐藏组网" }));
+  expect(screen.queryByLabelText("工厂组网覆盖层")).toBeNull();
+}, 15000);

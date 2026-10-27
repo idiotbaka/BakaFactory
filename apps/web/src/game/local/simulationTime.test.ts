@@ -177,7 +177,7 @@ describe("shared half-second simulation time", () => {
     expect(f.simulation.buildings.belt.supplied_kw).toBe(1);
     f = step(f);
     expect(f.simulation.buildings.gen.energy_kj).toBe(8);
-    f.buildings.find((b) => b.id === wire.id)!.configuration.enabled = false;
+    f.buildings = f.buildings.filter((b) => b.id !== wire.id);
     f = step(f);
     expect(f.simulation.buildings.gen.energy_kj).toBe(8);
     expect(f.simulation.buildings.belt.powered).toBe(false);

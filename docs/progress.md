@@ -2,6 +2,16 @@
 
 当前以最新需求迭代，不再使用已删除 README.md 的阶段路线。入口见 [index.md](index.md)，规则见 [simulation.md](simulation.md)，验收见 [acceptance.md](acceptance.md)。
 
+## 2026-10-27：组网供能重构与地图组网可视化
+
+- 新增 `apps/web/src/game/local/powerRegions.ts` 并重构 `apps/web/src/game/local/power.ts`：同一厂区内所有上下左右相邻的已放置建筑（机器、物流、导线、WH、终端，含 2×2 多格占地与已暂停设备；不含斜角、机器人、在建蓝图与地下带穿地跨度）连通为同一组网（`PowerRegion`），组网内存在对应能源动力源（M09 轴功 / M21 液压 / M28 或储能箱电力，含已暂停的源）即为全组网建立 `${kind}:${region.id}` 网络，导出 `powerUseKind` 供模拟与视图共用。
+- 保留真实燃料、0.5 kJ 粒度、优先级 1～6 与同级轮换、半秒工时积累、储能箱 88% 充电 / 100 kW 上限 / 不互充 / 储备电量、M21 启动工作液与组网内每 12 段传动轴向上取整 1 kW 损耗；已暂停的发电机与储能箱不参与当刻供能或充放电并保持 `disabled` 状态。
+- 导线（传动轴 / 液压动力管 / 能量线缆）改为始终导通的跨空位桥接方块：`buildingConnections.ts` 让导线图形连接任意四向相邻建筑，`PowerPanel.tsx` 与 `utilityActions.ts` 移除导线暂停开关与 `power_side`（供能连接侧）配置入口，旧存档中的 `power_side` 继续兼容保留；同步更新 `EnergyOverview.tsx`、`diagnostics.ts` 及 `scripts/gameplay-copy.mjs` 并重新生成 `definitions.json` 与搜索索引。
+- 新增 `apps/web/src/game/PowerRegionLayer.tsx` 并在 `FactoryEditor.tsx` 下方 `.camera-controls` 工具条最右侧增加“显示组网 / 隐藏组网”切换按钮（`aria-pressed`）：开启后以静态 SVG 半透明霓虹色块与边界线覆盖各组网，并在屏幕坐标层用固定 12px 标签显示含能源关系组网的方块数与各能源供需 / 未接入台数，无能源关系的组网只着色不贴标签。
+- 更新 `power.test.ts`、`footprints.test.ts`、`buildingConnections.test.ts`、`fluids.test.ts`、`logisticsUpgrade.test.ts`、`robots.test.ts`、`simulationTime.test.ts`、`FactoryEditor.test.tsx` 并新增 `PowerRegionLayer.test.tsx`。完整规则与验收步骤见 [模拟规则](simulation.md#能源网络d1)、[编辑器说明](editor.md) 与 [验收](acceptance.md#组网供能重构与组网显示待用户执行)。
+
+验证状态：已执行 `npm test`，前后端相关测试（`power.test.ts`、`footprints.test.ts`、`buildingConnections.test.ts`、`PowerRegionLayer.test.tsx`、`EnergyOverview.test.tsx`、`fluids.test.ts`、`logisticsUpgrade.test.ts`、`robots.test.ts`、`simulationTime.test.ts`、`FactoryEditor.test.tsx`、`FactoryWorkspace.test.tsx` 等全部 77 个前端测试文件 / 654 项测试及 Go 全包测试）全部通过；`npm run import:gameplay`、完整 `npm run lint`（资源 / 12px / 字体、ESLint、TypeScript、Go 格式 / vet）、`npm run build`（Web / Worker 与 Go 编译）、Prettier 和 `git diff --check` 通过。自动测试仅使用内存 / 临时数据，未启动本地开发服务或访问真实游戏数据库；实机效果待用户验收。
+
 ## 2026-10-27：生产机器朝向自动弹出
 
 - 有配方的生产机器检视在启停下方新增独立的“自动弹出”，默认关闭；可选布尔实例配置 `auto_eject` 经 Worker 原子编辑，本机 / Go 云存档均严格校验。移动、旋转、切配方及保存恢复保留，不重置进度、缓存、冷却或能量，无数据库迁移。

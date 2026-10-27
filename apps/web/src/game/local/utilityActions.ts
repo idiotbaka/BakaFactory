@@ -9,7 +9,6 @@ export type UtilityAction =
       id: string;
       enabled?: boolean;
       priority?: number;
-      power_side?: number;
       battery_mode?: "auto" | "charge" | "discharge" | "hold";
       reserve_kj?: number;
     }
@@ -24,13 +23,11 @@ export function applyUtilityAction(f: LocalFactory, action: UtilityAction) {
     for (const key of [
       "enabled",
       "priority",
-      "power_side",
       "battery_mode",
       "reserve_kj",
     ] as const)
       if (action[key] !== undefined) b.configuration[key] = action[key];
-    if (!validTransportConfig(b))
-      throw new Error("能源优先级、连接方向或储能设置无效");
+    if (!validTransportConfig(b)) throw new Error("能源优先级或储能设置无效");
     m.powered = false;
     m.status = b.configuration.enabled === false ? "disabled" : "idle";
   } else {

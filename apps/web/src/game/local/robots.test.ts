@@ -203,8 +203,8 @@ describe("robot bodies, real charging and save boundaries", () => {
     expect(root.robots![0].energy_kj).toBe(88);
     expect(fuel(root, "m28")).toBe(5300);
     root = editWorld(root, {
-      kind: "industry",
-      action: { type: "power_config", id: "line", enabled: false },
+      kind: "delete",
+      id: "line",
     });
     root = advance(root, 20);
     expect(root.simulation.buildings.station.station_energy_kj).toBe(0);
