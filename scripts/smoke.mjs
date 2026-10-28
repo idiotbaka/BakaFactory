@@ -149,9 +149,18 @@ try {
   );
   assert.equal(catalog.status, 200);
   const definitions = await catalog.json();
-  assert.equal(definitions.buildings.length, 7);
-  assert.equal(definitions.items.length, 3);
-  assert.equal(definitions.recipes.length, 3);
+  assert.equal(definitions.buildings.length, 87);
+  assert.equal(definitions.items.length, 353);
+  assert.equal(definitions.recipes.length, 332);
+  assert.deepEqual(
+    definitions.robots.map((robot) => robot.capacity),
+    [10, 20, 0, 60, 30, 80, 20, 60, 100],
+  );
+  assert.equal(
+    definitions.buildings.find((building) => building.id === "charge_station")
+      .station_transfer_kw,
+    1500,
+  );
   const heartbeat = async (currentCookie, expected = "") => {
     const response = await authRequest(
       "/api/v1/game/heartbeat",

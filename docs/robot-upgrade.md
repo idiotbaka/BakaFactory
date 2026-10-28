@@ -69,9 +69,9 @@ node scripts/check-robot-sprites.mjs
 
 ## 兼容与验证
 
-无 API、格式版本或数据库迁移。原机器人储能、实体 ID、本体道具、携货、任务数量与返程状态保留；旧小批量任务继续原数量，不擅自扩单。降低工时后，两端校验仍接受九种机型已发布的有界旧进度；客户端在完整校验后的克隆中将其限制为新工时，实际完成 / 转移仍等下一次付费动作，不在读档发物或记录。
+无新增 API 接口 / 字段、格式版本或数据库迁移。OpenAPI 和目录 / 存档校验同步既有字段上限：机器人及运输任务最多 100，站点补给 / 需求 / 实供功率最多 1500 kW；普通设施仍保留 1000 kW 上限。原机器人储能、实体 ID、本体道具、携货、任务数量与返程状态保留；旧小批量任务继续原数量，不擅自扩单。降低工时后，两端校验仍接受九种机型已发布的有界旧进度；客户端在完整校验后的克隆中将其限制为新工时，实际完成 / 转移仍等下一次付费动作，不在读档发物或记录。
 
-新增 `local/robotUpgrade.test.ts`、`robotVisuals.test.ts`、Go `robot_movement_test.go`，并扩展编辑器 / 资源与既有机器人守恒用例，覆盖全机型载量 / 名义补能、流体、带管线通行、重叠存档 / 点击、旧工时、只读批量路径、补间 / 重复快照 / 暂停 / 后台边界。自动及浏览器测试由用户运行，实际静态检查和编译状态见 [progress.md](progress.md)。
+新增 `local/robotUpgrade.test.ts`、`robotVisuals.test.ts`、Go `robot_movement_test.go`，并扩展编辑器 / 资源与既有机器人守恒用例，覆盖全机型载量 / 名义补能、流体、带管线通行、重叠存档 / 点击、旧工时、只读批量路径、补间 / 重复快照 / 暂停 / 后台边界。已执行全仓自动测试，Web 85 文件 / 761 用例及 Go 全包通过，HTTP 冒烟、lint 和 Web / Go 编译通过；实际执行记录见 [progress.md](progress.md)，浏览器游玩仍待验收。
 
 ```bash
 npm run test --workspace @bakafactory/web -- src/game/local/robotUpgrade.test.ts src/game/local/robots.test.ts src/game/local/robotFreight.test.ts src/game/local/robotNavigation.test.ts src/game/local/work.test.ts src/game/robotVisuals.test.ts src/game/FactoryEditor.test.tsx src/game/RobotInteraction.test.tsx src/game/gameAssets.test.ts
