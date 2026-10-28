@@ -10,7 +10,7 @@ export const recipeDefinitions = new Map(catalog.recipes.map((r) => [r.id, r]));
 export const itemID = (name: string) =>
   catalog.items.find((i) => i.name === name)?.id ?? "";
 export const isBelt = (type: string) =>
-  type === "conveyor" || buildingDefinitions.get(type)?.role === "belt";
+  buildingDefinitions.get(type)?.role === "belt";
 export const isFluid = (id: string) =>
   itemDefinitions.get(id)?.kind === "fluid_or_gas";
 export const isFluidNode = (type: string) =>
@@ -28,7 +28,6 @@ export const beltTicks = (type: string) =>
 export const beltCapacity = (type: string) =>
   buildingDefinitions.get(type)?.batch_size ?? 1;
 export const isPort = (type: string) =>
-  ["item_input", "item_output"].includes(type) ||
   ["port", "splitter"].includes(buildingDefinitions.get(type)?.role ?? "");
 export const isChest = (type: string) =>
   buildingDefinitions.get(type)?.role === "chest";
@@ -37,8 +36,5 @@ export function selectedRecipe(b: BuildingInstance) {
   const r =
     typeof selected === "string" ? recipeDefinitions.get(selected) : undefined;
   if (r?.building_type === b.building_type) return r;
-  // Legacy one-recipe machines retain their behavior when upgrading a save.
-  return buildingDefinitions.get(b.building_type)?.legacy
-    ? catalog.recipes.find((recipe) => recipe.building_type === b.building_type)
-    : undefined;
+  return undefined;
 }

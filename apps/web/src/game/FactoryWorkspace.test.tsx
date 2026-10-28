@@ -209,7 +209,7 @@ describe("local factory workspace", () => {
     fireEvent.click(palette.getByRole("button", { name: "物品" }));
     expect(phases.getByRole("button", { name: "P6" })).toBeEnabled();
     fireEvent.click(phases.getByRole("button", { name: "P6" }));
-    const future = catalog.items.find((i) => !i.legacy && i.tier === 6)!;
+    const future = catalog.items.find((i) => i.tier === 6)!;
     fireEvent.change(palette.getByLabelText("搜索图鉴"), {
       target: { value: future.code },
     });
@@ -503,9 +503,7 @@ describe("local factory workspace", () => {
       .getAllByRole("button")
       .filter((b) => b.classList.contains("catalog-entry"));
     expect(entries.map((b) => b.querySelector("strong")!.textContent)).toEqual(
-      catalog.items
-        .filter((i) => !i.legacy && (i.tier ?? 1) === 1)
-        .map((i) => i.name),
+      catalog.items.filter((i) => (i.tier ?? 1) === 1).map((i) => i.name),
     );
     const seen = palette.getByRole("button", { name: /^基础铁板/ }),
       unknown = palette.getByRole("button", { name: /^垃圾包/ });
@@ -522,7 +520,7 @@ describe("local factory workspace", () => {
     expect(unknown).toHaveClass("is-undiscovered");
   });
   it("removes the header warehouse summary and retains searchable quantities in the central warehouse", () => {
-    const items = catalog.items.filter((i) => !i.legacy).slice(0, 7);
+    const items = catalog.items.slice(0, 7);
     prepare(true, {
       setup: (f) => {
         for (const i of items) f.simulation.warehouse[i.id] = 42;

@@ -285,7 +285,7 @@ describe("robot bodies, real charging and save boundaries", () => {
       editWorld(root, {
         kind: "place",
         id: "bad",
-        building_type: "miner",
+        building_type: "m01",
         placement: { x: 5, y: 0, rotation: 0 },
       }),
     ).toThrow(/停靠/);

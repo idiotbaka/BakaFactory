@@ -62,6 +62,8 @@ def main():
  icons={};provenance=[];records={}
  for batch in plan['batches']:
   regions=extract(Image.open(OUT/batch['source']).convert('RGBA'),batch['items'])
+  batch={**batch,'items':[entry for entry in batch['items'] if entry['id'] in lookup]}
+  if not batch['items']:continue
   for entry in batch['items']:
    crop,box=regions[entry['id']];icon=art.export_icon(crop);icons[entry['id']]=icon
    icon.save(ASSETS/f"{entry['id']}.png",optimize=True)
@@ -73,7 +75,7 @@ def main():
  preview([lookup[id] for id in plan['approved']],icons,'approved',font)
  report=[];hashes=set()
  for id,b in lookup.items():
-  renderer=plan['routes'].get(id,'image');records[id]={'renderer':renderer,'tier':b.get('tier'),'color':b['color']}
+  renderer='underground' if id=='underground_belt' else plan['routes'].get(id,'image');records[id]={'renderer':renderer,'tier':b.get('tier'),'color':b['color']}
   if renderer!='image':continue
   p=ASSETS/f'{id}.png';im=Image.open(p);digest=hashlib.sha256(p.read_bytes()).hexdigest()
   assert im.size==(128,128) and im.mode=='RGBA' and set(im.getchannel('A').tobytes())=={0,255},id
@@ -81,10 +83,10 @@ def main():
   colors={c for c in im.get_flattened_data() if c[3]};assert len(colors)<=20 and (5,5,9,255) in colors,id
   assert digest not in hashes,('Duplicate facade',id);hashes.add(digest)
   report.append({'id':id,'size':[128,128],'colors':len(colors),'alpha':[0,255],'sha256':digest})
- assert len(icons)==78 and len(records)==90
+ assert set(icons)<=set(lookup) and len(records)==len(lookup)
  (ASSETS/'manifest.json').write_text(json.dumps({'version':1,'size':128,'logicalSize':64,'buildings':records},ensure_ascii=False,indent=2)+'\n')
  (OUT/'manifest.json').write_text(json.dumps({'generator':'built-in image_gen','items':provenance,'procedural':plan['routes']},ensure_ascii=False,indent=2)+'\n')
- (OUT/'validation.json').write_text(json.dumps({'facades':78,'procedural':12,'catalog_ids':90,'images':report},indent=2)+'\n')
- print('Exported and validated 78 unique 128px facades; 90 catalog IDs covered with 12 procedural definitions')
+ (OUT/'validation.json').write_text(json.dumps({'facades':len(report),'procedural':len(records)-len(report),'catalog_ids':len(records),'images':report},indent=2)+'\n')
+ print(f'Exported and validated {len(report)} current facades; {len(records)} catalog IDs covered')
 
 if __name__=='__main__':main()

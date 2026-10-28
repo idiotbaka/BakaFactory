@@ -4,7 +4,7 @@ import json
 OUT=Path(__file__).resolve().parent
 ROOT=OUT.parents[2]
 catalog=json.loads((ROOT/'apps/server/internal/catalog/definitions.json').read_text())
-ROUTES={**{s:'belt' for s in ['conveyor','hand_belt','mechanical_belt','hydraulic_belt','electric_belt','precision_belt','flexible_belt']},'pipe':'pipe','return_pipe':'pipe','shaft':'shaft','cable':'cable','hydraulic_line':'hydraulic'}
+ROUTES={**{s:'belt' for s in ['hand_belt','mechanical_belt','hydraulic_belt','electric_belt','precision_belt','flexible_belt']},'underground_belt':'underground','pipe':'pipe','return_pipe':'pipe','shaft':'shaft','cable':'cable','hydraulic_line':'hydraulic'}
 APPROVED=['m05','m11','m35','m51','bus','chest','steam_tank','pump']
 MACHINE_BRIEFS='''manual workbench facade with one broad work surface, tool clamp and drawer
 manual sorting table facade with three large rectangular sorting trays
@@ -63,11 +63,6 @@ terminal robot acceptance pod facade with an upright empty inspection chamber an
 rotary calcining kiln facade with one broad angled drum and circular front furnace mouth'''.splitlines()
 briefs={f'm{n:02d}':v for n,v in enumerate(MACHINE_BRIEFS,1)}
 briefs.update({
-'miner':'legacy mining machine facade with a broad central drill spindle and reinforced lower base',
-'furnace':'legacy furnace facade with a squared firebox and two simple side vent panels',
-'assembler':'legacy assembler facade with one central gear chuck and two broad manipulator fixtures',
-'item_output':'legacy output port facade with left source compartment and right open transfer socket, no arrows',
-'item_input':'legacy input port facade with left open transfer socket and right receiving compartment, no arrows',
 'feeder':'automatic feeder facade with broad hopper above and short mechanical feeding chute below',
 'waste_port':'waste extraction dock facade with a large recycling hatch and coarse scrap intake, no recycling lettering',
 'buffer_chest':'logistics buffer warehouse facade with three horizontal drawers and a broad square outer shell',

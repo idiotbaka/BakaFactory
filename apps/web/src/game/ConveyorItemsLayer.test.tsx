@@ -43,7 +43,7 @@ function factory(tick: number): FactoryDetail {
   ].map((kind, index) => ({
     id: kind,
     factory_id: "factory",
-    building_type: kind,
+    building_type: ["m02", "feeder", "mechanical_belt", "feeder", "m05"][index],
     x: index - 2,
     y: 0,
     rotation: 0 as const,
@@ -52,7 +52,7 @@ function factory(tick: number): FactoryDetail {
   const transfer: ItemTransfer = {
     id: `event-${tick}`,
     payload_id: "ore",
-    item: "iron_ore",
+    item: "i0002",
     tick,
     source: buildings[tick === 1 ? 0 : 2],
     via: buildings[tick === 1 ? 1 : 3],
@@ -80,12 +80,10 @@ function factory(tick: number): FactoryDetail {
           cooldown: 0,
           status: tick === 1 ? "transporting" : "idle",
           belt:
-            tick === 1
-              ? { id: "ore", item: "iron_ore", progress: 0 }
-              : undefined,
+            tick === 1 ? { id: "ore", item: "i0002", progress: 0 } : undefined,
         },
         furnace: {
-          input: tick === 2 ? [{ item: "iron_ore", count: 1 }] : [],
+          input: tick === 2 ? [{ item: "i0002", count: 1 }] : [],
           output: [],
           progress: 0,
           duration: 4,
@@ -123,7 +121,7 @@ it.each([2, 4])(
     expect(sprite).not.toBeNull();
     expect(icon.querySelector(".item-sprite")).toHaveAttribute(
       "data-item-id",
-      "iron_ore",
+      "i0002",
     );
     expect(icon.style.transform).toContain("267px,315px");
     frame(1500 / tickRate);
@@ -145,7 +143,7 @@ it.each([2, 4])(
     expect(container.querySelector(".conveyor-payload")).toBeNull();
     // Visual completion never changes the server-confirmed inventory.
     expect(received.simulation?.buildings.furnace.input).toEqual([
-      { item: "iron_ore", count: 1 },
+      { item: "i0002", count: 1 },
     ]);
   },
 );

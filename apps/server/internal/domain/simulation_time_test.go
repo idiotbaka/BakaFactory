@@ -52,12 +52,12 @@ func TestHalfSecondStateAndLargeBeltBatch(t *testing.T) {
 
 func TestHalfSecondTransportIntervals(t *testing.T) {
 	for _, interval := range []string{"0.5", "1", "1.5", "60"} {
-		if !validTransportConfiguration("item_input", map[string]json.RawMessage{"interval": json.RawMessage(interval)}, Catalog{}) {
+		if !validTransportConfiguration("feeder", map[string]json.RawMessage{"interval": json.RawMessage(interval)}, Catalog{}) {
 			t.Fatalf("rejected interval %s", interval)
 		}
 	}
 	for _, interval := range []string{"0.25", "0", "60.5", "null", "\"0.5\""} {
-		if validTransportConfiguration("item_input", map[string]json.RawMessage{"interval": json.RawMessage(interval)}, Catalog{}) {
+		if validTransportConfiguration("feeder", map[string]json.RawMessage{"interval": json.RawMessage(interval)}, Catalog{}) {
 			t.Fatalf("accepted interval %s", interval)
 		}
 	}

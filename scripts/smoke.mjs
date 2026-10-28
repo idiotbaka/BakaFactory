@@ -212,7 +212,7 @@ try {
           status: "warehouse",
         },
       },
-      warehouse: { iron_ore: 12 },
+      warehouse: { i0002: 12 },
       transfers: [],
     },
   };

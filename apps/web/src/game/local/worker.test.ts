@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLocalFactory, editFactory } from "./state";
+import { createLocalFactory } from "./state";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 const user = {
   id: "owner",
@@ -24,12 +24,7 @@ beforeEach(async () => {
   original = self.onmessage;
   vi.stubGlobal("postMessage", post);
   await import("./simulation.worker");
-  const factory = editFactory(createLocalFactory(user, "暂停"), {
-    kind: "place",
-    id: "miner",
-    building_type: "miner",
-    placement: { x: 1, y: 1, rotation: 0 },
-  });
+  const factory = createLocalFactory(user, "暂停");
   send({ kind: "init", factory });
 });
 afterEach(() => {

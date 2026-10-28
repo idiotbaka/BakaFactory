@@ -185,7 +185,6 @@ export default function FactoryWorkspace({
       const definition = paletteCatalog.buildings.filter(
         (d) =>
           !d.fixed &&
-          !d.legacy &&
           !isWarehouseTerminal(d.id) &&
           d.id !== "bus" &&
           (d.tier ?? 1) <= stage,
@@ -333,7 +332,6 @@ export default function FactoryWorkspace({
   const placeable = catalog.buildings.filter(
     (d) =>
       !d.fixed &&
-      !d.legacy &&
       !isWarehouseTerminal(d.id) &&
       d.id !== "bus" &&
       (d.tier ?? 1) <= stage,
@@ -342,7 +340,7 @@ export default function FactoryWorkspace({
   const matchesCatalog = createCatalogSearch(catalogQuery);
   const definitions = (
     tab === "item"
-      ? catalog.items.filter((i) => !i.legacy)
+      ? catalog.items
       : placeable.filter(
           (d) => isLogisticsBuilding(d) === (tab === "logistics"),
         )
@@ -516,7 +514,7 @@ export default function FactoryWorkspace({
                     setSelection({
                       kind: "item",
                       id: catalog.items.find(
-                        (i) => !i.legacy && (i.tier ?? 1) === phaseFor("item"),
+                        (i) => (i.tier ?? 1) === phaseFor("item"),
                       )!.id,
                     });
                     setSelectedInstanceID(null);

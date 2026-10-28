@@ -45,7 +45,7 @@ if (
     "Building artwork manifest does not cover the catalog or has invalid dimensions",
   );
 function renderer(b) {
-  if (b.id === "conveyor" || b.role === "belt") return "belt";
+  if (b.role === "belt") return "belt";
   if (b.id === "pipe" || b.id === "return_pipe") return "pipe";
   return (
     { shaft: "shaft", cable: "cable", hydraulic_line: "hydraulic" }[b.role] ??

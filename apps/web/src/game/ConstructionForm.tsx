@@ -31,7 +31,6 @@ export default function ConstructionForm({
     (d) =>
       d.item &&
       !d.fixed &&
-      !d.legacy &&
       d.id !== "underground_belt" &&
       (d.tier ?? 1) <= stage,
   );

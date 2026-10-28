@@ -171,15 +171,7 @@ const ItemVisual = memo(function ItemVisual({
         <ItemSprite id={visual.item} />
       ) : (
         <svg viewBox="0 0 12 10" aria-hidden="true">
-          <path
-            d={
-              visual.item === "iron_plate"
-                ? "M2 3 7 1l3 2-5 2zM2 5l3 2 5-2M2 7l3 2 5-2"
-                : visual.item === "gear"
-                  ? "m4 1 4 0 3 4-3 4H4L1 5zM6 3v4M4 5h4"
-                  : "m2 7 1-5 4-1 3 5-4 3zM3 2l3 3 4 1M6 5v4"
-            }
-          />
+          <path d="m2 7 1-5 4-1 3 5-4 3zM3 2l3 3 4 1M6 5v4" />
         </svg>
       )}
       {showCounts && belt && (

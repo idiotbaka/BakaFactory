@@ -22,7 +22,7 @@ func TestCatalogValidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(valid.Items) != 356 || len(valid.Buildings) != 93 || len(valid.Recipes) != 335 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 32 {
+	if len(valid.Items) != 353 || len(valid.Buildings) != 87 || len(valid.Recipes) != 332 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 32 {
 		t.Fatal("missing production definitions")
 	}
 	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "off_grid_duration", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity"} {
@@ -37,7 +37,7 @@ func TestCatalogValidation(t *testing.T) {
 			case "unknown_ingredient":
 				c.Recipes[0].Inputs = map[string]int64{"missing": 1}
 			case "negative_quantity":
-				c.Recipes[0].Outputs = map[string]int64{"iron_plate": -1}
+				c.Recipes[0].Outputs = map[string]int64{"i0009": -1}
 			case "unknown_machine":
 				c.Recipes[0].BuildingType = "missing"
 			case "invalid_duration":

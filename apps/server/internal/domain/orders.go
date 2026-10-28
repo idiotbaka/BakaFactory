@@ -71,7 +71,7 @@ func validWorkshopOrder(p *IndustryState, c Catalog) bool {
 	total := 0
 	for index, step := range o.Steps {
 		r, ok := recipes[step.RecipeID]
-		if !ok || r.Legacy || !workshopMachineAvailable(c, p, r.BuildingType) || r.Tier > p.Stage || len(r.Conditions) != 0 || step.Batches < 1 || step.Batches > 100 {
+		if !ok || !workshopMachineAvailable(c, p, r.BuildingType) || r.Tier > p.Stage || len(r.Conditions) != 0 || step.Batches < 1 || step.Batches > 100 {
 			return false
 		}
 		if r.Gate != "" {

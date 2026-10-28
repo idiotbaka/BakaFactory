@@ -31,7 +31,6 @@ export function orderRecipes(
 ) {
   return source.recipes.filter(
     (r) =>
-      !r.legacy &&
       workshopMachineAvailable(p?.crafted, r.building_type) &&
       (r.tier ?? 1) <= (p?.stage ?? 1) &&
       (!r.gate || p?.milestones.includes(r.gate)) &&

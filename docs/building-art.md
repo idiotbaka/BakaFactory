@@ -1,10 +1,10 @@
 # 建筑与物流像素贴图
 
-地下传送带新增一个 SVG 物流定义，目录共 93 个建筑 ID（80 张正式机壳、13 个代码外观）。`UndergroundVisual.tsx` 复用传送带金属 / 深色 / 霓虹语言，以护罩位置和粉 / 青箭头区分两端；`BuildingSprite`、`DefinitionIcon` 与地图 / 预览均接入，不加载端口建筑 PNG。配方中的物品仍用独立像素贴图，详见 [地下传送带](underground-belts.md)。
+地下传送带新增一个 SVG 物流定义，当前目录共 87 个建筑 ID（75 张正式机壳、12 个代码外观）。`UndergroundVisual.tsx` 复用传送带金属 / 深色 / 霓虹语言，以护罩位置和粉 / 青箭头区分两端；`BuildingSprite`、`DefinitionIcon` 与地图 / 预览均接入，不加载端口建筑 PNG。配方中的物品仍用独立像素贴图，详见 [地下传送带](underground-belts.md)。
 
-2026-10-26 增加取货终端 `warehouse_pickup` 和存入终端 `warehouse_intake` 两张正式机壳，现为 **92 个 ID、80 张 PNG、12 个代码连接定义**。内置 ImageGen 以原 WH / 搬运站 / 控制台为参考生成，技术导出为 128×128 RGBA、64 逻辑格、二值透明、各 15 个不透明颜色；取货双显示窗 / 出料托盘，存入粉色货箱标志 / 四边接口，无烘焙方向文字。原图、提示词、导出脚本及哈希报告位于 `output/imagegen/p2-hatch-v1/`，其中 `process-sprites.mjs` 仅用于重新导出，需要可解析的 sharp 包，游戏运行 / 构建不依赖该包。下面的 90 ID / 78 张统计保留原整批美术制作记录，当前总数以上述增量为准。
+2026-10-26 增加取货终端 `warehouse_pickup` 和存入终端 `warehouse_intake` 两张正式机壳，这两张机壳继续保留，当前合计 **87 个 ID、75 张 PNG、12 个代码外观**。内置 ImageGen 以原 WH / 搬运站 / 控制台为参考生成，技术导出为 128×128 RGBA、64 逻辑格、二值透明、各 15 个不透明颜色；取货双显示窗 / 出料托盘，存入粉色货箱标志 / 四边接口，无烘焙方向文字。原图、提示词、导出脚本及哈希报告位于 `output/imagegen/p2-hatch-v1/`，其中 `process-sprites.mjs` 仅用于重新导出，需要可解析的 sharp 包，游戏运行 / 构建不依赖该包。早期测试机壳与旧带的目录项已移除，历史制作输出不参与运行资源加载。
 
-用户确认中等细节样稿后，已完成全量生成、处理与客户端接入。当前目录 **90 个建筑 / 物流 ID 全覆盖**：78 张透明机壳 PNG（73 个现行设施、5 个旧档设施），12 个定义使用代码连接外观（11 个现行设施、旧档 conveyor）。不增加玩法定义、运行状态、API 或存档字段。
+用户确认中等细节样稿后，已完成全量生成、处理与客户端接入。当前目录 **87 个建筑 / 物流 ID 全覆盖**：75 张透明机壳 PNG，12 个定义使用代码外观。早期测试设备的 5 张机壳 PNG 和旧传送带映射已移除。
 
 ## 美术与显示
 
@@ -36,8 +36,8 @@ ConveyorItemsLayer、payload 身份 / 成功收据、轨迹、机器进度与共
 
 | 路径                                                            | 用途                                              |
 | --------------------------------------------------------------- | ------------------------------------------------- |
-| `apps/web/src/assets/buildings/v1/*.png`                        | 78 张正式 128px 图片                              |
-| `apps/web/src/assets/buildings/v1/manifest.json`                | 全部 90 个稳定 ID 的 renderer / tier / color      |
+| `apps/web/src/assets/buildings/v1/*.png`                        | 75 张正式 128px 图片                              |
+| `apps/web/src/assets/buildings/v1/manifest.json`                | 全部 87 个稳定 ID 的 renderer / tier / color      |
 | `apps/web/src/game/buildingArtwork.ts`                          | 图片 URL 与阶段色；PNG 独立缓存、不内联主包       |
 | `apps/web/src/game/BuildingSprite.tsx` / `.css`                 | GUI 脚下光影、地图机壳阶段边框与液位              |
 | `apps/web/src/game/BuildingVisual.tsx` / `RouteVisual.tsx`      | 地图 / 预览共用显示、代码方向与连接图层           |

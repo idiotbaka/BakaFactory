@@ -105,9 +105,7 @@ export function benchmarkFixture(o: BenchmarkOptions): LocalFactory {
         const r =
           b.building_type === "m03"
             ? recipeDefinitions.get("r1007")!
-            : catalog.recipes.find(
-                (r) => r.building_type === "m05" && !r.legacy,
-              )!;
+            : catalog.recipes.find((r) => r.building_type === "m05")!;
         b.configuration = { recipe_id: r.id };
       }
     const botCount =

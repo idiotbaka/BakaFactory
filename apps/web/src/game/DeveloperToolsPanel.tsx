@@ -115,13 +115,11 @@ function ItemGrantControl({
               setError("");
             }}
           >
-            {catalog.items
-              .filter((i) => !i.legacy)
-              .map((i) => (
-                <option key={i.id} value={i.id}>
-                  {i.name}
-                </option>
-              ))}
+            {catalog.items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name}
+              </option>
+            ))}
           </GameSelect>
         </label>
         <label>

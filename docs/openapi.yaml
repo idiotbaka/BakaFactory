@@ -354,7 +354,7 @@ components:
             role: { type: string }
             belt_ticks: { type: integer, minimum: 1 }
             batch_size: { type: integer, minimum: 1, maximum: 100 }
-            legacy: { type: boolean }
+
             input_whitelist:
               type: array
               items: { type: string }
@@ -480,7 +480,7 @@ components:
         description: { type: string }
         power_kw: { type: integer, minimum: 0 }
         gate: { type: string }
-        legacy: { type: boolean }
+
         conditions:
           type: array
           items: { $ref: "#/components/schemas/RecipeCondition" }
@@ -531,7 +531,7 @@ components:
           properties:
             kind: { type: string }
             tier: { type: integer, minimum: 1, maximum: 6 }
-            legacy: { type: boolean }
+
             source_recipes:
               type: array
               items: { type: string }

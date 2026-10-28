@@ -14,7 +14,6 @@
   "传感控制箱": ["chuangankongzhixiang", "cgkzx"],
   "传感晶粒": ["chuanganjingli", "cgjl"],
   "传感晶粒 / 废气": ["chuanganjingli / feiqi", "cgjl / fq"],
-  "传送带": ["chuansongdai", "csd"],
   "伺服总装线": ["sifuzongzhuangxian", "sfzzx"],
   "伺服电机": ["sifudianji", "sfdj"],
   "低浓度酸液": ["dinongdusuanye", "dndsy"],
@@ -282,10 +281,7 @@
   "焦油渣": ["jiaoyouzha", "jyz"],
   "煅烧矿粉": ["duanshaokuangfen", "dskf"],
   "煅烧矿粉 / 废气": ["duanshaokuangfen / feiqi", "dskf / fq"],
-  "熔炉": ["ronglu", "rl"],
   "熔炉渣": ["rongluzha", "rlz"],
-  "物品输入口": ["wupinshurukou", "wpsrk"],
-  "物品输出口": ["wupinshuchukou", "wpsck"],
   "物流中央控制台": ["wuliuzhongyangkongzhitai", "wlzykzt"],
   "物流地址节点": ["wuliudizhijiedian", "wldzjd"],
   "物流型智能机器人": ["wuliuxingzhinengjiqiren", "wlxznjqr"],
@@ -437,7 +433,6 @@
   "薄膜沉积机": ["baomochenjiji", "bmcjj"],
   "蚀刻液": ["shikeye", "sky"],
   "蚀刻液 / 玻璃废屑": ["shikeye / bolifeixie", "sky / blfx"],
-  "装配机": ["zhuangpeiji", "zpj"],
   "视觉处理芯片": ["shijuechulixinpian", "sjclxp"],
   "视觉训练样本": ["shijuexunlianyangben", "sjxlyb"],
   "视觉识别固件": ["shijueshibiegujian", "sjsbgj"],
@@ -535,17 +530,12 @@
   "逻辑芯片晶粒": ["luojixinpianjingli", "ljxpjl"],
   "逻辑芯片晶粒 / 废气": ["luojixinpianjingli / feiqi", "ljxpjl / fq"],
   "酸性残渣": ["suanxingcanzha", "sxcz"],
-  "采矿机": ["caikuangji", "ckj"],
   "重油": ["zhongyou", "zy"],
   "重油 / 炭黑 / 污染残渣": [
     "zhongyou / tanhei / wurancanzha",
     "zy / th / wrcz"
   ],
   "金属边角料": ["jinshubianjiaoliao", "jsbjl"],
-  "铁板": ["tieban", "tb"],
-  "铁板熔炼": ["tiebanronglian", "tbrl"],
-  "铁矿石": ["tiekuangshi", "tks"],
-  "铁矿采集": ["tiekuangcaiji", "tkcj"],
   "铁质碎片": ["tiezhisuipian", "tzsp"],
   "铁质碎片 / 混合塑料 / 废铜线 / 玻璃陶瓷碎片 / 湿有机物 / 电子废件 / 废铝片 / 橡胶碎屑 / 砂土灰渣": [
     "tiezhisuipian / hunhesuliao / feitongxian / bolitaocisuipian / shiyoujiwu / dianzifeijian / feilvpian / xiangjiaosuixie / shatuhuizha",
@@ -622,7 +612,5 @@
   "高速传动轴": ["gaosuchuandongzhou", "gscdz"],
   "高速分拣机器人": ["gaosufenjianjiqiren", "gsfjjqr"],
   "高速精密传送带": ["gaosujingmichuansongdai", "gsjmcsd"],
-  "齿轮": ["chilun", "cl"],
-  "齿轮粉碎机": ["chilunfensuiji", "clfsj"],
-  "齿轮装配": ["chilunzhuangpei", "clzp"]
+  "齿轮粉碎机": ["chilunfensuiji", "clfsj"]
 }

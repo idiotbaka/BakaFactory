@@ -160,6 +160,12 @@ afterEach(async () => {
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
+function stockWorkbench() {
+  // Test-only stock: these tests exercise runtime persistence, not crafting.
+  FakeWorker.instances[0].factory!.simulation.warehouse[
+    buildingDefinitions.get("m01")!.item!
+  ] = 1;
+}
 describe("local persistence and cloud lifecycle", () => {
   it("gates item grants on visible developer tools, persists the shared ledger and retains normal online checks", async () => {
     await game.start();
@@ -803,7 +809,7 @@ describe("local persistence and cloud lifecycle", () => {
     await game.start();
     await game.create("本机旧进度");
     const factory = createLocalFactory(user, "手动云恢复");
-    factory.simulation.warehouse.iron_ore = 42;
+    factory.simulation.warehouse.i0002 = 42;
     vi.mocked(downloadSave).mockResolvedValue({
       version: 4,
       saved_at: "now",
@@ -811,7 +817,7 @@ describe("local persistence and cloud lifecycle", () => {
     });
     await game.restoreCloud();
     expect(view.factory?.id).toBe(factory.id);
-    expect(saved?.save?.factory.simulation?.warehouse.iron_ore).toBe(42);
+    expect(saved?.save?.factory.simulation?.warehouse.i0002).toBe(42);
     expect(saved?.cloudVersion).toBe(4);
     expect(view.paused).toBe(false);
     expect(view.dirty).toBe(false);
@@ -819,7 +825,8 @@ describe("local persistence and cloud lifecycle", () => {
   it("creates and edits locally and does not send factory snapshots during heartbeats", async () => {
     await game.start();
     const f = await game.create("本机");
-    await game.commands.placeBuilding(f.id, "miner", {
+    stockWorkbench();
+    await game.commands.placeBuilding(f.id, "m01", {
       x: 1,
       y: 1,
       rotation: 0,
@@ -874,7 +881,8 @@ describe("local persistence and cloud lifecycle", () => {
   it("never lets an upload acknowledgement replace newer live gameplay", async () => {
     await game.start();
     const f = await game.create("本机");
-    await game.commands.placeBuilding(f.id, "miner", {
+    stockWorkbench();
+    await game.commands.placeBuilding(f.id, "m01", {
       x: 1,
       y: 1,
       rotation: 0,
@@ -927,9 +935,10 @@ describe("local persistence and cloud lifecycle", () => {
   it("stops on IndexedDB failure and allows a successful retry", async () => {
     await game.start();
     await game.create("本机");
+    stockWorkbench();
     vi.mocked(writeLocal).mockRejectedValueOnce(new Error("quota"));
     await expect(
-      game.commands.placeBuilding(view.factory!.id, "miner", {
+      game.commands.placeBuilding(view.factory!.id, "m01", {
         x: 1,
         y: 1,
         rotation: 0,
@@ -964,7 +973,8 @@ describe("local persistence and cloud lifecycle", () => {
     }));
     await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
     expect(uploadSave).toHaveBeenCalledOnce();
-    await game.commands.placeBuilding(view.factory!.id, "miner", {
+    stockWorkbench();
+    await game.commands.placeBuilding(view.factory!.id, "m01", {
       x: 1,
       y: 1,
       rotation: 0,
@@ -982,7 +992,8 @@ describe("local persistence and cloud lifecycle", () => {
     expect(view.districts).toHaveLength(6);
     const child = view.districts!.find((f) => !f.headquarters)!;
     await game.world({ type: "select_district", id: child.id });
-    await game.commands.placeBuilding(child.id, "miner", {
+    stockWorkbench();
+    await game.commands.placeBuilding(child.id, "m01", {
       x: 1,
       y: 1,
       rotation: 0,

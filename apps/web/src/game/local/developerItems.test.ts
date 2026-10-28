@@ -12,10 +12,56 @@ const user = {
 };
 
 describe("developer item grants", () => {
+  it("keeps retired definitions out of the catalog and refuses their saved stock, buildings and recipes without mutation", () => {
+    const retiredItems = ["iron_ore", "iron_plate", "gear"];
+    const retiredBuildings = [
+      "miner",
+      "furnace",
+      "assembler",
+      "conveyor",
+      "item_input",
+      "item_output",
+    ];
+    const retiredRecipes = ["iron_mining", "iron_plate", "gear"];
+    expect(catalog.items.some((i) => retiredItems.includes(i.id))).toBe(false);
+    expect(catalog.buildings.some((b) => retiredBuildings.includes(b.id))).toBe(
+      false,
+    );
+    expect(catalog.recipes.some((r) => retiredRecipes.includes(r.id))).toBe(
+      false,
+    );
+    for (const item of retiredItems) {
+      const root = createWorld(user, "已移除物品");
+      root.simulation.warehouse[item] = 1;
+      const save = toSave(root),
+        before = structuredClone(save);
+      expect(() => validateSave(save, user.id)).toThrow("存档");
+      expect(save).toEqual(before);
+      expect(() =>
+        actWorld(root, { type: "developer_grant_item", item, count: 1 }),
+      ).toThrow("请选择");
+    }
+    for (const type of retiredBuildings) {
+      const root = createWorld(user, "已移除设备");
+      root.buildings[0].building_type = type;
+      const save = toSave(root),
+        before = structuredClone(save);
+      expect(() => validateSave(save, user.id)).toThrow("存档");
+      expect(save).toEqual(before);
+    }
+    for (const recipe_id of retiredRecipes) {
+      const root = createWorld(user, "已移除配方");
+      root.simulation.industry!.workshop = { recipe_id, progress: 0 };
+      const save = toSave(root),
+        before = structuredClone(save);
+      expect(() => validateSave(save, user.id)).toThrow("存档");
+      expect(save).toEqual(before);
+    }
+  });
   it("adds locked items to the single ledger from another district without fabricating production or stage progress", () => {
     const root = createWorld(user, "物品测试");
     root.active_district_id = root.districts![0].id;
-    const item = catalog.items.find((i) => !i.legacy && i.tier === 6)!.id;
+    const item = catalog.items.find((i) => i.tier === 6)!.id;
     root.simulation.warehouse[item] = 7;
     const before = structuredClone(root);
     const next = actWorld(root, {
@@ -55,7 +101,7 @@ describe("developer item grants", () => {
 
   it("supports every current catalog item, including fluid and DLC items, without a save format change", () => {
     let root = createWorld(user, "完整物品目录");
-    for (const item of catalog.items.filter((i) => !i.legacy)) {
+    for (const item of catalog.items) {
       root = actWorld(root, {
         type: "developer_grant_item",
         item: item.id,
@@ -63,7 +109,7 @@ describe("developer item grants", () => {
       });
     }
     const restored = validateSave(toSave(root), user.id);
-    for (const item of catalog.items.filter((i) => !i.legacy))
+    for (const item of catalog.items)
       expect(restored.simulation.warehouse[item.id]).toBe(1);
   });
 
@@ -83,17 +129,12 @@ describe("developer item grants", () => {
     },
   );
 
-  it("rejects unknown / legacy items and overflowing totals atomically", () => {
+  it("rejects unknown items and overflowing totals atomically", () => {
     const root = createWorld(user, "原子校验");
     const item = itemID("垃圾包");
     root.simulation.warehouse[item] = Number.MAX_SAFE_INTEGER;
     const before = structuredClone(root);
-    for (const id of [
-      "",
-      "__proto__",
-      "missing",
-      ...catalog.items.filter((i) => i.legacy).map((i) => i.id),
-    ])
+    for (const id of ["", "__proto__", "missing"])
       expect(() =>
         actWorld(root, { type: "developer_grant_item", item: id, count: 1 }),
       ).toThrow("请选择");

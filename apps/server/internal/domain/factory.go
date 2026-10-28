@@ -68,7 +68,6 @@ type ItemDefinition struct {
 	Definition
 	Kind          string   `json:"kind,omitempty"`
 	Tier          int      `json:"tier,omitempty"`
-	Legacy        bool     `json:"legacy,omitempty"`
 	SourceRecipes []string `json:"source_recipes,omitempty"`
 	UsedBy        []string `json:"used_by,omitempty"`
 }
@@ -95,7 +94,6 @@ type BuildingDefinition struct {
 	Role           string   `json:"role,omitempty"`
 	BeltTicks      int      `json:"belt_ticks,omitempty"`
 	BatchSize      int      `json:"batch_size,omitempty"`
-	Legacy         bool     `json:"legacy,omitempty"`
 }
 type RecipeDefinition struct {
 	ID           string            `json:"id"`
@@ -108,7 +106,6 @@ type RecipeDefinition struct {
 	Description  string            `json:"description,omitempty"`
 	PowerKW      int               `json:"power_kw,omitempty"`
 	Gate         string            `json:"gate,omitempty"`
-	Legacy       bool              `json:"legacy,omitempty"`
 	Conditions   []RecipeCondition `json:"conditions,omitempty"`
 }
 type RecipeCondition struct {
@@ -193,7 +190,7 @@ func (c Catalog) Validate() error {
 		if len(r.Inputs) > 12 || len(r.Outputs) > 12 || r.PowerKW < 0 || r.PowerKW > 1000 || r.Tier < 0 || r.Tier > 6 || (r.Gate != "" && !items[r.Gate]) {
 			return fmt.Errorf("invalid recipe capacity or gate: %s", r.ID)
 		}
-		if !ids.MatchString(r.ID) || recipes[r.ID] || r.Name == "" || !buildings[r.BuildingType] || r.DurationMS < TickDurationMS || r.DurationMS%TickDurationMS != 0 || (len(r.Inputs) == 0 && r.BuildingType != "miner") || len(r.Outputs) == 0 {
+		if !ids.MatchString(r.ID) || recipes[r.ID] || r.Name == "" || !buildings[r.BuildingType] || r.DurationMS < TickDurationMS || r.DurationMS%TickDurationMS != 0 || len(r.Inputs) == 0 || len(r.Outputs) == 0 {
 			return fmt.Errorf("invalid recipe: %s", r.ID)
 		}
 		for _, ingredients := range []map[string]int64{r.Inputs, r.Outputs} {

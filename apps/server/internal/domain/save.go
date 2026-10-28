@@ -77,7 +77,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			if capacity == 0 {
 				capacity = 1
 			}
-			if (b.BuildingType != "conveyor" && d.Role != "belt") || m.Belt.Progress > duration || m.Belt.Count != nil && *m.Belt.Count > capacity {
+			if d.Role != "belt" || m.Belt.Progress > duration || m.Belt.Count != nil && *m.Belt.Count > capacity {
 				return bad()
 			}
 			for _, item := range c.Items {

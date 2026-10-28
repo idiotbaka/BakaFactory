@@ -134,7 +134,7 @@ describe("one worker world with independent districts", () => {
         {
           kind: "place",
           id: "stale",
-          building_type: "miner",
+          building_type: "m01",
           placement: { x: 1, y: 1, rotation: 0 },
         },
         root.id,

@@ -248,7 +248,7 @@ func heartbeatID(t *testing.T, f authFixture, cookie *http.Cookie) string {
 }
 func sampleSave(owner string) domain.GameSave {
 	f := domain.FactoryDetail{Factory: domain.Factory{ID: "client-factory", OwnerID: owner, Name: "本机工厂", Width: 21, Height: 21, CreatedAt: "2026-10-20T00:00:00Z", Revision: 7}, Buildings: []domain.BuildingInstance{{ID: "bus", FactoryID: "client-factory", BuildingType: "bus", Configuration: json.RawMessage(`{}`)}}}
-	f.Simulation = domain.Simulation{Tick: 7, TickRate: 1, Buildings: map[string]*domain.MachineState{"bus": {Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "warehouse"}}, Warehouse: map[string]int64{"iron_ore": 5}, Transfers: []domain.ItemTransfer{}}
+	f.Simulation = domain.Simulation{Tick: 7, TickRate: 1, Buildings: map[string]*domain.MachineState{"bus": {Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "warehouse"}}, Warehouse: map[string]int64{"i0002": 5}, Transfers: []domain.ItemTransfer{}}
 	return domain.GameSave{FormatVersion: 1, RulesVersion: 1, Factory: f}
 }
 
@@ -264,7 +264,7 @@ func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
 	child := sampleSave(user.ID).Factory
 	child.ID = "shared-child"
 	child.Buildings[0].FactoryID = child.ID
-	child.Simulation.Warehouse["iron_ore"] = 3
+	child.Simulation.Warehouse["i0002"] = 3
 	save.Factory.Districts = []domain.FactoryDetail{child}
 	save.Factory.ActiveDistrictID = child.ID
 	if w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie); w.Code != 200 {
@@ -272,7 +272,7 @@ func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
 	}
 	// The client merges only public stock, then saves one canonical v3 ledger.
 	save.RulesVersion = 3
-	save.Factory.Simulation.Warehouse["iron_ore"] = 8
+	save.Factory.Simulation.Warehouse["i0002"] = 8
 	save.Factory.Districts[0].Simulation.Warehouse = map[string]int64{}
 	if w := f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 200 {
 		t.Fatal("shared warehouse upgrade rejected", w.Code, w.Body)
@@ -284,7 +284,7 @@ func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 2 || !reflect.DeepEqual(response.Backup.Save, save) {
 		t.Fatal("shared stock changed during cloud roundtrip", err)
 	}
-	save.Factory.Districts[0].Simulation.Warehouse["iron_ore"] = 8
+	save.Factory.Districts[0].Simulation.Warehouse["i0002"] = 8
 	if w := f.cloudRequest("PUT", session, uploadBody(t, 2, save), cookie); w.Code != 400 {
 		t.Fatal("duplicate district stock accepted in a v3 save", w.Code, w.Body)
 	}
@@ -294,7 +294,7 @@ func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
 		t.Fatal("future warehouse semantics accepted", w.Code, w.Body)
 	}
 	w = f.cloudRequest("GET", session, "", cookie)
-	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 2 || response.Backup.Save.Factory.Simulation.Warehouse["iron_ore"] != 8 {
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil || response.Backup.Version != 2 || response.Backup.Save.Factory.Simulation.Warehouse["i0002"] != 8 {
 		t.Fatal("rejected upgrade overwrote the cloud backup", err)
 	}
 }
@@ -471,7 +471,8 @@ func TestCloudSaveInputOriginAndFormatBoundaries(t *testing.T) {
 	for _, change := range []func(*domain.GameSave){
 		func(s *domain.GameSave) { s.FormatVersion = 99 },
 		func(s *domain.GameSave) { s.Factory.Buildings[0].Rotation = 90 },
-		func(s *domain.GameSave) { s.Factory.Simulation.Warehouse["iron_ore"] = domain.MaxSafeInteger + 1 },
+		func(s *domain.GameSave) { s.Factory.Simulation.Warehouse["i0002"] = domain.MaxSafeInteger + 1 },
+		func(s *domain.GameSave) { s.Factory.Simulation.Warehouse["iron_ore"] = 1 },
 		func(s *domain.GameSave) { s.Factory.Simulation.Tick = -1 },
 		func(s *domain.GameSave) { delete(s.Factory.Simulation.Buildings, "bus") },
 	} {

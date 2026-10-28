@@ -280,14 +280,14 @@ describe("paid blueprint construction and physical reclamation", () => {
     expect(root.districts![0].simulation.warehouse[device] ?? 0).toBe(0);
     expect(root.simulation.warehouse[device]).toBe(1);
   });
-  it("rejects missing stock, energy, legacy types, locked recipes, invalid positions and permissions atomically", () => {
+  it("rejects missing stock, energy, unknown types, locked recipes, invalid positions and permissions atomically", () => {
     const root = setup(),
       baseline = structuredClone(root);
     for (const c of [
       { x: 11 },
       { x: 0, y: 0 },
       { building_type: "bus" },
-      { building_type: "miner" },
+      { building_type: "missing_machine" },
       { recipe_id: "r1001" },
       { recipe_id: "unknown" },
       { factory_id: root.districts![0].id },

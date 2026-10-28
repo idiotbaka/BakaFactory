@@ -3,9 +3,6 @@
   "size": 128,
   "logicalSize": 32,
   "items": {
-    "gear": {
-      "tier": 1
-    },
     "i0001": {
       "tier": 1
     },
@@ -1061,12 +1058,6 @@
     },
     "i0352": {
       "tier": 6
-    },
-    "iron_ore": {
-      "tier": 1
-    },
-    "iron_plate": {
-      "tier": 1
     },
     "d0001": {
       "tier": 2

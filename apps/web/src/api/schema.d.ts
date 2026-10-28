@@ -281,7 +281,6 @@ export interface components {
             role?: string;
             belt_ticks?: number;
             batch_size?: number;
-            legacy?: boolean;
             input_whitelist?: string[];
         };
         ItemStack: {
@@ -372,7 +371,6 @@ export interface components {
             description?: string;
             power_kw?: number;
             gate?: string;
-            legacy?: boolean;
             conditions?: components["schemas"]["RecipeCondition"][];
             inputs: {
                 [key: string]: number;
@@ -397,7 +395,6 @@ export interface components {
         ItemDefinition: components["schemas"]["Definition"] & {
             kind?: string;
             tier?: number;
-            legacy?: boolean;
             source_recipes?: string[];
             used_by?: string[];
         };

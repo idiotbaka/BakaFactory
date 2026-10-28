@@ -1,6 +1,6 @@
 # 当前架构
 
-开发者物品获取使用 `WorldAction.developer_grant_item`，由现有 Worker 串行执行 `actWorld`：在克隆世界中验证当前非旧档物品与正安全整数数量，通过 `store` 检查相加溢出后仅更新主厂总仓库，并记录 discovery、同步获得类任务及递增 revision。失败不提交克隆。`GameRuntime.world` 要求开发者入口已开启，正常在线许可 / Worker 暂停检查继续适用；成功结果通过既有完整快照与 IndexedDB 保存流程发布，库存随正常云备份上传。仅新增客户端操作，无 HTTP 协议、存档字段、版本或数据库迁移。
+开发者物品获取使用 `WorldAction.developer_grant_item`，由现有 Worker 串行执行 `actWorld`：在克隆世界中验证当前物品与正安全整数数量，通过 `store` 检查相加溢出后仅更新主厂总仓库，并记录 discovery、同步获得类任务及递增 revision。失败不提交克隆。`GameRuntime.world` 要求开发者入口已开启，正常在线许可 / Worker 暂停检查继续适用；成功结果通过既有完整快照与 IndexedDB 保存流程发布，库存随正常云备份上传。仅新增客户端操作，无 HTTP 协议、存档字段、版本或数据库迁移。
 
 机器通过 `auto_eject` Worker 行业编辑保存实例 `configuration.auto_eject`，客户端与 Go 均限制为配方型生产机器的可选布尔配置。固体规划器新增正前缘候选，与投料机共用来源 / 容量预留、腾空依赖、先扣后收及动画收据；无新计时器、API 结构、存档版本或数据库迁移，见 [机器自动弹出](auto-ejection.md)。
 
@@ -30,7 +30,7 @@
 
 Go 的生产 FileServer 对成功的 Vite 八位内容哈希资源和版本化 Fusion Pixel 字体设置一年 public / immutable 缓存；入口 HTML、favicon 与其他未版本化文件使用 no-cache，每次复用前校验。仅静态 200 / 206 / 304 可覆盖全局 no-store；API、健康检查、重定向与静态错误仍 no-store。nginx 默认透传，不统一覆盖 Cache-Control 或开启账号共享缓存；发布时保留旧哈希资源，不原地改写版本化文件。完整边界及步骤见 [static-assets.md](static-assets.md)。
 
-建筑 / 物流美术属于客户端显示层：78 张 128px PNG 与 12 个代码连接定义覆盖全部 90 个目录 ID。DefinitionIcon / BuildingSprite 提供 GUI，BuildingVisual 提供地图与预览；buildingConnections 复用原方向邻接选择，routeGeometry 缓存整数 SVG。贴图索引和几何独立分包，图片以外部 URL 缓存；颜色 / 端口 / 液位只读目录、布局与确认状态，不增加 Worker、API、数据库迁移或存档字段。详见 [building-art.md](building-art.md)。
+建筑 / 物流美术属于客户端显示层：75 张 128px PNG 与 12 个代码外观覆盖全部 87 个目录 ID。DefinitionIcon / BuildingSprite 提供 GUI，BuildingVisual 提供地图与预览；buildingConnections 复用原方向邻接选择，routeGeometry 缓存整数 SVG。贴图索引和几何独立分包，图片以外部 URL 缓存；颜色 / 端口 / 液位只读目录、布局与确认状态，不增加 Worker、API、数据库迁移或存档字段。详见 [building-art.md](building-art.md)。
 
 物品贴图为客户端静态资源：按稳定物品 ID 查找 128px PNG，GUI 与传送带共用 ItemSprite，阶段脚下光影只读资源清单中的 tier。资源索引单独分包、PNG 独立缓存，不进入 Worker、GameSave、IndexedDB 或云备份，不修改定义与迁移。传送带只替换原 payload 节点内部图形，继续消费原成功收据与共享帧时钟；素材流水线见 [item-art.md](item-art.md)。
 
@@ -146,7 +146,7 @@ D2 新增 `local/fluids.ts` 定向整单位传输、`fluidConfig.ts` / `fluidAct
 
 ## 本机时钟与原子操作
 
-玩法存档仍为 format_version=1，新的 rules_version=2 增加 simulation.industry（阶段、永久里程碑、累计制造数、可选工作室队列）、机器可选 fuel / energy_kj、configuration.recipe_id。客户端读取 rules_version=1 时无损补入初始阶段，保留旧测试机器、库存、tick 和 ID，当前本机写入与上传使用版本 3，共用总仓库升级见本文开头。服务端兼容接受 1/2/3 三种规则版本，现有数据库迁移无需修改。
+玩法存档仍为 format_version=1，新的 rules_version=2 增加 simulation.industry（阶段、永久里程碑、累计制造数、可选工作室队列）、机器可选 fuel / energy_kj、configuration.recipe_id。客户端读取 rules_version=1 时无损补入初始阶段，保留当前目录内的机器、库存、tick 和 ID；含已移除测试内容的存档拒绝读取并保留原档，当前本机写入与上传使用版本 3，共用总仓库升级见本文开头。服务端兼容接受 1/2/3 三种规则版本，现有数据库迁移无需修改。
 
 1 tick = 0.5 秒，`simulationTime.ts` 共用时基；生产进度 / 冷却用秒、带载荷进度用整数 tick，能源以精确 0.5 kJ 结算。物料管道与机器人现场移动每半秒动作一次，机器人装卸 / 作业与过境保留秒级节奏。一次只推进一刻，不按计时器延误累加追刻；唤醒间隔超过 2500ms 时跳过这次计算。关闭、后台、休眠、断网或在线许可失效均暂停，恢复后重新等待半秒，不产生离线收益。
 

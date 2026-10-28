@@ -1,7 +1,7 @@
 import type { BuildingInstance } from "../../api/client";
 import { buildingDefinitions, catalog } from "./catalog";
 
-// Recipe-bearing production machines, including legacy machines. Logistics,
+// Recipe-bearing production machines. Logistics,
 // extractors and utility-only facilities retain their own transport rules.
 const machines = new Set(
   catalog.recipes

@@ -87,12 +87,12 @@ export function auditClosure(c) {
   while (changed) {
     changed = false;
     for (const b of c.buildings)
-      if (!b.legacy && facility(b.id) && !machines.has(b.id)) {
+      if (facility(b.id) && !machines.has(b.id)) {
         machines.add(b.id);
         changed = true;
       }
     for (const r of c.recipes)
-      if (!r.legacy && !recipes.has(r.id) && !blocked(r).length) {
+      if (!recipes.has(r.id) && !blocked(r).length) {
         recipes.add(r.id);
         Object.keys(r.outputs).forEach((i) => items.add(i));
         witnesses.push({ recipe: r.id, stage });
@@ -157,7 +157,7 @@ export function auditClosure(c) {
       reached: items.has(s.milestone_item),
     })),
     unreachable: c.recipes
-      .filter((r) => !r.legacy && !recipes.has(r.id))
+      .filter((r) => !recipes.has(r.id))
       .map((r) => ({ id: r.id, reasons: blocked(r) })),
   };
 }

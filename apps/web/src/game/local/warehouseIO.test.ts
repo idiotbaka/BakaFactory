@@ -192,7 +192,7 @@ describe("terminal transfers", () => {
     const b = node(f, "pickup", pickupType, 3, 3, { output_items: [item] });
     node(f, "front", "hand_belt", 4, 3);
     f.simulation.buildings.front.belt = { id: "occupied", item, progress: 2 };
-    node(f, "side", "item_output", 3, 4, {}, 270);
+    node(f, "side", "feeder", 3, 4, {}, 270);
     node(f, "side-chest", "chest", 3, 5);
     f.simulation.warehouse[item] = 5;
     move(f);
@@ -238,7 +238,7 @@ describe("terminal transfers", () => {
     let f = start(2, true);
     const item = itemID("基础铁板");
     node(f, "pickup", pickupType, 3, 3, { output_items: [item] });
-    node(f, "port", "item_output", 4, 3);
+    node(f, "port", "feeder", 4, 3);
     node(f, "chest", "chest", 5, 3);
     f.simulation.warehouse[item] = 4;
     move(f);

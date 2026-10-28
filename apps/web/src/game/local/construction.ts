@@ -79,7 +79,6 @@ export function constructionValid(root: LocalFactory, r: Robot): boolean {
     !validSize(d, c.size) ||
     !inBounds(c) ||
     d.fixed ||
-    d.legacy ||
     (d.tier ?? 1) > (root.simulation.industry?.stage ?? 1)
   )
     return false;

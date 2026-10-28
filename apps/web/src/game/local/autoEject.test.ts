@@ -149,7 +149,7 @@ describe("machine automatic product ejection", () => {
       expect(() => validateSave(bad, user.id)).toThrow();
     }
     expect(f).toEqual(before);
-    expect(canAutoEject("miner")).toBe(true);
+    expect(canAutoEject("m02")).toBe(true);
     expect(canAutoEject("feeder")).toBe(false);
     expect(canAutoEject("waste_extractor")).toBe(false);
   });
@@ -446,8 +446,9 @@ describe("machine automatic product ejection", () => {
     expect(total(next, copper)).toBe(2);
     expect(total(next, iron)).toBe(30);
     f.buildings.find((b) => b.id === "far")!.building_type = "cable";
-    node(f, "slow-arm", "item_output", 4, 2, 90);
+    node(f, "slow-arm", "feeder", 4, 2, 90);
     node(f, "slow-box", "chest", 4, 1);
+    f.simulation.buildings["slow-box"].output = [{ item: copper, count: 99 }];
     const partial = step(f);
     expect(partial.simulation.buildings.target.belt).toMatchObject({
       id: "old",
@@ -457,7 +458,7 @@ describe("machine automatic product ejection", () => {
     expect(partial.simulation.buildings.source.output).toEqual([
       { item: iron, count: 30 },
     ]);
-    expect(total(partial, copper)).toBe(2);
+    expect(total(partial, copper)).toBe(101);
   });
 
   it.each([

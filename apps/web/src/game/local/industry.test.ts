@@ -517,14 +517,12 @@ describe("recycling gameplay", () => {
     expect(f.simulation.warehouse[itemID("流水线机械手")]).toBe(1);
     expect(f.simulation.industry?.milestones).toEqual([itemID("流水线机械手")]);
   });
-  it("upgrades old rules without deleting legacy machines, inventories or tick", () => {
-    let f = editFactory(start(), {
-      kind: "place",
-      id: "legacy",
-      building_type: "miner",
-      placement: { x: 1, y: 0, rotation: 0 },
-    });
-    f = advance(f, 3);
+  it("upgrades old rules without changing current machine inventory or tick", () => {
+    const f = install(start(), "m01");
+    f.simulation.tick = 6;
+    f.simulation.buildings.m01.output = [
+      { item: itemID("简易支架"), count: 3 },
+    ];
     const old = {
       format_version: 1,
       rules_version: 1,
@@ -533,7 +531,7 @@ describe("recycling gameplay", () => {
     delete old.factory.simulation.industry;
     const upgraded = validateSave(old, user.id);
     expect(upgraded.simulation.tick).toBe(6);
-    expect(upgraded.simulation.buildings.legacy.output[0].count).toBe(3);
+    expect(upgraded.simulation.buildings.m01.output[0].count).toBe(3);
     expect(upgraded.simulation.industry?.stage).toBe(1);
     expect(toSave(upgraded).rules_version).toBe(3);
   });

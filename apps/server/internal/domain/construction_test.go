@@ -8,7 +8,7 @@ import (
 )
 
 func constructionFixture() (FactoryDetail, Catalog) {
-	c := Catalog{Robots: []RobotDefinition{{Item: "smart", Tier: 6, Energy: "electric", EnergyCapacityKJ: 30000, Capacity: 32, ActionTicks: 2, CrossDistrict: true, Role: "smart"}}, Items: []ItemDefinition{{Definition: Definition{ID: "device"}}}, Buildings: []BuildingDefinition{{Definition: Definition{ID: "station"}, Role: "station", Energy: "electric", StationCapacityKJ: 30000}, {Definition: Definition{ID: "machine"}, Item: "device", Tier: 1}, {Definition: Definition{ID: "source"}, Item: "device", Role: "source"}, {Definition: Definition{ID: "legacy"}, Item: "device", Legacy: true}}, Recipes: []RecipeDefinition{{ID: "recipe", BuildingType: "machine", Tier: 1}}}
+	c := Catalog{Robots: []RobotDefinition{{Item: "smart", Tier: 6, Energy: "electric", EnergyCapacityKJ: 30000, Capacity: 32, ActionTicks: 2, CrossDistrict: true, Role: "smart"}}, Items: []ItemDefinition{{Definition: Definition{ID: "device"}}}, Buildings: []BuildingDefinition{{Definition: Definition{ID: "station"}, Role: "station", Energy: "electric", StationCapacityKJ: 30000}, {Definition: Definition{ID: "machine"}, Item: "device", Tier: 1}, {Definition: Definition{ID: "source"}, Item: "device", Role: "source"}}, Recipes: []RecipeDefinition{{ID: "recipe", BuildingType: "machine", Tier: 1}}}
 	f := FactoryDetail{Factory: Factory{ID: "home"}, Buildings: []BuildingInstance{{ID: "wh", BuildingType: "bus"}, {ID: "s", BuildingType: "station", X: 4}}, Simulation: Simulation{Industry: &IndustryState{Stage: 6}}, Districts: []FactoryDetail{{Factory: Factory{ID: "away"}, Buildings: []BuildingInstance{{ID: "wh-away", BuildingType: "bus"}}}}}
 	f.Robots = []RobotState{{ID: "r", Item: "smart", HomeFactoryID: "home", HomeStation: "s", FactoryID: "home", X: 5, EnergyKJ: 100, Enabled: true, AllowedZones: []string{"home", "away"}, Priority: 3, Status: "constructing", WorkProgress: 9, Cargo: &Stack{Item: "device", Count: 1}, Construction: &RobotConstruction{ID: "site", FactoryID: "away", BuildingType: "machine", X: 6, Y: 2, Rotation: 90}}}
 	return f, c
@@ -43,7 +43,7 @@ func TestConstructionWorldBoundsAndReturnStates(t *testing.T) {
 		"work limit":    func(f *FactoryDetail) { f.Robots[0].WorkProgress = 11 },
 		"wrong item":    func(f *FactoryDetail) { f.Robots[0].Cargo.Item = "smart" },
 		"role":          func(f *FactoryDetail) { f.Robots[0].Task = &RobotTask{} },
-		"legacy":        func(f *FactoryDetail) { f.Robots[0].Construction.BuildingType = "legacy" },
+		"unknown type":  func(f *FactoryDetail) { f.Robots[0].Construction.BuildingType = "missing" },
 		"rotation":      func(f *FactoryDetail) { f.Robots[0].Construction.Rotation = 45 },
 		"bounds":        func(f *FactoryDetail) { f.Robots[0].Construction.X = 11 },
 		"existing ID":   func(f *FactoryDetail) { f.Robots[0].Construction.ID = "wh" },

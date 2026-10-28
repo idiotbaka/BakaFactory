@@ -55,7 +55,7 @@ it("uses actual item stage for floor color, including the early P2 pipe", () => 
   // This item is unlocked in P2 while its original catalog color is P3 mint.
   expect(itemSpriteColor("i0170")).toBe("#a5d4b2");
   expect(itemSpriteColor("i0341")).toBe("#ff72cf");
-  expect(itemSpriteColor("iron_ore")).toBe("#ffc879");
+  expect(itemSpriteColor("i0002")).toBe("#ffc879");
 });
 
 it("keeps an SVG fallback for definitions with no raster asset", () => {

@@ -237,10 +237,7 @@ function ItemInfoScope({
                 </div>
                 <div>
                   <dt>所属阶段</dt>
-                  <dd>
-                    P{item.tier ?? 1}
-                    {item.legacy ? " · 旧版兼容" : ""}
-                  </dd>
+                  <dd>P{item.tier ?? 1}</dd>
                 </div>
               </dl>
               {!!facilities.length && (
@@ -315,9 +312,6 @@ function ItemInfoScope({
                         </span>
                       </div>
                     </div>
-                    {recipe.legacy && (
-                      <p className="item-info-note">旧版兼容配方</p>
-                    )}
                     {!stageReady && (
                       <p className="item-info-locked">阶段条件未满足</p>
                     )}
@@ -370,10 +364,7 @@ function ItemInfoScope({
                 );
               })}
               {!sources.length && item.id !== catalog.root_item && (
-                <p>
-                  当前目录没有该道具的加工配方
-                  {item.legacy ? "，仅保留旧存档兼容" : ""}。
-                </p>
+                <p>当前目录没有该道具的加工配方。</p>
               )}
             </div>
           </div>,

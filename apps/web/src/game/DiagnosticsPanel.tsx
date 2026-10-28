@@ -27,7 +27,7 @@ export default function DiagnosticsPanel({
   const [query, setQuery] = useState(""),
     [item, setItem] = useState(catalog.root_item ?? "");
   const matchesCatalog = createCatalogSearch(query);
-  const items = catalog.items.filter((i) => !i.legacy && matchesCatalog(i));
+  const items = catalog.items.filter((i) => matchesCatalog(i));
   const selected = items.find((i) => i.id === item) ?? items[0];
   const number = (n: number) =>
     n.toLocaleString(undefined, { maximumFractionDigits: 2 });

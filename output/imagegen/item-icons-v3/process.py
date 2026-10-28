@@ -196,6 +196,7 @@ def main():
     for batch in plan['batches']:
         source=Image.open(OUT/batch['source']).convert('RGBA')
         regions=extract(source,batch['items'])
+        batch = {**batch, 'items': [item for item in batch['items'] if item['id'] in lookup]}
         for item in batch['items']:
             item_id=item['id']
             region,bounds=regions[item_id]
@@ -209,11 +210,14 @@ def main():
             provenance.append({**item,'source':origin,'source_bounds':bounds})
         contacts(batch['items'],icons,font,f"P{batch['stage']}-items")
         print(f"P{batch['stage']}: exported {len(batch['items'])} items")
-    for old,new in plan['legacy_aliases'].items():
-        icons[old]=icons[new].copy()
-        index[old]={'tier':1}
-        provenance.append({'id':old,'name':lookup[old]['name'],'tier':1,'legacy_alias':new})
-    assert set(icons)==set(lookup), ('Catalog coverage mismatch',set(lookup)-set(icons))
+    # Supplemental assets (such as DLC items) have their own source batches.
+    # Keep their existing PNGs and manifest entries without rewriting them.
+    for item_id in set(lookup)-set(icons):
+        if not (ASSETS/f'{item_id}.png').is_file():
+            raise RuntimeError('Missing supplemental item sprite: '+item_id)
+        index[item_id]={'tier':lookup[item_id]['tier']}
+        provenance.append({'id':item_id,'source':'supplemental asset'})
+    assert set(index)==set(lookup), ('Catalog coverage mismatch',set(lookup)-set(index))
     duplicates={}
     for item_id,icon in icons.items():
         production=icon.resize((128,128),Image.Resampling.NEAREST)
@@ -230,10 +234,10 @@ def main():
                        'alpha':sorted(alpha),'opaque_colors':len(colors),'bounds32':bounds,
                        'black_pixels32':sum(p==BLACK for p in icon.get_flattened_data()),'sha256':digest})
     repeated=[v for v in duplicates.values() if len(v)>1]
-    assert all(set(group) in [set(['iron_plate','i0045']),set(['gear','i0049'])] for group in repeated),repeated
+    assert not repeated,repeated
     (ASSETS/'manifest.json').write_text(json.dumps({'version':3,'size':128,'logicalSize':32,'items':dict(sorted(index.items()))},ensure_ascii=False,indent=2)+'\n')
     (OUT/'manifest.json').write_text(json.dumps({'version':3,'generator':'built-in image_gen','items':provenance},ensure_ascii=False,indent=2)+'\n')
-    (OUT/'validation.json').write_text(json.dumps({'count':len(report),'current_items':352,'legacy_items':3,'duplicates':repeated,'items':report},indent=2)+'\n')
+    (OUT/'validation.json').write_text(json.dumps({'count':len(report),'current_items':len(index),'duplicates':repeated,'items':report},indent=2)+'\n')
     showcase=[lookup[i] for i in ['i0001','i0002','i0004','i0049','i0110','i0108','i0139','i0146','i0192','i0213','i0248','i0264','i0328','i0331','i0334','i0341']]
     contacts(showcase,icons,font,'showcase',columns=4)
     print(f"Validated {len(icons)} unique IDs; 128px production PNGs written to {ASSETS.relative_to(ROOT)}")

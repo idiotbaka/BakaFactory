@@ -365,15 +365,12 @@ Each object must be drawn as a genuine tiny 16-bit console sprite: big solid squ
 Palette: dark navy/black contours, slate/lavender metal, warm cream highlights, vivid pink and bright cyan accents. Copper remains warm orange; glass/liquid identifiable by shape. Different items need different shapes and features, NOT identical templates recolored.
 ALL background and gutters TRANSPARENT alpha. NO stage-colored outlines, NO halos, NO floor shadows. NO labels, NO numbers, NO letters, NO text, NO UI panels, NO cell borders or guide lines. Reference is for pixel style and material treatment, NOT for repeating the same objects. Use the exact new object list below. Each listed item appears ONCE in its specified cell.
 '''
-all_items = {i['id']:i for i in catalog['items']}
 plan={'version':3,'export_size':128,'logical_size':32,'black_outline_logical_px':1,'batches':[]}
 for stage, text in BRIEFS.items():
- items=sorted([i for i in catalog['items'] if not i.get('legacy') and i['tier']==stage],key=lambda i:i['id'])
+ items=sorted([i for i in catalog['items'] if i['id'].startswith('i') and i['tier']==stage],key=lambda i:i['id'])
  briefs=text.splitlines()
  assert len(briefs)==len(items),(stage,len(briefs),len(items))
  entries=[{'id':i['id'],'name':i['name'],'tier':stage,'brief':brief,'slot':n} for n,(i,brief) in enumerate(zip(items,briefs))]
- if stage==1:
-  entries.append({'id':'iron_ore','name':all_items['iron_ore']['name'],'tier':1,'brief':'rough chunky iron ore rock with two pale cyan mineral facets','slot':63})
  lines=[]
  for n in range(64):
   subject=entries[n]['brief'] if n<len(entries) else 'EMPTY transparent cell, no object'
@@ -382,6 +379,5 @@ for stage, text in BRIEFS.items():
  filename=f'p{stage}-prompt.txt'
  (OUT/filename).write_text(prompt+'\n')
  plan['batches'].append({'stage':stage,'source':f'p{stage}-source.png','prompt':filename,'items':entries})
-plan['legacy_aliases']={'iron_plate':'i0045','gear':'i0049'}
 (OUT/'plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2)+'\n')
 print('Prepared',[(b['stage'],len(b['items'])) for b in plan['batches']])

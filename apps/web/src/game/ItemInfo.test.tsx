@@ -327,7 +327,7 @@ describe("item acquisition popovers", () => {
 
   it("shows future-stage, milestone and real-work prerequisites without unlocking production", () => {
     const recipe = catalog.recipes.find(
-      (r) => !r.legacy && r.gate && (r.tier ?? 1) > 1 && r.conditions?.length,
+      (r) => r.gate && (r.tier ?? 1) > 1 && r.conditions?.length,
     )!;
     const id = Object.keys(recipe.outputs)[0];
     const factory = createLocalFactory(user, "前置");

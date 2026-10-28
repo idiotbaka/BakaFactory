@@ -145,18 +145,18 @@ const original: FactoryDetail = {
       configuration: {},
     },
     {
-      id: "miner-a",
+      id: "workbench-a",
       factory_id: "editor-factory",
-      building_type: "miner",
+      building_type: "m01",
       x: 1,
       y: 1,
       rotation: 0,
       configuration: { custom: "preserve" },
     },
     {
-      id: "miner-b",
+      id: "workbench-b",
       factory_id: "editor-factory",
-      building_type: "miner",
+      building_type: "m01",
       x: 2,
       y: 2,
       rotation: 0,
@@ -213,13 +213,13 @@ function Harness({
   return (
     <>
       <button
-        aria-pressed={tool === "miner"}
+        aria-pressed={tool === "m01"}
         onClick={() => {
-          setTool(tool === "miner" ? null : "miner");
+          setTool(tool === "m01" ? null : "m01");
           setSelected(null);
         }}
       >
-        放置采矿机
+        放置自动工作台
       </button>
       <input aria-label="备注" />
       <FactoryEditor
@@ -276,7 +276,7 @@ function addBuilding(
       {
         id: `new-${x}-${y}`,
         factory_id: original.id,
-        building_type: "miner",
+        building_type: "m01",
         x,
         y,
         rotation,
@@ -327,7 +327,7 @@ describe("batch map gestures", () => {
       document.querySelector('.map-tile[data-x="0"][data-y="0"]'),
     ).not.toHaveClass("batch-selected");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    const building = screen.getByLabelText("自动工作台 M01 (1,1)");
     fireEvent.pointerDown(building, { ...point(1, 1), button: 2, buttons: 2 });
     fireEvent.pointerUp(window, { ...point(1, 1), button: 2, buttons: 0 });
     fireEvent.contextMenu(building, point(1, 1));
@@ -338,8 +338,8 @@ describe("batch map gestures", () => {
       ),
     );
     expect(deleteBuildings).toHaveBeenCalledExactlyOnceWith(original.id, [
-      "miner-a",
-      "miner-b",
+      "workbench-a",
+      "workbench-b",
     ]);
     expect(deleteBuilding).not.toHaveBeenCalled();
     expect(document.querySelectorAll(".batch-selected")).toHaveLength(0);
@@ -348,7 +348,7 @@ describe("batch map gestures", () => {
     vi.useFakeTimers();
     setupBatch();
     box();
-    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    const building = screen.getByLabelText("自动工作台 M01 (1,1)");
     fireEvent.pointerDown(building, { ...point(1, 1), button: 0 });
     act(() => vi.advanceTimersByTime(50));
     fireEvent.pointerMove(window, point(2, 1));
@@ -361,7 +361,7 @@ describe("batch map gestures", () => {
     );
     expect(moveBuildings).toHaveBeenCalledExactlyOnceWith(
       original.id,
-      ["miner-a", "miner-b"],
+      ["workbench-a", "workbench-b"],
       1,
       0,
     );
@@ -371,7 +371,7 @@ describe("batch map gestures", () => {
     vi.useFakeTimers();
     const { onError } = setupBatch();
     box();
-    fireEvent.pointerDown(screen.getByLabelText("采矿机 MIN (1,1)"), {
+    fireEvent.pointerDown(screen.getByLabelText("自动工作台 M01 (1,1)"), {
       ...point(1, 1),
       button: 0,
     });
@@ -399,8 +399,8 @@ describe("batch map gestures", () => {
     deleteBuildings.mockResolvedValue(original);
     await act(async () => fireEvent.keyDown(window, { key: "Delete" }));
     expect(deleteBuildings).toHaveBeenCalledExactlyOnceWith(original.id, [
-      "miner-a",
-      "miner-b",
+      "workbench-a",
+      "workbench-b",
     ]);
   });
   it("selects the full large footprint and the off-rectangle tunnel peer", () => {
@@ -449,7 +449,7 @@ describe("batch map gestures", () => {
     fireEvent.pointerCancel(window, point());
     expect(screen.queryByLabelText("建筑框选范围")).not.toBeInTheDocument();
     expect(document.querySelectorAll(".batch-selected")).toHaveLength(0);
-    const building = screen.getByLabelText("采矿机 MIN (1,1)");
+    const building = screen.getByLabelText("自动工作台 M01 (1,1)");
     fireEvent.pointerDown(building, { ...point(1, 1), button: 2, buttons: 2 });
     fireEvent.pointerUp(window, { ...point(1, 1), button: 2, buttons: 0 });
     fireEvent.contextMenu(building, point(1, 1));
@@ -465,7 +465,7 @@ describe("factory editor interactions", () => {
       .mockResolvedValueOnce(first)
       .mockResolvedValueOnce(second);
     render(<Harness />);
-    const palette = screen.getByRole("button", { name: "放置采矿机" });
+    const palette = screen.getByRole("button", { name: "放置自动工作台" });
     fireEvent.click(palette);
     fireEvent.pointerMove(area(), { ...point(), buttons: 0 });
     expect(
@@ -476,7 +476,7 @@ describe("factory editor interactions", () => {
     await act(async () => {
       fireEvent.click(screen.getByLabelText("空格 (3,2)"));
     });
-    expect(placeBuilding).toHaveBeenNthCalledWith(1, original.id, "miner", {
+    expect(placeBuilding).toHaveBeenNthCalledWith(1, original.id, "m01", {
       x: 3,
       y: 2,
       rotation: 90,
@@ -485,7 +485,7 @@ describe("factory editor interactions", () => {
     await act(async () => {
       fireEvent.click(screen.getByLabelText("空格 (4,2)"));
     });
-    expect(placeBuilding).toHaveBeenNthCalledWith(2, original.id, "miner", {
+    expect(placeBuilding).toHaveBeenNthCalledWith(2, original.id, "m01", {
       x: 4,
       y: 2,
       rotation: 90,
@@ -497,7 +497,7 @@ describe("factory editor interactions", () => {
   it("pans empty tiles in placement mode without building on release, then allows short-click building", async () => {
     vi.mocked(placeBuilding).mockResolvedValue(addBuilding(3, 2));
     render(<Harness />);
-    const tool = screen.getByRole("button", { name: "放置采矿机" });
+    const tool = screen.getByRole("button", { name: "放置自动工作台" });
     fireEvent.click(tool);
     const empty = screen.getByLabelText("空格 (3,2)"),
       start = point();
@@ -517,7 +517,7 @@ describe("factory editor interactions", () => {
       fireEvent.pointerUp(window, { ...point(), button: 0, buttons: 0 });
       fireEvent.click(empty);
     });
-    expect(placeBuilding).toHaveBeenCalledWith(original.id, "miner", {
+    expect(placeBuilding).toHaveBeenCalledWith(original.id, "m01", {
       x: 3,
       y: 2,
       rotation: 0,
@@ -526,7 +526,7 @@ describe("factory editor interactions", () => {
   it("shows occupied tiles as invalid and right-click rotates instead of opening a menu in placement mode", () => {
     const errors = vi.fn();
     render(<Harness onError={errors} />);
-    fireEvent.click(screen.getByRole("button", { name: "放置采矿机" }));
+    fireEvent.click(screen.getByRole("button", { name: "放置自动工作台" }));
     fireEvent.pointerMove(area(), { ...point(0, 0), buttons: 0 });
     expect(
       document.querySelector('.map-tile[data-x="0"][data-y="0"]'),
@@ -534,7 +534,9 @@ describe("factory editor interactions", () => {
     const bus = screen.getByLabelText("工厂仓库 WH (0,0)");
     fireEvent.contextMenu(bus, { ...point(0, 0), button: 2 });
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-    expect(screen.getByText(/连续放置 采矿机 · 1×1 · 90°/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/连续放置 自动工作台 · 1×1 · 90°/),
+    ).toBeInTheDocument();
     expect(document.querySelector(".drag-ghost")).toHaveTextContent(
       "当前尺寸：1×1",
     );
@@ -549,10 +551,9 @@ describe("factory editor interactions", () => {
     fireEvent.pointerLeave(area());
     expect(document.querySelector(".drag-ghost")).not.toBeInTheDocument();
     fireEvent.keyDown(window, { key: "Escape" });
-    expect(screen.getByRole("button", { name: "放置采矿机" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(
+      screen.getByRole("button", { name: "放置自动工作台" }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
   it("keeps placement mode after a rejected save and does not duplicate an in-flight request", async () => {
     const errors = vi.fn();
@@ -563,7 +564,7 @@ describe("factory editor interactions", () => {
       }),
     );
     render(<Harness onError={errors} />);
-    fireEvent.click(screen.getByRole("button", { name: "放置采矿机" }));
+    fireEvent.click(screen.getByRole("button", { name: "放置自动工作台" }));
     fireEvent.click(screen.getByLabelText("空格 (3,2)"));
     fireEvent.click(screen.getByLabelText("空格 (4,2)"));
     expect(placeBuilding).toHaveBeenCalledOnce();
@@ -573,21 +574,20 @@ describe("factory editor interactions", () => {
     expect(errors).toHaveBeenCalledWith(
       expect.objectContaining({ message: "服务器拒绝" }),
     );
-    expect(screen.getByRole("button", { name: "放置采矿机" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", { name: "放置自动工作台" }),
+    ).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByLabelText("空格 (3,2)")).toBeInTheDocument();
   });
   it("moves the existing instance with right-button rotation and commits once while right remains held", async () => {
     vi.mocked(updateBuilding).mockResolvedValue({
       ...original,
       buildings: original.buildings.map((b) =>
-        b.id === "miner-a" ? { ...b, x: 3, y: 2, rotation: 90 } : b,
+        b.id === "workbench-a" ? { ...b, x: 3, y: 2, rotation: 90 } : b,
       ),
     });
     render(<Harness />);
-    hold(screen.getByLabelText("采矿机 MIN (1,1)"));
+    hold(screen.getByLabelText("自动工作台 M01 (1,1)"));
     fireEvent.mouseDown(window, { ...point(), button: 2, buttons: 3 });
     const context = new MouseEvent("contextmenu", {
       bubbles: true,
@@ -600,16 +600,16 @@ describe("factory editor interactions", () => {
     });
     fireEvent.pointerUp(window, { ...point(), button: 0, buttons: 0 });
     expect(updateBuilding).toHaveBeenCalledOnce();
-    expect(updateBuilding).toHaveBeenCalledWith(original.id, "miner-a", {
+    expect(updateBuilding).toHaveBeenCalledWith(original.id, "workbench-a", {
       x: 3,
       y: 2,
       rotation: 90,
     });
-    expect(screen.getByLabelText("采矿机 MIN (3,2)")).toHaveAttribute(
+    expect(screen.getByLabelText("自动工作台 M01 (3,2)")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    expect(screen.getByLabelText("采矿机 MIN (2,2)")).toHaveAttribute(
+    expect(screen.getByLabelText("自动工作台 M01 (2,2)")).toHaveAttribute(
       "aria-pressed",
       "false",
     );
@@ -618,18 +618,18 @@ describe("factory editor interactions", () => {
   it("short clicks select without moving; Escape, capture loss and window blur cancel dragging", () => {
     render(<Harness />);
     vi.useFakeTimers();
-    const miner = screen.getByLabelText("采矿机 MIN (1,1)");
-    fireEvent.pointerDown(miner, { ...point(1, 1), button: 0 });
+    const workbench = screen.getByLabelText("自动工作台 M01 (1,1)");
+    fireEvent.pointerDown(workbench, { ...point(1, 1), button: 0 });
     act(() => vi.advanceTimersByTime(25));
     fireEvent.pointerUp(window, { ...point(1, 1), button: 0, buttons: 0 });
-    fireEvent.click(miner);
-    expect(miner).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(workbench);
+    expect(workbench).toHaveAttribute("aria-pressed", "true");
     for (const cancel of [
       () => fireEvent.keyDown(window, { key: "Escape" }),
       () => fireEvent.pointerCancel(window, { pointerId: 1 }),
       () => fireEvent.blur(window),
     ]) {
-      hold(miner);
+      hold(workbench);
       cancel();
       fireEvent.pointerUp(window, { ...point(), button: 0, buttons: 0 });
     }
@@ -638,9 +638,9 @@ describe("factory editor interactions", () => {
   it("rejects occupied and outside moves and retains the old layout if the server rejects", async () => {
     const errors = vi.fn();
     render(<Harness onError={errors} />);
-    hold(screen.getByLabelText("采矿机 MIN (1,1)"));
+    hold(screen.getByLabelText("自动工作台 M01 (1,1)"));
     fireEvent.pointerUp(window, { ...point(0, 0), button: 0, buttons: 0 });
-    hold(screen.getByLabelText("采矿机 MIN (1,1)"));
+    hold(screen.getByLabelText("自动工作台 M01 (1,1)"));
     fireEvent.pointerUp(window, {
       ...point(),
       clientX: 30,
@@ -650,26 +650,26 @@ describe("factory editor interactions", () => {
     expect(updateBuilding).not.toHaveBeenCalled();
     expect(errors).toHaveBeenCalledTimes(2);
     vi.mocked(updateBuilding).mockRejectedValue(new Error("拒绝保存"));
-    hold(screen.getByLabelText("采矿机 MIN (1,1)"));
+    hold(screen.getByLabelText("自动工作台 M01 (1,1)"));
     await act(async () => {
       fireEvent.pointerUp(window, { ...point(), button: 0, buttons: 0 });
     });
-    expect(screen.getByLabelText("采矿机 MIN (1,1)")).toBeInTheDocument();
+    expect(screen.getByLabelText("自动工作台 M01 (1,1)")).toBeInTheDocument();
   });
   it("opens an extensible menu for the exact right-clicked instance and deletes it", async () => {
     vi.mocked(deleteBuilding).mockResolvedValue({
       ...original,
-      buildings: original.buildings.filter((b) => b.id !== "miner-b"),
+      buildings: original.buildings.filter((b) => b.id !== "workbench-b"),
     });
     render(<Harness />);
-    fireEvent.click(screen.getByLabelText("采矿机 MIN (1,1)"));
-    fireEvent.contextMenu(screen.getByLabelText("采矿机 MIN (2,2)"), {
+    fireEvent.click(screen.getByLabelText("自动工作台 M01 (1,1)"));
+    fireEvent.contextMenu(screen.getByLabelText("自动工作台 M01 (2,2)"), {
       button: 2,
       clientX: 500,
       clientY: 350,
     });
     expect(screen.getByRole("menu", { name: "建筑操作" })).toBeInTheDocument();
-    expect(screen.getByLabelText("采矿机 MIN (2,2)")).toHaveAttribute(
+    expect(screen.getByLabelText("自动工作台 M01 (2,2)")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -679,9 +679,9 @@ describe("factory editor interactions", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("menuitem", { name: "删除" }));
     });
-    expect(deleteBuilding).toHaveBeenCalledWith(original.id, "miner-b");
+    expect(deleteBuilding).toHaveBeenCalledWith(original.id, "workbench-b");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("采矿机 MIN (1,1)")).toBeInTheDocument();
+    expect(screen.getByLabelText("自动工作台 M01 (1,1)")).toBeInTheDocument();
   });
   it("dismisses menus on outside interaction and Escape, and prevents warehouse rotation / deletion", () => {
     render(<Harness />);
@@ -758,7 +758,7 @@ describe("factory editor interactions", () => {
     expect(scene.style.transform).not.toBe(before);
     expect(placeBuilding).not.toHaveBeenCalled();
     expect(updateBuilding).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "放置采矿机" }));
+    fireEvent.click(screen.getByRole("button", { name: "放置自动工作台" }));
     fireEvent.pointerMove(area(), { ...point(), buttons: 0 });
     expect(
       document.querySelector('.map-tile[data-x="3"][data-y="2"]'),
@@ -766,7 +766,7 @@ describe("factory editor interactions", () => {
     await act(async () => {
       fireEvent.click(screen.getByLabelText("空格 (3,2)"));
     });
-    expect(placeBuilding).toHaveBeenCalledWith(original.id, "miner", {
+    expect(placeBuilding).toHaveBeenCalledWith(original.id, "m01", {
       x: 3,
       y: 2,
       rotation: 0,
@@ -777,7 +777,7 @@ describe("factory editor interactions", () => {
     expect(document.querySelector(".machine-name-layer")).not.toBeNull();
     fireEvent.wheel(area(), { ...point(0, 0), deltaY: -10000 });
     const layer = document.querySelector(".machine-name-layer")!;
-    expect(layer).toHaveTextContent("采矿机");
+    expect(layer).toHaveTextContent("自动工作台");
     expect(layer.closest(".factory-map")).toBeNull();
     expect(layer.querySelector('[data-building-type="bus"]')).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "适应地图" }));
@@ -801,10 +801,10 @@ describe("factory editor interactions", () => {
   it("refreshes the authoritative snapshot and does not intercept text-editing shortcuts", async () => {
     vi.mocked(getFactory).mockResolvedValue({
       ...original,
-      buildings: original.buildings.filter((b) => b.id !== "miner-a"),
+      buildings: original.buildings.filter((b) => b.id !== "workbench-a"),
     });
     render(<Harness />);
-    fireEvent.click(screen.getByLabelText("采矿机 MIN (1,1)"));
+    fireEvent.click(screen.getByLabelText("自动工作台 M01 (1,1)"));
     fireEvent.keyDown(screen.getByLabelText("备注"), { key: "Delete" });
     fireEvent.keyDown(screen.getByLabelText("备注"), { key: "r" });
     expect(deleteBuilding).not.toHaveBeenCalled();
@@ -817,7 +817,7 @@ describe("factory editor interactions", () => {
       expect.any(AbortSignal),
     );
     expect(
-      screen.queryByRole("button", { name: "采矿机 MIN (1,1)" }),
+      screen.queryByRole("button", { name: "自动工作台 M01 (1,1)" }),
     ).not.toBeInTheDocument();
   });
 });

@@ -14,35 +14,35 @@ import {
 
 const source: TransferEndpoint = {
   id: "source",
-  building_type: "miner",
+  building_type: "m02",
   x: -2,
   y: 0,
   rotation: 0,
 };
 const out: TransferEndpoint = {
   id: "out",
-  building_type: "item_output",
+  building_type: "feeder",
   x: -1,
   y: 0,
   rotation: 0,
 };
 const belt: TransferEndpoint = {
   id: "belt",
-  building_type: "conveyor",
+  building_type: "mechanical_belt",
   x: 0,
   y: 0,
   rotation: 0,
 };
 const input: TransferEndpoint = {
   id: "in",
-  building_type: "item_input",
+  building_type: "feeder",
   x: 1,
   y: 0,
   rotation: 0,
 };
 const furnace: TransferEndpoint = {
   id: "furnace",
-  building_type: "furnace",
+  building_type: "m05",
   x: 2,
   y: 0,
   rotation: 0,
@@ -80,7 +80,7 @@ function event(
     id: `transfer-${tick}-${payload}`,
     tick,
     payload_id: payload,
-    item: "iron_ore",
+    item: "i0002",
     source: terminal ? belt : source,
     via: terminal ? input : out,
     target: terminal ? furnace : belt,
@@ -118,7 +118,7 @@ function snapshot(
           duration: 0,
           cooldown: 0,
           belt: payload
-            ? { id: payload, item: "iron_ore", progress: 0 }
+            ? { id: payload, item: "i0002", progress: 0 }
             : undefined,
         },
       },
@@ -135,7 +135,7 @@ describe("confirmed logistics visuals", () => {
     const epoch = store.getSnapshot()[0].epoch;
     const edited = structuredClone(next);
     edited.buildings.find((b) => b.id === "out")!.configuration.filter =
-      "iron_plate";
+      "i0009";
     edited.simulation!.transfers = [];
     store.accept(edited, 1100, true);
     expect(store.getSnapshot()).toHaveLength(1);

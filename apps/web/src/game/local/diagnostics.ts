@@ -155,13 +155,13 @@ export function industryOutcome(f: LocalFactory) {
 export const sourceRecipes = new Map(
   catalog.items.map((i) => [
     i.id,
-    catalog.recipes.filter((r) => !r.legacy && !!r.outputs[i.id]),
+    catalog.recipes.filter((r) => !!r.outputs[i.id]),
   ]),
 );
 export const useRecipes = new Map(
   catalog.items.map((i) => [
     i.id,
-    catalog.recipes.filter((r) => !r.legacy && !!r.inputs[i.id]),
+    catalog.recipes.filter((r) => !!r.inputs[i.id]),
   ]),
 );
 export const specialUses = new Map(

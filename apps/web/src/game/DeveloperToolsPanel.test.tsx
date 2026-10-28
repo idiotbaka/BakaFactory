@@ -30,7 +30,7 @@ describe("developer tools", () => {
       children: null,
     };
     const { rerender } = render(<IndustryViews {...props} />);
-    const item = catalog.items.find((i) => !i.legacy && i.tier === 6)!;
+    const item = catalog.items.find((i) => i.tier === 6)!;
     expect(screen.getByLabelText("获取数量")).toHaveValue(100);
     openGameSelect(screen.getByRole("combobox", { name: "获取物品" }));
     fireEvent.change(screen.getByLabelText("搜索物品"), {

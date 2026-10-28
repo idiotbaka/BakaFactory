@@ -186,7 +186,7 @@ describe("multi-cell footprints", () => {
     (edge) => {
       let f = place(start(), "machine", "m08", { ...square, rotation: 0 });
       configure(f, "r1036");
-      f = place(f, "port", "item_input", {
+      f = place(f, "port", "feeder", {
         ...edge,
         rotation: opposite(edge.rotation),
       });
@@ -240,7 +240,7 @@ describe("multi-cell footprints", () => {
     const item = Object.keys(recipeDefinitions.get("r1036")!.inputs)[0];
     f.simulation.buildings.machine.output = [{ item, count: 1 }];
     for (const [i, edge] of edges.slice(0, 2).entries()) {
-      f = place(f, `p${i}`, "item_output", edge);
+      f = place(f, `p${i}`, "feeder", edge);
       const [dx, dy] = direction(edge.rotation);
       f = place(f, `b${i}`, "hand_belt", {
         x: edge.x + dx,
@@ -450,7 +450,7 @@ describe("multi-cell footprints", () => {
       editWorld(f, {
         kind: "place",
         id: "x",
-        building_type: "item_input",
+        building_type: "feeder",
         placement: { x: 5, y: 3, rotation: 0 },
       }),
     ).toThrow(/预留/);

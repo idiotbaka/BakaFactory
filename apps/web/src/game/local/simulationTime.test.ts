@@ -93,14 +93,15 @@ describe("shared half-second simulation time", () => {
 
   it("does not double production or manual work, and preserves half-second saves", () => {
     let f = createLocalFactory(user, "原工时");
-    node(f, "miner", "miner", 2);
+    node(f, "press", "m07", 2).configuration = { recipe_id: "r1025" };
+    f.simulation.buildings.press.input = [{ item: itemID("粗铁锭"), count: 2 }];
     f = step(f);
-    expect(f.simulation.buildings.miner.progress).toBe(0.5);
-    expect(f.simulation.buildings.miner.output).toEqual([]);
+    expect(f.simulation.buildings.press.progress).toBe(0.5);
+    expect(f.simulation.buildings.press.output).toEqual([]);
     expect(validateSave(toSave(f), user.id)).toEqual(f);
-    f = step(f);
-    expect(f.simulation.buildings.miner.output).toEqual([
-      { item: "iron_ore", count: 1 },
+    for (let tick = 1; tick < 16; tick++) f = step(f);
+    expect(f.simulation.buildings.press.output).toEqual([
+      { item: itemID("基础铁板"), count: 2 },
     ]);
     const manual = createLocalFactory(user, "手工");
     manual.simulation.industry!.workshop = { recipe_id: "r1001", progress: 0 };
@@ -239,18 +240,22 @@ describe("shared half-second simulation time", () => {
 
   it("does not starve alternating extractors when a producer becomes ready only on even ticks", () => {
     let f = start();
-    node(f, "producer", "miner", 4, 0);
-    node(f, "left", "item_output", 3, 0);
+    node(f, "producer", "chest", 4, 0);
+    node(f, "left", "feeder", 3, 0).configuration = { interval: 1 };
     f.buildings.find((b) => b.id === "left")!.rotation = 180;
-    node(f, "right", "item_output", 5, 0);
+    node(f, "right", "feeder", 5, 0).configuration = { interval: 1 };
     node(f, "left-box", "chest", 2, 0);
     node(f, "right-box", "chest", 6, 0);
-    for (let tick = 0; tick < 20; tick++) f = step(f);
+    for (let tick = 1; tick <= 20; tick++) {
+      if (tick % 2 === 0)
+        f.simulation.buildings.producer.output = [{ item, count: 1 }];
+      f = step(f);
+    }
     expect(f.simulation.buildings["left-box"].output).toEqual([
-      { item: "iron_ore", count: 5 },
+      { item, count: 5 },
     ]);
     expect(f.simulation.buildings["right-box"].output).toEqual([
-      { item: "iron_ore", count: 5 },
+      { item, count: 5 },
     ]);
   });
 

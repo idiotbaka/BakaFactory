@@ -8,36 +8,6 @@
       "tier": null,
       "color": "#c8ed9c"
     },
-    "miner": {
-      "renderer": "image",
-      "tier": null,
-      "color": "#d5bd7c"
-    },
-    "furnace": {
-      "renderer": "image",
-      "tier": null,
-      "color": "#df9c79"
-    },
-    "assembler": {
-      "renderer": "image",
-      "tier": null,
-      "color": "#9ebcdb"
-    },
-    "conveyor": {
-      "renderer": "belt",
-      "tier": null,
-      "color": "#a8bfa9"
-    },
-    "item_output": {
-      "renderer": "image",
-      "tier": null,
-      "color": "#e2bd79"
-    },
-    "item_input": {
-      "renderer": "image",
-      "tier": null,
-      "color": "#83cdbd"
-    },
     "m01": {
       "renderer": "image",
       "tier": 1,

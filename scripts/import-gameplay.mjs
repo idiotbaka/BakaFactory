@@ -21,7 +21,6 @@ const source = new URL(
 const target = new URL("apps/server/internal/catalog/definitions.json", root);
 const report = new URL("docs/gameplay-data-audit.md", root);
 const d = JSON.parse(await readFile(source, "utf8"));
-const previous = JSON.parse(await readFile(target, "utf8"));
 const names = new Map(d.items.map((i) => [i.name, i.id.toLowerCase()]));
 names.set("流水线机械手", names.get("机械启动套件"));
 names.set("地下传送带出入口", "d0001");
@@ -72,24 +71,6 @@ const convert = (values) =>
   Object.fromEntries(
     Object.entries(values).map(([name, n]) => [item(name), n]),
   );
-const legacyItems = previous.items
-  .filter((i) => ["iron_ore", "iron_plate", "gear"].includes(i.id))
-  .map((i) => ({ ...i, legacy: true }));
-const legacyBuildings = previous.buildings
-  .filter((b) =>
-    [
-      "miner",
-      "furnace",
-      "assembler",
-      "conveyor",
-      "item_output",
-      "item_input",
-    ].includes(b.id),
-  )
-  .map((b) => ({ ...b, legacy: true }));
-const legacyRecipes = previous.recipes
-  .filter((r) => ["iron_mining", "iron_plate", "gear"].includes(r.id))
-  .map((r) => ({ ...r, legacy: true }));
 const recipes = d.recipes.map((r) => ({
   id: r.id.toLowerCase(),
   name: displayName(Object.keys(r.output).join(" / ")),
@@ -592,7 +573,6 @@ const base = {
     milestone_item: item(s.milestone_item.split(":")[0]),
   })),
   items: [
-    ...legacyItems,
     {
       id: "d0001",
       name: "地下传送带出入口",
@@ -641,12 +621,20 @@ const base = {
   ],
   buildings: [
     {
-      ...previous.buildings.find((b) => b.id === "bus"),
+      id: "bus",
+      name: "工厂仓库",
+      code: "WH",
+      icon: "bus",
+      color: "#c8ed9c",
       description: buildingCopy.bus,
+      category: "logistics",
+      fixed: true,
+      input_slots: 4,
+      output_slots: 4,
+      stack_limit: 100,
       input_whitelist: [],
       role: "warehouse",
     },
-    ...legacyBuildings,
     ...buildings,
     ...utilities,
     ...["warehouse_pickup", "warehouse_intake"].map((id) => ({
@@ -666,7 +654,7 @@ const base = {
       input_whitelist: [],
     })),
   ],
-  recipes: [...legacyRecipes, ...recipes],
+  recipes,
 };
 // Fixed-point reachability includes machine construction, stage gates and all
 // required inputs, so a machine cannot manufacture its own first instance.
@@ -725,7 +713,7 @@ const lines = [
   `- 原始物品 ${d.items.length}、机器 ${d.machines.length}、配方 ${d.recipes.length}；全部保留稳定的小写原始编号。`,
   `- 开放任务 ${quests.length} 项由 docs/quests.json 按推荐顺序导入；P1～P5 各一项阶段终局，其他任务完成至少一半（向上取整）后可达，领奖推进下一阶段；不以任务奖励作为工业闭包的免费启动资源。`,
   "- 网页适配：所有 WH 共用总仓库，规则 3 只保存一份库存；旧 1/2 分仓在客户端校验后合并，现场缓存 / 管道 / 能网独立。P2 可直接启动空分厂，机器人本轮只对接共享库存，定位调整留待后续。",
-  `- 兼容旧测试物品 ${legacyItems.length} / 设备 ${legacyBuildings.length} / 配方 ${legacyRecipes.length}，不展示为新建造内容。`,
+  "- 运行目录仅包含当前玩法；早期测试物品、设备与配方已移除，编号不复用。",
   `- 基础分拣有 9 种产物，通用机器缓存提升至 12 格；终局最大输入 5 种。`,
   `- 不考虑能源和真实作业条件的材料/机器/阶段闭包到达 P${stage}；${reached.size}/${recipes.length} 配方可达。`,
   `- 未达配方：${unreachable.map((r) => r.id).join("、") || "无"}。`,
@@ -760,7 +748,7 @@ const lines = [
   "E2b 搬运角色通过真实空格路径取送，每 0.5 秒最多一格、每移动 / 跨区行程秒 / 装卸准备秒 / 成功装卸行动消耗 1 kJ；跨厂经 WH，行程 8 秒。规格动作工时后每刻装卸最多一载重，WH 输出每面最多 1 u；自动流体输出时机器人保守让出该 WH 本刻输出。液压搬运机器人与智能机器人可密封搬运单种流体，其他搬运机仅固体；不混液、不从机器输入 / 燃料偷取。出发补满并保留真实返程能源，取消 / 端点删除实际携货返归属 WH 再返站，不瞬移退款。completed_tasks 仅用于统计；E2c 使用另一份可消费凭据账本。原案 JSON 和生成配方均不为这些适配改写。",
   "E2c 不制造随机故障：实际运行后缺料、真实缺能、产物积压、流体满容持续至少 5 tick 后可现场巡检，一次异常只记一次巡检凭据。维护机器人从归属站手动装载真实维修备件箱，按规格工时清走一载重固体积压、消耗一箱并实际携货返仓；同一异常可继续清理但不重复记维护凭据。取消 / 恢复 / 端点消失不奖励，未用备件实际返站后退回。摄像头从真实组件安装，随有效作业生成视觉凭据，卸下 / 召回返还组件。训练配方原材料 / 工时 / 能耗不变，每批完成时消费 40 / 20 / 30 次原案匹配凭据，机器人须仍部署并启用；凭据按机器人 / 类别最多 10000 次、总计最多 1500 行，跨厂共享，召回清除该实体未用凭据。静态材料闭包不代表已执行这些真实作业或长局验收。",
   "E2d1 智能机器人可按显式权限自动派配方补料 / 巡检 / 维护，默认关闭；实际走既有库存 / 路径 / 能源规则。5 tick 评估周期、共享 2000 次候选 / 来源访问预算、最多 20 条有限日志。需求与来源库存扣除现有任务承诺，现场同类任务排他，失败提案回滚；不免费调拨或生成凭据，不调用外部 AI。性能实测仍待后续阶段。",
-  "E2d2 显式单格蓝图每智能机器人同时一张，可多机并行；在归属站补满并装载 1 个实际成品设备，不重复扣制造原料。格位预留、路径与返程储能验证、现场 10 秒每秒 1 kJ 后安装，跨区复用 WH 与 8 秒付费行程，可选已解锁配方。垃圾源头可在任意厂区顶部安装，不设阶段数量或蓝图配额限制，旧测试 / 固定设备不可施工。取消或能量中止释放格位，cargo 沿实际路径返归属 WH 再回站；不瞬移退款、不赠训练凭据。多格批量模板 / 自动整厂排程不在本阶段。",
+  "E2d2 显式单格蓝图每智能机器人同时一张，可多机并行；在归属站补满并装载 1 个实际成品设备，不重复扣制造原料。格位预留、路径与返程储能验证、现场 10 秒每秒 1 kJ 后安装，跨区复用 WH 与 8 秒付费行程，可选已解锁配方。垃圾源头可在任意厂区顶部安装，不设阶段数量或蓝图配额限制，固定设备不可施工。取消或能量中止释放格位，cargo 沿实际路径返归属 WH 再回站；不瞬移退款、不赠训练凭据。多格批量模板 / 自动整厂排程不在本阶段。",
   "E2d3 / E2e 地图与列表统一选取、当前单路段只读预览、确认过境落点 / 跨厂定位、必需授权锁定、暂停 / 返程说明及真实归属站召回反馈。复用实际寻路，区分占格等待、静态无路与有限储能超限，不通过图形 / 筛选 / 查看路线结算资源、改 revision 或生成凭据。F 已补前置闭包、终局诊断与快照 / 索引；百厂性能仍未实测。",
   "",
 ];
