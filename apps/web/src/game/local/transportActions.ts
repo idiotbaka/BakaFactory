@@ -10,6 +10,7 @@ import {
   isSolidTransport,
   validTransportConfig,
   itemFilter,
+  face,
   type FaceMode,
   type Rotation,
 } from "./transportConfig";
@@ -23,6 +24,7 @@ export type TransportAction =
       channel?: "input" | "fuel";
       enabled?: boolean;
       output_items?: string[];
+      output_count?: number;
     }
   | {
       type: "bus_face";
@@ -30,6 +32,7 @@ export type TransportAction =
       rotation: Rotation;
       mode: FaceMode;
       filter: string;
+      output_count?: number;
     }
   | { type: "branch"; id: string; rotation: Rotation; filter: string }
   | { type: "deposit"; id: string; item: string; count: number };
@@ -67,6 +70,8 @@ export function applyTransportAction(f: LocalFactory, action: TransportAction) {
       "output_items",
     ] as const)
       if (action[key] !== undefined) b.configuration[key] = action[key];
+    if (action.output_count !== undefined)
+      b.configuration.output_count = action.output_count;
     if (action.output_items !== undefined) m.terminal_cursor = 0;
     if (action.enabled !== undefined)
       m.status = action.enabled ? "idle" : "disabled";
@@ -74,9 +79,14 @@ export function applyTransportAction(f: LocalFactory, action: TransportAction) {
       throw new Error("散装流体请使用管道和储罐");
   } else if (action.type === "bus_face") {
     if (b.building_type !== "bus") throw new Error("仅工厂仓库可配置各面");
+    const outputCount =
+      action.output_count !== undefined
+        ? action.output_count
+        : face(b, action.rotation).output_count;
     b.configuration[`face_${action.rotation}`] = {
       mode: action.mode,
       filter: action.filter,
+      ...(outputCount !== undefined ? { output_count: outputCount } : {}),
     };
   } else {
     if (d.role !== "splitter") throw new Error("仅分流器可配置分支");

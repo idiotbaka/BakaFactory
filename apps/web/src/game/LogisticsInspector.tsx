@@ -17,6 +17,8 @@ import {
   interval,
   itemFilter,
   rotations,
+  warehouseOutputCount,
+  MAX_WAREHOUSE_OUTPUT,
   type FaceMode,
   type Rotation,
 } from "./local/transportConfig";
@@ -111,7 +113,8 @@ export default function LogisticsInspector({
       {definition.id === pickupType ? (
         <>
           <p>
-            从总仓库自动取货并朝箭头前方推出，每秒最多 1 件。可设定 1～2
+            从总仓库自动取货并朝箭头前方推出，每秒一批，每批最多按输出件数取货。可设定
+            1～2
             种固体轮流供料（缺货或前方堵住时自动跳过）；支持长按移动和旋转，不可删除。
           </p>
           {[0, 1].map((index) => (
@@ -148,6 +151,31 @@ export default function LogisticsInspector({
               </GameSelect>
             </label>
           ))}
+          <label>
+            输出件数
+            <GameSelect
+              catalog={catalog}
+              aria-label="取货终端输出件数"
+              disabled={disabled}
+              value={warehouseOutputCount(instance)}
+              onValueChange={(value) =>
+                act({
+                  type: "transport",
+                  id: instance.id,
+                  output_count: Number(value),
+                })
+              }
+            >
+              {Array.from(
+                { length: MAX_WAREHOUSE_OUTPUT },
+                (_, i) => i + 1,
+              ).map((n) => (
+                <option key={n} value={n}>
+                  {n} 件
+                </option>
+              ))}
+            </GameSelect>
+          </label>
         </>
       ) : definition.id === intakeType ? (
         <p>
@@ -156,9 +184,8 @@ export default function LogisticsInspector({
       ) : definition.id === "bus" ? (
         <>
           <p>
-            四面接口可独立配置：想往外供料时，先选定物品再切为「输出」（每面每秒最多
-            1
-            件，可直接连传送带或由投料机抓取）；设为「输入」时可过滤允许入库的物品。
+            四面接口可独立配置：先选定物品再切为「输出」，每面可设置 1～20
+            件的单批上限（自动输出每秒一批，也可由投料机抓取）。库存或下游容量不足时按实际数量输出；设为「输入」时可过滤允许入库的物品。
           </p>
           {rotations.map((r) => {
             const value = face(instance, r);
@@ -204,6 +231,36 @@ export default function LogisticsInspector({
                   </option>
                   <option value="closed">关闭</option>
                 </GameSelect>
+                {value.mode === "output" && (
+                  <label>
+                    输出件数
+                    <GameSelect
+                      catalog={catalog}
+                      aria-label={`${sides[r]}面输出件数`}
+                      disabled={disabled}
+                      value={warehouseOutputCount(instance, r)}
+                      onValueChange={(count) =>
+                        act({
+                          type: "bus_face",
+                          id: instance.id,
+                          rotation: r,
+                          mode: value.mode,
+                          filter: value.filter,
+                          output_count: Number(count),
+                        })
+                      }
+                    >
+                      {Array.from(
+                        { length: MAX_WAREHOUSE_OUTPUT },
+                        (_, i) => i + 1,
+                      ).map((n) => (
+                        <option key={n} value={n}>
+                          {n} 件
+                        </option>
+                      ))}
+                    </GameSelect>
+                  </label>
+                )}
               </fieldset>
             );
           })}

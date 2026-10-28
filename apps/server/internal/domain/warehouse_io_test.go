@@ -45,3 +45,35 @@ func TestSubmissionQuestDefinition(t *testing.T) {
 		t.Fatal("duplicate submission item accepted")
 	}
 }
+
+func TestWarehouseOutputCountConfiguration(t *testing.T) {
+	c := Catalog{Items: []ItemDefinition{{Definition: Definition{ID: "iron"}}}}
+	for _, test := range []struct {
+		kind, raw string
+		valid     bool
+	}{
+		{"bus", `{"face_0":{"mode":"output","filter":"iron"}}`, true},
+		{"bus", `{"face_0":{"mode":"output","filter":"iron","output_count":20},"face_90":{"mode":"closed","filter":"","output_count":4}}`, true},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":1}`, true},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":20}`, true},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":21}`, false},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":0}`, false},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":null}`, false},
+		{"warehouse_pickup", `{"output_items":["iron"],"output_count":"20"}`, false},
+		{"bus", `{"face_0":{"mode":"output","filter":"iron","output_count":1.5}}`, false},
+		{"bus", `{"face_0":{"mode":"output","filter":"iron","output_count":null}}`, false},
+		{"bus", `{"face_0":{"mode":"output","filter":"iron","output_count":-1}}`, false},
+		{"bus", `{"face_0":{"mode":"output","filter":"iron","output_count":21}}`, false},
+		{"bus", `{"output_count":20}`, false},
+		{"chest", `{"output_count":20}`, false},
+		{"warehouse_intake", `{"output_count":20}`, false},
+	} {
+		var config map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(test.raw), &config); err != nil {
+			t.Fatal(err)
+		}
+		if validTransportConfiguration(test.kind, config, c) != test.valid {
+			t.Fatalf("unexpected output count validation: %s %s", test.kind, test.raw)
+		}
+	}
+}

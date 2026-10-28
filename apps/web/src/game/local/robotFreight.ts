@@ -18,7 +18,13 @@ import {
   selectedRecipe,
 } from "./catalog";
 import { add, count, remove, store } from "./inventory";
-import { enabled, face, itemFilter, side } from "./transportConfig";
+import {
+  enabled,
+  face,
+  itemFilter,
+  side,
+  warehouseOutputCount,
+} from "./transportConfig";
 import { acceptsFluid } from "./fluidConfig";
 import { fuelValues } from "./fuel";
 import {
@@ -345,7 +351,8 @@ function exchange(
       )
         return { n: 0, status: "blocked" };
       budgetKey = `${f.id}:${b.id}:${rotation}`;
-      const limit = 1 - (budgets.get(budgetKey) ?? 0);
+      const limit =
+        warehouseOutputCount(b, rotation) - (budgets.get(budgetKey) ?? 0);
       n = Math.min(n, root.simulation.warehouse[item] ?? 0, limit);
     } else
       n = Math.min(

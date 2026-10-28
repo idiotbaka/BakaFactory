@@ -1,5 +1,7 @@
 # 当前架构
 
+WH / 取货终端单批输出件数复用实例 configuration，WH 各 face_N 和取货终端顶层的 output_count 可选、整数 1～20、缺省 1。Worker 原子复核编辑，固体 / 流体 / 机器人读取同一上限，客户端与 Go 云备份校验同步；OpenAPI 明确可选字段并生成类型，旧档无需迁移。相机仅保存在持续挂载的 FactoryEditor 内，切厂不重建，首次测量和 Tab 恢复校正在绘制前进行，不进入 Worker / 存档，见 [输出件数与相机](warehouse-output-camera.md)。
+
 仓库分钟统计在 Worker 世界转换边界，通过真实 inventory.store 采样已绑定的唯一仓库，按实际厂区合并进出，并从触及物品的前后总账计算净变化。主厂可选 warehouse_activity 保存最多 120 个稀疏 tick 桶，本机 / 云存档携带，旧档从当前 tick 开始预热；机器人自动提案失败样本随库存一起撤回。WorldFrame 只发当前桶，主线程裁剪并追加历史，无新定时器或数据库迁移；协议与两端校验同步，见 [仓库分钟统计](warehouse-activity.md)。
 
 开发者物品获取使用 `WorldAction.developer_grant_item`，由现有 Worker 串行执行 `actWorld`：在克隆世界中验证当前物品与正安全整数数量，通过 `store` 检查相加溢出后仅更新主厂总仓库，并记录 discovery、同步获得类任务及递增 revision。失败不提交克隆。`GameRuntime.world` 要求开发者入口已开启，正常在线许可 / Worker 暂停检查继续适用；成功结果通过既有完整快照与 IndexedDB 保存流程发布，库存随正常云备份上传。仅新增客户端操作，无 HTTP 协议、存档字段、版本或数据库迁移。

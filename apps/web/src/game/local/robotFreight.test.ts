@@ -320,6 +320,33 @@ describe("physical robot freight", () => {
       { item: iron, count: 4 },
     ]);
   });
+  it("honors a configured WH output batch while keeping robot capacity and warehouse stock conserved", () => {
+    let root = setup();
+    const bus = root.buildings[0];
+    bus.configuration.face_180 = {
+      mode: "output",
+      filter: iron,
+      output_count: 3,
+    };
+    root.simulation.warehouse[iron] = 4;
+    root.simulation.buildings.source.output = [];
+    root = assign(root, iron, 4, root.id, bus.id, "target");
+    let previous = 4,
+      peak = 0;
+    for (let i = 0; i < 100; i++) {
+      root = stepWorld(root);
+      const current = root.simulation.warehouse[iron];
+      const moved = previous - current;
+      peak = Math.max(peak, moved);
+      expect(moved).toBeLessThanOrEqual(3);
+      expect(total(root)).toBe(4);
+      previous = current;
+    }
+    expect(peak).toBe(3);
+    expect(root.simulation.buildings.target.output).toEqual([
+      { item: iron, count: 4 },
+    ]);
+  });
   it("uses sealed fluid capacity only for capable carriers and refuses a mixed target", () => {
     let root = setup(hydraulic);
     root = editWorld(root, { kind: "delete", id: "source" });

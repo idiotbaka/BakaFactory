@@ -20,7 +20,13 @@ import {
   fluidTarget,
   splitWeights,
 } from "./fluidConfig";
-import { enabled, face, itemFilter, side } from "./transportConfig";
+import {
+  enabled,
+  face,
+  itemFilter,
+  side,
+  warehouseOutputCount,
+} from "./transportConfig";
 import { add, count, remove, type Inventory } from "./inventory";
 import { fuelValues } from "./fuel";
 
@@ -261,7 +267,10 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
           continue;
         source = { b: origin, kind: "warehouse" };
         item = output.filter;
-        rate = Math.min(wholeUnitsThisTick(1, s.tick), rate);
+        rate = Math.min(
+          wholeUnitsThisTick(1, s.tick) * warehouseOutputCount(origin, r),
+          rate,
+        );
       } else {
         if (
           buildingDefinitions.get(origin.building_type)?.category !== "machine"

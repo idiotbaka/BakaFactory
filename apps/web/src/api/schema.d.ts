@@ -233,8 +233,24 @@ export interface components {
             /** @enum {integer} */
             rotation: 0 | 90 | 180 | 270;
             configuration: {
+                /** @description 仅取货终端：单批输出件数上限，缺省 1 */
+                output_count?: number;
+                face_0?: components["schemas"]["WarehouseFaceConfiguration"];
+                face_90?: components["schemas"]["WarehouseFaceConfiguration"];
+                face_180?: components["schemas"]["WarehouseFaceConfiguration"];
+                face_270?: components["schemas"]["WarehouseFaceConfiguration"];
+            } & {
                 [key: string]: unknown;
             };
+        };
+        WarehouseFaceConfiguration: {
+            /** @enum {string} */
+            mode: "input" | "output" | "closed";
+            filter: string;
+            /** @description 仅 WH 各面：输出模式单批上限，缺省 1，切模式保留 */
+            output_count?: number;
+        } & {
+            [key: string]: unknown;
         };
         FactoryDetail: components["schemas"]["Factory"] & {
             warehouse_activity?: components["schemas"]["WarehouseActivity"];

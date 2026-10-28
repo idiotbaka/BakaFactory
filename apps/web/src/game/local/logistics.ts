@@ -32,6 +32,7 @@ import {
   isSolidTransport,
   rotations,
   side,
+  warehouseOutputCount,
 } from "./transportConfig";
 import { fuelValues } from "./fuel";
 import { autoEject, AUTO_EJECT_BATCH } from "./machineOutput";
@@ -269,7 +270,13 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         const [dx, dy] = direction(b.rotation);
         const items = sourceItems(b, { ...target, x: b.x + dx, y: b.y + dy });
         if (items.length)
-          candidates.push({ source: b, target, actor: b.id, items, limit: 1 });
+          candidates.push({
+            source: b,
+            target,
+            actor: b.id,
+            items,
+            limit: warehouseOutputCount(b),
+          });
       }
     } else if (b.building_type === "bus" && !m.cooldown) {
       for (const r of rotations) {
@@ -288,7 +295,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
           target,
           actor: `${b.id}:${r}`,
           items: [output.filter],
-          limit: 1,
+          limit: warehouseOutputCount(b, r),
         });
       }
     }
@@ -399,7 +406,14 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
         let n = Math.min(
             sourceCount,
             c.limit,
-            source.building_type === pickupType ? 1 : Infinity,
+            source.building_type === pickupType
+              ? warehouseOutputCount(source)
+              : source.building_type === "bus"
+                ? warehouseOutputCount(
+                    source,
+                    side(source, contactCell(c.via ?? target, source)),
+                  )
+                : Infinity,
           ),
           destination: Move["destination"],
           inv: Inventory | undefined;

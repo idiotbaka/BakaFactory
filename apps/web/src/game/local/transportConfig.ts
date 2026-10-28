@@ -16,7 +16,22 @@ import { canAutoEject } from "./machineOutput";
 export const rotations = [0, 90, 180, 270] as const;
 export type Rotation = (typeof rotations)[number];
 export type FaceMode = "input" | "output" | "closed";
-export type Face = { mode: FaceMode; filter: string };
+export type Face = { mode: FaceMode; filter: string; output_count?: number };
+export const MAX_WAREHOUSE_OUTPUT = 20;
+export const validOutputCount = (value: unknown) =>
+  Number.isInteger(value) &&
+  (value as number) >= 1 &&
+  (value as number) <= MAX_WAREHOUSE_OUTPUT;
+export function warehouseOutputCount(
+  b: BuildingInstance,
+  rotation?: number,
+): number {
+  return b.building_type === "bus"
+    ? rotation === undefined
+      ? 1
+      : (face(b, rotation).output_count ?? 1)
+    : ((b.configuration.output_count as number | undefined) ?? 1);
+}
 export const enabled = (b: BuildingInstance) =>
   b.configuration.enabled !== false;
 export const itemFilter = (b: BuildingInstance) =>
@@ -63,6 +78,11 @@ export function validTransportConfig(
   b: Pick<BuildingInstance, "configuration" | "building_type">,
 ) {
   const c = b.configuration;
+  if (
+    c.output_count !== undefined &&
+    (b.building_type !== pickupType || !validOutputCount(c.output_count))
+  )
+    return false;
   if (b.building_type === undergroundType) {
     if (
       !["entry", "exit"].includes(c.underground_role as string) ||
@@ -161,7 +181,8 @@ export function validTransportConfig(
     if (
       !["input", "output", "closed"].includes(f.mode as string) ||
       !validItem(f.filter) ||
-      (f.mode === "output" && !f.filter)
+      (f.mode === "output" && !f.filter) ||
+      (f.output_count !== undefined && !validOutputCount(f.output_count))
     )
       return false;
   }

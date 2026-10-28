@@ -28,8 +28,16 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 		var id string
 		return !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) && json.Unmarshal(raw, &id) == nil && items[id]
 	}
+	validOutputCount := func(raw json.RawMessage) bool {
+		var value int
+		return !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) && json.Unmarshal(raw, &value) == nil && value >= 1 && value <= 20
+	}
 	for key, raw := range config {
 		switch key {
+		case "output_count":
+			if kind != "warehouse_pickup" || !validOutputCount(raw) {
+				return false
+			}
 		case "underground_role":
 			var value string
 			if kind != undergroundType || json.Unmarshal(raw, &value) != nil || (value != "entry" && value != "exit") {
@@ -178,6 +186,9 @@ func validTransportConfiguration(kind string, config map[string]json.RawMessage,
 				}
 				var shape map[string]json.RawMessage
 				if json.Unmarshal(raw, &shape) != nil || shape["filter"] == nil || bytes.Equal(bytes.TrimSpace(shape["filter"]), []byte("null")) {
+					return false
+				}
+				if count, ok := shape["output_count"]; ok && !validOutputCount(count) {
 					return false
 				}
 			}

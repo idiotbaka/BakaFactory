@@ -287,7 +287,33 @@ components:
             description: "正方形占地边长，缺省 1；坐标为左上角",
           }
         rotation: { type: integer, enum: [0, 90, 180, 270] }
-        configuration: { type: object, additionalProperties: true }
+        configuration:
+          type: object
+          additionalProperties: true
+          properties:
+            output_count:
+              type: integer
+              minimum: 1
+              maximum: 20
+              description: "仅取货终端：单批输出件数上限，缺省 1"
+            face_0: { $ref: "#/components/schemas/WarehouseFaceConfiguration" }
+            face_90: { $ref: "#/components/schemas/WarehouseFaceConfiguration" }
+            face_180:
+              { $ref: "#/components/schemas/WarehouseFaceConfiguration" }
+            face_270:
+              { $ref: "#/components/schemas/WarehouseFaceConfiguration" }
+    WarehouseFaceConfiguration:
+      type: object
+      additionalProperties: true
+      required: [mode, filter]
+      properties:
+        mode: { type: string, enum: [input, output, closed] }
+        filter: { type: string }
+        output_count:
+          type: integer
+          minimum: 1
+          maximum: 20
+          description: "仅 WH 各面：输出模式单批上限，缺省 1，切模式保留"
     FactoryDetail:
       allOf:
         - { $ref: "#/components/schemas/Factory" }

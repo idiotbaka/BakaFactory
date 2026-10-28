@@ -938,3 +938,114 @@ it("toggles the power region overlay from the camera controls bar", () => {
   fireEvent.click(screen.getByRole("button", { name: "隐藏组网" }));
   expect(screen.queryByLabelText("工厂组网覆盖层")).toBeNull();
 }, 15000);
+
+it("initializes only when visible and retains the camera across factories, hidden tabs and viewport resizing", () => {
+  let width = 0,
+    height = 0,
+    notifyResize = () => {};
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      return this.classList.contains("map-viewport")
+        ? new DOMRect(100, 100, width, height)
+        : new DOMRect();
+    },
+  );
+  const previousObserver = globalThis.ResizeObserver;
+  globalThis.ResizeObserver = class {
+    constructor(callback: () => void) {
+      notifyResize = callback;
+    }
+    observe() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+  const props = {
+    commands: { deleteBuilding, getFactory, placeBuilding, updateBuilding },
+    factory: original,
+    catalog,
+    selectedID: null,
+    placementType: null,
+    onExitPlacement: vi.fn(),
+    onSelect: vi.fn(),
+    onChange: vi.fn(),
+    onError: vi.fn(),
+  };
+  const { rerender, unmount } = render(
+    <FactoryEditor {...props} visible={false} />,
+  );
+  try {
+    const viewport =
+      screen.getByLabelText("工厂地图，可滚轮缩放和拖动空格平移");
+    const scene = () => document.querySelector<HTMLElement>(".factory-map")!;
+    expect(viewport.style.visibility).toBe("hidden");
+    width = 630;
+    height = 630;
+    rerender(<FactoryEditor {...props} visible />);
+    expect(viewport.style.visibility).toBe("");
+    expect(scene().style.transform).not.toContain("translate(0px, 0px)");
+    fireEvent.wheel(viewport, { ...point(3, 2), deltaY: -180 });
+    fireEvent.pointerDown(viewport, { ...point(-4, -4), button: 0 });
+    fireEvent.pointerMove(window, {
+      ...point(-4, -4),
+      clientX: point(-4, -4).clientX + 30,
+      clientY: point(-4, -4).clientY + 20,
+    });
+    fireEvent.pointerUp(window, { ...point(-4, -4), button: 0, buttons: 0 });
+    const beforeSwitch = scene().style.transform;
+    const zoom = screen.getByLabelText("当前缩放").textContent;
+    const second = {
+      ...original,
+      id: "second-factory",
+      name: "分厂",
+      buildings: original.buildings.map((b) => ({
+        ...b,
+        factory_id: "second-factory",
+      })),
+    };
+    rerender(<FactoryEditor {...props} factory={second} visible />);
+    expect(scene().style.transform).toBe(beforeSwitch);
+    expect(screen.getByLabelText("当前缩放").textContent).toBe(zoom);
+    const focus = { factory_id: second.id, x: 4, y: 3, sequence: 1 };
+    rerender(
+      <FactoryEditor {...props} factory={second} robotFocus={focus} visible />,
+    );
+    fireEvent.wheel(viewport, { ...point(-2, -2), deltaY: 100 });
+    const beforeHide = scene().style.transform;
+    width = 0;
+    height = 0;
+    rerender(
+      <FactoryEditor
+        {...props}
+        factory={second}
+        robotFocus={focus}
+        visible={false}
+      />,
+    );
+    act(() => notifyResize());
+    expect(scene().style.transform).toBe(beforeHide);
+    width = 630;
+    height = 630;
+    rerender(
+      <FactoryEditor {...props} factory={second} robotFocus={focus} visible />,
+    );
+    expect(scene().style.transform).toBe(beforeHide);
+    const previous = beforeHide
+      .match(/translate\(([-.\d]+)px, ([-.\d]+)px\) scale\(([-.\d]+)\)/)!
+      .slice(1)
+      .map(Number);
+    width = 830;
+    height = 730;
+    act(() => notifyResize());
+    const resized = scene()
+      .style.transform.match(
+        /translate\(([-.\d]+)px, ([-.\d]+)px\) scale\(([-.\d]+)\)/,
+      )!
+      .slice(1)
+      .map(Number);
+    expect(resized[0]).toBeCloseTo(previous[0] + 100);
+    expect(resized[1]).toBeCloseTo(previous[1] + 50);
+    expect(resized[2]).toBe(previous[2]);
+  } finally {
+    unmount();
+    globalThis.ResizeObserver = previousObserver;
+  }
+}, 15000);

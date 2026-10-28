@@ -761,7 +761,7 @@ export default function FactoryWorkspace({
                 onLocateRobot={(r) => void locateRobot(r)}
               >
                 <FactoryEditor
-                  key={factory.id}
+                  visible={industryView === "factory"}
                   factory={factory}
                   commands={game.runtime!.commands}
                   catalog={catalog}

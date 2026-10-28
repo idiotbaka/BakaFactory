@@ -57,6 +57,7 @@ import {
 } from "./editorGeometry";
 
 type Props = {
+  visible?: boolean;
   districts?: DistrictSummary[];
   onSelectDistrict?: (id: string) => void;
   districtSwitchDisabled?: boolean;
@@ -123,6 +124,9 @@ export default function FactoryEditor(props: Props) {
     menuRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<Camera>({ x: 0, y: 0, zoom: 1.25 });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1.25 });
+  const [cameraReady, setCameraReady] = useState(false);
+  const viewportSize = useRef<{ width: number; height: number } | null>(null);
+  const handledFocus = useRef<RobotFocus | undefined>(undefined);
   const drag = useRef<Drag | null>(null),
     pan = useRef<Pan | null>(null);
   const marquee = useRef<Marquee | null>(null);
@@ -184,7 +188,12 @@ export default function FactoryEditor(props: Props) {
     undergroundContext.factoryID !== factory.id ||
     undergroundContext.type !== placementType
   ) {
-    if (undergroundContext.factoryID !== factory.id) setIOFactory(null);
+    if (undergroundContext.factoryID !== factory.id) {
+      setIOFactory(null);
+      setPointer(null);
+      setMenu(null);
+      setCellSelection(null);
+    }
     if (undergroundContext.factoryID !== factory.id || placementType)
       setDeleteMode(false);
     setUndergroundContext({ factoryID: factory.id, type: placementType });
@@ -218,6 +227,26 @@ export default function FactoryEditor(props: Props) {
     const rect = area.getBoundingClientRect(),
       f = latest.current.factory;
     moveCamera(centeredCamera(rect.width, rect.height, f.width, f.height, fit));
+    setPointer(null);
+    setMenu(null);
+  }
+  function syncViewport() {
+    if (latest.current.visible === false) return;
+    const bounds = viewport.current?.getBoundingClientRect();
+    if (!bounds?.width || !bounds.height) return;
+    const previousSize = viewportSize.current;
+    viewportSize.current = { width: bounds.width, height: bounds.height };
+    if (!previousSize) {
+      center();
+      setCameraReady(true);
+      return;
+    }
+    const dx = bounds.width - previousSize.width,
+      dy = bounds.height - previousSize.height;
+    if (!dx && !dy) return;
+    actions.current.cancel();
+    const previous = cameraRef.current;
+    moveCamera({ ...previous, x: previous.x + dx / 2, y: previous.y + dy / 2 });
     setPointer(null);
     setMenu(null);
   }
@@ -451,17 +480,19 @@ export default function FactoryEditor(props: Props) {
     selection: (f: FactoryDetail) => string | null,
   ) {
     if (lock.current) return;
+    const factoryID = latest.current.factory.id;
     lock.current = true;
     setSaving(true);
     setMenu(null);
     try {
       const result = await action();
-      if (mounted.current) {
+      if (mounted.current && latest.current.factory.id === factoryID) {
         latest.current.onChange(result, selection(result));
         setCellSelection(null);
       }
     } catch (error) {
-      if (mounted.current) latest.current.onError(error);
+      if (mounted.current && latest.current.factory.id === factoryID)
+        latest.current.onError(error);
     } finally {
       lock.current = false;
       if (mounted.current) setSaving(false);
@@ -785,6 +816,7 @@ export default function FactoryEditor(props: Props) {
     );
   }
   const actions = useRef({
+    syncViewport,
     finish,
     rotateDrag,
     rotateSelected,
@@ -799,6 +831,7 @@ export default function FactoryEditor(props: Props) {
   });
   useLayoutEffect(() => {
     actions.current = {
+      syncViewport,
       finish,
       rotateDrag,
       rotateSelected,
@@ -812,35 +845,23 @@ export default function FactoryEditor(props: Props) {
       deleteShortcut,
     };
   });
-  useEffect(() => {
-    mounted.current = true;
-    actions.current.center();
-    const initialBounds = viewport.current!.getBoundingClientRect();
-    let viewWidth = initialBounds.width,
-      viewHeight = initialBounds.height;
+  useLayoutEffect(() => {
+    actions.current.syncViewport();
+    if (props.visible === false) actions.current.cancel();
+  }, [props.visible]);
+  useLayoutEffect(() => {
     const resize =
       typeof ResizeObserver === "undefined"
         ? null
-        : new ResizeObserver(() => {
-            const bounds = viewport.current?.getBoundingClientRect();
-            if (!bounds?.width || !bounds.height) return;
-            const dx = bounds.width - viewWidth,
-              dy = bounds.height - viewHeight;
-            viewWidth = bounds.width;
-            viewHeight = bounds.height;
-            if (!dx && !dy) return;
-            // Keep the same world point at the viewport centre when HUD panels fold.
-            actions.current.cancel();
-            const previous = cameraRef.current;
-            moveCamera({
-              ...previous,
-              x: previous.x + dx / 2,
-              y: previous.y + dy / 2,
-            });
-            setPointer(null);
-            setMenu(null);
-          });
+        : new ResizeObserver(() => actions.current.syncViewport());
     resize?.observe(viewport.current!);
+    return () => resize?.disconnect();
+  }, []);
+  useLayoutEffect(() => {
+    actions.current.cancel();
+  }, [factory.id]);
+  useEffect(() => {
+    mounted.current = true;
     const move = (event: PointerEvent) => {
       if (actions.current.updateBox(event)) {
         if (event.pointerType === "mouse" && (event.buttons & 2) === 0)
@@ -933,6 +954,7 @@ export default function FactoryEditor(props: Props) {
     };
     const key = (event: KeyboardEvent) => {
       if (
+        latest.current.visible === false ||
         event.defaultPrevented ||
         event.repeat ||
         event.ctrlKey ||
@@ -1032,7 +1054,6 @@ export default function FactoryEditor(props: Props) {
     window.addEventListener("keydown", key);
     return () => {
       mounted.current = false;
-      resize?.disconnect();
       if (clickTimer.current) clearTimeout(clickTimer.current);
       if (contextTimer.current) clearTimeout(contextTimer.current);
       actions.current.cancel();
@@ -1048,13 +1069,22 @@ export default function FactoryEditor(props: Props) {
       window.removeEventListener("blur", blur);
       window.removeEventListener("keydown", key);
     };
-  }, [factory.id]);
+  }, []);
   useLayoutEffect(() => {
     const focus = props.robotFocus,
       area = viewport.current;
-    if (!focus || !area || focus.factory_id !== factory.id) return;
+    if (
+      !focus ||
+      focus === handledFocus.current ||
+      !area ||
+      props.visible === false ||
+      focus.factory_id !== factory.id
+    )
+      return;
     const rect = area.getBoundingClientRect(),
       zoom = cameraRef.current.zoom;
+    if (!rect.width || !rect.height) return;
+    handledFocus.current = focus;
     moveCamera({
       zoom,
       x:
@@ -1064,7 +1094,13 @@ export default function FactoryEditor(props: Props) {
         rect.height / 2 -
         (GRID_INSET + (factory.height / 2 - focus.y) * TILE_SIZE) * zoom,
     });
-  }, [props.robotFocus, factory.id, factory.width, factory.height]);
+  }, [
+    props.robotFocus,
+    props.visible,
+    factory.id,
+    factory.width,
+    factory.height,
+  ]);
   useEffect(() => {
     if (menu)
       menuRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
@@ -1328,6 +1364,7 @@ export default function FactoryEditor(props: Props) {
       <div
         className={`map-viewport ${deleteMode ? "is-deleting" : ""} ${dragPreview || panning ? "is-dragging" : ""} ${placementDefinition ? "is-placing" : ""}`}
         ref={viewport}
+        style={{ visibility: cameraReady ? undefined : "hidden" }}
         tabIndex={0}
         aria-label="工厂地图，可滚轮缩放和拖动空格平移"
         onPointerDown={beginPan}
