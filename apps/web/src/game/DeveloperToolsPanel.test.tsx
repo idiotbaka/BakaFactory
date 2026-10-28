@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { openGameSelect } from "../test/gameSelect";
 import IndustryViews from "./IndustryViews";
 import { createWorld, actWorld } from "./local/world";
 import { catalog } from "./local/catalog";
@@ -12,7 +13,90 @@ const user = {
   created_at: "now",
   last_login_at: "now",
 };
+afterEach(() => vi.restoreAllMocks());
 describe("developer tools", () => {
+  it("selects locked-stage items with the searchable dropdown and grants the default or entered quantity", () => {
+    const factory = createWorld(user, "获取物品"),
+      world = vi.fn();
+    const props = {
+      factory,
+      catalog,
+      disabled: false,
+      act: vi.fn(),
+      world,
+      view: "developer" as const,
+      developerToolsVisible: true,
+      onViewChange: vi.fn(),
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />);
+    const item = catalog.items.find((i) => !i.legacy && i.tier === 6)!;
+    expect(screen.getByLabelText("获取数量")).toHaveValue(100);
+    openGameSelect(screen.getByRole("combobox", { name: "获取物品" }));
+    fireEvent.change(screen.getByLabelText("搜索物品"), {
+      target: { value: item.code },
+    });
+    fireEvent.click(screen.getByRole("option", { name: item.name }));
+    expect(world).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "确定" }));
+    expect(world).toHaveBeenLastCalledWith({
+      type: "developer_grant_item",
+      item: item.id,
+      count: 100,
+    });
+    const next = actWorld(factory, world.mock.calls[0][0]);
+    rerender(<IndustryViews {...props} factory={next} />);
+    expect(screen.getByText(/当前总仓库存：100/)).toBeVisible();
+    fireEvent.change(screen.getByLabelText("获取数量"), {
+      target: { value: "23" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "确定" }));
+    expect(world).toHaveBeenLastCalledWith({
+      type: "developer_grant_item",
+      item: item.id,
+      count: 23,
+    });
+  });
+
+  it("rejects invalid quantities and overflow, and disables all grant controls while paused or without a handler", () => {
+    const factory = createWorld(user, "输入校验"),
+      world = vi.fn();
+    const props = {
+      factory,
+      catalog,
+      disabled: false,
+      act: vi.fn(),
+      world,
+      view: "developer" as const,
+      developerToolsVisible: true,
+      onViewChange: vi.fn(),
+      children: null,
+    };
+    const { rerender } = render(<IndustryViews {...props} />);
+    for (const value of ["", "0", "-1", "1.5", "9007199254740992"]) {
+      fireEvent.change(screen.getByLabelText("获取数量"), {
+        target: { value },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "确定" }));
+      expect(screen.getByRole("alert")).toHaveTextContent("正安全整数");
+    }
+    expect(world).not.toHaveBeenCalled();
+    const full = structuredClone(factory);
+    full.simulation.warehouse[catalog.root_item!] = Number.MAX_SAFE_INTEGER;
+    rerender(<IndustryViews {...props} factory={full} />);
+    fireEvent.change(screen.getByLabelText("获取数量"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "确定" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("超出上限");
+    expect(world).not.toHaveBeenCalled();
+    rerender(<IndustryViews {...props} disabled />);
+    expect(screen.getByRole("combobox", { name: "获取物品" })).toBeDisabled();
+    expect(screen.getByLabelText("获取数量")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "确定" })).toBeDisabled();
+    rerender(<IndustryViews {...props} world={undefined} />);
+    expect(screen.getByRole("button", { name: "确定" })).toBeDisabled();
+  });
   it("applies validated TPS only through the session control and offers a reset", () => {
     const factory = createWorld(user, "模拟倍速"),
       onTickRateChange = vi.fn();

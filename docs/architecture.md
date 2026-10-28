@@ -1,5 +1,7 @@
 # 当前架构
 
+开发者物品获取使用 `WorldAction.developer_grant_item`，由现有 Worker 串行执行 `actWorld`：在克隆世界中验证当前非旧档物品与正安全整数数量，通过 `store` 检查相加溢出后仅更新主厂总仓库，并记录 discovery、同步获得类任务及递增 revision。失败不提交克隆。`GameRuntime.world` 要求开发者入口已开启，正常在线许可 / Worker 暂停检查继续适用；成功结果通过既有完整快照与 IndexedDB 保存流程发布，库存随正常云备份上传。仅新增客户端操作，无 HTTP 协议、存档字段、版本或数据库迁移。
+
 机器通过 `auto_eject` Worker 行业编辑保存实例 `configuration.auto_eject`，客户端与 Go 均限制为配方型生产机器的可选布尔配置。固体规划器新增正前缘候选，与投料机共用来源 / 容量预留、腾空依赖、先扣后收及动画收据；无新计时器、API 结构、存档版本或数据库迁移，见 [机器自动弹出](auto-ejection.md)。
 
 图鉴固定筛选区和来源配方卡仅修改客户端布局。`ItemInfoProvider.onWorkshopRecipe` 向 `IndustryViews` 传递配方 ID，主视图维护临时目标、切手工设备、清搜索，再按吸顶栏实际高度滚动中央容器并聚焦配方卡；不滚动整个页面、不发 Worker 操作，也不新增 API / 存档字段。设计与验收见 [图鉴与配方导航](recipe-navigation.md)。

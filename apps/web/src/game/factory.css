@@ -402,20 +402,26 @@
   color: var(--muted);
 }
 
-.developer-tick-rate {
+.developer-tick-rate,
+.developer-item-grant {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: end;
 }
-.developer-tick-rate label {
+.developer-tick-rate label,
+.developer-item-grant label {
   display: grid;
   gap: 6px;
   min-width: 0;
 }
-.developer-tick-rate input {
+.developer-tick-rate input,
+.developer-item-grant input {
   width: 120px;
   max-width: 100%;
+}
+.developer-item-grant .developer-item-choice {
+  flex: 1 1 220px;
 }
 .developer-switch {
   display: flex;

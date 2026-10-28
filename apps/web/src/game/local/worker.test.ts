@@ -41,6 +41,59 @@ afterEach(() => {
   post.mockReset();
 });
 describe("bounded local worker clock", () => {
+  it("requires a live permit for item grants and keeps failed grants atomic", () => {
+    const item = "i0001";
+    send({
+      kind: "world",
+      request: 1,
+      action: { type: "developer_grant_item", item, count: 100 },
+    });
+    expect(post.mock.calls.at(-1)![0]).toMatchObject({
+      kind: "error",
+      request: 1,
+      message: expect.stringContaining("暂停"),
+    });
+    send({ kind: "permit", enabled: true, validFor: 1000 });
+    send({
+      kind: "world",
+      request: 2,
+      action: { type: "developer_grant_item", item, count: 100 },
+    });
+    const granted = post.mock.calls.at(-1)![0] as Extract<
+      WorkerEvent,
+      { kind: "state" }
+    >;
+    expect(granted).toMatchObject({ kind: "state", request: 2 });
+    expect(granted.root!.simulation.warehouse[item]).toBe(100);
+    send({
+      kind: "world",
+      request: 3,
+      action: { type: "developer_grant_item", item, count: -1 },
+    });
+    expect(post.mock.calls.at(-1)![0]).toMatchObject({
+      kind: "error",
+      request: 3,
+    });
+    send({
+      kind: "world",
+      request: 4,
+      action: { type: "developer_grant_item", item, count: 1 },
+    });
+    const next = post.mock.calls.at(-1)![0] as typeof granted;
+    expect(next.root!.simulation.warehouse[item]).toBe(101);
+    expect(next.root!.revision).toBe(granted.root!.revision + 1);
+    vi.advanceTimersByTime(1000);
+    send({
+      kind: "world",
+      request: 5,
+      action: { type: "developer_grant_item", item, count: 1 },
+    });
+    expect(post.mock.calls.at(-1)![0]).toMatchObject({
+      kind: "error",
+      request: 5,
+      message: expect.stringContaining("暂停"),
+    });
+  });
   it("changes only the tick interval, replacing the pending timer when TPS changes", () => {
     send({ kind: "permit", enabled: true, validFor: 30000, tickRate: 4 });
     vi.advanceTimersByTime(1000);

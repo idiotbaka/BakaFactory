@@ -32,10 +32,13 @@ import {
 import { catalog } from "./catalog";
 import { newMachine } from "./machine";
 import { orderRewardClaimed } from "./progression";
+import { discoverItems } from "./discovery";
+import { validateDeveloperItemGrant } from "./developerItems";
 
 export type WorldAction =
   | RobotAction
   | { type: "developer_settings"; warehouse_orders_always_available: boolean }
+  | { type: "developer_grant_item"; item: string; count: number }
   | { type: "claim_quest"; id: string }
   | { type: "submit_quest"; id: string }
   | {
@@ -323,6 +326,14 @@ export function actWorld(
   const root = structuredClone(initializeWorld(current));
   if (!Number.isSafeInteger(root.revision + 1))
     throw new Error("存档版本已达到上限");
+  if (action.type === "developer_grant_item") {
+    validateDeveloperItemGrant(action.item, action.count);
+    store(root.simulation.warehouse, { [action.item]: action.count });
+    discoverItems(root, [action.item]);
+    syncQuests(root);
+    root.revision++;
+    return root;
+  }
   if (action.type === "developer_settings") {
     if (typeof action.warehouse_orders_always_available !== "boolean")
       throw new Error("开发者开关值无效");

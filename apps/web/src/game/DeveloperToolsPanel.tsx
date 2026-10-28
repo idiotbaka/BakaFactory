@@ -6,6 +6,9 @@ import DiagnosticsPanel from "./DiagnosticsPanel";
 import type { LocalFactory } from "./local/state";
 import type { Observation } from "./local/observations";
 import { DEFAULT_TPS, MAX_TPS, validateTickRate } from "./local/tickRate";
+import GameSelect from "./GameSelect";
+import { catalog } from "./local/catalog";
+import { validateDeveloperItemGrant } from "./local/developerItems";
 
 export default function DeveloperToolsPanel({
   factory,
@@ -49,6 +52,7 @@ export default function DeveloperToolsPanel({
             disabled={disabled || !onTickRateChange}
             onChange={onTickRateChange}
           />
+          <ItemGrantControl factory={factory} disabled={disabled} act={act} />
           <FeatureTests factory={factory} disabled={disabled} act={act} />
         </>
       ) : (
@@ -58,6 +62,93 @@ export default function DeveloperToolsPanel({
           onLocate={onLocate}
         />
       )}
+    </section>
+  );
+}
+
+function ItemGrantControl({
+  factory,
+  disabled,
+  act,
+}: {
+  factory: FactoryDetail;
+  disabled: boolean;
+  act?: (action: WorldAction) => void;
+}) {
+  const [item, setItem] = useState(catalog.root_item ?? "");
+  const [quantity, setQuantity] = useState("100");
+  const [error, setError] = useState("");
+  const unavailable = disabled || !act;
+  const owned = factory.simulation?.warehouse[item] ?? 0;
+  return (
+    <section className="developer-tools" aria-label="物品获取">
+      <h3>物品获取</h3>
+      <p>选择物品并填写数量，直接加入总仓库。可选择尚未开放阶段的物品。</p>
+      <form
+        className="developer-item-grant"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (unavailable) return;
+          try {
+            const count = Number(quantity);
+            validateDeveloperItemGrant(item, count);
+            if (!Number.isSafeInteger(owned + count))
+              throw new Error("加入后仓库数量超出上限");
+            act({ type: "developer_grant_item", item, count });
+            setError("");
+          } catch (error) {
+            setError(error instanceof Error ? error.message : "获取物品失败");
+          }
+        }}
+      >
+        <label className="developer-item-choice">
+          物品
+          <GameSelect
+            aria-label="获取物品"
+            catalog={catalog}
+            kind="item"
+            value={item}
+            disabled={unavailable}
+            onValueChange={(value) => {
+              setItem(value);
+              setError("");
+            }}
+          >
+            {catalog.items
+              .filter((i) => !i.legacy)
+              .map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+          </GameSelect>
+        </label>
+        <label>
+          数量
+          <input
+            aria-label="获取数量"
+            type="number"
+            min={1}
+            max={Number.MAX_SAFE_INTEGER}
+            step="1"
+            value={quantity}
+            disabled={unavailable}
+            onChange={(event) => {
+              setQuantity(event.target.value);
+              setError("");
+            }}
+          />
+        </label>
+        <button type="submit" disabled={unavailable}>
+          确定
+        </button>
+      </form>
+      <p>当前总仓库存：{owned.toLocaleString()}。数量须为正整数，默认 100。</p>
+      <p>
+        获取的物品会随存档保存并计入曾获得记录；不会增加制造量或自动入库量，阶段仍需完成终局任务并领奖后开放。
+      </p>
+      {error && <p role="alert">{error}</p>}
     </section>
   );
 }

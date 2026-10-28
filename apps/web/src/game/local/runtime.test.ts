@@ -161,6 +161,22 @@ afterEach(async () => {
   vi.resetAllMocks();
 });
 describe("local persistence and cloud lifecycle", () => {
+  it("gates item grants on visible developer tools, persists the shared ledger and retains normal online checks", async () => {
+    await game.start();
+    await game.create("获取测试物品");
+    const item = itemID("垃圾包");
+    const action = { type: "developer_grant_item" as const, item, count: 100 };
+    await expect(game.world(action)).rejects.toThrow("开发者工具");
+    await game.setDeveloperToolsVisible(true);
+    const owned = view.factory!.simulation.warehouse[item] ?? 0;
+    await game.world(action);
+    expect(view.factory!.simulation.warehouse[item]).toBe(owned + 100);
+    expect(saved!.save!.factory.simulation!.warehouse[item]).toBe(owned + 100);
+    window.dispatchEvent(new Event("offline"));
+    await expect(game.world(action)).rejects.toThrow("暂停");
+    await game.setDeveloperToolsVisible(false);
+    expect(saved!.save!.factory.simulation!.warehouse[item]).toBe(owned + 100);
+  });
   it("controls session-only TPS through permits, preserves save rules and resets when tools close or runtime restarts", async () => {
     await game.start();
     await game.create("倍速测试");

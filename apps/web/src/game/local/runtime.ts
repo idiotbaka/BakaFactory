@@ -474,8 +474,11 @@ export class GameRuntime {
       factoryID: this.view.factory?.id,
       edit: { kind: "industry", action },
     });
-  readonly world = (action: WorldAction) =>
-    this.command({ kind: "world", action });
+  readonly world = (action: WorldAction) => {
+    if (action.type === "developer_grant_item" && !this.developerToolsVisible)
+      return Promise.reject(new Error("请先打开开发者工具后获取物品"));
+    return this.command({ kind: "world", action });
+  };
   async markStoryViewed(id: StoryID) {
     if (this.disposed || !this.view.ready)
       throw new Error("游戏尚未就绪，请稍后重试");
