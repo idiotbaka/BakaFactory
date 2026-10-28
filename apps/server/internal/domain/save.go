@@ -93,6 +93,9 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			return bad()
 		}
 		if m := f.Simulation.Buildings[b.ID]; m != nil {
+			if limits[b.BuildingType].Role != "station" && (m.SuppliedKW > 1000 || m.PowerDemandKW > 1000) {
+				return bad()
+			}
 			if m.StationEnergyKJ < 0 || m.StationEnergyKJ > float64(limits[b.BuildingType].StationCapacityKJ) {
 				return bad()
 			}

@@ -263,7 +263,7 @@ describe("paired underground conveyors", () => {
     delete orphan.simulation.buildings["in-out"];
     expect(() => validateSave(toSave(orphan), user.id)).toThrow("原存档已保留");
   });
-  it("checks both endpoint tiles against robot occupancy and shares the world's only warehouse", () => {
+  it("allows robots over underground endpoints and shares the world's only warehouse", () => {
     const local = start(),
       world = createWorld(user, "世界");
     world.simulation.industry = local.simulation.industry;
@@ -275,19 +275,22 @@ describe("paired underground conveyors", () => {
         LocalFactory["robots"]
       >[number],
     ];
-    expect(() =>
-      editWorld(
-        world,
-        {
-          kind: "place_underground",
-          id: "a",
-          exitID: "b",
-          entry: { x: 1, y: 2, rotation: 0 },
-          exit: { x: 9, y: 2, rotation: 0 },
-        },
-        child.id,
-      ),
-    ).toThrow(/机器人/);
+    const overlap = editWorld(
+      world,
+      {
+        kind: "place_underground",
+        id: "a",
+        exitID: "b",
+        entry: { x: 1, y: 2, rotation: 0 },
+        exit: { x: 9, y: 2, rotation: 0 },
+      },
+      child.id,
+    );
+    expect(
+      overlap.districts![0].buildings.find((b) => b.id === "b"),
+    ).toMatchObject({ x: 9, y: 2 });
+    expect(overlap.robots![0]).toMatchObject({ x: 9, y: 2 });
+    expect(world.districts![0].buildings).toHaveLength(1);
     delete world.robots;
     const next = editWorld(
       world,

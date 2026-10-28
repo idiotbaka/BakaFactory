@@ -9,6 +9,7 @@ import {
 } from "./state";
 import { step } from "./simulation";
 import { itemID } from "./catalog";
+import { robotCanTraverse } from "./robotMovement";
 import { store } from "./inventory";
 import { applyRobotAction, chargeRobots, type RobotAction } from "./robots";
 import { stepFreight } from "./robotFreight";
@@ -247,7 +248,20 @@ function editWorldDraft(
   for (const endpoint of shapes) {
     if (plannedBuildings(current, id).some((b) => overlaps(b, endpoint)))
       throw new Error("该格已预留施工蓝图，请先取消施工");
+    const type =
+      "building_type" in endpoint
+        ? (endpoint.building_type as string)
+        : edit.kind === "place"
+          ? edit.building_type
+          : edit.kind === "move"
+            ? worldFactories(current)
+                .find((f) => f.id === id)
+                ?.buildings.find((b) => b.id === edit.id)?.building_type
+            : edit.kind === "place_underground"
+              ? "underground_belt"
+              : undefined;
     if (
+      !robotCanTraverse(type) &&
       current.robots?.some(
         (r) =>
           (!r.transit && r.factory_id === id && containsCell(endpoint, r)) ||

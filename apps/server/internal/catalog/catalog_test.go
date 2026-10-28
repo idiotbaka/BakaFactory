@@ -25,7 +25,7 @@ func TestCatalogValidation(t *testing.T) {
 	if len(valid.Items) != 353 || len(valid.Buildings) != 87 || len(valid.Recipes) != 332 || len(valid.Stages) != 6 || len(valid.Robots) != 9 || len(valid.Quests) != 32 {
 		t.Fatal("missing production definitions")
 	}
-	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "off_grid_duration", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity"} {
+	for _, name := range []string{"duplicate_item", "unknown_ingredient", "negative_quantity", "unknown_machine", "invalid_duration", "subsecond_duration", "off_grid_duration", "missing_bus", "invalid_color", "robot_capacity", "robot_energy", "robot_duplicate", "robot_item", "station_capacity", "station_rate", "station_power", "production_power"} {
 		t.Run(name, func(t *testing.T) {
 			c, err := Load()
 			if err != nil {
@@ -51,7 +51,7 @@ func TestCatalogValidation(t *testing.T) {
 			case "invalid_color":
 				c.Items[0].Color = "url(invalid)"
 			case "robot_capacity":
-				c.Robots[0].Capacity = 33
+				c.Robots[0].Capacity = 101
 			case "robot_energy":
 				c.Robots[0].Energy = "free"
 			case "robot_duplicate":
@@ -62,6 +62,24 @@ func TestCatalogValidation(t *testing.T) {
 				for i := range c.Buildings {
 					if c.Buildings[i].Role == "station" {
 						c.Buildings[i].StationCapacityKJ = 30001
+						break
+					}
+				}
+			case "station_rate", "station_power":
+				for i := range c.Buildings {
+					if c.Buildings[i].Role == "station" {
+						if name == "station_rate" {
+							c.Buildings[i].StationTransferKW = 1501
+						} else {
+							c.Buildings[i].PowerKW = 1501
+						}
+						break
+					}
+				}
+			case "production_power":
+				for i := range c.Buildings {
+					if c.Buildings[i].Role == "production" {
+						c.Buildings[i].PowerKW = 1001
 						break
 					}
 				}

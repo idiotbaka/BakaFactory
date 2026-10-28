@@ -7,7 +7,12 @@ import {
   recipeDefinitions,
 } from "./catalog";
 import { newMachine, toSave, validateSave, type LocalFactory } from "./state";
-import { actWorld, createWorld, editWorld } from "./world";
+import {
+  actWorld,
+  createWorld,
+  editWorld,
+  stepWorld as stepTick,
+} from "./world";
 import { journey, returnCost } from "./robotRoutes";
 import { robotDefinitions } from "./robots";
 
@@ -198,7 +203,7 @@ describe("physical robot freight", () => {
     expect(root.robots![0].cargo).toBeUndefined();
     expect(root.robots![0].task).toBeUndefined();
     expect(root.robots![0].returning).toBeUndefined();
-    expect(root.robots![0].energy_kj).toBeLessThan(energy - 16);
+    expect(root.robots![0].energy_kj).toBe(energy - 16);
   });
   it("preserves a real load when a target fills, resumes on space, and never recalls a working body", () => {
     let root = assign(setup());
@@ -301,7 +306,7 @@ describe("physical robot freight", () => {
       expect(root.robots![0].completed_tasks ?? 0).toBe(0);
     }
   });
-  it("routes to the configured WH face and never exceeds one output unit per face per second", () => {
+  it("routes to the configured WH face and never exceeds one output unit per face per half-second", () => {
     let root = setup();
     const bus = root.buildings[0];
     bus.configuration.face_180 = { mode: "output", filter: iron };
@@ -310,7 +315,7 @@ describe("physical robot freight", () => {
     root = assign(root, iron, 4, root.id, bus.id, "target");
     let last = 4;
     for (let i = 0; i < 100; i++) {
-      root = stepWorld(root);
+      root = stepTick(root);
       const left = root.simulation.warehouse[iron];
       expect(last - left).toBeLessThanOrEqual(1);
       expect(total(root)).toBe(4);
@@ -334,7 +339,7 @@ describe("physical robot freight", () => {
     let previous = 4,
       peak = 0;
     for (let i = 0; i < 100; i++) {
-      root = stepWorld(root);
+      root = stepTick(root);
       const current = root.simulation.warehouse[iron];
       const moved = previous - current;
       peak = Math.max(peak, moved);

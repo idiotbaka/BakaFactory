@@ -48,6 +48,7 @@ import {
   releaseService,
 } from "./robotService";
 import { recordWork } from "./workLedger";
+import { robotWorkLimit } from "./robotMovement";
 import {
   constructionValid,
   constructionJourney,
@@ -126,7 +127,9 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
     !robotStatuses.includes(r.status) ||
     !int(
       r.work_progress ?? 0,
-      r.construction ? constructionTicks : d.action_ticks,
+      r.construction
+        ? constructionTicks
+        : robotWorkLimit(d.item, d.action_ticks),
     ) ||
     !int(r.completed_tasks ?? 0, Number.MAX_SAFE_INTEGER)
   )
@@ -613,7 +616,11 @@ export function stepFreight(root: LocalFactory) {
       r.status = r.returning ? "returning" : "moving";
       continue;
     }
-    if (!actionDue) continue;
+    if (
+      !actionDue &&
+      (plan.arrival || r.returning || r.construction || r.service)
+    )
+      continue;
     if (plan.arrival) {
       if (
         r.energy_kj <
@@ -712,6 +719,9 @@ export function stepFreight(root: LocalFactory) {
       r.status = transfer.status;
       continue;
     }
+    // Preparation remains in whole seconds; confirmed loading/unloading can
+    // transfer a real batch on every half-second tick after preparation.
+    if ((r.work_progress ?? 0) < d.action_ticks && !actionDue) continue;
     if (r.energy_kj - 1 < returnCost(root, r, r, loading || !!r.cargo) + 2) {
       beginReturn(r, "energy");
       continue;

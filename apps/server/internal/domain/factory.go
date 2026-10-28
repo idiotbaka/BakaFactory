@@ -160,13 +160,17 @@ func (c Catalog) Validate() error {
 		if d.InputSlots < 1 || d.InputSlots > 12 || d.OutputSlots < 1 || d.OutputSlots > 12 || d.StackLimit != 100 || (d.Item != "" && !items[d.Item]) || d.Tier < 0 || d.Tier > 6 || d.PowerKW < 0 || d.BatchSize < 0 || d.BatchSize > 100 {
 			return fmt.Errorf("invalid inventory limits: %s", d.ID)
 		}
-		if d.PowerKW > 1000 || d.CapacityKJ < 0 || d.CapacityKJ > 30000 || d.TransferKW < 0 || d.TransferKW > 1000 || (d.Role == "battery" && (d.CapacityKJ == 0 || d.TransferKW == 0)) {
+		maxPowerKW := 1000
+		if d.Role == "station" {
+			maxPowerKW = 1500
+		}
+		if d.PowerKW > maxPowerKW || d.CapacityKJ < 0 || d.CapacityKJ > 30000 || d.TransferKW < 0 || d.TransferKW > 1000 || (d.Role == "battery" && (d.CapacityKJ == 0 || d.TransferKW == 0)) {
 			return fmt.Errorf("invalid energy definition: %s", d.ID)
 		}
 		if d.FluidCapacity < 0 || d.FluidCapacity > 500 || d.FluidRate < 0 || d.FluidRate > 20 || (d.FluidCapacity > 0) != (d.FluidRate > 0) {
 			return fmt.Errorf("invalid fluid definition: %s", d.ID)
 		}
-		if d.StationCapacityKJ < 0 || d.StationCapacityKJ > 30000 || d.StationTransferKW < 0 || d.StationTransferKW > 100 || (d.StationCapacityKJ > 0) != (d.StationTransferKW > 0) || d.StationCapacityKJ > 0 && (d.Role != "station" || d.PowerKW < 1 || d.Energy != "shaft" && d.Energy != "hydraulic" && d.Energy != "electric") {
+		if d.StationCapacityKJ < 0 || d.StationCapacityKJ > 30000 || d.StationTransferKW < 0 || d.StationTransferKW > 1500 || (d.StationCapacityKJ > 0) != (d.StationTransferKW > 0) || d.StationCapacityKJ > 0 && (d.Role != "station" || d.PowerKW < 1 || d.Energy != "shaft" && d.Energy != "hydraulic" && d.Energy != "electric") {
 			return fmt.Errorf("invalid robot station: %s", d.ID)
 		}
 		seen := map[string]bool{}
@@ -182,7 +186,7 @@ func (c Catalog) Validate() error {
 	}
 	robotItems := map[string]bool{}
 	for _, r := range c.Robots {
-		if !items[r.Item] || robotItems[r.Item] || r.Name == "" || r.Tier < 1 || r.Tier > 6 || r.Capacity < 0 || r.Capacity > 32 || r.EnergyCapacityKJ < 1 || r.EnergyCapacityKJ > 30000 || r.ActionTicks < 1 || r.ActionTicks > 60 || r.Energy != "shaft" && r.Energy != "hydraulic" && r.Energy != "electric" || r.Role != "carrier" && r.Role != "inspector" && r.Role != "repair" && r.Role != "smart" {
+		if !items[r.Item] || robotItems[r.Item] || r.Name == "" || r.Tier < 1 || r.Tier > 6 || r.Capacity < 0 || r.Capacity > 100 || r.EnergyCapacityKJ < 1 || r.EnergyCapacityKJ > 30000 || r.ActionTicks < 1 || r.ActionTicks > 60 || r.Energy != "shaft" && r.Energy != "hydraulic" && r.Energy != "electric" || r.Role != "carrier" && r.Role != "inspector" && r.Role != "repair" && r.Role != "smart" {
 			return fmt.Errorf("invalid robot definition: %s", r.Item)
 		}
 		robotItems[r.Item] = true

@@ -212,7 +212,7 @@ const buildings = d.machines.map((m) => {
     item: item(m.item),
     work_mode: m.mode,
     energy: energy(m.mode),
-    power_kw: m.kw,
+    power_kw: m.code === "M18" ? 50 : m.kw,
     role: ["M09", "M21", "M28"].includes(m.code)
       ? "generator"
       : m.code === "M17"
@@ -225,7 +225,7 @@ const buildings = d.machines.map((m) => {
     stack_limit: 100,
     input_whitelist: [...new Set(rs.flatMap((r) => Object.keys(r.inputs)))],
     ...(m.code === "M18"
-      ? { station_capacity_kj: 1000, station_transfer_kw: 5 }
+      ? { station_capacity_kj: 1000, station_transfer_kw: 50 }
       : {}),
   };
 });
@@ -352,17 +352,17 @@ const utilities = [
     {
       icon: "robot",
       energy: "hydraulic",
-      power_kw: 15,
+      power_kw: 150,
       station_capacity_kj: 3000,
-      station_transfer_kw: 15,
+      station_transfer_kw: 150,
     },
   ),
   utility("charge_station", "机器人换电站", "机器人换电站", 4, "station", {
     icon: "robot",
     energy: "electric",
-    power_kw: 100,
+    power_kw: 1500,
     station_capacity_kj: 30000,
-    station_transfer_kw: 100,
+    station_transfer_kw: 1500,
   }),
   utility("battery", "储能箱", "储能箱", 4, "battery", {
     icon: "battery",
@@ -413,18 +413,18 @@ const utilities = [
     power_kw: 4,
   }),
 ];
-// Source capacities are fixed; prose action intervals become minimum action
-// work, with actual route travel added separately in the browser runtime.
+// Web robot tuning: retain source formulas/IDs and energy capacities; faster
+// handling and larger real cargo are applied here, never to the v0.9 source.
 const robotTuning = [
-  ["shaft", 1000, 8, false, "carrier"],
-  ["hydraulic", 3000, 10, true, "carrier"],
-  ["hydraulic", 3000, 30, true, "inspector"],
-  ["electric", 15000, 8, true, "carrier"],
-  ["electric", 15000, 5, false, "carrier"],
-  ["electric", 15000, 2, false, "carrier"],
-  ["electric", 15000, 40, true, "repair"],
-  ["electric", 15000, 35, true, "repair"],
-  ["electric", 30000, 2, true, "smart"],
+  ["shaft", 1000, 2, false, "carrier", 10],
+  ["hydraulic", 3000, 1, true, "carrier", 20],
+  ["hydraulic", 3000, 1, true, "inspector", 0],
+  ["electric", 15000, 1, true, "carrier", 60],
+  ["electric", 15000, 1, false, "carrier", 30],
+  ["electric", 15000, 1, false, "carrier", 80],
+  ["electric", 15000, 1, true, "repair", 20],
+  ["electric", 15000, 1, true, "repair", 60],
+  ["electric", 30000, 1, true, "smart", 100],
 ];
 const expectedRobots = [
   "发条搬运车",
@@ -442,14 +442,20 @@ if (d.robot_specs.length !== expectedRobots.length)
 const robots = d.robot_specs.map((r, index) => {
   if (r.name !== expectedRobots[index])
     throw new Error("Robot source order changed; review web tuning");
-  const [energy, energy_capacity_kj, action_ticks, cross_district, role] =
-    robotTuning[index];
+  const [
+    energy,
+    energy_capacity_kj,
+    action_ticks,
+    cross_district,
+    role,
+    capacity,
+  ] = robotTuning[index];
   return {
     item: item(r.name),
     name: r.name,
     tier: r.tier,
     energy,
-    capacity: parseInt(r.capacity, 10),
+    capacity,
     energy_capacity_kj,
     action_ticks,
     cross_district,

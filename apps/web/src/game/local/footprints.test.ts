@@ -350,7 +350,7 @@ describe("multi-cell footprints", () => {
       let f = place(start(), "machine", "m08", { ...square, rotation: 0 });
       for (const [i, other] of edges.entries()) {
         if (other.x === edge.x && other.y === edge.y) continue;
-        f = place(f, `wall${i}`, "hand_belt", other);
+        f = place(f, `wall${i}`, "chest", other);
       }
       const plan = journey(
         f,

@@ -121,7 +121,7 @@ func validRobotWorld(f FactoryDetail, c Catalog) bool {
 		}
 		if r.Transit == nil {
 			for _, b := range current.Buildings {
-				if footprintContains(b.X, b.Y, b.Size, r.X, r.Y) {
+				if !robotCanTraverse(c, b.BuildingType) && footprintContains(b.X, b.Y, b.Size, r.X, r.Y) {
 					return false
 				}
 			}

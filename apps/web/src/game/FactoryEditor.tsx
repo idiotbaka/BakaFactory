@@ -35,6 +35,7 @@ import MachineNameLayer from "./MachineNameLayer";
 import PowerRegionLayer from "./PowerRegionLayer";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import UndergroundVisual from "./UndergroundVisual";
+import RobotLayer from "./RobotLayer";
 import {
   undergroundType,
   isUnderground,
@@ -65,6 +66,8 @@ type Props = {
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
   robotRoute?: RobotRoute;
+  robotRoutes?: RobotRoute[];
+  paused?: boolean;
   robotFocus?: RobotFocus;
   commands: EditorCommands;
   factory: FactoryDetail;
@@ -828,7 +831,7 @@ export default function FactoryEditor(props: Props) {
             r.construction?.factory_id === factory.id &&
             containsCell(r.construction, cell)),
       );
-      if (robot && props.onSelectRobot) {
+      if (!instance && robot && props.onSelectRobot) {
         props.onSelectRobot(robot.id);
         setCellSelection(null);
         return;
@@ -923,7 +926,7 @@ export default function FactoryEditor(props: Props) {
       }
       const p = drag.current,
         view = pan.current;
-      if (p?.pointerID === event.pointerId) {
+      if (p && p.pointerID === event.pointerId) {
         p.clientX = event.clientX;
         p.clientY = event.clientY;
         const at = actions.current.hit(event.clientX, event.clientY);
@@ -931,7 +934,7 @@ export default function FactoryEditor(props: Props) {
         if (p.active) show(p);
         if (event.pointerType === "mouse" && (event.buttons & 1) === 0)
           actions.current.finish(event.clientX, event.clientY);
-      } else if (view?.pointerID === event.pointerId) {
+      } else if (view && view.pointerID === event.pointerId) {
         const dx = event.clientX - view.startX,
           dy = event.clientY - view.startY;
         if (Math.hypot(dx, dy) >= 4) view.active = true;
@@ -1562,27 +1565,19 @@ export default function FactoryEditor(props: Props) {
                 />
               </svg>
             )}
-            {props.robotRoute?.factory_id === factory.id &&
-              props.robotRoute.points.length > 1 && (
-                <svg
-                  className="robot-route-layer"
-                  viewBox="0 0 630 630"
-                  aria-label="机器人当前路段预览"
-                >
-                  <polyline
-                    points={props.robotRoute.points
-                      .map(
-                        (p) =>
-                          `${(p.x + 10.5) * TILE_SIZE},${(10.5 - p.y) * TILE_SIZE}`,
-                      )
-                      .join(" ")}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeDasharray="5 4"
-                  />
-                </svg>
-              )}
+            <RobotLayer
+              factory={factory}
+              routes={
+                props.robotRoutes?.length
+                  ? props.robotRoutes
+                  : props.robotRoute
+                    ? [props.robotRoute]
+                    : []
+              }
+              selectedID={props.selectedRobotID}
+              paused={props.paused}
+              visible={props.visible}
+            />
             {Array.from(
               { length: factory.width * factory.height },
               (_, index) => {
@@ -1645,11 +1640,12 @@ export default function FactoryEditor(props: Props) {
                       </span>
                     )}
                     {robots.has(`${x},${y}`) &&
+                      !instance &&
                       props.onSelectRobot &&
                       !placementDefinition && (
                         <button
                           type="button"
-                          className={`robot-marker ${robots.get(`${x},${y}`)!.id === props.selectedRobotID ? "selected-robot" : ""}`}
+                          className="robot-hit-target"
                           title="选择机器人"
                           aria-label={`选择机器人 ${robots.get(`${x},${y}`)!.id} (${x},${y})`}
                           aria-pressed={
@@ -1669,20 +1665,7 @@ export default function FactoryEditor(props: Props) {
                               );
                             }
                           }}
-                        >
-                          <svg
-                            viewBox="0 0 32 32"
-                            fill="none"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M8 9H24V24H8ZM16 9V4M12 15H13M19 15H20M12 20H20M5 13V21M27 13V21M11 24V28M21 24V28"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            />
-                            <circle cx="16" cy="4" r="2" fill="currentColor" />
-                          </svg>
-                        </button>
+                        ></button>
                       )}
                     {instance && d ? (
                       <button

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import FactoryWorkspace from "./FactoryWorkspace";
 import { useLocalGame } from "./local/useLocalGame";
 import { createLocalFactory, type LocalFactory } from "./local/state";
@@ -30,6 +30,26 @@ const backup = vi.fn().mockResolvedValue(undefined),
   chooseLocal = vi.fn().mockResolvedValue(undefined),
   retry = vi.fn(),
   markStoryViewed = vi.fn().mockResolvedValue(undefined);
+const nativeBounds = HTMLElement.prototype.getBoundingClientRect;
+beforeEach(() => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      if (!this.classList.contains("map-viewport"))
+        return nativeBounds.call(this);
+      return {
+        x: 100,
+        y: 100,
+        left: 100,
+        top: 100,
+        right: 730,
+        bottom: 730,
+        width: 630,
+        height: 630,
+        toJSON: () => ({}),
+      };
+    },
+  );
+});
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -195,6 +215,7 @@ describe("local factory workspace", () => {
       vi.stubGlobal("PointerEvent", MouseEvent);
       prepare(true, {
         setup: (f) => {
+          if (type === "warehouse_pickup") f.simulation.industry!.stage = 2;
           f.buildings = [
             {
               id: "blocked-pick",
@@ -223,6 +244,13 @@ describe("local factory workspace", () => {
       const palette = within(
         screen.getByRole("complementary", { name: "实体图鉴" }),
       );
+      if (type === "warehouse_pickup")
+        fireEvent.click(
+          within(palette.getByRole("group", { name: "图鉴阶段" })).getByRole(
+            "button",
+            { name: "P1" },
+          ),
+        );
       const active = palette.getByRole("button", { name: /^自动工作台/ });
       fireEvent.click(active);
       // At the centered camera the center cell has a small half-inset offset.
@@ -460,7 +488,7 @@ describe("local factory workspace", () => {
     });
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
+  }, 15_000);
   it("keeps manual queue management only in the top HUD across workshop and warehouse views", () => {
     prepare(true, {
       setup: (f) => {

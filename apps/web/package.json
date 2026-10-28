@@ -8,7 +8,7 @@
     "dev": "vite",
     "prebuild": "node ../../scripts/generate-search-index.mjs",
     "build": "tsc --noEmit && vite build",
-    "lint": "node ../../scripts/generate-search-index.mjs --check && node ../../scripts/check-ui-typography.mjs && node ../../scripts/check-game-font.mjs && node ../../scripts/check-item-sprites.mjs && node ../../scripts/check-building-art.mjs && eslint . && tsc --noEmit",
+    "lint": "node ../../scripts/generate-search-index.mjs --check && node ../../scripts/check-ui-typography.mjs && node ../../scripts/check-game-font.mjs && node ../../scripts/check-item-sprites.mjs && node ../../scripts/check-building-art.mjs && node ../../scripts/check-robot-sprites.mjs && eslint . && tsc --noEmit",
     "pretest": "node ../../scripts/generate-search-index.mjs",
     "test": "vitest run",
     "generate:api": "openapi-typescript ../../docs/openapi.yaml -o src/api/schema.d.ts"

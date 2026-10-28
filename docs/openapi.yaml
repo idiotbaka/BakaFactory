@@ -441,7 +441,7 @@ components:
             power_kw: { type: integer, minimum: 0 }
             capacity_kj: { type: integer, minimum: 0, maximum: 30000 }
             station_capacity_kj: { type: integer, minimum: 0, maximum: 30000 }
-            station_transfer_kw: { type: integer, minimum: 0, maximum: 100 }
+            station_transfer_kw: { type: integer, minimum: 0, maximum: 1500 }
             transfer_kw: { type: integer, minimum: 0, maximum: 1000 }
             fluid_capacity: { type: integer, minimum: 0, maximum: 500 }
             fluid_rate: { type: integer, minimum: 0, maximum: 20 }
@@ -477,7 +477,7 @@ components:
           { type: number, multipleOf: 0.5, minimum: 0, maximum: 1000 }
         powered: { type: boolean }
         generated_kw: { type: integer, minimum: 0, maximum: 1000 }
-        power_demand_kw: { type: integer, minimum: 0, maximum: 1000 }
+        power_demand_kw: { type: integer, minimum: 0, maximum: 1500 }
         network_id: { type: string, maxLength: 160 }
         charge_kj: { type: number, multipleOf: 0.5, minimum: 0, maximum: 30000 }
         charge_remainder: { type: integer, minimum: 0, maximum: 99 }
@@ -501,7 +501,7 @@ components:
         progress: { type: number, multipleOf: 0.5, minimum: 0 }
         duration: { type: number, multipleOf: 0.5, minimum: 0 }
         cooldown: { type: number, multipleOf: 0.5, minimum: 0, maximum: 60 }
-        supplied_kw: { type: integer, minimum: 0, maximum: 1000 }
+        supplied_kw: { type: integer, minimum: 0, maximum: 1500 }
         status: { type: string }
         belt:
           type: object
@@ -652,7 +652,7 @@ components:
         name: { type: string }
         tier: { type: integer, minimum: 1, maximum: 6 }
         energy: { type: string, enum: [shaft, hydraulic, electric] }
-        capacity: { type: integer, minimum: 0, maximum: 32 }
+        capacity: { type: integer, minimum: 0, maximum: 100 }
         energy_capacity_kj: { type: integer, minimum: 1, maximum: 30000 }
         action_ticks: { type: integer, minimum: 1, maximum: 60 }
         cross_district: { type: boolean }
@@ -808,11 +808,11 @@ components:
         source: { $ref: "#/components/schemas/RobotEndpoint" }
         target: { $ref: "#/components/schemas/RobotEndpoint" }
         item: { type: string }
-        count: { type: integer, minimum: 1, maximum: 32 }
+        count: { type: integer, minimum: 1, maximum: 100 }
         channel: { type: string, enum: [auto, input, fuel] }
         repeat: { type: boolean }
         phase: { type: string, enum: [pickup, deliver] }
-        delivered: { type: integer, minimum: 0, maximum: 32 }
+        delivered: { type: integer, minimum: 0, maximum: 100 }
     RobotTransit:
       type: object
       additionalProperties: false

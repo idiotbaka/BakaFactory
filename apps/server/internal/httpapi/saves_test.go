@@ -252,6 +252,32 @@ func sampleSave(owner string) domain.GameSave {
 	return domain.GameSave{FormatVersion: 1, RulesVersion: 1, Factory: f}
 }
 
+func TestFastRobotStationCloudSavePowerBounds(t *testing.T) {
+	f := newAuthFixture(t, false)
+	registered := f.request("POST", "/api/v1/auth/register", credentials("fast_station", "correct-password"), nil)
+	user := userFrom(t, registered, 201)
+	cookie := registered.Result().Cookies()[0]
+	session := heartbeatID(t, f, cookie)
+	save := sampleSave(user.ID)
+	save.Factory.Buildings = append(save.Factory.Buildings, domain.BuildingInstance{ID: "station", FactoryID: save.Factory.ID, BuildingType: "charge_station", X: 3, Configuration: json.RawMessage(`{}`)})
+	save.Factory.Simulation.Buildings["station"] = &domain.MachineState{Input: domain.Inventory{}, Output: domain.Inventory{}, Status: "charging", PowerDemandKW: 1500, SuppliedKW: 1500}
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 0, save), cookie); w.Code != 200 {
+		t.Fatalf("fast station rejected: %d %s", w.Code, w.Body)
+	}
+	save.Factory.Simulation.Buildings["station"].SuppliedKW = 1501
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 400 {
+		t.Fatal("accepted excessive station power", w.Code, w.Body)
+	}
+	save.Factory.Simulation.Buildings["station"].SuppliedKW = 1500
+	save.Factory.Simulation.Buildings["bus"].PowerDemandKW = 1001
+	if w := f.cloudRequest("PUT", session, uploadBody(t, 1, save), cookie); w.Code != 400 {
+		t.Fatal("accepted station-only power range on another building", w.Code, w.Body)
+	}
+	if w := f.cloudRequest("GET", session, "", cookie); w.Code != 200 || !strings.Contains(w.Body.String(), `"version":1`) || !strings.Contains(w.Body.String(), `"power_demand_kw":1500`) {
+		t.Fatal("rejected upload changed the saved fast station", w.Code, w.Body)
+	}
+}
+
 func TestSharedWarehouseCloudSaveAndLegacyCompatibility(t *testing.T) {
 	f := newAuthFixture(t, false)
 	registered := f.request("POST", "/api/v1/auth/register", credentials("shared_warehouse", "correct-password"), nil)

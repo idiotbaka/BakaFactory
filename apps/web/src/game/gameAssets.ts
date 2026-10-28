@@ -1,6 +1,7 @@
 import { AssetPreloader, type GameAsset } from "./assetPreloader";
 import { itemSpriteURLs } from "./itemSprites";
 import { buildingSpriteURLs } from "./buildingArtwork";
+import { robotSpriteURLs } from "./robotSprites";
 
 export const gameFont = {
   family: "Fusion Pixel Game",
@@ -11,6 +12,7 @@ export const gameAssets: readonly GameAsset[] = [
   ...[
     ...itemSpriteURLs,
     ...buildingSpriteURLs,
+    ...robotSpriteURLs,
     `${import.meta.env.BASE_URL}favicon.svg`,
   ].map((url) => ({ kind: "image" as const, url })),
 ];

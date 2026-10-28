@@ -79,7 +79,7 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 	for _, s := range []string{"idle", "charging", "paused", "charged", "no_energy", "moving", "in_transit", "no_path", "congested", "loading", "unloading", "source_empty", "blocked", "rejected", "waiting_charge", "range_exceeded", "returning", "inspecting", "maintaining", "constructing"} {
 		status = status || r.Status == s
 	}
-	workLimit := d.ActionTicks
+	workLimit := robotWorkLimit(d)
 	if r.Construction != nil {
 		workLimit = 10
 	}
@@ -149,7 +149,7 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 			return false
 		}
 		for _, b := range dest.Buildings {
-			if footprintContains(b.X, b.Y, b.Size, t.X, t.Y) {
+			if !robotCanTraverse(c, b.BuildingType) && footprintContains(b.X, b.Y, b.Size, t.X, t.Y) {
 				return false
 			}
 		}

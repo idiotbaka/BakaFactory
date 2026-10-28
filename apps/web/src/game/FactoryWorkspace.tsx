@@ -133,12 +133,20 @@ export default function FactoryWorkspace({
         ? (pendingStory ?? null)
         : null);
   const noQuestNotices = useMemo(() => [], []);
+  const robotRoutes = useMemo(
+    () =>
+      industryView === "factory" && game.factory
+        ? (game.runtime?.robotRoutes?.(game.factory.id) ?? [])
+        : [],
+    [industryView, game.factory, game.runtime],
+  );
   const robotRoute = useMemo(
     () =>
       selectedRobotID && game.factory
-        ? game.runtime?.robotRoute?.(selectedRobotID)
+        ? (robotRoutes.find((r) => r.robot_id === selectedRobotID) ??
+          game.runtime?.robotRoute?.(selectedRobotID))
         : undefined,
-    [selectedRobotID, game.factory, game.runtime],
+    [selectedRobotID, game.factory, game.runtime, robotRoutes],
   );
   const paletteCatalog =
     workspace.kind === "ready" ? workspace.catalog : undefined;
@@ -820,6 +828,7 @@ export default function FactoryWorkspace({
               >
                 <FactoryEditor
                   visible={industryView === "factory"}
+                  paused={game.paused}
                   factory={factory}
                   commands={game.runtime!.commands}
                   catalog={catalog}
@@ -834,6 +843,7 @@ export default function FactoryWorkspace({
                   selectedRobotID={selectedRobotID}
                   onSelectRobot={selectRobot}
                   robotRoute={robotRoute}
+                  robotRoutes={robotRoutes}
                   robotFocus={robotFocus}
                   districts={game.districts}
                   onSelectDistrict={(id) =>

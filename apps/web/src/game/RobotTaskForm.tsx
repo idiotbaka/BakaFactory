@@ -96,7 +96,7 @@ export default function RobotTaskForm({
     <fieldset className="robot-route-form">
       <legend>安排运输 · 从哪里取，送到哪里</legend>
       <p>
-        选好取货点、交货点和要搬的物料。机器人会先在站旁充满能量，再沿着空地走到设备旁装卸。
+        选好取货点、交货点和要搬的物料。机器人会先在站旁充满能量，再沿通路走到设备旁装卸。
       </p>
       <details className="operations-details">
         <summary>仓库接口和路线要求</summary>
@@ -105,7 +105,7 @@ export default function RobotTaskForm({
           WH 送货时，那一面要设为允许「输入」。
         </p>
         <p>
-          机器人只能在空地上行走（建筑、传送带和管线都会挡路），请为补能站和目标设备留出相邻空位。跨厂区跑腿会借道
+          机器人可走空地、传送带（含地下出入口）、物料管道和动力线；机器、储罐、投料机及在建蓝图仍挡路。请留出站口和设备旁通路。跨厂区跑腿会借道
           WH 仓库中转，跨区路途耗时 8
           秒；如果要选其他厂区的具体设备，请先切换到对应厂区配置。
         </p>

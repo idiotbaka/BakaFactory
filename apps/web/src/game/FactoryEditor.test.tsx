@@ -264,6 +264,108 @@ function hold(element: HTMLElement) {
   fireEvent.pointerMove(window, point());
 }
 
+it("always renders every supplied robot route and uses directional PNGs before a robot is selected", () => {
+  const robots = [0, 1].map((n) => ({
+    id: `route-${n}`,
+    item: "i0108",
+    factory_id: original.id,
+    home_factory_id: original.id,
+    home_station: "workbench-a",
+    x: -4 - n,
+    y: 0,
+    energy_kj: 1000,
+    enabled: true,
+    allowed_zones: [original.id],
+    priority: 3,
+    cooldown: 0,
+    status: "moving",
+  }));
+  const onSelectRobot = vi.fn();
+  render(
+    <FactoryEditor
+      commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+      factory={{ ...original, robots }}
+      catalog={catalog}
+      selectedID={null}
+      placementType={null}
+      onExitPlacement={vi.fn()}
+      onSelect={vi.fn()}
+      onChange={vi.fn()}
+      onError={vi.fn()}
+      onSelectRobot={onSelectRobot}
+      robotRoutes={robots.map((r) => ({
+        robot_id: r.id,
+        factory_id: original.id,
+        status: "ready",
+        points: [
+          { factory_id: original.id, x: r.x, y: r.y },
+          { factory_id: original.id, x: r.x, y: 2 },
+        ],
+      }))}
+    />,
+  );
+  expect(document.querySelectorAll("[data-robot-route]")).toHaveLength(2);
+  expect(document.querySelectorAll("[data-robot-visual] img")).toHaveLength(2);
+  expect(document.querySelector("[data-robot-visual] svg")).toBeNull();
+  fireEvent.click(screen.getByLabelText("机器人当前路段预览"));
+  expect(onSelectRobot).not.toHaveBeenCalled();
+});
+
+it("selects the logistics tile when it overlaps a visible robot", () => {
+  const belt = {
+    ...original.buildings[1],
+    id: "shared-belt",
+    building_type: "hand_belt",
+    x: 4,
+    y: 0,
+  };
+  const onSelect = vi.fn(),
+    onSelectRobot = vi.fn();
+  render(
+    <FactoryEditor
+      commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+      factory={{
+        ...original,
+        buildings: [...original.buildings, belt],
+        robots: [
+          {
+            id: "overlap",
+            item: "i0108",
+            factory_id: original.id,
+            home_factory_id: original.id,
+            home_station: "workbench-a",
+            x: 4,
+            y: 0,
+            energy_kj: 1000,
+            enabled: true,
+            allowed_zones: [original.id],
+            priority: 3,
+            cooldown: 0,
+            status: "moving",
+          },
+        ],
+      }}
+      catalog={catalog}
+      selectedID={null}
+      placementType={null}
+      onExitPlacement={vi.fn()}
+      onSelect={onSelect}
+      onChange={vi.fn()}
+      onError={vi.fn()}
+      onSelectRobot={onSelectRobot}
+    />,
+  );
+  expect(
+    document.querySelector('[data-robot-visual="overlap"] img'),
+  ).not.toBeNull();
+  expect(
+    screen.queryByLabelText("选择机器人 overlap (4,0)"),
+  ).not.toBeInTheDocument();
+  fireEvent.click(screen.getByLabelText("初阶传送带 HAND (4,0)"), point(4, 0));
+  expect(onSelect).toHaveBeenCalledWith(belt);
+  expect(onSelectRobot).not.toHaveBeenCalled();
+});
+
 it.each(["middle", "e", "E"])(
   "picks the complete hovered footprint with %s and keeps its direction",
   (key) => {
@@ -988,7 +1090,7 @@ describe("factory editor interactions", () => {
     expect(document.querySelector(".machine-name-layer")).not.toBeNull();
     fireEvent.wheel(area(), { ...point(0, 0), deltaY: -10000 });
     const layer = document.querySelector(".machine-name-layer")!;
-    expect(layer).toHaveTextContent("自动工作台");
+    expect(layer).toHaveTextContent("工作台");
     expect(layer.closest(".factory-map")).toBeNull();
     expect(layer.querySelector('[data-building-type="bus"]')).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "适应地图" }));

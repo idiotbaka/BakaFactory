@@ -138,7 +138,13 @@ describe("robot navigation and lifecycle integration", () => {
       ).toThrow("跨区运输中");
       expect(selected).toEqual(before);
     }
-    root = until(root, (f) => (f.robots![0].completed_tasks ?? 0) === 1);
+    root = until(
+      root,
+      (f) =>
+        (f.robots![0].completed_tasks ?? 0) === 1 &&
+        !f.robots![0].returning &&
+        !f.robots![0].transit,
+    );
     expect(root.simulation.warehouse[iron]).toBe(8);
     expect(root.districts![0].simulation.warehouse).toEqual({});
     root = editWorld(root, {

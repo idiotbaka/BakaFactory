@@ -258,15 +258,31 @@ describe("atomic batch editing", () => {
       expect(() =>
         editWorld(f, { kind, ids: ["station"], dx: 0, dy: 1 }),
       ).toThrow("绑定");
+    const overlap = editWorld(f, {
+      kind: "batch_move",
+      ids: ["belt"],
+      dx: robot.x + 3,
+      dy: robot.y - 2,
+    });
+    expect(overlap.buildings.find((b) => b.id === "belt")).toMatchObject({
+      x: robot.x,
+      y: robot.y,
+    });
+    node(f, "blocking-machine", "m01", -5, 2);
+    const protectedBefore = structuredClone(f);
     expect(() =>
       editWorld(f, {
         kind: "batch_move",
-        ids: ["belt"],
-        dx: robot.x + 3,
+        ids: ["blocking-machine"],
+        dx: robot.x + 5,
         dy: robot.y - 2,
       }),
     ).toThrow("机器人");
-    expect(f).toEqual(before);
+    expect(f).toEqual(protectedBefore);
+    expect(before.buildings.find((b) => b.id === "belt")).toMatchObject({
+      x: -3,
+      y: 2,
+    });
     robot.construction = {
       factory_id: f.id,
       building_type: "hand_belt",
@@ -294,8 +310,8 @@ describe("atomic batch editing", () => {
     expect(() =>
       editWorld(f, {
         kind: "batch_move",
-        ids: ["belt"],
-        dx: dock.x + 3,
+        ids: ["blocking-machine"],
+        dx: dock.x + 5,
         dy: dock.y - 2,
       }),
     ).toThrow("返站");

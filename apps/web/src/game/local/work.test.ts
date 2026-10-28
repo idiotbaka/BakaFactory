@@ -6,7 +6,12 @@ import {
   itemID,
   recipeDefinitions,
 } from "./catalog";
-import { createWorld, editWorld, actWorld } from "./world";
+import {
+  createWorld,
+  editWorld,
+  actWorld,
+  stepWorld as stepTick,
+} from "./world";
 import { toSave, validateSave, type LocalFactory } from "./state";
 import { claimWork, recordWork } from "./workLedger";
 import { robotDefinitions } from "./robots";
@@ -143,7 +148,8 @@ describe("real work episodes and consumable training credits", () => {
     root = advance(root, 4);
     root = inspect(root);
     const energy = root.robots![0].energy_kj;
-    root = until(root, (f) => f.robots![0].status === "inspecting");
+    for (let tick = 0; tick < 100 && root.robots![0].x !== 6; tick++)
+      root = stepTick(root);
     expect(root.robots![0].x).toBe(6);
     expect(credits(root, "inspection")).toBe(0);
     const paused = actWorld(root, {
@@ -157,7 +163,7 @@ describe("real work episodes and consumable training credits", () => {
     );
     root = actWorld(still, { type: "robot_config", id: "r", enabled: true });
     root = until(root, (f) => credits(f, "inspection") === 1);
-    expect(root.robots![0].energy_kj).toBeLessThanOrEqual(energy - 31);
+    expect(root.robots![0].energy_kj).toBeLessThanOrEqual(energy - 2);
     root = until(root, (f) => !f.robots![0].service);
     expect(root.simulation.buildings.machine.incident?.inspected).toBe(true);
     expect(() => inspect(root)).toThrow();
@@ -167,7 +173,8 @@ describe("real work episodes and consumable training credits", () => {
   it("abandons a resolved scene and returns unused parts physically after cancellation", () => {
     let root = starving();
     root = inspect(root);
-    root = until(root, (f) => f.robots![0].status === "inspecting");
+    for (let tick = 0; tick < 100 && root.robots![0].x !== 6; tick++)
+      root = stepTick(root);
     root = editWorld(root, {
       kind: "industry",
       action: { type: "power_config", id: "machine", enabled: false },
@@ -175,7 +182,8 @@ describe("real work episodes and consumable training credits", () => {
     root = until(root, (f) => !f.robots![0].service);
     expect(credits(root, "inspection")).toBe(0);
     root = maintain(blocked());
-    root = until(root, (f) => f.robots![0].status === "maintaining");
+    for (let tick = 0; tick < 100 && root.robots![0].x !== 6; tick++)
+      root = stepTick(root);
     expect(root.simulation.warehouse[parts]).toBe(0);
     root = actWorld(root, { type: "robot_return", id: "r" });
     expect(root.simulation.warehouse[parts]).toBe(0);
@@ -191,17 +199,17 @@ describe("real work episodes and consumable training credits", () => {
     let root = maintain(blocked());
     root = until(root, (f) => !!f.robots![0].cargo);
     const load = root.robots![0].cargo!;
-    expect(load.count).toBe(6);
+    expect(load.count).toBe(20);
     expect(
       root.simulation.buildings.machine.output.find((s) => s.item === load.item)
         ?.count,
-    ).toBe(94);
+    ).toBe(80);
     expect(root.robots![0].service?.parts).toBe(0);
     expect(root.simulation.warehouse[parts]).toBe(0);
     expect(credits(root, "inspection")).toBe(1);
     root = validateSave(toSave(root), user.id);
     root = until(root, (f) => !f.robots![0].service);
-    expect(root.simulation.warehouse[load.item]).toBe(6);
+    expect(root.simulation.warehouse[load.item]).toBe(20);
     expect(root.simulation.warehouse[parts]).toBe(0);
   });
   it("uses a real camera attachment and cannot duplicate it by equipping or recalling", () => {

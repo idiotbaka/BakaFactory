@@ -253,7 +253,11 @@ export function dispatchRobots(root: LocalFactory) {
             const pledged =
                 pledges.get(sourceKey(source.id, bus.id, item)) ?? 0,
               available = (root.simulation.warehouse[item] ?? 0) - pledged;
-            const amount = Math.min(missing, 32, available);
+            const amount = Math.min(
+              missing,
+              catalog.robots!.find((d) => d.item === r.item)!.capacity,
+              available,
+            );
             if (
               amount < 1 ||
               !canAddAll(

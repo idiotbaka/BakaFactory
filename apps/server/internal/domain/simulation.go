@@ -129,7 +129,7 @@ func (s Simulation) Validate(c Catalog) error {
 	}
 	payloadIDs := map[string]bool{}
 	for _, m := range s.Buildings {
-		if m == nil || m.Input == nil || m.Output == nil || m.Progress < 0 || m.Progress > 100000 || m.Duration < 0 || m.Duration > 100000 || m.Cooldown < 0 || m.Cooldown > 60 || m.SuppliedKW < 0 || m.SuppliedKW > 1000 {
+		if m == nil || m.Input == nil || m.Output == nil || m.Progress < 0 || m.Progress > 100000 || m.Duration < 0 || m.Duration > 100000 || m.Cooldown < 0 || m.Cooldown > 60 || m.SuppliedKW < 0 || m.SuppliedKW > 1500 {
 			return fmt.Errorf("invalid machine state")
 		}
 		for _, value := range []float64{m.Progress, m.Duration, m.Cooldown, m.EnergyKJ, m.WorkEnergyKJ, m.StationEnergyKJ, m.ChargeKJ} {
@@ -146,7 +146,7 @@ func (s Simulation) Validate(c Catalog) error {
 		if m.FlowIn < 0 || m.FlowIn > 80 || m.FlowOut < 0 || m.FlowOut > 80 || m.FluidCursor < 0 || m.FluidCursor > 29 || m.Fluid != nil && (!fluids[m.Fluid.Item] || m.Fluid.Count < 1 || m.Fluid.Count > 500) {
 			return fmt.Errorf("invalid fluid state")
 		}
-		if m.WorkEnergyKJ < 0 || m.WorkEnergyKJ > 1000 || m.GeneratedKW < 0 || m.GeneratedKW > 1000 || m.PowerDemandKW < 0 || m.PowerDemandKW > 1000 || len(m.NetworkID) > 160 || m.ChargeKJ < 0 || m.ChargeKJ > 30000 || m.ChargeRemainder < 0 || m.ChargeRemainder > 99 || m.Medium < 0 || m.Medium > 10 {
+		if m.WorkEnergyKJ < 0 || m.WorkEnergyKJ > 1000 || m.GeneratedKW < 0 || m.GeneratedKW > 1000 || m.PowerDemandKW < 0 || m.PowerDemandKW > 1500 || len(m.NetworkID) > 160 || m.ChargeKJ < 0 || m.ChargeKJ > 30000 || m.ChargeRemainder < 0 || m.ChargeRemainder > 99 || m.Medium < 0 || m.Medium > 10 {
 			return fmt.Errorf("invalid power state")
 		}
 		for _, inv := range []Inventory{m.Input, m.Output, m.Fuel} {

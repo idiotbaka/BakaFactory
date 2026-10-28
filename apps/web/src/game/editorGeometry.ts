@@ -1,4 +1,5 @@
 import { containsCell, overlaps, inBounds } from "./footprint";
+import { robotCanTraverse } from "./local/robotMovement";
 import type {
   BuildingDefinition,
   BuildingPlacement,
@@ -97,6 +98,7 @@ export function placementIssue(
   )
     return "该格已预留施工蓝图";
   if (
+    !robotCanTraverse(buildingType) &&
     factory.robots?.some(
       (r) =>
         (!r.transit && r.factory_id === factory.id && containsCell(shape, r)) ||

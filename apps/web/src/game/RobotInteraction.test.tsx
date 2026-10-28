@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { useState } from "react";
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import FactoryWorkspace from "./FactoryWorkspace";
 import { useLocalGame } from "./local/useLocalGame";
 import { catalog, buildingDefinitions, itemID } from "./local/catalog";
@@ -113,7 +113,30 @@ function prepare(transit = false, paused = false) {
   });
   return initial;
 }
-afterEach(() => vi.clearAllMocks());
+const nativeBounds = HTMLElement.prototype.getBoundingClientRect;
+beforeEach(() => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      if (!this.classList.contains("map-viewport"))
+        return nativeBounds.call(this);
+      return {
+        x: 100,
+        y: 100,
+        left: 100,
+        top: 100,
+        right: 730,
+        bottom: 730,
+        width: 630,
+        height: 630,
+        toJSON: () => ({}),
+      };
+    },
+  );
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.clearAllMocks();
+});
 describe("robot map and management integration", () => {
   it("selects a robot on the map without placing or dragging a building and keeps selection in management", () => {
     prepare();

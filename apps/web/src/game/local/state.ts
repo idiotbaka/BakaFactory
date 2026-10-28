@@ -34,6 +34,7 @@ import {
 import { acceptsFluid } from "./fluidConfig";
 import { validTransportConfig } from "./transportConfig";
 import { validRobotWorld } from "./robots";
+import { robotDefinitions } from "./robots";
 import { validWorkReceipts } from "./workLedger";
 import { validIncident } from "./incidents";
 import { newMachine } from "./machine";
@@ -277,6 +278,7 @@ export function validateSave(
     if (typeof m.status !== "string")
       return fail(`${machinePath}.status`, "状态必须为字符串");
     const definition = buildingDefinitions.get(b.building_type)!;
+    const powerLimit = definition.role === "station" ? 1500 : 1000;
     if (
       m.terminal_cursor !== undefined &&
       (b.building_type !== pickupType || !integer(m.terminal_cursor, 1))
@@ -300,7 +302,7 @@ export function validateSave(
       ["work_energy_kj", 1000],
       ["station_energy_kj", definition.station_capacity_kj ?? 0],
       ["generated_kw", 1000],
-      ["power_demand_kw", 1000],
+      ["power_demand_kw", powerLimit],
       ["charge_kj", definition.capacity_kj ?? 0],
       ["charge_remainder", 99],
       ["medium", 10],
@@ -334,7 +336,7 @@ export function validateSave(
       );
     if (
       !validTransportConfig(b as unknown as BuildingInstance) ||
-      (m.supplied_kw !== undefined && !integer(m.supplied_kw, 1000))
+      (m.supplied_kw !== undefined && !integer(m.supplied_kw, powerLimit))
     )
       return fail(
         `${buildingPath}.configuration`,
@@ -760,6 +762,15 @@ export function validateSave(
       `${root}.robots`,
       "机器人 / 站点 / 任务 / 路径 / 占格状态不符合规则",
     );
+  // Old in-flight work may exceed the faster duration. Reconcile only the
+  // validated clone; the next paid action performs any completion/transfer.
+  for (const robot of factory.robots ?? []) {
+    if (!robot.construction && robot.work_progress !== undefined)
+      robot.work_progress = Math.min(
+        robot.work_progress,
+        robotDefinitions.get(robot.item)!.action_ticks,
+      );
+  }
   if (needsDiscovery) restoreDiscoveries(factory);
   syncQuests(factory);
   return factory;

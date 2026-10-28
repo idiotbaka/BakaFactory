@@ -7,6 +7,7 @@ import {
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
 import type { BuildingInstance } from "../../api/client";
+import { robotBlocksMovement } from "./robotMovement";
 
 export type Robot = components["schemas"]["RobotState"];
 export type Endpoint = components["schemas"]["RobotEndpoint"];
@@ -65,14 +66,18 @@ export function plannedBuildings(
       configuration: {},
     }));
 }
+type RobotLayout = LocalFactory & { robotReservations?: BuildingInstance[] };
 export function plannedLayout(
   root: LocalFactory,
   f: LocalFactory,
   exclude?: string,
-): LocalFactory {
+): RobotLayout {
+  const reserved = plannedBuildings(root, f.id, exclude);
+  if (!reserved.length) return f;
   return {
     ...f,
-    buildings: [...f.buildings, ...plannedBuildings(root, f.id, exclude)],
+    buildings: [...f.buildings, ...reserved],
+    robotReservations: reserved,
   };
 }
 export const adjacentCells = (p: { x: number; y: number }) =>
@@ -99,23 +104,35 @@ export function warehouseEndpoint(root: LocalFactory, id: string): Endpoint {
     building_id: warehouseBuilding(root, id)!.id,
   };
 }
-export function emptyCell(f: LocalFactory, p: { x: number; y: number }) {
+export function emptyCell(f: RobotLayout, p: { x: number; y: number }) {
   return (
     Math.abs(p.x) <= 10 &&
     Math.abs(p.y) <= 10 &&
-    !f.buildings.some((b) => containsCell(b, p))
+    !f.buildings.some((b) => robotBlocksMovement(b) && containsCell(b, p)) &&
+    !f.robotReservations?.some((b) => containsCell(b, p))
   );
 }
-// BFS uses empty ground only. An optional occupancy set handles live collision;
+const walkGrids = new WeakMap<BuildingInstance[], Set<string>>();
+function blockedCells(f: RobotLayout) {
+  let cells = walkGrids.get(f.buildings);
+  if (!cells) {
+    cells = new Set(occupancy(f.buildings.filter(robotBlocksMovement)).keys());
+    for (const key of occupancy(f.robotReservations ?? []).keys())
+      cells.add(key);
+    walkGrids.set(f.buildings, cells);
+  }
+  return cells;
+}
+// BFS traverses ground and low logistics. An occupancy set handles live collision;
 // static paths are also used to reserve enough real energy for a safe return.
 function path(
-  f: LocalFactory,
+  f: RobotLayout,
   from: Point,
   target: Footprint,
   occupied?: Set<string>,
   dock?: (p: { x: number; y: number }) => boolean,
 ) {
-  const blocked = new Set(occupancy(f.buildings).keys());
+  const blocked = blockedCells(f);
   const key = (p: { x: number; y: number }) => `${p.x},${p.y}`;
   const goals = new Set(
     perimeterCells(target)

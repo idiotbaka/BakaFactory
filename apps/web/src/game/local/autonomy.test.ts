@@ -207,7 +207,7 @@ describe("deterministic authorized robot dispatch", () => {
       id: "r0",
       config: { enabled: true, refill: false, inspect: true, maintain: false },
     });
-    root = advance(root, 2);
+    dispatchRobots(root);
     expect(root.robots![0].service?.kind).toBe("inspect");
     const saved = validateSave(toSave(root), user.id);
     root = advance(saved, 40);

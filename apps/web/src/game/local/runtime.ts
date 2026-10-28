@@ -18,7 +18,11 @@ import {
 import { readLocal, writeLocal, type LocalRecord } from "./storage";
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import type { IndustryAction } from "./industry";
-import { previewRobotRoute } from "./robotNavigation";
+import {
+  previewRobotRoute,
+  previewRobotRoutes,
+  type RobotRoute,
+} from "./robotNavigation";
 import { applyWorldFrame } from "./worldFrame";
 import { workshopOutputFits } from "./workshop";
 import {
@@ -571,6 +575,25 @@ export class GameRuntime {
     this.record.save
       ? previewRobotRoute(this.record.save.factory as LocalFactory, id)
       : undefined;
+  private readonly routeCache = new WeakMap<
+    LocalFactory,
+    Map<string, RobotRoute[]>
+  >();
+  readonly robotRoutes = (factoryID: string) => {
+    const root = this.record.save?.factory as LocalFactory | undefined;
+    if (!root) return [];
+    let byFactory = this.routeCache.get(root);
+    if (!byFactory) {
+      byFactory = new Map();
+      this.routeCache.set(root, byFactory);
+    }
+    let routes = byFactory.get(factoryID);
+    if (!routes) {
+      routes = previewRobotRoutes(root, factoryID);
+      byFactory.set(factoryID, routes);
+    }
+    return routes;
+  };
   private persist(
     storyPatch: Pick<Partial<LocalRecord>, "pendingStories"> = {},
   ): Promise<void> {

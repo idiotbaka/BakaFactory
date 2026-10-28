@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { gameAssets, loadGameFont, loadGameImage } from "./gameAssets";
 import { itemSpriteURLs } from "./itemSprites";
 import { buildingSpriteURLs } from "./buildingArtwork";
+import { robotSpriteURLs } from "./robotSprites";
 
 const fontsDescriptor = Object.getOwnPropertyDescriptor(document, "fonts");
 afterEach(() => {
@@ -14,7 +15,11 @@ afterEach(() => {
 
 it("warms every item / building raster and the bundled font", () => {
   const urls = new Set(gameAssets.map((asset) => asset.url));
-  for (const url of [...itemSpriteURLs, ...buildingSpriteURLs])
+  for (const url of [
+    ...itemSpriteURLs,
+    ...buildingSpriteURLs,
+    ...robotSpriteURLs,
+  ])
     expect(urls.has(url)).toBe(true);
   expect(gameAssets.filter((asset) => asset.kind === "font")).toHaveLength(1);
 });

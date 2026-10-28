@@ -2,6 +2,8 @@ import type { FactoryDetail } from "../api/client";
 import type { components } from "../api/schema";
 import type { WorldAction } from "./local/world";
 import { buildingDefinitions, catalog } from "./local/catalog";
+import { matureIncident } from "./local/incidents";
+import { ticksToSeconds } from "./local/simulationTime";
 type Robot = components["schemas"]["RobotState"];
 const names: Record<string, string> = {
   no_input: "原料不足",
@@ -98,14 +100,15 @@ export default function WorkPanel({
       )}
       {incidents.map((b) => {
         const incident = s!.buildings[b.id].incident!,
-          mature = s!.tick - incident.since_tick >= 5;
+          mature = matureIncident(s!.buildings[b.id], s!.tick);
         return (
           <div key={b.id}>
             <strong>
               {buildingDefinitions.get(b.building_type)?.name} ({b.x},{b.y})
             </strong>
             <p>
-              {names[incident.kind]} · 持续 {s!.tick - incident.since_tick} 秒
+              {names[incident.kind]} · 持续{" "}
+              {ticksToSeconds(s!.tick - incident.since_tick)} 秒
               {incident.inspected ? " · 已巡检" : ""}
               {incident.maintained ? " · 已完成一次维护" : ""}
             </p>
