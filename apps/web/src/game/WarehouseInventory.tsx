@@ -52,13 +52,20 @@ export default function WarehouseInventory({
   onTypeChange: (value: string) => void;
 }) {
   const types = useMemo(() => warehouseItemTypes(catalog), [catalog]);
+  const orderedItems = useMemo(
+    () =>
+      [...catalog.items].sort(
+        (a, b) => Number(a.id.startsWith("d")) - Number(b.id.startsWith("d")),
+      ),
+    [catalog.items],
+  );
   const tick = factory.simulation?.tick ?? 0;
   const summary = useMemo(
     () => warehouseSummary(factory.warehouse_activity, tick),
     [factory.warehouse_activity, tick],
   );
   const matches = createCatalogSearch(query);
-  const items = catalog.items.filter(
+  const items = orderedItems.filter(
     (i) =>
       ((factory.simulation?.warehouse[i.id] ?? 0) > 0 ||
         (canOrder && orderable.has(i.id)) ||
