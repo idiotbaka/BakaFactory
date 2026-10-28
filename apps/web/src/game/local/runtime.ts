@@ -30,6 +30,7 @@ import {
 } from "../stories/progress";
 import type { Observation } from "./observations";
 import { DEFAULT_TPS, validateTickRate } from "./tickRate";
+import { HEARTBEAT_MS, MAX_LEASE_MS } from "./runtimeTiming";
 import {
   districtSummary,
   projectFactory,
@@ -114,6 +115,9 @@ export class GameRuntime {
   private record: LocalRecord;
   private sessionID = "";
   private deadline = 0;
+  private wallDeadline = 0;
+  private lifecycleSuspended = false;
+  private authorizationEpoch = 0;
   private disposed = false;
   private storageFailed = false;
   private fatal = false;
@@ -170,20 +174,28 @@ export class GameRuntime {
       !this.disposed &&
       this.view.ready &&
       this.view.online &&
-      !document.hidden &&
+      !this.lifecycleSuspended &&
       navigator.onLine &&
       !this.view.conflict &&
       !this.storageFailed &&
       !this.fatal &&
       !this.changingSave &&
-      performance.now() < this.deadline
+      performance.now() < this.deadline &&
+      Date.now() < this.wallDeadline
     );
   }
   private permit() {
     this.worker?.postMessage({
       kind: "permit",
       enabled: this.allowed(),
-      validFor: Math.max(0, this.deadline - performance.now()),
+      validFor: Math.max(
+        0,
+        Math.min(
+          this.deadline - performance.now(),
+          this.wallDeadline - Date.now(),
+        ),
+      ),
+      validUntil: this.wallDeadline,
       tickRate: this.view.tickRate ?? DEFAULT_TPS,
     } satisfies WorkerCommand);
   }
@@ -275,6 +287,9 @@ export class GameRuntime {
         this.workerEvent(event.data);
       this.worker.onerror = () =>
         this.fail(new Error("本地模拟线程中断，请刷新页面恢复最近本地存档"));
+      // Once initialized, the Worker wakes heartbeats even when the window's
+      // chained timers are throttled. The startup retry timer is no longer used.
+      clearTimeout(this.timer);
       this.worker.postMessage({
         kind: "init",
         factory,
@@ -302,9 +317,12 @@ export class GameRuntime {
       await this.persist().catch(() => {});
       if (this.disposed) return;
       document.addEventListener("visibilitychange", this.visibility);
+      document.addEventListener("freeze", this.suspend);
+      document.addEventListener("resume", this.resume);
       window.addEventListener("offline", this.offline);
       window.addEventListener("online", this.online);
       window.addEventListener("pagehide", this.pagehide);
+      window.addEventListener("pageshow", this.resume);
       this.permit();
       this.scheduleUpload();
       void navigator.storage?.persist?.().catch(() => false);
@@ -346,6 +364,14 @@ export class GameRuntime {
   }
   private workerEvent(event: WorkerEvent) {
     if (this.disposed) return;
+    if (event.kind === "heartbeat_due") {
+      if (!this.lifecycleSuspended) void this.heartbeat();
+      return;
+    }
+    if (event.kind === "suspended") {
+      if (!this.lifecycleSuspended) this.revalidate();
+      return;
+    }
     if (event.kind === "delta") {
       try {
         if (!this.record.save) throw new Error("本地完整快照尚未就绪");
@@ -583,40 +609,51 @@ export class GameRuntime {
   }
   private async heartbeat() {
     if (this.heartbeatTask) return this.heartbeatTask;
+    const epoch = this.authorizationEpoch;
     this.heartbeatTask = this.performHeartbeat();
     try {
       await this.heartbeatTask;
     } finally {
       this.heartbeatTask = undefined;
+      // A pre-freeze / pre-offline response cannot authorize the resumed game.
+      if (
+        epoch !== this.authorizationEpoch &&
+        !this.lifecycleSuspended &&
+        !this.disposed
+      )
+        void this.heartbeat();
     }
   }
   private async performHeartbeat() {
     const started = performance.now();
+    const wallStarted = Date.now();
+    const epoch = this.authorizationEpoch;
     try {
       const response = await gameHeartbeat(this.sessionID, this.signal());
-      if (this.disposed) return;
+      if (this.disposed || epoch !== this.authorizationEpoch) return;
       if (response.user.id !== this.user.id) {
         this.sessionExpired();
         return;
       }
       this.sessionID = response.session_id;
-      this.deadline = started + Math.min(30, response.lease_seconds) * 1000;
+      const lease = Math.min(MAX_LEASE_MS, response.lease_seconds * 1000);
+      this.deadline = started + lease;
+      this.wallDeadline = wallStarted + lease;
       this.publish({
         online: true,
         message:
           this.storageFailed || this.fatal || this.view.conflict
             ? this.view.message
-            : document.hidden
-              ? "后台暂停，返回游戏后继续"
-              : "",
+            : "",
       });
     } catch (error) {
-      if (this.disposed) return;
+      if (this.disposed || epoch !== this.authorizationEpoch) return;
       if (error instanceof ApiError && error.status === 401) {
         this.sessionExpired();
         return;
       }
       this.deadline = 0;
+      this.wallDeadline = 0;
       this.publish({
         online: false,
         message: "连接中断，工厂已暂停；恢复联网后继续，不补算暂停时间",
@@ -624,34 +661,55 @@ export class GameRuntime {
     } finally {
       this.permit();
       clearTimeout(this.timer);
-      if (!this.disposed)
-        this.timer = setTimeout(() => void this.heartbeat(), 10000);
+      if (!this.disposed && !this.worker)
+        this.timer = setTimeout(() => void this.heartbeat(), HEARTBEAT_MS);
     }
   }
   private visibility = () => {
     if (document.hidden) {
-      this.publish({ message: "后台暂停，返回游戏后继续" });
-      this.permit();
       void this.persist().catch(() => {});
-    } else {
-      this.deadline = 0;
-      this.publish({ online: false });
-      this.permit();
-      void this.heartbeat();
-    }
+    } else if (this.lifecycleSuspended) this.resume();
+    else if (
+      performance.now() >= this.deadline ||
+      Date.now() >= this.wallDeadline
+    )
+      this.revalidate();
+    else void this.heartbeat();
+  };
+  private revalidate() {
+    this.authorizationEpoch++;
+    this.deadline = 0;
+    this.wallDeadline = 0;
+    this.publish({ online: false, message: "正在重新校验在线状态…" });
+    this.permit();
+    void this.heartbeat();
+  }
+  private suspend = () => {
+    this.lifecycleSuspended = true;
+    this.authorizationEpoch++;
+    this.deadline = 0;
+    this.wallDeadline = 0;
+    this.publish({ online: false, message: "页面已挂起，恢复后继续生产" });
+    this.permit();
+    void this.persist().catch(() => {});
+  };
+  private resume = () => {
+    if (!this.lifecycleSuspended || this.disposed) return;
+    this.lifecycleSuspended = false;
+    this.revalidate();
   };
   private offline = () => {
+    this.authorizationEpoch++;
     this.deadline = 0;
+    this.wallDeadline = 0;
     this.publish({ online: false, message: "网络已断开，工厂已暂停" });
     this.permit();
   };
   private online = () => {
-    void this.heartbeat();
+    if (!this.lifecycleSuspended) this.revalidate();
   };
   private pagehide = () => {
-    this.deadline = 0;
-    this.permit();
-    void this.persist().catch(() => {});
+    this.suspend();
   };
   private scheduleUpload() {
     clearTimeout(this.uploadTimer);
@@ -841,9 +899,12 @@ export class GameRuntime {
     clearTimeout(this.timer);
     clearTimeout(this.uploadTimer);
     document.removeEventListener("visibilitychange", this.visibility);
+    document.removeEventListener("freeze", this.suspend);
+    document.removeEventListener("resume", this.resume);
     window.removeEventListener("offline", this.offline);
     window.removeEventListener("online", this.online);
     window.removeEventListener("pagehide", this.pagehide);
+    window.removeEventListener("pageshow", this.resume);
     for (const request of this.pending.values())
       request.reject(new Error("游戏已关闭"));
     this.pending.clear();

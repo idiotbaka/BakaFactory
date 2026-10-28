@@ -6,12 +6,20 @@ import type { Observation } from "./observations";
 
 export type WorkerCommand =
   | { kind: "init"; factory: LocalFactory | null }
-  | { kind: "permit"; enabled: boolean; validFor: number; tickRate?: number }
+  | {
+      kind: "permit";
+      enabled: boolean;
+      validFor: number;
+      validUntil?: number;
+      tickRate?: number;
+    }
   | { kind: "create"; request: number; user: User; name: string }
   | { kind: "edit"; request: number; edit: Edit; factoryID?: string }
   | { kind: "world"; request: number; action: WorldAction }
   | { kind: "replace"; request: number; factory: LocalFactory };
 export type WorkerEvent =
+  | { kind: "heartbeat_due" }
+  | { kind: "suspended" }
   | {
       kind: "delta";
       frame: WorldFrame;

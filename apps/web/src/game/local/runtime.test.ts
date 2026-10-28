@@ -56,13 +56,22 @@ class FakeWorker {
   factory: LocalFactory | null = null;
   enabled = false;
   tickRate = 2;
+  heartbeatTimer?: ReturnType<typeof setTimeout>;
   constructor() {
     FakeWorker.instances.push(this);
   }
   postMessage(command: WorkerCommand) {
-    if (command.kind === "init")
+    if (command.kind === "init") {
       this.factory = command.factory ? initializeWorld(command.factory) : null;
-    else if (command.kind === "permit") {
+      const wakeHeartbeat = () => {
+        this.heartbeatTimer = setTimeout(() => {
+          this.onmessage?.({ data: { kind: "heartbeat_due" } });
+          wakeHeartbeat();
+        }, 10000);
+      };
+      clearTimeout(this.heartbeatTimer);
+      wakeHeartbeat();
+    } else if (command.kind === "permit") {
       this.enabled = command.enabled;
       this.tickRate = command.tickRate ?? 2;
     } else {
@@ -102,6 +111,7 @@ class FakeWorker {
   }
   terminate() {
     this.enabled = false;
+    clearTimeout(this.heartbeatTimer);
   }
 }
 let saved: LocalRecord | undefined;
@@ -920,6 +930,97 @@ describe("local persistence and cloud lifecycle", () => {
     });
     await vi.advanceTimersByTimeAsync(10000);
     expect(view.online).toBe(true);
+    expect(view.factory?.simulation.tick).toBe(0);
+  });
+  it("keeps producing and persisting while hidden, renews via Worker wakes and retains the save lock", async () => {
+    await game.start();
+    await game.create("后台挂机");
+    const worker = FakeWorker.instances[0];
+    worker.factory!.simulation.warehouse[itemID("垃圾包")] = 12;
+    await game.act({ type: "workshop", recipe: "r1001" });
+    const recipe = catalog.recipes.find((entry) => entry.id === "r1001")!;
+    const tickCount = Math.max(10, secondsToTicks(workshopDuration(recipe)));
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(view.paused).toBe(false);
+    expect(worker.enabled).toBe(true);
+    for (let i = 0; i < tickCount; i++) worker.tick();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(gameHeartbeat).toHaveBeenCalledTimes(2);
+    expect(view.factory?.simulation.tick).toBe(tickCount);
+    for (const [item, count] of Object.entries(recipe.outputs))
+      expect(view.factory!.simulation.warehouse[item]).toBe(count);
+    expect(saved?.save?.factory.simulation?.tick).toBe(tickCount);
+    expect(view.message).not.toContain("暂停");
+
+    let secondView: GameView | undefined;
+    const second = new GameRuntime(
+      user,
+      (next) => {
+        secondView = next;
+      },
+      expired,
+    );
+    await second.start();
+    expect(secondView?.error).toContain("另一个标签页");
+    await second.close();
+
+    hidden.mockReturnValue(false);
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(view.paused).toBe(false);
+    expect(worker.enabled).toBe(true);
+    worker.tick();
+    expect(view.factory?.simulation.tick).toBe(tickCount + 1);
+  });
+  it("continues checking the account while hidden and stops on a revoked session", async () => {
+    await game.start();
+    await game.create("后台在线校验");
+    vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.mocked(gameHeartbeat).mockRejectedValue(new ApiError(401, "kicked"));
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(expired).toHaveBeenCalledOnce();
+    expect(FakeWorker.instances[0].enabled).toBe(false);
+  });
+  it("pauses on an offline event in the background and only resumes after validation", async () => {
+    await game.start();
+    await game.create("后台断网");
+    vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    window.dispatchEvent(new Event("offline"));
+    const worker = FakeWorker.instances[0];
+    worker.tick();
+    expect(view.factory?.simulation.tick).toBe(0);
+    expect(view.paused).toBe(true);
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(worker.enabled).toBe(true);
+    worker.tick();
+    expect(view.factory?.simulation.tick).toBe(1);
+  });
+  it("revalidates a Worker suspension without advancing state and ignores a pre-freeze heartbeat", async () => {
+    await game.start();
+    await game.create("挂起恢复");
+    const worker = FakeWorker.instances[0];
+    let finish!: (response: Awaited<ReturnType<typeof gameHeartbeat>>) => void;
+    vi.mocked(gameHeartbeat).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    worker.onmessage?.({ data: { kind: "heartbeat_due" } });
+    document.dispatchEvent(new Event("freeze"));
+    document.dispatchEvent(new Event("resume"));
+    expect(worker.enabled).toBe(false);
+    finish({ user, session_id: "session-1", lease_seconds: 30 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(gameHeartbeat).toHaveBeenCalledTimes(3);
+    expect(worker.enabled).toBe(true);
+    worker.onmessage?.({ data: { kind: "suspended" } });
+    expect(worker.enabled).toBe(false);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(worker.enabled).toBe(true);
     expect(view.factory?.simulation.tick).toBe(0);
   });
   it("stops a kicked session and never uploads its local progress", async () => {

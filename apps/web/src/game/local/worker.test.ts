@@ -98,7 +98,7 @@ describe("bounded local worker clock", () => {
     expect(ticks()).toHaveLength(4);
     vi.advanceTimersByTime(1);
     expect(ticks()).toHaveLength(5);
-    expect(vi.getTimerCount()).toBe(1);
+    expect(vi.getTimerCount()).toBe(2); // Simulation and real-time heartbeat wake.
     send({ kind: "permit", enabled: false, validFor: 0, tickRate: 2 });
     vi.advanceTimersByTime(10000);
     expect(ticks()).toHaveLength(5);
@@ -152,8 +152,56 @@ describe("bounded local worker clock", () => {
     // timer scheduled for the next half second after that wake.
     vi.advanceTimersByTime(500);
     expect(ticks()).toHaveLength(0);
+    expect(post.mock.calls.at(-1)![0]).toEqual({ kind: "suspended" });
     clock.mockReturnValue(now + 5500);
+    // Only a fresh permit restarts the clock, without credit for the gap.
+    send({ kind: "permit", enabled: true, validFor: 30000 });
+    clock.mockReturnValue(now + 6000);
     vi.advanceTimersByTime(500);
     expect(ticks()).toHaveLength(1);
+  });
+  it("preserves two TPS across one-second wakes, including fractional elapsed time", () => {
+    send({ kind: "permit", enabled: true, validFor: 30000 });
+    const start = performance.now();
+    const clock = vi.spyOn(performance, "now").mockReturnValue(start + 1250);
+    vi.advanceTimersByTime(500);
+    expect(ticks()).toHaveLength(2);
+    clock.mockReturnValue(start + 2250);
+    vi.advanceTimersByTime(250);
+    expect(ticks()).toHaveLength(4);
+    expect(ticks().map((event) => event.frame.tick)).toEqual([1, 2, 3, 4]);
+  });
+  it("bounds each wake at accelerated TPS and drops excess debt", () => {
+    send({ kind: "permit", enabled: true, validFor: 30000, tickRate: 60 });
+    const start = performance.now();
+    const clock = vi.spyOn(performance, "now").mockReturnValue(start + 2000);
+    vi.advanceTimersByTime(17);
+    expect(ticks()).toHaveLength(5);
+    clock.mockReturnValue(start + 2000 + 1000 / 60);
+    vi.advanceTimersByTime(17);
+    expect(ticks()).toHaveLength(6);
+  });
+  it("uses a wall clock to reject a permit delayed in transit and detect system sleep", () => {
+    send({
+      kind: "permit",
+      enabled: true,
+      validFor: 30000,
+      validUntil: Date.now() - 1,
+    });
+    vi.advanceTimersByTime(1000);
+    expect(ticks()).toHaveLength(0);
+    send({ kind: "permit", enabled: true, validFor: 30000 });
+    vi.setSystemTime(Date.now() + 5000);
+    vi.advanceTimersByTime(500);
+    expect(ticks()).toHaveLength(0);
+    expect(post.mock.calls.at(-1)![0]).toEqual({ kind: "suspended" });
+  });
+  it("wakes heartbeats even while production is paused or no factory exists", () => {
+    send({ kind: "init", factory: null });
+    vi.advanceTimersByTime(20000);
+    expect(
+      post.mock.calls.filter((call) => call[0].kind === "heartbeat_due"),
+    ).toHaveLength(2);
+    expect(ticks()).toHaveLength(0);
   });
 });
