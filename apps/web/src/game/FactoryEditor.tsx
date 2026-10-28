@@ -49,6 +49,7 @@ import {
   centeredCamera,
   GRID_INSET,
   nextRotation,
+  directionEditTarget,
   placementIssue,
   TILE_SIZE,
   zoomAt,
@@ -73,6 +74,7 @@ type Props = {
   placementSize?: 1 | 2;
   onExitPlacement: () => void;
   onSelect: (building: BuildingInstance | null) => void;
+  onPickBuilding?: (building: BuildingInstance) => boolean;
   onChange: (factory: FactoryDetail, selectedID: string | null) => void;
   onError: (error: unknown) => void;
 };
@@ -372,6 +374,15 @@ export default function FactoryEditor(props: Props) {
     }, 50);
   }
   function beginPan(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button === 1) {
+      event.preventDefault();
+      pickBuilding({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        cell: hit(event.clientX, event.clientY),
+      });
+      return;
+    }
     if (deleteModeRef.current && event.button === 2) {
       event.preventDefault();
       exitDeletion();
@@ -688,6 +699,32 @@ export default function FactoryEditor(props: Props) {
       return "该补能站仍绑定机器人，请先召回后再删除";
     return null;
   }
+  function pickBuilding(at = pointer) {
+    if (
+      !at?.cell ||
+      lock.current ||
+      drag.current ||
+      pan.current ||
+      marquee.current
+    )
+      return;
+    const instance = latest.current.factory.buildings.find((b) =>
+      containsCell(b, at.cell!),
+    );
+    if (!instance || !latest.current.onPickBuilding?.(instance)) return;
+    viewport.current?.focus({ preventScroll: true });
+    deleteModeRef.current = false;
+    setDeleteMode(false);
+    setBatch([]);
+    setMenu(null);
+    setCellSelection(null);
+    setUndergroundEntry(null);
+    setPointer(at);
+    setOrientation({
+      type: instance.building_type,
+      rotation: instance.rotation,
+    });
+  }
   function clickCell(cell: Cell, instance?: BuildingInstance) {
     if (consumeClick() || lock.current) return;
     setMenu(null);
@@ -700,6 +737,21 @@ export default function FactoryEditor(props: Props) {
       return;
     }
     if (placementDefinition) {
+      const f = latest.current.factory;
+      const directionTarget = directionEditTarget(f, cell, placementDefinition);
+      if (directionTarget) {
+        if (directionTarget.rotation === rotation) return;
+        void commit(
+          () =>
+            latest.current.commands.updateBuilding(f.id, directionTarget.id, {
+              x: directionTarget.x,
+              y: directionTarget.y,
+              rotation,
+            }),
+          () => directionTarget.id,
+        );
+        return;
+      }
       const issue = placementIssue(
         latest.current.factory,
         cell,
@@ -711,7 +763,6 @@ export default function FactoryEditor(props: Props) {
         props.onError(new Error(issue));
         return;
       }
-      const f = latest.current.factory;
       if (placingUnderground) {
         if (!undergroundEntry) {
           setUndergroundEntry(cell);
@@ -828,6 +879,7 @@ export default function FactoryEditor(props: Props) {
     updateBox,
     finishBox,
     deleteShortcut,
+    pickBuilding,
   });
   useLayoutEffect(() => {
     actions.current = {
@@ -843,6 +895,7 @@ export default function FactoryEditor(props: Props) {
       updateBox,
       finishBox,
       deleteShortcut,
+      pickBuilding,
     };
   });
   useLayoutEffect(() => {
@@ -978,6 +1031,9 @@ export default function FactoryEditor(props: Props) {
         setPointer(null);
         latest.current.onExitPlacement();
         event.preventDefault();
+      } else if (event.key.toLowerCase() === "e") {
+        event.preventDefault();
+        actions.current.pickBuilding();
       } else if (event.key.toLowerCase() === "r") {
         event.preventDefault();
         if (drag.current) actions.current.rotateDrag();
@@ -1120,13 +1176,17 @@ export default function FactoryEditor(props: Props) {
           .map((b) => ({ ...b, x: b.x + groupDelta.x, y: b.y + groupDelta.y }))
       : [];
   const groupTargets = occupancy(groupPreview);
+  const directionTarget =
+    preview && !preview.instanceID && !preview.groupIDs
+      ? directionEditTarget(factory, preview.cell, preview.definition)
+      : undefined;
   const issue = preview?.groupIDs
     ? batchMoveIssue(factory, preview.groupIDs, groupDelta)
     : preview
       ? (placementIssue(
           factory,
           preview.cell,
-          preview.instanceID,
+          preview.instanceID ?? directionTarget?.id,
           preview.definition.id,
           preview.size,
         ) ??
@@ -1269,14 +1329,14 @@ export default function FactoryEditor(props: Props) {
                     ? undergroundEntry
                       ? "入口已标记 · 点击正前方 1～8 格设置出口 · Esc 取消"
                       : "地下传送带：先点击入口 · R / 右键选择方向 · 完成配对才消耗 1 套"
-                    : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / E 键切换尺寸" : ""} / Esc 退出`
+                    : `连续放置 ${placementDefinition.name} · ${props.placementSize ?? 1}×${props.placementSize ?? 1} · ${rotation}° · 左键建造 / 右键旋转${supportsLargeSize(placementDefinition) ? " / Q 键切换尺寸" : ""} / Esc 退出`
                   : selected
                     ? selected.building_type === "bus"
                       ? "工厂仓库可长按移动 · 方向固定 · 不可删除"
                       : fixed
                         ? "固定设施，无法编辑"
                         : `已选中 ${selected.building_type} (${selected.x}, ${selected.y}) · 右键打开菜单`
-                    : "D / Del 连续删除 · 右键拖动框选 · 长按建筑移动 · 拖动空格平移"}
+                    : "中键 / E 拾取建造 · D / Del 连续删除 · 右键框选 · 长按移动 · 拖动空格平移"}
         </span>
       </div>
       <div className="map-caption">
@@ -1368,6 +1428,12 @@ export default function FactoryEditor(props: Props) {
         tabIndex={0}
         aria-label="工厂地图，可滚轮缩放和拖动空格平移"
         onPointerDown={beginPan}
+        onMouseDown={(event) => {
+          if (event.button === 1) event.preventDefault();
+        }}
+        onAuxClick={(event) => {
+          if (event.button === 1) event.preventDefault();
+        }}
         onPointerMove={(event) => {
           if (!drag.current && !pan.current?.active)
             setPointer({
@@ -1781,7 +1847,9 @@ export default function FactoryEditor(props: Props) {
                 : "左键点击建筑回收 · 空格和机器人不会删除"))
             : preview
               ? (issue ??
-                `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`)
+                (directionTarget
+                  ? `修正方向 (${directionTarget.x}, ${directionTarget.y}) · ${preview.rotation}° · 不消耗道具`
+                  : `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`))
               : pointer?.cell
                 ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
                 : warehouse
@@ -1835,7 +1903,7 @@ export default function FactoryEditor(props: Props) {
               </span>
               {!dragPreview && supportsLargeSize(preview.definition) && (
                 <span>
-                  <kbd>E</kbd> 键切换尺寸
+                  <kbd>Q</kbd> 键切换尺寸
                 </span>
               )}
             </span>

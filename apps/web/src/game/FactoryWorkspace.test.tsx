@@ -32,6 +32,8 @@ const backup = vi.fn().mockResolvedValue(undefined),
   markStoryViewed = vi.fn().mockResolvedValue(undefined);
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
   localStorage.removeItem("bakafactory:power-saving");
 });
@@ -104,6 +106,138 @@ function prepare(
   });
 }
 describe("local factory workspace", () => {
+  it("picks a map route, clears filters, selects its category and phase, and scrolls only the palette on repeated picks", () => {
+    vi.stubGlobal("PointerEvent", MouseEvent);
+    prepare(true, {
+      setup: (f) => {
+        f.simulation.industry!.stage = 2;
+        f.buildings.push({
+          id: "pick-pipe",
+          factory_id: f.id,
+          building_type: "pipe",
+          x: 3,
+          y: 3,
+          rotation: 90,
+          configuration: {},
+        });
+      },
+    });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        const top = this.classList.contains("catalog-entry") ? 360 : 100;
+        return {
+          x: 100,
+          y: top,
+          left: 100,
+          top,
+          right: 730,
+          bottom: top + 630,
+          width: 630,
+          height: 630,
+          toJSON: () => ({}),
+        };
+      },
+    );
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    const palette = within(
+      screen.getByRole("complementary", { name: "实体图鉴" }),
+    );
+    fireEvent.click(palette.getByRole("button", { name: "物品" }));
+    fireEvent.click(
+      within(palette.getByRole("group", { name: "图鉴阶段" })).getByRole(
+        "button",
+        { name: "P6" },
+      ),
+    );
+    fireEvent.change(palette.getByLabelText("搜索图鉴"), {
+      target: { value: "不会匹配" },
+    });
+    const area = screen.getByLabelText("工厂地图，可滚轮缩放和拖动空格平移");
+    const transform =
+      document.querySelector<HTMLElement>(".factory-map")!.style.transform;
+    const [cx, cy, zoom] = transform
+      .match(/translate\(([-.\d]+)px, ([-.\d]+)px\) scale\(([-.\d]+)\)/)!
+      .slice(1)
+      .map(Number);
+    fireEvent.pointerMove(area, {
+      clientX: 100 + cx + (26 + 13.5 * 30) * zoom,
+      clientY: 100 + cy + (26 + 7.5 * 30) * zoom,
+    });
+    fireEvent.keyDown(window, { key: "e" });
+    expect(palette.getByLabelText("搜索图鉴")).toHaveValue("");
+    expect(palette.getByRole("button", { name: "物流" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      within(palette.getByRole("group", { name: "图鉴阶段" })).getByRole(
+        "button",
+        { name: "P2" },
+      ),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(palette.getByRole("button", { name: /^流体管道/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(document.querySelector(".drag-ghost")).toHaveTextContent("90°");
+    const scroll = palette.getByLabelText("图鉴列表滚动区域");
+    expect(scroll.scrollTop).toBe(260);
+    scroll.scrollTop = 0;
+    fireEvent.keyDown(window, { key: "E" });
+    expect(scroll.scrollTop).toBe(260);
+    expect(commands.placeBuilding).not.toHaveBeenCalled();
+    expect(commands.updateBuilding).not.toHaveBeenCalled();
+  });
+
+  it.each(["bus", "warehouse_pickup", "pipe"])(
+    "refuses to pick protected or locked %s while retaining the active tool",
+    (type) => {
+      vi.stubGlobal("PointerEvent", MouseEvent);
+      prepare(true, {
+        setup: (f) => {
+          f.buildings = [
+            {
+              id: "blocked-pick",
+              factory_id: f.id,
+              building_type: type,
+              x: 0,
+              y: 0,
+              rotation: 0,
+              configuration: {},
+            },
+          ];
+        },
+      });
+      vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+        x: 100,
+        y: 100,
+        left: 100,
+        top: 100,
+        right: 730,
+        bottom: 730,
+        width: 630,
+        height: 630,
+        toJSON: () => ({}),
+      });
+      render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+      const palette = within(
+        screen.getByRole("complementary", { name: "实体图鉴" }),
+      );
+      const active = palette.getByRole("button", { name: /^自动工作台/ });
+      fireEvent.click(active);
+      // At the centered camera the center cell has a small half-inset offset.
+      fireEvent.pointerMove(
+        screen.getByLabelText("工厂地图，可滚轮缩放和拖动空格平移"),
+        { clientX: 431, clientY: 431 },
+      );
+      fireEvent.keyDown(window, { key: "e" });
+      expect(active).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        type === "pipe" ? "尚未解锁" : "不能通过建造阵列建造",
+      );
+      expect(commands.placeBuilding).not.toHaveBeenCalled();
+    },
+  );
   it("searches palette items, buildings and logistics by partial pinyin and initials within the selected phase", () => {
     prepare();
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
@@ -632,7 +766,7 @@ describe("local factory workspace", () => {
   });
 });
 
-it("advertises multi-size machines, switches with E or the card control, ignores typing and defaults a new selection to 1×1", () => {
+it("advertises multi-size machines, switches with Q or the card control, ignores typing and defaults a new selection to 1×1", () => {
   prepare();
   render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
   const palette = within(
@@ -649,16 +783,16 @@ it("advertises multi-size machines, switches with E or the card control, ignores
   expect(card).not.toContainElement(toggle);
   expect(card.querySelector(".multi-size-tag")).toBeNull();
   expect(card).toHaveAttribute("aria-pressed", "true");
-  expect(toggle).toHaveAttribute("title", "当前尺寸：1×1 · E 键切换尺寸");
-  fireEvent.keyDown(window, { key: "e" });
+  expect(toggle).toHaveAttribute("title", "当前尺寸：1×1 · Q 键切换尺寸");
+  fireEvent.keyDown(window, { key: "q" });
   expect(toggle).toHaveTextContent("⇄ 切换为1x1");
   const search = screen.getByRole("textbox", { name: "搜索图鉴" });
-  fireEvent.keyDown(search, { key: "e" });
+  fireEvent.keyDown(search, { key: "q" });
   expect(toggle).toHaveTextContent("⇄ 切换为1x1");
   fireEvent.click(toggle);
   expect(card).toHaveAttribute("aria-pressed", "true");
   expect(toggle).toHaveTextContent("⇄ 切换为2x2");
-  fireEvent.keyDown(window, { key: "e" });
+  fireEvent.keyDown(window, { key: "q" });
   fireEvent.click(palette.getByRole("button", { name: /^自动分拣台/ }));
   expect(
     palette.queryByRole("button", { name: /切换 .* 占地尺寸/ }),

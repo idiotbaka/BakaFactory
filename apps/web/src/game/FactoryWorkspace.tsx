@@ -1,6 +1,13 @@
 import { DEFAULT_TPS } from "./local/tickRate";
 import { supportsLargeSize, footprintSize } from "./footprint";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   ApiError,
   type Catalog,
@@ -14,7 +21,10 @@ import { createCatalogSearch } from "./catalogSearch";
 import FactoryLoading from "./FactoryLoading";
 import FactoryEditor from "./FactoryEditor";
 import { ProductionInspector } from "./ProductionPanel";
-import { isLogisticsBuilding } from "./catalogPresentation";
+import {
+  isLogisticsBuilding,
+  isPlaceableBuilding,
+} from "./catalogPresentation";
 import WorkshopHud from "./WorkshopHud";
 import BuildingRecipeGuide from "./BuildingRecipeGuide";
 import BuildingOrderButton from "./BuildingOrderButton";
@@ -89,6 +99,11 @@ export default function FactoryWorkspace({
   const [powerSaving, setPowerSaving] = useState(readPowerSaving);
   const [immersive, setImmersive] = useState(false);
   const [catalogQuery, setCatalogQuery] = useState("");
+  const catalogScroll = useRef<HTMLDivElement>(null);
+  const [catalogReveal, setCatalogReveal] = useState<{
+    id: string;
+    factoryID: string;
+  } | null>(null);
   const [catalogPhases, setCatalogPhases] = useState<
     Partial<Record<"building" | "logistics" | "item", number>>
   >({});
@@ -132,6 +147,24 @@ export default function FactoryWorkspace({
   const stage = game.factory?.simulation.industry?.stage ?? 1;
   const phaseFor = (category: typeof tab) =>
     Math.min(catalogPhases[category] ?? stage, category === "item" ? 6 : stage);
+  useLayoutEffect(() => {
+    const area = catalogScroll.current;
+    if (
+      !area ||
+      !catalogReveal ||
+      catalogReveal.id !== placementType ||
+      immersive ||
+      catalogReveal.factoryID !== activeFactoryID
+    )
+      return;
+    const entry = [
+      ...area.querySelectorAll<HTMLElement>("[data-building-type]"),
+    ].find((node) => node.dataset.buildingType === catalogReveal.id);
+    if (!entry) return;
+    // Scroll only the palette, keeping the page and map camera in place.
+    area.scrollTop +=
+      entry.getBoundingClientRect().top - area.getBoundingClientRect().top;
+  }, [catalogReveal, immersive, activeFactoryID, placementType]);
   useEffect(() => savePowerSaving(powerSaving), [powerSaving]);
   useEffect(() => {
     if (!errorNotice.message) return;
@@ -159,6 +192,7 @@ export default function FactoryWorkspace({
         event.ctrlKey ||
         event.metaKey ||
         event.altKey ||
+        event.isComposing ||
         (event.target instanceof HTMLElement &&
           event.target.closest(
             'input,textarea,select,[role="combobox"],[data-game-select-popup],[contenteditable="true"]',
@@ -166,7 +200,7 @@ export default function FactoryWorkspace({
       )
         return;
       if (
-        event.key.toLowerCase() === "e" &&
+        event.key.toLowerCase() === "q" &&
         placementType &&
         supportsLargeSize(
           paletteCatalog.buildings.find((d) => d.id === placementType),
@@ -182,12 +216,8 @@ export default function FactoryWorkspace({
         return;
       }
       if (!/^[1-6]$/.test(event.key)) return;
-      const definition = paletteCatalog.buildings.filter(
-        (d) =>
-          !d.fixed &&
-          !isWarehouseTerminal(d.id) &&
-          d.id !== "bus" &&
-          (d.tier ?? 1) <= stage,
+      const definition = paletteCatalog.buildings.filter((d) =>
+        isPlaceableBuilding(d, stage),
       )[Number(event.key) - 1];
       if (!definition) return;
       event.preventDefault();
@@ -246,6 +276,34 @@ export default function FactoryWorkspace({
             definition.tier ?? 1,
         }));
     }
+  }
+  function pickBuilding(instance: BuildingInstance) {
+    const definition = paletteCatalog?.buildings.find(
+      (d) => d.id === instance.building_type,
+    );
+    if (!definition || !isPlaceableBuilding(definition, stage)) {
+      setError(
+        definition && (definition.tier ?? 1) > stage
+          ? "该设备所属阶段尚未解锁"
+          : "该设施不能通过建造阵列建造",
+      );
+      return false;
+    }
+    const category = isLogisticsBuilding(definition) ? "logistics" : "building";
+    setError("");
+    setTab(category);
+    setCatalogQuery("");
+    setCatalogPhases((previous) => ({
+      ...previous,
+      [category]: definition.tier ?? 1,
+    }));
+    setSelection({ kind: "building", id: definition.id });
+    setSelectedInstanceID(null);
+    setSelectedRobotID(null);
+    setPlacementSize(footprintSize(instance));
+    setPlacementType(definition.id);
+    setCatalogReveal({ id: definition.id, factoryID: instance.factory_id });
+    return true;
   }
   function applyFactory(snapshot: FactoryDetail, selectedID: string | null) {
     setError("");
@@ -329,12 +387,8 @@ export default function FactoryWorkspace({
       />
     );
   const { catalog, factory } = workspace;
-  const placeable = catalog.buildings.filter(
-    (d) =>
-      !d.fixed &&
-      !isWarehouseTerminal(d.id) &&
-      d.id !== "bus" &&
-      (d.tier ?? 1) <= stage,
+  const placeable = catalog.buildings.filter((d) =>
+    isPlaceableBuilding(d, stage),
   );
   const catalogPhase = phaseFor(tab);
   const matchesCatalog = createCatalogSearch(catalogQuery);
@@ -567,6 +621,7 @@ export default function FactoryWorkspace({
             </div>
             <div
               className="catalog-scroll"
+              ref={catalogScroll}
               tabIndex={0}
               aria-label="图鉴列表滚动区域"
             >
@@ -601,6 +656,7 @@ export default function FactoryWorkspace({
                             : undefined
                         }
                         draggable={false}
+                        data-building-type={tab === "item" ? undefined : d.id}
                         onDragStart={(event) => event.preventDefault()}
                         aria-pressed={
                           tab !== "item"
@@ -658,8 +714,8 @@ export default function FactoryWorkspace({
                             type="button"
                             className="multi-size-tag catalog-size-toggle"
                             aria-label={`切换 ${d.name} 占地尺寸`}
-                            aria-keyshortcuts="E"
-                            title={`当前尺寸：${placementSize}×${placementSize} · E 键切换尺寸`}
+                            aria-keyshortcuts="Q"
+                            title={`当前尺寸：${placementSize}×${placementSize} · Q 键切换尺寸`}
                             onClick={() =>
                               setPlacementSize((size) => (size === 1 ? 2 : 1))
                             }
@@ -679,6 +735,8 @@ export default function FactoryWorkspace({
                 点击或按数字选择模组。
                 <br />
                 左键建造 · 右键旋转
+                <br />
+                中键 / <kbd>E</kbd> 拾取地图模组
                 <br />
                 再选一次或 <kbd>Esc</kbd> 退出。
               </p>
@@ -770,6 +828,7 @@ export default function FactoryWorkspace({
                   onExitPlacement={() => setPlacementType(null)}
                   selectedID={selectedInstanceID}
                   onSelect={selectInstance}
+                  onPickBuilding={pickBuilding}
                   onChange={applyFactory}
                   onError={editorError}
                   selectedRobotID={selectedRobotID}
@@ -1069,6 +1128,18 @@ export default function FactoryWorkspace({
                   <div>
                     <dt>左键 / 右键</dt>
                     <dd>连续建造 / 旋转预览</dd>
+                  </div>
+                  <div>
+                    <dt>中键 / E</dt>
+                    <dd>拾取鼠标所指的已解锁模组，并定位建造阵列</dd>
+                  </div>
+                  <div>
+                    <dt>Q</dt>
+                    <dd>切换支持多尺寸机器的建造占地</dd>
+                  </div>
+                  <div>
+                    <dt>同型带 / 管</dt>
+                    <dd>建造时点击已有同型号方块，免费改为预览方向</dd>
                   </div>
                   <div>
                     <dt>长按已有建筑</dt>

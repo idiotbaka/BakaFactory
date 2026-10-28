@@ -263,6 +263,217 @@ function hold(element: HTMLElement) {
   act(() => vi.advanceTimersByTime(50));
   fireEvent.pointerMove(window, point());
 }
+
+it.each(["middle", "e", "E"])(
+  "picks the complete hovered footprint with %s and keeps its direction",
+  (key) => {
+    const instance = {
+      ...original.buildings[1],
+      size: 2 as const,
+      rotation: 270 as const,
+    };
+    const factory = {
+      ...original,
+      buildings: [original.buildings[0], instance],
+    };
+    const onPickBuilding = vi.fn().mockReturnValue(true);
+    function PickHarness() {
+      const [type, setType] = useState<string | null>(null);
+      return (
+        <FactoryEditor
+          commands={{
+            deleteBuilding,
+            getFactory,
+            placeBuilding,
+            updateBuilding,
+          }}
+          factory={factory}
+          catalog={catalog}
+          selectedID={null}
+          placementType={type}
+          placementSize={2}
+          onExitPlacement={vi.fn()}
+          onSelect={vi.fn()}
+          onChange={vi.fn()}
+          onError={vi.fn()}
+          onPickBuilding={(b) => {
+            onPickBuilding(b);
+            setType(b.building_type);
+            return true;
+          }}
+        />
+      );
+    }
+    render(<PickHarness />);
+    fireEvent.pointerMove(area(), point(2, 0));
+    if (key === "middle") {
+      fireEvent.pointerDown(area(), { ...point(2, 0), button: 1, buttons: 4 });
+    } else {
+      fireEvent.keyDown(window, { key });
+    }
+    expect(onPickBuilding).toHaveBeenCalledExactlyOnceWith(instance);
+    expect(document.querySelector(".drag-ghost")).toHaveTextContent("270°");
+    expect(document.querySelector(".drag-ghost")).toHaveTextContent(
+      "当前尺寸：2×2",
+    );
+    expect(placeBuilding).not.toHaveBeenCalled();
+    expect(updateBuilding).not.toHaveBeenCalled();
+  },
+);
+
+it("isolates pick shortcuts from typing, composition, modifiers, repeats, hidden maps and empty cells", () => {
+  const onPickBuilding = vi.fn().mockReturnValue(true);
+  const props = {
+    commands: { deleteBuilding, getFactory, placeBuilding, updateBuilding },
+    factory: original,
+    catalog,
+    selectedID: null,
+    placementType: null,
+    onExitPlacement: vi.fn(),
+    onSelect: vi.fn(),
+    onChange: vi.fn(),
+    onError: vi.fn(),
+    onPickBuilding,
+  };
+  const { rerender } = render(
+    <>
+      <input aria-label="拾取输入隔离" />
+      <FactoryEditor {...props} />
+    </>,
+  );
+  fireEvent.pointerMove(area(), point(1, 1));
+  fireEvent.keyDown(screen.getByLabelText("拾取输入隔离"), { key: "e" });
+  for (const options of [
+    { isComposing: true },
+    { repeat: true },
+    { ctrlKey: true },
+    { metaKey: true },
+    { altKey: true },
+  ]) {
+    fireEvent.keyDown(window, { key: "e", ...options });
+  }
+  rerender(<FactoryEditor {...props} visible={false} />);
+  fireEvent.keyDown(window, { key: "e" });
+  expect(onPickBuilding).not.toHaveBeenCalled();
+  rerender(<FactoryEditor {...props} />);
+  fireEvent.pointerMove(area(), point(4, 4));
+  fireEvent.keyDown(window, { key: "e" });
+  fireEvent.pointerMove(area(), point(1, 1));
+  fireEvent.pointerLeave(area());
+  fireEvent.keyDown(window, { key: "e" });
+  expect(onPickBuilding).not.toHaveBeenCalled();
+});
+
+it.each(["hand_belt", "pipe", "return_pipe", "pressure_valve"])(
+  "changes %s direction in place through update, keeps build mode and skips identical directions",
+  async (type) => {
+    const definition = catalog.buildings.find((d) => d.id === type)!;
+    const instance = {
+      ...original.buildings[1],
+      building_type: type,
+      rotation: 180 as const,
+    };
+    const factory = {
+      ...original,
+      buildings: [original.buildings[0], instance],
+    };
+    updateBuilding.mockResolvedValue(factory);
+    const onExitPlacement = vi.fn(),
+      onError = vi.fn();
+    const props = {
+      commands: { deleteBuilding, getFactory, placeBuilding, updateBuilding },
+      factory,
+      catalog,
+      selectedID: null,
+      placementType: type,
+      onExitPlacement,
+      onSelect: vi.fn(),
+      onChange: vi.fn(),
+      onError,
+    };
+    const { rerender } = render(<FactoryEditor {...props} />);
+    fireEvent.pointerMove(area(), point(1, 1));
+    expect(document.querySelectorAll(".drop-valid")).toHaveLength(1);
+    expect(screen.getByText(/修正方向 .*不消耗道具/)).toBeInTheDocument();
+    await act(async () =>
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: `${definition.name} ${definition.code} (1,1)`,
+        }),
+        point(1, 1),
+      ),
+    );
+    expect(updateBuilding).toHaveBeenCalledExactlyOnceWith(
+      factory.id,
+      instance.id,
+      { x: 1, y: 1, rotation: 0 },
+    );
+    expect(placeBuilding).not.toHaveBeenCalled();
+    expect(deleteBuilding).not.toHaveBeenCalled();
+    expect(onExitPlacement).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+    rerender(
+      <FactoryEditor
+        {...props}
+        factory={{
+          ...factory,
+          buildings: [factory.buildings[0], { ...instance, rotation: 0 }],
+        }}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: `${definition.name} ${definition.code} (1,1)`,
+      }),
+      point(1, 1),
+    );
+    expect(updateBuilding).toHaveBeenCalledTimes(1);
+  },
+);
+
+it.each([
+  ["hand_belt", "mechanical_belt"],
+  ["pipe", "return_pipe"],
+  ["m01", "m01"],
+  ["underground_belt", "underground_belt"],
+])(
+  "rejects occupied %s when holding %s without replacement",
+  (existingType, holdingType) => {
+    const definition = catalog.buildings.find((d) => d.id === existingType)!;
+    const onError = vi.fn();
+    render(
+      <FactoryEditor
+        commands={{ deleteBuilding, getFactory, placeBuilding, updateBuilding }}
+        factory={{
+          ...original,
+          buildings: [
+            { ...original.buildings[1], building_type: existingType },
+          ],
+        }}
+        catalog={catalog}
+        selectedID={null}
+        placementType={holdingType}
+        onExitPlacement={vi.fn()}
+        onSelect={vi.fn()}
+        onChange={vi.fn()}
+        onError={onError}
+      />,
+    );
+    fireEvent.pointerMove(area(), point(1, 1));
+    expect(document.querySelectorAll(".drop-invalid")).toHaveLength(1);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: `${definition.name} ${definition.code} (1,1)`,
+      }),
+      point(1, 1),
+    );
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "目标格子已被占用" }),
+    );
+    expect(updateBuilding).not.toHaveBeenCalled();
+    expect(placeBuilding).not.toHaveBeenCalled();
+  },
+);
 function addBuilding(
   x: number,
   y: number,
@@ -541,7 +752,7 @@ describe("factory editor interactions", () => {
       "当前尺寸：1×1",
     );
     expect(document.querySelector(".drag-ghost")).not.toHaveTextContent(
-      "E 键切换尺寸",
+      "Q 键切换尺寸",
     );
     fireEvent.click(bus);
     expect(placeBuilding).not.toHaveBeenCalled();
@@ -841,13 +1052,13 @@ it("previews four cells and places a 2×2 machine with the clicked top-left anch
   fireEvent.pointerMove(area(), point(4, 4));
   expect(document.querySelectorAll(".drop-valid")).toHaveLength(4);
   expect(
-    screen.getByText(/左键建造 \/ 右键旋转 \/ E 键切换尺寸 \/ Esc 退出/),
+    screen.getByText(/左键建造 \/ 右键旋转 \/ Q 键切换尺寸 \/ Esc 退出/),
   ).toBeInTheDocument();
   expect(document.querySelector(".drag-ghost")).toHaveTextContent(
     "当前尺寸：2×2",
   );
   expect(document.querySelector(".drag-ghost")).toHaveTextContent(
-    "E 键切换尺寸",
+    "Q 键切换尺寸",
   );
   expect(
     document.querySelector<HTMLElement>(".tile-preview")!.style.width,

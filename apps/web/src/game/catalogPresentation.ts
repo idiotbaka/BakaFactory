@@ -1,4 +1,14 @@
 import type { BuildingDefinition } from "../api/client";
+import { isWarehouseTerminal } from "./local/warehouseIO";
+
+export const isPlaceableBuilding = (
+  definition: BuildingDefinition,
+  stage: number,
+) =>
+  !definition.fixed &&
+  !isWarehouseTerminal(definition.id) &&
+  definition.id !== "bus" &&
+  (definition.tier ?? 1) <= stage;
 
 export const isLogisticsBuilding = (definition: BuildingDefinition) =>
   [

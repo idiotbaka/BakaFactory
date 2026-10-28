@@ -1,9 +1,30 @@
 import { containsCell, overlaps, inBounds } from "./footprint";
-import type { BuildingPlacement, FactoryDetail } from "../api/client";
+import type {
+  BuildingDefinition,
+  BuildingPlacement,
+  FactoryDetail,
+} from "../api/client";
 export type Cell = { x: number; y: number };
 export type Camera = { x: number; y: number; zoom: number };
 export const TILE_SIZE = 30;
 export const GRID_INSET = 26; // 25px axis + 1px grid border.
+// Underground endpoints have paired geometry and cannot rotate independently.
+export function directionEditTarget(
+  factory: FactoryDetail,
+  cell: Cell | null,
+  definition: BuildingDefinition,
+) {
+  if (
+    !cell ||
+    definition.id === "underground_belt" ||
+    !["belt", "pipe"].includes(definition.role ?? "")
+  )
+    return undefined;
+  return factory.buildings.find(
+    (b) =>
+      b.building_type === definition.id && b.x === cell.x && b.y === cell.y,
+  );
+}
 export function zoomAt(
   camera: Camera,
   x: number,
