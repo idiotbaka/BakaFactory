@@ -17,6 +17,7 @@ import { transferFluids } from "./fluids";
 import { claimWork } from "./workLedger";
 import { recordFactoryOutput, recordQuestEvent, syncQuests } from "./quests";
 import { STEP_SECONDS } from "./simulationTime";
+import { bindWarehouse } from "./warehouseActivity";
 
 // Deterministic fixed-duration transition, with no clock, DOM, network or disk.
 // Production settles first; transport reads that stock, plans once and commits.
@@ -43,6 +44,7 @@ export function step(
     },
   };
   const s = f.simulation;
+  bindWarehouse(s.warehouse, f.id);
   s.tick++;
   if (workshop) stepWorkshop(f);
   s.transfers = (s.transfers ?? []).filter((t) => t.tick >= s.tick - 2);

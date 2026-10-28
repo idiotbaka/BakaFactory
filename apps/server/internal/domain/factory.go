@@ -50,11 +50,12 @@ type BuildingInstance struct {
 }
 type FactoryDetail struct {
 	Factory
-	Robots           []RobotState       `json:"robots,omitempty"`
-	Buildings        []BuildingInstance `json:"buildings"`
-	Simulation       Simulation         `json:"simulation"`
-	Districts        []FactoryDetail    `json:"districts,omitempty"`
-	ActiveDistrictID string             `json:"active_district_id,omitempty"`
+	WarehouseActivity *WarehouseActivity `json:"warehouse_activity,omitempty"`
+	Robots            []RobotState       `json:"robots,omitempty"`
+	Buildings         []BuildingInstance `json:"buildings"`
+	Simulation        Simulation         `json:"simulation"`
+	Districts         []FactoryDetail    `json:"districts,omitempty"`
+	ActiveDistrictID  string             `json:"active_district_id,omitempty"`
 }
 type Definition struct {
 	ID          string `json:"id"`

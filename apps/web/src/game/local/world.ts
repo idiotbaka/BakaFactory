@@ -34,6 +34,7 @@ import { newMachine } from "./machine";
 import { orderRewardClaimed } from "./progression";
 import { discoverItems } from "./discovery";
 import { validateDeveloperItemGrant } from "./developerItems";
+import { bindWarehouse, captureWarehouse } from "./warehouseActivity";
 
 export type WorldAction =
   | RobotAction
@@ -98,6 +99,7 @@ export function projectFactory(root: LocalFactory): LocalFactory {
       industry: root.simulation.industry,
     },
     robots: root.robots,
+    warehouse_activity: root.warehouse_activity,
   };
 }
 export function initializeWorld(root: LocalFactory): LocalFactory {
@@ -114,6 +116,9 @@ export function initializeWorld(root: LocalFactory): LocalFactory {
 export const createWorld = (user: User, name: string) =>
   initializeWorld(createLocalFactory(user, name));
 export function stepWorld(current: LocalFactory): LocalFactory {
+  return captureWarehouse(current, () => stepWorldDraft(current));
+}
+function stepWorldDraft(current: LocalFactory): LocalFactory {
   current = initializeWorld(current);
   const root = step(current);
   const districts: LocalFactory[] = [];
@@ -183,6 +188,7 @@ export function stepWorld(current: LocalFactory): LocalFactory {
     districts.push(next);
   }
   root.districts = districts;
+  bindWarehouse(root.simulation.warehouse, root.id);
   chargeRobots(root);
   syncIncidents(root);
   dispatchRobots(root);
@@ -191,6 +197,13 @@ export function stepWorld(current: LocalFactory): LocalFactory {
   return root;
 }
 export function editWorld(
+  current: LocalFactory,
+  edit: Edit,
+  target?: string,
+): LocalFactory {
+  return captureWarehouse(current, () => editWorldDraft(current, edit, target));
+}
+function editWorldDraft(
   current: LocalFactory,
   edit: Edit,
   target?: string,
@@ -323,7 +336,19 @@ export function actWorld(
   current: LocalFactory,
   action: WorldAction,
 ): LocalFactory {
-  const root = structuredClone(initializeWorld(current));
+  return captureWarehouse(current, () => actWorldDraft(current, action));
+}
+function actWorldDraft(
+  current: LocalFactory,
+  action: WorldAction,
+): LocalFactory {
+  const { warehouse_activity, ...state } = initializeWorld(current);
+  const root: LocalFactory = structuredClone(state);
+  if (warehouse_activity) root.warehouse_activity = warehouse_activity;
+  bindWarehouse(
+    root.simulation.warehouse,
+    current.active_district_id ?? current.id,
+  );
   if (!Number.isSafeInteger(root.revision + 1))
     throw new Error("存档版本已达到上限");
   if (action.type === "developer_grant_item") {
@@ -417,7 +442,7 @@ export function actWorld(
       throw new Error(
         "没有可安装终端的空闲格子，请腾出一格并保留机器人返站通路",
       );
-    store(root.simulation.warehouse, ioCost(stage, action.terminal));
+    store(root.simulation.warehouse, ioCost(stage, action.terminal), f.id);
     f.buildings = [
       ...f.buildings,
       {

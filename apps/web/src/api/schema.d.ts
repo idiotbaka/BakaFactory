@@ -237,6 +237,7 @@ export interface components {
             };
         };
         FactoryDetail: components["schemas"]["Factory"] & {
+            warehouse_activity?: components["schemas"]["WarehouseActivity"];
             simulation?: components["schemas"]["Simulation"];
             /** @description 仅主厂保存的已部署机器人；界面投影可读取全局列表 */
             robots?: components["schemas"]["RobotState"][];
@@ -245,6 +246,30 @@ export interface components {
             /** @description 仅主厂区保存的分厂；禁止嵌套分厂，分厂 industry 缺省并共用主厂进度 */
             districts?: components["schemas"]["FactoryDetail"][];
             buildings: components["schemas"]["BuildingInstance"][];
+        };
+        /** @description 仅主厂保存的最近 120 tick 仓库净变化及按厂进出统计；旧档缺省，从首次采样起满 120 tick 显示 */
+        WarehouseActivity: {
+            /** Format: int64 */
+            started_tick: number;
+            buckets: components["schemas"]["WarehouseActivityBucket"][];
+        };
+        WarehouseActivityBucket: {
+            /** Format: int64 */
+            tick: number;
+            delta: {
+                [key: string]: number;
+            };
+            factories: {
+                [key: string]: components["schemas"]["WarehouseActivityFlow"];
+            };
+        };
+        WarehouseActivityFlow: {
+            received: {
+                [key: string]: number;
+            };
+            withdrawn: {
+                [key: string]: number;
+            };
         };
         FactoryResponse: {
             factory: components["schemas"]["FactoryDetail"];

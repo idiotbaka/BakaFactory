@@ -188,7 +188,11 @@ export function applyConstruction(
       : Infinity;
   if (need > r.energy_kj || !routeEditsSafe(before, root))
     throw new Error("蓝图堵断返程、现场不可达或储能不足");
-  store(root.simulation.warehouse, { [type.item]: -1 });
+  store(
+    root.simulation.warehouse,
+    { [type.item]: -1 },
+    r.construction.factory_id,
+  );
   r.work_progress = 0;
   r.status = "moving";
   constructionLog(

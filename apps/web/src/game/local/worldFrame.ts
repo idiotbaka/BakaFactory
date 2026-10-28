@@ -1,12 +1,17 @@
 import type { LocalFactory } from "./state";
 import type { BuildingInstance, Simulation } from "../../api/client";
 import { allDistricts } from "./world";
+import { WAREHOUSE_WINDOW } from "./warehouseActivity";
 export type WorldFrame = {
   base_revision: number;
   revision: number;
   tick: number;
   robots: LocalFactory["robots"];
   industry: Simulation["industry"];
+  warehouse_activity?: {
+    started_tick: number;
+    bucket?: NonNullable<LocalFactory["warehouse_activity"]>["buckets"][number];
+  };
   factories: {
     id: string;
     revision: number;
@@ -25,6 +30,18 @@ export function worldFrame(
     tick: after.simulation.tick,
     robots: after.robots,
     industry: after.simulation.industry,
+    ...(after.warehouse_activity
+      ? {
+          warehouse_activity: {
+            started_tick: after.warehouse_activity.started_tick,
+            bucket:
+              after.warehouse_activity.buckets.at(-1)?.tick ===
+              after.simulation.tick
+                ? after.warehouse_activity.buckets.at(-1)
+                : undefined,
+          },
+        }
+      : {}),
     factories: allDistricts(after).map((f) => {
       const p = old.get(f.id)!;
       const quiet =
@@ -79,6 +96,17 @@ export function applyWorldFrame(
     };
   };
   const root = merge(previous);
+  if (frame.warehouse_activity) {
+    const buckets = (previous.warehouse_activity?.buckets ?? []).filter(
+      (b) => b.tick > frame.tick - WAREHOUSE_WINDOW,
+    );
+    if (frame.warehouse_activity.bucket)
+      buckets.push(frame.warehouse_activity.bucket);
+    root.warehouse_activity = {
+      started_tick: frame.warehouse_activity.started_tick,
+      buckets,
+    };
+  }
   root.revision = frame.revision;
   root.robots = frame.robots;
   root.simulation = { ...root.simulation, industry: frame.industry };

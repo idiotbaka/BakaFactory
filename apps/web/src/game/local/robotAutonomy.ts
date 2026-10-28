@@ -1,3 +1,4 @@
+import { bindWarehouse, warehouseAttempt } from "./warehouseActivity";
 import { secondsToTicks } from "./simulationTime";
 import type { components } from "../../api/schema";
 import type { LocalFactory } from "./state";
@@ -117,13 +118,14 @@ function proposal(root: LocalFactory, r: Robot, apply: () => void) {
   const previous = structuredClone(r),
     warehouse = structuredClone(root.simulation.warehouse);
   try {
-    apply();
+    warehouseAttempt(apply);
     return true;
   } catch {
     for (const key of Object.keys(r))
       delete (r as unknown as Record<string, unknown>)[key];
     Object.assign(r, previous);
     root.simulation.warehouse = warehouse;
+    bindWarehouse(warehouse, root.id);
     return false;
   }
 }

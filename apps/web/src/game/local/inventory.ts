@@ -1,4 +1,5 @@
 import type { MachineState } from "../../api/client";
+import { recordWarehouseChange } from "./warehouseActivity";
 export type Inventory = MachineState["input"];
 export const count = (inv: Inventory, item: string) =>
   inv.find((s) => s.item === item)?.count ?? 0;
@@ -36,11 +37,13 @@ export function remove(inv: Inventory, item: string, n = 1) {
 export function store(
   warehouse: Record<string, number>,
   values: Record<string, number>,
+  factory?: string,
 ) {
   for (const [id, n] of Object.entries(values)) {
     const value = (warehouse[id] ?? 0) + n;
     if (!Number.isSafeInteger(value) || value < 0)
       throw new Error("仓库数量不足或超出上限");
     warehouse[id] = value;
+    recordWarehouseChange(warehouse, id, n, factory);
   }
 }

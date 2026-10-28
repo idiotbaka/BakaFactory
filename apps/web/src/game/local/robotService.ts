@@ -140,9 +140,13 @@ export function applyServiceAction(root: LocalFactory, action: ServiceAction) {
     )
       throw new Error("摄像头需 P5 实物组件");
     if (!!r.camera === action.equipped) return;
-    store(root.simulation.warehouse, {
-      [itemID("摄像头组件")]: action.equipped ? -1 : 1,
-    });
+    store(
+      root.simulation.warehouse,
+      {
+        [itemID("摄像头组件")]: action.equipped ? -1 : 1,
+      },
+      r.factory_id,
+    );
     r.camera = action.equipped;
     return;
   }
@@ -169,7 +173,11 @@ export function applyServiceAction(root: LocalFactory, action: ServiceAction) {
   if (needed > d.energy_capacity_kj)
     throw new Error("现场作业及携货返程超过储能范围");
   if (r.service.parts)
-    store(root.simulation.warehouse, { [itemID("维修备件箱")]: -1 });
+    store(
+      root.simulation.warehouse,
+      { [itemID("维修备件箱")]: -1 },
+      r.factory_id,
+    );
   r.work_progress = 0;
   r.status = "waiting_charge";
 }
@@ -196,7 +204,7 @@ export function releaseService(root: LocalFactory, r: Robot) {
       item = itemID("维修备件箱");
     if (!Number.isSafeInteger((warehouse[item] ?? 0) + r.service.parts))
       return false;
-    store(warehouse, { [item]: r.service.parts });
+    store(warehouse, { [item]: r.service.parts }, r.factory_id);
   }
   delete r.service;
   return true;

@@ -21,7 +21,7 @@ import {
   itemDefinitions,
   selectedRecipe,
 } from "./catalog";
-import { add, count, remove, type Inventory } from "./inventory";
+import { add, count, remove, store, type Inventory } from "./inventory";
 import {
   branchFilter,
   channel,
@@ -611,7 +611,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       t.source.building_type === "bus" ||
       t.source.building_type === pickupType
     )
-      s.warehouse[t.item] -= t.quantity;
+      store(s.warehouse, { [t.item]: -t.quantity });
     else remove(m.output, t.item, t.quantity);
   }
   for (let i = 0; i < chosen.length; i++) {
@@ -649,7 +649,7 @@ export function transferSolids(f: LocalFactory, ordered: BuildingInstance[]) {
       m.belt = { id: t.payload, item: t.item, count: t.quantity, progress: 0 };
       m.status = "transporting";
     } else if (t.destination === "warehouse") {
-      s.warehouse[t.item] = (s.warehouse[t.item] ?? 0) + t.quantity;
+      store(s.warehouse, { [t.item]: t.quantity });
       recordWarehouseDelivery(f, t.item, t.quantity);
     } else {
       m[t.destination] ??= [];

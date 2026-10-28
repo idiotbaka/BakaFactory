@@ -237,7 +237,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			if s.RulesVersion == 3 && len(child.Simulation.Warehouse) != 0 {
 				return bad()
 			}
-			if child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || child.Simulation.TickRate != sim.TickRate || factoryIDs[child.ID] {
+			if child.WarehouseActivity != nil || child.Districts != nil || child.ActiveDistrictID != "" || child.Robots != nil || child.Simulation.Industry != nil || child.Simulation.Tick != sim.Tick || child.Simulation.TickRate != sim.TickRate || factoryIDs[child.ID] {
 				return bad()
 			}
 			factoryIDs[child.ID] = true
@@ -250,7 +250,7 @@ func (s GameSave) Validate(owner string, c Catalog) error {
 			return bad()
 		}
 	}
-	if !validRobotWorld(f, c) {
+	if !validWarehouseActivity(f, c) || !validRobotWorld(f, c) {
 		return bad()
 	}
 	return nil

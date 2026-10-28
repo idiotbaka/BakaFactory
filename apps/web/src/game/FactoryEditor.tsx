@@ -1,4 +1,5 @@
 import GameSelect from "./GameSelect";
+import FactoryIOCard from "./FactoryIOCard";
 import {
   occupancy,
   footprintSize,
@@ -8,6 +9,8 @@ import {
 import { batchMoveIssue, rectangleSelection } from "./batchSelection";
 import {
   useEffect,
+  useCallback,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -130,6 +133,10 @@ export default function FactoryEditor(props: Props) {
   const [batchIDs, setBatchIDs] = useState<string[]>([]);
   const [deleteMode, setDeleteMode] = useState(false);
   const [showPowerRegions, setShowPowerRegions] = useState(false);
+  const [ioFactory, setIOFactory] = useState<string | null>(null);
+  const ioTrigger = useRef<HTMLButtonElement>(null);
+  const ioCardID = useId();
+  const closeIO = useCallback(() => setIOFactory(null), []);
   const deleteModeRef = useRef(false);
   useLayoutEffect(() => {
     batchRef.current = batchIDs;
@@ -177,6 +184,7 @@ export default function FactoryEditor(props: Props) {
     undergroundContext.factoryID !== factory.id ||
     undergroundContext.type !== placementType
   ) {
+    if (undergroundContext.factoryID !== factory.id) setIOFactory(null);
     if (undergroundContext.factoryID !== factory.id || placementType)
       setDeleteMode(false);
     setUndergroundContext({ factoryID: factory.id, type: placementType });
@@ -1287,6 +1295,20 @@ export default function FactoryEditor(props: Props) {
         <small>滚轮缩放 · 拖动空格平移</small>
         <button
           type="button"
+          ref={ioTrigger}
+          className="factory-io-toggle"
+          aria-expanded={ioFactory === factory.id}
+          aria-controls={ioFactory === factory.id ? ioCardID : undefined}
+          onClick={() =>
+            setIOFactory((current) =>
+              current === factory.id ? null : factory.id,
+            )
+          }
+        >
+          io数据
+        </button>
+        <button
+          type="button"
           className="power-region-toggle"
           aria-pressed={showPowerRegions}
           onClick={() => setShowPowerRegions((v) => !v)}
@@ -1294,6 +1316,15 @@ export default function FactoryEditor(props: Props) {
           {showPowerRegions ? "隐藏组网" : "显示组网"}
         </button>
       </div>
+      {ioFactory === factory.id && (
+        <FactoryIOCard
+          id={ioCardID}
+          anchor={ioTrigger}
+          factory={factory}
+          catalog={catalog}
+          onClose={closeIO}
+        />
+      )}
       <div
         className={`map-viewport ${deleteMode ? "is-deleting" : ""} ${dragPreview || panning ? "is-dragging" : ""} ${placementDefinition ? "is-placing" : ""}`}
         ref={viewport}

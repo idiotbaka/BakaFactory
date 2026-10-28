@@ -1,4 +1,5 @@
 import { wholeUnitsThisTick } from "./simulationTime";
+import { store } from "./inventory";
 import { occupancy } from "../footprint";
 import type { BuildingInstance } from "../../api/client";
 import type { LocalFactory } from "./state";
@@ -326,7 +327,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
   }
   for (const { source, item, count: n } of moves.values()) {
     const m = s.buildings[source.b.id];
-    if (source.kind === "warehouse") s.warehouse[item] -= n;
+    if (source.kind === "warehouse") store(s.warehouse, { [item]: -n });
     else if (source.kind === "output") remove(m.output, item, n);
     else {
       m.fluid!.count -= n;
@@ -337,7 +338,7 @@ export function transferFluids(f: LocalFactory, ordered: BuildingInstance[]) {
   for (const { target, item, count: n } of moves.values()) {
     const m = s.buildings[target.b.id];
     if (target.kind === "warehouse") {
-      s.warehouse[item] = (s.warehouse[item] ?? 0) + n;
+      store(s.warehouse, { [item]: n });
       recordWarehouseDelivery(f, item, n);
     } else if (target.kind === "medium") m.medium = (m.medium ?? 0) + n;
     else if (target.kind === "buffer")

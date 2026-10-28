@@ -405,7 +405,7 @@ function exchange(
     status: loading ? "loading" : "unloading",
     commit: () => {
       if (kind === "warehouse") {
-        store(root.simulation.warehouse, { [item]: loading ? -n : n });
+        store(root.simulation.warehouse, { [item]: loading ? -n : n }, f.id);
         if (!loading) recordWarehouseDelivery(root, item, n);
       } else if (kind === "fluid") {
         if (loading) {
@@ -638,7 +638,11 @@ export function stepFreight(root: LocalFactory) {
           continue;
         }
         if (!spend()) continue;
-        store(root.simulation.warehouse, { [r.cargo.item]: r.cargo.count });
+        store(
+          root.simulation.warehouse,
+          { [r.cargo.item]: r.cargo.count },
+          r.factory_id,
+        );
         delete r.cargo;
         if (r.task) {
           if (r.task.repeat) {

@@ -802,7 +802,8 @@
   width: calc(var(--footprint-size, 1) * 30px + 6px);
   height: calc(var(--footprint-size, 1) * 30px + 6px);
 }
-.camera-controls .power-region-toggle[aria-pressed="true"] {
+.camera-controls .power-region-toggle[aria-pressed="true"],
+.camera-controls .factory-io-toggle[aria-expanded="true"] {
   border-color: var(--cyan);
   color: var(--cyan);
   background: #132a36;

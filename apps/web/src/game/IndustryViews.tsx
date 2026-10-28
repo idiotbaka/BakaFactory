@@ -17,6 +17,7 @@ import {
   workshopMachineName,
 } from "./local/workshop";
 import DefinitionIcon from "./DefinitionIcon";
+import WarehouseInventory from "./WarehouseInventory";
 import { createCatalogSearch } from "./catalogSearch";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
@@ -87,6 +88,8 @@ export default function IndustryViews({
       ? "factory"
       : requestedView;
   const [query, setQuery] = useState("");
+  const [warehouseStage, setWarehouseStage] = useState("all");
+  const [warehouseType, setWarehouseType] = useState("all");
   const [batchCounts, setBatchCounts] = useState<Record<string, string>>({});
   const [selectedMachine, setSelectedMachine] = useState<string>("m02");
   const [workshopTarget, setWorkshopTarget] = useState<{
@@ -466,51 +469,19 @@ export default function IndustryViews({
                 )}
               </>
             ) : (
-              <section className="industry-warehouse" aria-label="工厂总仓库">
-                {catalog.items
-                  .filter(
-                    (i) =>
-                      ((s?.warehouse[i.id] ?? 0) > 0 ||
-                        (canOrder && orderable.has(i.id))) &&
-                      matchesCatalog(i),
-                  )
-                  .map((i) => (
-                    <article
-                      key={i.id}
-                      className={
-                        canOrder && orderable.has(i.id)
-                          ? "warehouse-orderable"
-                          : undefined
-                      }
-                    >
-                      {canOrder && orderable.has(i.id) && (
-                        <button
-                          className="warehouse-order-trigger"
-                          type="button"
-                          aria-label={`下单${i.name}`}
-                          disabled={disabled || !!job || !onOrder}
-                          onClick={() => setOrderItem(i.id)}
-                        >
-                          下单
-                        </button>
-                      )}
-                      <DefinitionIcon definition={i} compact />
-                      <strong>
-                        <ItemName item={i.id} />
-                      </strong>
-                      <span>
-                        {(s?.warehouse[i.id] ?? 0).toLocaleString()} u
-                      </span>
-                    </article>
-                  ))}
-                {!Object.values(s?.warehouse ?? {}).some((n) => n > 0) && (
-                  <p>
-                    {canOrder
-                      ? "仓库暂无存量；可预览下单计划，缺少的材料需先备齐。"
-                      : "仓库为空，前往工作室拾取第一包垃圾。"}
-                  </p>
-                )}
-              </section>
+              <WarehouseInventory
+                factory={factory}
+                catalog={catalog}
+                query={query}
+                canOrder={canOrder}
+                orderable={orderable}
+                orderDisabled={disabled || !!job || !onOrder}
+                onOrder={setOrderItem}
+                stage={warehouseStage}
+                type={warehouseType}
+                onStageChange={setWarehouseStage}
+                onTypeChange={setWarehouseType}
+              />
             )}
             {view === "warehouse" && orderItem && (
               <WarehouseOrderDialog

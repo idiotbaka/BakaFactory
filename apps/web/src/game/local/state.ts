@@ -1,4 +1,5 @@
 import { SIMULATION_TPS, STEP_SECONDS, isStepValue } from "./simulationTime";
+import { bindWarehouse, validWarehouseActivity } from "./warehouseActivity";
 import {
   batchEligible,
   batchMoveIssue,
@@ -676,6 +677,7 @@ export function validateSave(
         value.districts !== undefined ||
         value.active_district_id !== undefined ||
         value.robots !== undefined ||
+        value.warehouse_activity !== undefined ||
         !object(value.simulation) ||
         (sharedWarehouse &&
           (!object(value.simulation.warehouse) ||
@@ -727,6 +729,17 @@ export function validateSave(
       `${root}.active_district_id`,
       "没有分厂列表时不允许设置当前分厂",
     );
+  if (
+    !validWarehouseActivity(
+      f.warehouse_activity,
+      factory.simulation.tick,
+      new Set([factory.id, ...(factory.districts ?? []).map((d) => d.id)]),
+    )
+  )
+    return fail(
+      `${root}.warehouse_activity`,
+      "仓库统计窗口、物品、数量或厂区无效",
+    );
   if (!sharedWarehouse) {
     // Upgrade only a cloned, completely validated world. Persist one ledger,
     // never a copy per district; another load of rules v3 cannot merge again.
@@ -773,7 +786,14 @@ export type Edit =
   | { kind: "industry"; action: IndustryAction };
 
 export function editFactory(current: LocalFactory, edit: Edit): LocalFactory {
-  return editFactoryDraft(structuredClone(current), edit);
+  const { warehouse_activity, ...state } = current;
+  const draft: LocalFactory = structuredClone(state);
+  if (warehouse_activity) draft.warehouse_activity = warehouse_activity;
+  bindWarehouse(
+    draft.simulation.warehouse,
+    current.active_district_id ?? current.id,
+  );
+  return editFactoryDraft(draft, edit);
 }
 
 function editFactoryDraft(f: LocalFactory, edit: Edit): LocalFactory {
@@ -968,7 +988,7 @@ function editFactoryDraft(f: LocalFactory, edit: Edit): LocalFactory {
       for (const stack of stacks) {
         const count = (f.simulation.warehouse[stack.item] ?? 0) + stack.count;
         if (!Number.isSafeInteger(count)) throw new Error("仓库数量超出上限");
-        f.simulation.warehouse[stack.item] = count;
+        store(f.simulation.warehouse, { [stack.item]: stack.count });
       }
       const definition = buildingDefinitions.get(b.building_type)!;
       if (definition.item)
