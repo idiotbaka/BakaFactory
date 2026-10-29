@@ -1,0 +1,158 @@
+{
+  "pipeline": "opening-ai09-v1/process.py (unchanged)",
+  "shared_skin_palette": [
+    [204, 160, 154],
+    [228, 200, 192],
+    [228, 206, 199],
+    [230, 205, 198],
+    [231, 212, 200],
+    [240, 222, 212]
+  ],
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-ai09-v1/01-claws-at-full-power.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [80, 40, 99, 65],
+        [135, 28, 154, 49],
+        [115, 94, 130, 119]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 435,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 102176,
+      "sha256": "86c4597069eb12e8c4b4bf792b75fd6b834a18baa5015f2b498c4c7313cadd2b"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-ai09-v1/02-one-furnace-for-all.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 69,
+      "skin_regions": [
+        [123, 187, 140, 207],
+        [91, 185, 106, 206]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 169,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 142075,
+      "sha256": "993e645ce793b9308900b849af9e07954033288acdbe1913b19eca9c6e1dc15e"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-ai09-v1/03-overload-slow-motion.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [80, 125, 124, 164],
+        [74, 157, 89, 177],
+        [130, 107, 150, 141],
+        [60, 189, 94, 212]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 1277,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 101457,
+      "sha256": "bbf9d280d6b8f831c12bd4d654f1c95bd0e14ce44ad0d26428c0588b01f33771"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-ai09-v1/04-future-energy-atlas.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [264, 95, 301, 150],
+        [330, 142, 365, 159],
+        [126, 259, 170, 307],
+        [212, 209, 259, 238]
+      ],
+      "skin_outlines": [
+        [
+          [265, 96],
+          [276, 103],
+          [278, 113],
+          [285, 124],
+          [289, 133],
+          [298, 141],
+          [298, 147],
+          [290, 142],
+          [280, 135],
+          [274, 126],
+          [270, 118],
+          [267, 109],
+          [266, 103]
+        ],
+        [
+          [330, 147],
+          [340, 146],
+          [354, 142],
+          [364, 146],
+          [359, 153],
+          [344, 157],
+          [334, 155]
+        ],
+        [
+          [128, 271],
+          [134, 269],
+          [145, 277],
+          [148, 262],
+          [151, 261],
+          [156, 267],
+          [159, 277],
+          [164, 285],
+          [168, 291],
+          [164, 299],
+          [158, 305],
+          [145, 302],
+          [136, 298],
+          [132, 291],
+          [128, 286],
+          [128, 280]
+        ],
+        [
+          [213, 216],
+          [224, 211],
+          [235, 210],
+          [245, 214],
+          [257, 221],
+          [251, 237],
+          [237, 235],
+          [225, 230],
+          [219, 223]
+        ]
+      ],
+      "protected_skin_pixels": 1936,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 133473,
+      "sha256": "f75072de22322ccedceb63a9d78965c56748a8bede9221a48f851b50b907dec8"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-ai09-v1/05-more-furnaces-more-power.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [287, 80, 308, 105],
+        [334, 82, 352, 102],
+        [250, 131, 266, 155]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 334,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 126421,
+      "sha256": "74425163a640aa4507ab680bbc850e3df207cdc97d413210b91202373871e888"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
-import claws from "../../assets/stories/p2-shaft-v1/01-claws-at-full-power.png";
-import furnace from "../../assets/stories/p2-shaft-v1/02-one-furnace-for-all.png";
-import overload from "../../assets/stories/p2-shaft-v1/03-overload-slow-motion.png";
-import atlas from "../../assets/stories/p2-shaft-v1/04-future-energy-atlas.png";
-import power from "../../assets/stories/p2-shaft-v1/05-more-furnaces-more-power.png";
+import claws from "../../assets/stories/p2-shaft-ai09-v1/01-claws-at-full-power.png";
+import furnace from "../../assets/stories/p2-shaft-ai09-v1/02-one-furnace-for-all.png";
+import overload from "../../assets/stories/p2-shaft-ai09-v1/03-overload-slow-motion.png";
+import atlas from "../../assets/stories/p2-shaft-ai09-v1/04-future-energy-atlas.png";
+import power from "../../assets/stories/p2-shaft-ai09-v1/05-more-furnaces-more-power.png";
 import type { Story } from "./definitions";
 import { p2ShaftStoryID } from "./progress";
 
@@ -13,7 +13,8 @@ export const p2ShaftOverload: Story = {
     {
       title: "袖子挽起来，机器还是不动",
       image: claws,
-      alt: "旧版插图：电视头厂长双爪抱住冲压机的输入轴栓，双脚离地挂在半空；动力表指向零，脚边散落着夹爪秀肌肉的自评表。",
+      pixelArt: true,
+      alt: "背侧全身镜头中，蓝发 09 号双臂上举、双手抓住冲压机侧面伸出的传动轴，长腿自然下垂、双脚离地，安静地望着仍未压下的机器。",
       paragraphs: [
         "手搓零件的日子久了，你一度觉得，自己这双手也算全厂的动力担当。虽然本人不太想当。",
         "直到新造好的冲压机吞下了粗铁锭，却纹丝不动。",
@@ -25,7 +26,8 @@ export const p2ShaftOverload: Story = {
     {
       title: "一台炉子带全村",
       image: furnace,
-      alt: "旧版插图：唯一一台固燃传动机带着紧贴的冲压机、筛分器和车床，蜿蜒长轴还连向远处物流；电视头厂长站在木箱上得意叉腰。",
+      pixelArt: true,
+      alt: "高位斜俯视中，一台燃炭传动机以短轴连接冲压机、筛分器和车床，周围留着空地；09 号侧背站在炉旁，一手轻拍炉壳，另一手放在口袋里。",
       paragraphs: [
         "好在工业文明早有准备：烧炭的固燃传动机，正式上岗了！",
         "你惊喜地发现，机器贴在一起就能互相借力，隔着空地还能用传动轴来搭桥。",
@@ -37,7 +39,8 @@ export const p2ShaftOverload: Story = {
     {
       title: "传说中的应力过载……就这？",
       image: overload,
-      alt: "旧版插图：电视头厂长顶着铁盆躲在料箱后，产线没有爆炸，只在慢动作中艰难运转；冲压机刚吐出第一块标准钢板。",
+      pixelArt: true,
+      alt: "贴地斜侧镜头中，09 号顶着铁盆蹲在料箱后，一手扶盆沿、一手搭在膝边，半睁眼望向安静的冲压机；机器只慢吞吞压出一块钢板，没有爆炸或飞散零件。",
       paragraphs: [
         "点火送炭的那一刻，你抱头蹲进料箱后面，等待过载的铁轴当场崩飞。",
         "一秒，两秒…… 车间里不仅没有爆炸，甚至安静得有点礼貌。",
@@ -49,7 +52,8 @@ export const p2ShaftOverload: Story = {
     {
       title: "偷看了一眼未来的动力图鉴",
       image: atlas,
-      alt: "旧版插图：沾着煤灰的电视头厂长捧着钢板翻开动力图鉴，想象云里依次浮现烧炭传动、液压动力与带储能箱的未来电网。",
+      pixelArt: true,
+      alt: "肩后俯视近景中，脸颊沾煤灰的 09 号一手拿钢板、一手翻看动力图鉴；书页以大图标展示燃炭轴功、带回路的液压站、普通水管旁的叉号，以及连接储能箱的发电机和躺椅旁的灯。",
       paragraphs: [
         "你捧着这块慢动作压出来的钢板，忍不住翻开了厚厚的《工业动力图鉴》。",
         "原来「拧铁棍」只是开局，往后还得上液压动力站，灌满工作液硬顶重机；",
@@ -61,7 +65,8 @@ export const p2ShaftOverload: Story = {
     {
       title: "力大砖飞，先转起来再说",
       image: power,
-      alt: "旧版插图：三台紧贴机器的固燃传动机火力全开，钢板整齐出料；电视头厂长双爪点赞，被产线震出三层残影，脚边堆着拆下的多余轴。",
+      pixelArt: true,
+      alt: "背侧远景中，三台相连的燃炭传动机为冲压机供能，几块钢板整齐叠起，地上放着两根拆下的轴；09 号一手整理被震乱的蓝发，一手朝机器竖拇指。",
       paragraphs: [
         "不过话说回来，无论是液压管还是大电网，都得靠眼下这根铁轴先赚出家底。",
         "你拆掉了绕远路的冤枉轴，转头在旁边咔咔又拍下两台固燃传动机！",
