@@ -1,0 +1,17 @@
+{
+  "changed_assets": [
+    "apps/web/src/assets/stories/p1-feast-ai09-v1/04-factory-tasting-menu.png"
+  ],
+  "unchanged_assets": [
+    "apps/web/src/assets/stories/p1-feast-ai09-v1/01-parts-within-parts.png",
+    "apps/web/src/assets/stories/p1-feast-ai09-v1/02-hands-learn-the-job.png",
+    "apps/web/src/assets/stories/p1-feast-ai09-v1/03-graduation-becomes-materials.png",
+    "apps/web/src/assets/stories/p1-feast-ai09-v1/05-factory-is-hungry.png"
+  ],
+  "other_four_sha256_unchanged": true,
+  "opening_skin_palette_unchanged": true,
+  "width": 384,
+  "height": 360,
+  "colors": 70,
+  "new_sha256": "0950c888cfe43100871476e6b73caa795835de43f7f19be07b2f168bc1594980"
+}

@@ -1,0 +1,98 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-30",
+  "use_case": "illustration-story",
+  "scope": "第二部分 P1：工厂开饭了，五图重绘；只用开场 09 号人设参考，不输入旧机器人插画。",
+  "steps": [
+    {
+      "page": 1,
+      "camera": "斜俯视近景",
+      "inputs": [
+        {
+          "role": "approved opening pixel style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution opening character reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset: ONE new game story illustration for BakaFactory P1, not a collage. OUTPUT CANVAS almost square, exact aspect ratio 16:15, approximately 1296x1216, composed for final 384x360. References are ONLY the approved opening blue-haired character and SFC STYLE; do not copy their frontal camera, cluttered office background, chair pose, or look at viewer. Do not use any old television-head robot artwork.\nIDENTITY: cute languid young adult feminine embodied AI number 09. Short tousled dark blue bob, two small pink hairclips, half-lidded blue-violet eyes, round humanlike face, subtle circular ear interface and wrist seams, humanlike hands. Loose pale gray hooded uniform jacket, white collared shirt, navy bow, navy pleated skirt, opaque dark tights, gray practical ankle boots when visible. Small chest badge \"09\" only if front is visible; never move badge to back. Maintain the proportions and distinctive outfit of the supplied opening reference. Relaxed slouch, understated sleepy expression; cute without infant proportions.\nSTYLE: clean SFC/SNES 16-bit Japanese adventure game pixel illustration. Deliberate blocky pixel clusters, stepped dark navy outlines, broad flat cel-shading, readable large silhouettes, 2-3 shade groups per material. Muted navy, gray, dusty teal and warm cream with soft amber practical light. Low information density: ONE clear narrative action, only 2-3 supporting props, calm broad uncluttered walls/floor/background; visual breathing room. No dense scrap piles, arrays of tiny drawers, elaborate plumbing or greebles. No rust flecks, grain, paper texture, noisy dithering, gradients, hatching, smooth painted brushwork, blur, glow effects, captions, speech bubbles, comic borders, watermark. No text or numerals except a naturally placed \"09\" chest patch. Tell the story with simple shapes/icons. The girl is absorbed in her task and NEVER makes eye contact with the viewer.\n\nPAGE 1: parts within parts. CAMERA is a steep diagonal HIGH ANGLE looking DOWN over a simple wooden workshop table. Girl sits on the UPPER RIGHT side of table in three-quarter SIDE view, head bowed toward the blueprints, NOT looking up. Face in downward profile, cheek squashed cutely into her sleeve-covered supporting palm, tired half-lidded eye. Other hand loosely holds a pencil. The broad table takes most of the lower left foreground. Exactly THREE overlapping cream blueprint sheets form a simple visual chain: large gear icon -> shaft icon -> a gripper component icon, with ONE broad curved dependency arrow; all diagrams, no words. A single real gear and a small closed parts box. She has lost her original plan beneath the sheets. Plain muted teal wall, one simple lamp shape above, no window panorama. Frame head/torso and tabletop strongly; clear diagonal composition, generous blank table surface, a sleepy small sigh in her posture, no extra characters.",
+      "raw": "output/imagegen/p1-feast-ai09-v1/sources/01-parts-within-parts.png",
+      "output": "apps/web/src/assets/stories/p1-feast-ai09-v1/01-parts-within-parts.png"
+    },
+    {
+      "page": 2,
+      "camera": "工作台水平侧视",
+      "inputs": [
+        {
+          "role": "approved opening pixel style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution opening character reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset: ONE new game story illustration for BakaFactory P1, not a collage. OUTPUT CANVAS almost square, exact aspect ratio 16:15, approximately 1296x1216, composed for final 384x360. References are ONLY the approved opening blue-haired character and SFC STYLE; do not copy their frontal camera, cluttered office background, chair pose, or look at viewer. Do not use any old television-head robot artwork.\nIDENTITY: cute languid young adult feminine embodied AI number 09. Short tousled dark blue bob, two small pink hairclips, half-lidded blue-violet eyes, round humanlike face, subtle circular ear interface and wrist seams, humanlike hands. Loose pale gray hooded uniform jacket, white collared shirt, navy bow, navy pleated skirt, opaque dark tights, gray practical ankle boots when visible. Small chest badge \"09\" only if front is visible; never move badge to back. Maintain the proportions and distinctive outfit of the supplied opening reference. Relaxed slouch, understated sleepy expression; cute without infant proportions.\nSTYLE: clean SFC/SNES 16-bit Japanese adventure game pixel illustration. Deliberate blocky pixel clusters, stepped dark navy outlines, broad flat cel-shading, readable large silhouettes, 2-3 shade groups per material. Muted navy, gray, dusty teal and warm cream with soft amber practical light. Low information density: ONE clear narrative action, only 2-3 supporting props, calm broad uncluttered walls/floor/background; visual breathing room. No dense scrap piles, arrays of tiny drawers, elaborate plumbing or greebles. No rust flecks, grain, paper texture, noisy dithering, gradients, hatching, smooth painted brushwork, blur, glow effects, captions, speech bubbles, comic borders, watermark. No text or numerals except a naturally placed \"09\" chest patch. Tell the story with simple shapes/icons. The girl is absorbed in her task and NEVER makes eye contact with the viewer.\n\nPAGE 2: a helper earns half a nap. CAMERA is a strict EYE-LEVEL SIDE VIEW across a tidy workshop desk. Girl at LEFT, head resting sideways on folded gray sleeves on tabletop, closed eyes peacefully napping; real one-eye profile/nose silhouette, blue bob hair clips recognizable. She occupies left half. At RIGHT a small independent tabletop INDUSTRIAL ROBOTIC ARM bolted to its own base, with two simple articulated metal links and one gripper, carefully placing a single gear into a shallow assembly tray. It is a separate tool, NOT attached to her body, and has no face or head. Her two human hands are tucked with her sleeves under her cheek, unmistakably separate from machine. Small back-wall screen shows only THREE large icon slots, gear -> assembly -> green check, no text. A single warm desk lamp casts a broad quiet pool; simple dark navy background. Spacious, intimate and cozy, not a busy production line. Horizontal storytelling inside the nearly-square canvas.",
+      "raw": "output/imagegen/p1-feast-ai09-v1/sources/02-hands-learn-the-job.png",
+      "output": "apps/web/src/assets/stories/p1-feast-ai09-v1/02-hands-learn-the-job.png"
+    },
+    {
+      "page": 3,
+      "camera": "仓库斜侧中景",
+      "inputs": [
+        {
+          "role": "approved opening pixel style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution opening character reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset: ONE new game story illustration for BakaFactory P1, not a collage. OUTPUT CANVAS almost square, exact aspect ratio 16:15, approximately 1296x1216, composed for final 384x360. References are ONLY the approved opening blue-haired character and SFC STYLE; do not copy their frontal camera, cluttered office background, chair pose, or look at viewer. Do not use any old television-head robot artwork.\nIDENTITY: cute languid young adult feminine embodied AI number 09. Short tousled dark blue bob, two small pink hairclips, half-lidded blue-violet eyes, round humanlike face, subtle circular ear interface and wrist seams, humanlike hands. Loose pale gray hooded uniform jacket, white collared shirt, navy bow, navy pleated skirt, opaque dark tights, gray practical ankle boots when visible. Small chest badge \"09\" only if front is visible; never move badge to back. Maintain the proportions and distinctive outfit of the supplied opening reference. Relaxed slouch, understated sleepy expression; cute without infant proportions.\nSTYLE: clean SFC/SNES 16-bit Japanese adventure game pixel illustration. Deliberate blocky pixel clusters, stepped dark navy outlines, broad flat cel-shading, readable large silhouettes, 2-3 shade groups per material. Muted navy, gray, dusty teal and warm cream with soft amber practical light. Low information density: ONE clear narrative action, only 2-3 supporting props, calm broad uncluttered walls/floor/background; visual breathing room. No dense scrap piles, arrays of tiny drawers, elaborate plumbing or greebles. No rust flecks, grain, paper texture, noisy dithering, gradients, hatching, smooth painted brushwork, blur, glow effects, captions, speech bubbles, comic borders, watermark. No text or numerals except a naturally placed \"09\" chest patch. Tell the story with simple shapes/icons. The girl is absorbed in her task and NEVER makes eye contact with the viewer.\n\nPAGE 3: graduation is just another ingredient. CAMERA medium shot from the FRONT-LEFT SIDE at WAIST HEIGHT, with girl turned in three-quarter PROFILE toward RIGHT, eyes cast DOWN at an open large equipment catalog on a waist-high warehouse packing counter; never looking at viewer. She wears an amusing homemade SMALL square cardboard graduation cap with a short simple tassel on top of her blue bob. She hugs a shallow cardboard box containing just THREE neatly arranged finished pieces (a gear, metal plate, seal ring). The oversized open catalog at right shows ONE big factory-machine silhouette above THREE matching component icons and simple insertion arrows, no text. She droops a little and uses one sleeve-covered hand to steady the crooked cap, quiet cute disappointment. Background is almost empty cool warehouse wall with ONE broad shelf holding TWO plain crates, large clean shapes. Clear readable whole head and hands, the contrast of proud little box versus enormous machine page carries the joke; no clutter or robot head.",
+      "raw": "output/imagegen/p1-feast-ai09-v1/sources/03-graduation-becomes-materials.png",
+      "output": "apps/web/src/assets/stories/p1-feast-ai09-v1/03-graduation-becomes-materials.png"
+    },
+    {
+      "page": 4,
+      "camera": "低机位仰视想象",
+      "inputs": [
+        {
+          "role": "approved opening identity, face, outfit and style",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "approved opening full-body silhouette and proportions",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/05-plan-to-clock-out.png"
+        },
+        {
+          "role": "previous new-character panel; scene composition only, chibi anatomy explicitly rejected",
+          "path": "output/imagegen/p1-feast-ai09-v1/revisions/04-proportions-v1/previous-source.png"
+        }
+      ],
+      "prompt": "Use case: identity-preserve / illustration-story. Redraw ONLY story panel 4 to correct the oversized chibi protagonist. OUTPUT: single almost-square SFC pixel-art game illustration, aspect ratio 16:15, approximately 1296x1216, final grid 384x360.\nINPUT ROLES: Image 1 is the APPROVED opening character identity, face, outfit, and pixel illustration style. Image 2 is the APPROVED opening FULL-BODY silhouette and anatomical reference. Image 3 is the CURRENT panel to revise: use it for scene composition, low camera, lighting, machines and thought-cloud ONLY. Its girl has INCORRECT chibi anatomy: do NOT copy her head/body proportions.\nPRIMARY CHANGE: redraw the girl at lower left as the SAME young ADULT embodied AI 09 with NATURAL ANIME FULL-BODY PROPORTIONS, around 5.5 to 6 heads tall from hair crown to soles. Head plus hair no more than 1/5.5 of standing figure height. Make the head substantially smaller relative to the body, give her a visibly longer natural torso, long upper/lower arms, and long slender legs with normal knee placement. Legs from hip to soles approximately half the figure's standing height. Normal shoulders and adult-sized hands, practical modest ankle boots. Do not enlarge boots to compensate. No toddler/chibi/SD/big-head doll anatomy. Do not simply stretch the existing girl; draw a coherent anatomically proportioned adult figure. Gently enlarge the girl's full standing silhouette upward if necessary while keeping her feet near the bottom-left and leaving the two imagined machines readable.\nIdentity and clothing must match the opening: short tousled dark blue bob, two pink hairclips, half-lidded blue-violet eye, restrained cute sleepy expression, humanlike face and hands, small circular mechanical ear interface, subtle wrist seam. Loose light-gray hooded jacket over white collared shirt and navy bow, short navy pleated skirt, OPAQUE charcoal tights covering both legs fully, practical gray ankle boots; small \"09\" chest badge if naturally visible. No bare legs or changes to outfit. Cuteness comes from expression and languid posture, NOT infantile proportions. Her head remains side/profile, turned RIGHT and gently UP to the imagined machines; never eye contact.\nPreserve the STORY: low-angle view inside a spacious simplified workshop. On the left the normally proportioned adult girl holds a small shallow cardboard box of parts in both human hands at her waist, one knee relaxed slightly, tiny deadpan sleepy resignation. At upper right ONE clearly bounded dusty lavender thought-cloud contains exactly TWO simple oversized machines: squat boiler with a broad intake like an open mouth and an assembly press with a similar intake. Above them ONE coal icon and ONE gear icon. They are imagined factory machines, not humanoid robots, no added limbs or elaborate faces. One open equipment catalog on a low broad crate in lower right, diagrams/icons only. Sparse broad navy wall panels, warm late-afternoon window at far left, simple warm floor light. Keep the existing strong small-box versus enormous-appetite joke, generous negative space, low information density. No added scrap piles, pipes, drawers or extra props.\nClean SFC/SNES 16-bit Japanese adventure-game pixel illustration. Large coherent pixel clusters, stepped navy contours, broad flat cel shades, restrained navy/gray/cream and amber colors. No smooth vector finish, photorealism, texture noise, grain, rust speckles, dithering, tiny hatching, bloom, blur, gradients or decorative effects. No text except naturally placed \"09\"; no captions, speech balloons, frame or watermark.\nThe correction must be obvious: NORMAL ADULT FULL-BODY anatomy consistent with the opening, smaller head and longer torso/legs, not a super-deformed miniature girl. Keep the low-angle side view and appetite scene.",
+      "raw": "output/imagegen/p1-feast-ai09-v1/sources/04-factory-tasting-menu.png",
+      "output": "apps/web/src/assets/stories/p1-feast-ai09-v1/04-factory-tasting-menu.png",
+      "revision": "04-proportions-v1"
+    },
+    {
+      "page": 5,
+      "camera": "背后高位远景",
+      "inputs": [
+        {
+          "role": "approved opening pixel style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution opening character reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset: ONE new game story illustration for BakaFactory P1, not a collage. OUTPUT CANVAS almost square, exact aspect ratio 16:15, approximately 1296x1216, composed for final 384x360. References are ONLY the approved opening blue-haired character and SFC STYLE; do not copy their frontal camera, cluttered office background, chair pose, or look at viewer. Do not use any old television-head robot artwork.\nIDENTITY: cute languid young adult feminine embodied AI number 09. Short tousled dark blue bob, two small pink hairclips, half-lidded blue-violet eyes, round humanlike face, subtle circular ear interface and wrist seams, humanlike hands. Loose pale gray hooded uniform jacket, white collared shirt, navy bow, navy pleated skirt, opaque dark tights, gray practical ankle boots when visible. Small chest badge \"09\" only if front is visible; never move badge to back. Maintain the proportions and distinctive outfit of the supplied opening reference. Relaxed slouch, understated sleepy expression; cute without infant proportions.\nSTYLE: clean SFC/SNES 16-bit Japanese adventure game pixel illustration. Deliberate blocky pixel clusters, stepped dark navy outlines, broad flat cel-shading, readable large silhouettes, 2-3 shade groups per material. Muted navy, gray, dusty teal and warm cream with soft amber practical light. Low information density: ONE clear narrative action, only 2-3 supporting props, calm broad uncluttered walls/floor/background; visual breathing room. No dense scrap piles, arrays of tiny drawers, elaborate plumbing or greebles. No rust flecks, grain, paper texture, noisy dithering, gradients, hatching, smooth painted brushwork, blur, glow effects, captions, speech bubbles, comic borders, watermark. No text or numerals except a naturally placed \"09\" chest patch. Tell the story with simple shapes/icons. The girl is absorbed in her task and NEVER makes eye contact with the viewer.\n\nPAGE 5: first layout line in an empty factory. CAMERA is a HIGH WIDE SHOT from BEHIND, looking diagonally DOWN into a spacious EMPTY factory hall, still almost-square 16:15 canvas, NOT panoramic. Girl in lower-right foreground seen in unmistakable REAR THREE-QUARTER view, back of blue bob and plain gray hood visible, face turned AWAY. She kneels with relaxed posture and one knee on floor, one human hand stretches a simple physical measuring string taut across the floor, other holds its small reel. No frontal eyes or back-of-jacket number. A folded blueprint with simple rectangles lies beside her and her small cardboard graduation cap is set aside on it. Broad floor takes most of image. Only TWO faint dusty-lavender rectangular footprint outlines and ONE straight planned belt route on the floor suggest FUTURE equipment as translucent schematic marks, not real installed machines. A large high window at upper left gives a single warm diagonal patch of late-afternoon light. Otherwise clean empty walls, a few structural beams, no piles of scrap or dense props. Contemplative cute industrious laziness: planning short walking routes so she can rest sooner. Most image is calm negative space; rear-camera finale distinctly different from the other four.",
+      "raw": "output/imagegen/p1-feast-ai09-v1/sources/05-factory-is-hungry.png",
+      "output": "apps/web/src/assets/stories/p1-feast-ai09-v1/05-factory-is-hungry.png"
+    }
+  ]
+}

@@ -3,11 +3,11 @@ import promotion from "../../assets/stories/opening-ai09-v1/02-promoted-factory-
 import recruitment from "../../assets/stories/opening-ai09-v1/03-zero-applicants.png";
 import colleagues from "../../assets/stories/opening-ai09-v1/04-build-colleagues.png";
 import clockOut from "../../assets/stories/opening-ai09-v1/05-plan-to-clock-out.png";
-import partsWithinParts from "../../assets/stories/p1-feast-v1/01-parts-within-parts.png";
-import handsLearnTheJob from "../../assets/stories/p1-feast-v1/02-hands-learn-the-job.png";
-import graduationMaterials from "../../assets/stories/p1-feast-v1/03-graduation-becomes-materials.png";
-import tastingMenu from "../../assets/stories/p1-feast-v1/04-factory-tasting-menu.png";
-import factoryHungry from "../../assets/stories/p1-feast-v1/05-factory-is-hungry.png";
+import partsWithinParts from "../../assets/stories/p1-feast-ai09-v1/01-parts-within-parts.png";
+import handsLearnTheJob from "../../assets/stories/p1-feast-ai09-v1/02-hands-learn-the-job.png";
+import graduationMaterials from "../../assets/stories/p1-feast-ai09-v1/03-graduation-becomes-materials.png";
+import tastingMenu from "../../assets/stories/p1-feast-ai09-v1/04-factory-tasting-menu.png";
+import factoryHungry from "../../assets/stories/p1-feast-ai09-v1/05-factory-is-hungry.png";
 import { openingStoryID, p1StoryID, storyIDs, type StoryID } from "./progress";
 import { p2CrowdedHatch } from "./p2CrowdedHatch";
 import { p2ShaftOverload } from "./p2ShaftOverload";
@@ -32,7 +32,8 @@ export const storyDefinitions: Record<StoryID, Story> = {
       {
         title: "零件里面，怎么还有零件",
         image: partsWithinParts,
-        alt: "旧版插图：电视头厂长坐在工作室的零件堆前，夹爪拿着锤子与配方纸，身后便签上的零件依赖箭头绕回自己。",
+        pixelArt: true,
+        alt: "斜俯视工作台，蓝发 09 号托腮低头看着层叠图纸，齿轮、轴和夹具图标用箭头串起，另一只手懒懒地握着铅笔。",
         paragraphs: [
           "为了装好一个零件，你得先做好另外几个零件。",
           "而为了做好另外几个零件，你又打开了更多的配方，层层循环～",
@@ -44,7 +45,8 @@ export const storyDefinitions: Record<StoryID, Story> = {
       {
         title: "给双手补上一点工作经验",
         image: handsLearnTheJob,
-        alt: "旧版插图：电视头厂长在暖灯下打盹，套在夹爪腕部的齿轮外骨骼继续装配，旁边终端以图标显示材料到成品的顺序队列。",
+        pixelArt: true,
+        alt: "工作台水平侧向镜头中，09 号闭眼趴在宽松衣袖上午睡，右侧独立底座机械手把齿轮放进托盘，屏幕用图标显示加工与完成。",
         paragraphs: [
           "于是，流水线机械手诞生了。给工作室添一位帮手，总比让自己的手加班好一点。",
           "你指定成品，它会帮你清点材料，把需要补做的配方排好顺序。",
@@ -56,7 +58,8 @@ export const storyDefinitions: Record<StoryID, Story> = {
       {
         title: "毕业作品，被归进了原料区",
         image: graduationMaterials,
-        alt: "旧版插图：戴纸箱毕业帽的电视头厂长捧着零件盒，仓库图册将小零件标入大机器，料箱上贴着原料标签。",
+        pixelArt: true,
+        alt: "仓库斜侧镜头中，09 号扶着纸箱毕业帽，抱着齿轮、铁板和密封圈的小盒，低头看向把同样零件列作机器材料的设备图册。",
         paragraphs: [
           "你郑重地收好成品，戴上纸箱做的毕业帽。唔，总算可以从手工作坊毕业了吧。",
           "然而，垃圾的消耗速度远不及运来的速度，新阶段的设备图册展开了。",
@@ -68,7 +71,8 @@ export const storyDefinitions: Record<StoryID, Story> = {
       {
         title: "大机器没有小胃口",
         image: tastingMenu,
-        alt: "旧版插图：图册冒出紫色想象云，传动设备、锅炉与装配机像巨大食客举起材料图标餐牌，电视头厂长端着一小盒零件和迷你餐叉。",
+        pixelArt: true,
+        alt: "低机位仰视中，09 号侧身端着小盒零件，望向淡紫想象云里的锅炉与压机；张大的进料口上方分别浮着煤块和齿轮图标。",
         paragraphs: [
           "而且，造出这些机器只是个开始。",
           "想让它们持续运转，就得不断送来原料、燃料和配套零件。",
@@ -80,7 +84,8 @@ export const storyDefinitions: Record<StoryID, Story> = {
       {
         title: "工厂开饭了",
         image: factoryHungry,
-        alt: "旧版插图：电视头厂长摘下纸箱毕业帽，在空厂房拉线测量，腕部机械手夹着图纸，地面以淡紫色构想线勾出未来设备和传送带。",
+        pixelArt: true,
+        alt: "背后高位远景中，09 号跪在空厂房地面拉出定位线，毕业帽放在身旁图纸上；夕阳照着两处淡紫设备占地与一条规划路线。",
         paragraphs: [
           "你把零件送回仓库，在空厂房里拉出了第一条定位线。",
           "工作室能帮你做好你临时需要的一批，接下来，该让产线自动生产那些零件了。",

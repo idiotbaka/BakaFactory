@@ -1,0 +1,95 @@
+{
+  "pipeline": "opening-ai09-v1/process.py (unchanged)",
+  "shared_skin_palette": [
+    [204, 160, 154],
+    [228, 200, 192],
+    [228, 206, 199],
+    [230, 205, 198],
+    [231, 212, 200],
+    [240, 222, 212]
+  ],
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p1-feast-ai09-v1/01-parts-within-parts.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [
+        [169, 56, 262, 127],
+        [168, 92, 212, 139],
+        [228, 101, 265, 139],
+        [264, 207, 321, 254]
+      ],
+      "protected_skin_pixels": 2947,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 160701,
+      "sha256": "31d916c4b32f936b3d842e351d0dc1de36b28af05d47f2ffcfb86bffa5b68ca3"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p1-feast-ai09-v1/02-hands-learn-the-job.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [[105, 143, 181, 202]],
+      "protected_skin_pixels": 1556,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 108534,
+      "sha256": "c8624d1da9eca4c8319c6bbbe8f89de38e3c01015ad2e460f1fc3db5010ecc91"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p1-feast-ai09-v1/03-graduation-becomes-materials.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [
+        [103, 95, 176, 151],
+        [107, 127, 145, 159],
+        [173, 71, 198, 111],
+        [94, 248, 143, 280]
+      ],
+      "protected_skin_pixels": 2785,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 128913,
+      "sha256": "617f53b6bb8f737e6466cbcf0523e4a7334df9c1f3d361d54552b53160d228e9"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p1-feast-ai09-v1/04-factory-tasting-menu.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [
+        [74, 166, 109, 210],
+        [82, 202, 99, 222],
+        [99, 238, 132, 265]
+      ],
+      "protected_skin_pixels": 665,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 122267,
+      "sha256": "37615a57bb0775838fc9039fa842956c7a90d2f05ec5efd308a1f5228e2c3097"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p1-feast-ai09-v1/05-factory-is-hungry.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 69,
+      "skin_regions": [
+        [271, 196, 283, 215],
+        [232, 253, 255, 274]
+      ],
+      "protected_skin_pixels": 232,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 118881,
+      "sha256": "e7736a4cb11b86a42f312583a9b809a23767b8cc07cead66cdc4b940c30d710c"
+    }
+  ]
+}
