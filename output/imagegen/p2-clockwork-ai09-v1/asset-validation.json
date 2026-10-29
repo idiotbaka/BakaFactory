@@ -1,0 +1,224 @@
+{
+  "pipeline": "opening-ai09-v1/process.py (unchanged)",
+  "shared_skin_palette": [
+    [204, 160, 154],
+    [228, 200, 192],
+    [228, 206, 199],
+    [230, 205, 198],
+    [231, 212, 200],
+    [240, 222, 212]
+  ],
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-ai09-v1/01-welcome-headless-colleague.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [146, 100, 181, 134],
+        [129, 123, 146, 150],
+        [118, 190, 156, 209],
+        [203, 214, 237, 244]
+      ],
+      "skin_outlines": [
+        [
+          [146, 100],
+          [181, 100],
+          [181, 134],
+          [146, 134]
+        ],
+        [
+          [129, 123],
+          [146, 123],
+          [146, 150],
+          [129, 150]
+        ],
+        [
+          [118, 190],
+          [156, 190],
+          [156, 209],
+          [118, 209]
+        ],
+        [
+          [204, 219],
+          [209, 217],
+          [216, 218],
+          [227, 221],
+          [232, 226],
+          [235, 233],
+          [233, 240],
+          [229, 243],
+          [225, 239],
+          [225, 233],
+          [220, 229],
+          [217, 231],
+          [214, 231],
+          [208, 227],
+          [204, 224]
+        ]
+      ],
+      "protected_skin_pixels": 1365,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 116214,
+      "sha256": "84413ea9be7355a32603b18b9106d8e48080ccbf7f40f55bd6f908ee49f05f1b"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-ai09-v1/02-thirty-turn-wake-up.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [58, 53, 86, 84],
+        [56, 76, 66, 91],
+        [48, 127, 57, 140]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 368,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 105964,
+      "sha256": "00c525651ac313bf890b933d400745832f23fbd1d5d7af7d62dbc792483c83b5"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-ai09-v1/03-patient-charcoal-waiter.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [80, 137, 95, 155],
+        [31, 189, 54, 205],
+        [58, 154, 78, 169]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 305,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 133931,
+      "sha256": "e4cc625144288c0d8d637bfa3320ca0710cba815146f2cb75aa53dc009c5af49"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-ai09-v1/04-perfect-attendance.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [248, 152, 270, 198],
+        [318, 190, 363, 209],
+        [216, 222, 261, 259],
+        [126, 248, 166, 301]
+      ],
+      "skin_outlines": [
+        [
+          [249, 153],
+          [260, 163],
+          [262, 175],
+          [269, 196],
+          [264, 194],
+          [260, 185],
+          [254, 176],
+          [253, 167]
+        ],
+        [
+          [319, 199],
+          [330, 193],
+          [350, 190],
+          [361, 198],
+          [356, 202],
+          [341, 206],
+          [327, 207]
+        ],
+        [
+          [228, 223],
+          [241, 225],
+          [248, 231],
+          [255, 238],
+          [260, 245],
+          [254, 257],
+          [240, 253],
+          [229, 245],
+          [222, 242],
+          [219, 238],
+          [221, 233],
+          [224, 229],
+          [229, 229]
+        ],
+        [
+          [129, 251],
+          [132, 250],
+          [136, 263],
+          [144, 266],
+          [142, 252],
+          [145, 249],
+          [151, 253],
+          [158, 266],
+          [163, 282],
+          [163, 287],
+          [154, 298],
+          [140, 291],
+          [131, 283],
+          [128, 271],
+          [127, 260]
+        ]
+      ],
+      "protected_skin_pixels": 1970,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 124548,
+      "sha256": "63ef7c9af9ff10321a488a5b414f8f98dc8f5d98f3aabd6efad86c1f3227edb6"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-ai09-v1/05-handover-rejected.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [
+        [130, 161, 140, 172],
+        [156, 171, 173, 190],
+        [192, 187, 215, 210]
+      ],
+      "skin_outlines": [
+        [
+          [130, 161],
+          [140, 161],
+          [140, 172],
+          [130, 172]
+        ],
+        [
+          [157, 177],
+          [161, 174],
+          [165, 172],
+          [171, 172],
+          [171, 176],
+          [168, 179],
+          [166, 183],
+          [160, 188],
+          [157, 185]
+        ],
+        [
+          [193, 197],
+          [197, 191],
+          [204, 189],
+          [209, 188],
+          [212, 191],
+          [211, 196],
+          [213, 198],
+          [211, 204],
+          [208, 207],
+          [200, 208],
+          [194, 204]
+        ]
+      ],
+      "protected_skin_pixels": 311,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 119094,
+      "sha256": "ac96a372748741dd85014b3b1333f3cdf85d49c63d4a78ed632a3482c4454259"
+    }
+  ]
+}

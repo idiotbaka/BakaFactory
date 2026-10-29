@@ -1,8 +1,8 @@
-import welcome from "../../assets/stories/p2-clockwork-v1/01-welcome-headless-colleague.png";
-import winding from "../../assets/stories/p2-clockwork-v1/02-thirty-turn-wake-up.png";
-import waiter from "../../assets/stories/p2-clockwork-v1/03-patient-charcoal-waiter.png";
-import attendance from "../../assets/stories/p2-clockwork-v1/04-perfect-attendance.png";
-import handover from "../../assets/stories/p2-clockwork-v1/05-handover-rejected.png";
+import welcome from "../../assets/stories/p2-clockwork-ai09-v1/01-welcome-headless-colleague.png";
+import winding from "../../assets/stories/p2-clockwork-ai09-v1/02-thirty-turn-wake-up.png";
+import waiter from "../../assets/stories/p2-clockwork-ai09-v1/03-patient-charcoal-waiter.png";
+import attendance from "../../assets/stories/p2-clockwork-ai09-v1/04-perfect-attendance.png";
+import handover from "../../assets/stories/p2-clockwork-ai09-v1/05-handover-rejected.png";
 import type { Story } from "./definitions";
 import { p2ClockworkStoryID } from "./progress";
 
@@ -13,7 +13,8 @@ export const p2ClockworkColleague: Story = {
     {
       title: "隆重欢迎新同事……等等，它的头呢？",
       image: welcome,
-      alt: "旧版插图：初级搬运站挂着寒酸彩旗，电视头厂长捧着新员工卡准备握手，面前却只有一辆敞口四轮黄色手推车，车后插着硕大的黄铜发条钥匙。",
+      pixelArt: true,
+      alt: "斜侧中景中，蓝发 09 号自然地单膝蹲在小黄车旁，一手搭膝，一手给车斗别上星形员工牌；小车敞口、四轮着地，车尾装着黄铜发条钥匙，墙上挂着三面小彩旗。",
       paragraphs: [
         "自从第一天立下「自己造同事」的宏愿，你盼这一刻已经盼了很久。",
         "今天，本厂第一位真正会走路的新同事，终于从装配线上隆重诞生了！",
@@ -25,7 +26,8 @@ export const p2ClockworkColleague: Story = {
     {
       title: "叫醒服务：按住车屁股拧三十圈",
       image: winding,
-      alt: "旧版插图：斜线分隔的两幅画面中，搬运站用棘轮爪拧紧小黄车后面的大发条；随后小车精神抖擞地蹿过传送带与管道，吹起电视头厂长的围巾。",
+      pixelArt: true,
+      alt: "贴近车尾的低机位镜头中，搬运站的机械接口咬合小黄车后置的黄铜发条，弯箭头表示上弦；09 号双手插在衣袋里，在后方慵懒地看着。",
       paragraphs: [
         "这位新同事的起床气很好解决，既不需要画饼，也不需要喝早茶。",
         "只要把初级搬运站连上传动轴，按住它车屁股后面的大发条「咔嚓咔嚓」拧满——",
@@ -37,7 +39,8 @@ export const p2ClockworkColleague: Story = {
     {
       title: "堵车不路怒，天选运煤工",
       image: waiter,
-      alt: "旧版插图：装着十块生物炭的小黄车穿过厂房，安静停在燃料槽已满的炉子旁等候；远处电视头厂长如释重负地把备用传送带放回零件箱。",
+      pixelArt: true,
+      alt: "高位斜俯视中，小黄车载着两排各五块生物炭，安静等在燃料仓已满的炉旁；09 号侧背对镜头，双手把一节备用传送带放回箱中，周围留着大片空地。",
       paragraphs: [
         "给它指好起点和终点后，这位黄色小同志立刻展现出了惊人的职业素养。",
         "以前想给远处的炉子喂口炭，你得吭哧吭哧铺上半间厂房的传送带；",
@@ -49,7 +52,8 @@ export const p2ClockworkColleague: Story = {
     {
       title: "不掉 SAN 值的梦中情「帕鲁」",
       image: attendance,
-      alt: "旧版插图：小黄车自行返站，把后置发条对准补能口；电视头厂长拿着考评板露出星星眼，想象气泡以免检图标衬托发条拧紧就全勤的模范员工。",
+      pixelArt: true,
+      alt: "肩后近景中，09 号一手托考评板，一手用铅笔在两个勾号旁画星星；前方小黄车已把车尾发条对准补能口，车头和员工牌朝外。",
       paragraphs: [
         "等到发条快松完的时候，它也不用你满车间去捞。",
         "小车早就精明地留好了返程的劲儿，自己溜达回搬运站，把屁股一撅，拧满发条继续上班！",
@@ -61,7 +65,8 @@ export const p2ClockworkColleague: Story = {
     {
       title: "离岗交接？先等同事长出脑子再说",
       image: handover,
-      alt: "旧版插图：夕阳校园天台上，电视头厂长半蹲着把厂长交接手册递向小黄车；害羞倾斜的小车以空荡荡的铁皮车斗和停住的发条，沉默拒绝了交班表白。",
+      pixelArt: true,
+      alt: "天台背侧远景中，09 号跪坐着双手递出绘有工厂与齿轮图标的交班手册，小黄车以空车斗和静止发条沉默回应；大片地面与远处落日衬出安静的交接场面。",
       paragraphs: [
         "看着小黄车完美跑完第一趟活，你心里忽然冒出了一个大胆的念头。",
         "你蹲下身，把《厂长交接协议》轻轻推到它面前：「那个……今晚可以帮我值一小会儿班吗？我就去躺一下。」",
