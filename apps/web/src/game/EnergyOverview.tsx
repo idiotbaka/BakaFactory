@@ -74,11 +74,11 @@ export default function EnergyOverview({
         <h3>
           {system
             ? `${system.name} · 从这里接通产线`
-            : "BAKA-01 · 本厂最初的动力源"}
+            : "09 号 · 本厂最想下班的动力源"}
         </h3>
         <p>
           {system?.intro ??
-            "接线？不用。启动？伸出夹爪。今天的零件，也拜托你啦~"}
+            "唔，把袖子挽起来……今天也先做一点点，离躺椅就近一点点～"}
         </p>
         <small>
           这里显示「{factory.name}
@@ -107,23 +107,24 @@ export default function EnergyOverview({
       </nav>
       {selected === "manual" && (
         <section className="operations-card" aria-label="手工动力自评">
-          <h4>BAKA-01 自评报告</h4>
+          <h4>09 号的今日自评</h4>
           <div className="power-summary">
             <span>
-              可用功率<strong>两只夹爪，全力以赴</strong>
+              可用功率<strong>两只手，慢慢来</strong>
             </span>
             <span>
-              剩余能量<strong>还能再拧一颗螺丝！</strong>
+              剩余能量<strong>再拧一颗，就歇一小会儿</strong>
             </span>
             <span>
-              散热方式<strong>盯着垃圾堆发呆</strong>
+              散热方式<strong>托着脸，发一会儿呆</strong>
             </span>
             <span>
-              供能范围<strong>工作室，谢绝外借</strong>
+              供能范围<strong>工作室，再远就不想动啦</strong>
             </span>
           </div>
           <p>
-            以上为夹爪自评，不接入动力网。炉子仍需另加燃料，不能靠热情烧起来哦~
+            以上是 09
+            号的小小自评，不接入动力网。炉子仍需另加燃料，发呆可烧不热它哦～
           </p>
         </section>
       )}

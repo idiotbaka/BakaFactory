@@ -1,0 +1,80 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-29",
+  "use_case": "illustration-story",
+  "scope": "开场五图；第1、2张沿用用户批准版本，本轮生成第3～5张。其他章节仅修改角色文案，插画后续处理。",
+  "character": "09号具身AI：蓝色短发、粉色发卡、半睁蓝紫眼、灰色宽松制服、白衬衣深蓝蝴蝶结、09胸牌、仿生手、慵懒可爱。",
+  "processing": "process.py；384×360；Median3→BOX→饱和度0.60→亮度0.90→阈值锐化→全局64色；角色局部保护共享6色肤色；无抖动；预览相邻采样2倍。",
+  "steps": [
+    {
+      "page": 3,
+      "inputs": [
+        {
+          "role": "approved processed style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution character detail reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "side-profile camera and layout reference; recomposed to near-square",
+          "path": "output/imagegen/opening-ai09-v1/sources/03-profile-layout-reference.png"
+        }
+      ],
+      "prompt": "OUTPUT CANVAS MUST BE ALMOST SQUARE, 16:15 aspect ratio, approximately 1296x1216 pixels. NOT a landscape or panoramic canvas. Recompose desk, profile character and terminal into this near-square panel, with more vertical space and a narrow window at top. Input 3 shows the desired SIDE PROFILE and camera, but has an incorrect wide aspect ratio; use its camera while completely recomposing to almost-square. Keep the entire terminal display and protagonist in view without stretching or squashing them.\nUse case: illustration-story. Completely REDRAW opening game panel 3, 16:15 composition, intended final grid 384x360. The two reference images show the approved art STYLE and CHARACTER DESIGN ONLY. Do NOT copy their frontal camera, face orientation, chair pose or layout.\nCRITICAL CAMERA: a strict 90-degree SIDE VIEW of the blue-haired android girl, viewed from her LEFT SIDE, sitting at a desk facing RIGHT toward a recruitment terminal. Her head must show a real PROFILE, with ONLY ONE eye visible, a projecting nose silhouette and one ear interface. She must NOT face the viewer; no three-quarter frontal face. Her gaze is directed to the screen. Sideways silhouette of her bob and bangs. Camera slightly above desk level, looking across the office toward its side wall. Character occupies LEFT half, terminal on RIGHT half, distinctly different staging from approved frontal image.\nNarrative: no applicants. Terminal at right displays only a person icon above a big \"0\". 09 leans back lazily with one long sleeve resting on desk and her cheek sinking into that hand; other hand near keyboard. One empty office chair and a blank recruitment sheet farther back. Narrow high window behind desk gives a small view of a cargo ship unloading scrap against coral sunset; the OFFICE and side-view character are dominant, not a vast scrapyard panorama. A sleepy-face mug and modest papers, broad clean surfaces.\nCharacter identity: young adult feminine embodied AI, short tousled blue bob, two pink hairclips if visible, half-lidded blue-violet eye, sleepy mild deadpan, humanlike face/hands, subtle circular mechanical ear interface and wrist joint. Loose light gray hoodie uniform over white shirt with navy bow, navy skirt and opaque dark tights; \"09\" chest badge naturally foreshortened on side of torso. No television head, screen face, pincers or antenna.\nClean SFC/SNES 16-bit game story pixel illustration, coherent stepped contours, readable large shapes, broad flat cel-shading, warm muted sunset versus cool navy. Preserve face readability in PROFILE. No grain, rust speckles, paper texture, dithering, blurry edges, gradients or black hatching. No letters/text except \"09\" and \"0\". No captions, panels, border or watermark. The main requested change is unmistakably SIDE CAMERA and PROFILE CHARACTER.",
+      "raw": "output/imagegen/opening-ai09-v1/sources/03-zero-applicants.png",
+      "output": "apps/web/src/assets/stories/opening-ai09-v1/03-zero-applicants.png"
+    },
+    {
+      "page": 4,
+      "inputs": [
+        {
+          "role": "approved processed style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution character detail reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "old narrative reference only",
+          "path": "apps/web/src/assets/stories/opening-v1/04-build-colleagues.png"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset: single game opening story panel, aspect ratio 16:15, composed to remain readable at 384x360 pixels.\nInput 1 is the APPROVED processed pixel-art style and exact character reference. Input 2 is the same approved character before palette processing, for face/outfit detail ONLY. Input 3 is the OLD page for the core narrative idea ONLY. Completely redraw the scene; never copy the old television-head protagonist or rusty texture.\nCharacter identity MUST match input1/2: young adult anime feminine embodied AI android number 09; short tousled blue bob, two pink hairclips, half-lidded blue-violet eyes, sleepy cute deadpan expression, humanlike face and hands, subtle circular ear interfaces and wrist joints; loose light gray hooded uniform jacket, white collared shirt, navy bow, navy pleated skirt and opaque dark tights. Clear small chest badge with only text \"09\". Practical gray boots if visible.\nStyle: clean SFC 16-bit Japanese adventure-game illustration, clear chunky pixel clusters and stepped outlines, broad cel-shaded shapes, enough face and hair detail, restrained warm sunset and cool navy contrast; no grain, no rust flecks, no paper texture, no dense black hatching, no dithering, no blur, no gradients. Favor clean readable forms over faithfully preserving every small object. No text, letters or captions except \"09\" and specified simple symbols. No comic borders. Single unified scene. Match character size around half image height with face large enough to read.\nPage 4: colleagues can be built. 09 sits at a broad tidy workbench, leaning her cheek on one hand and lazily drawing a robot coworker blueprint with a pencil in the other; a tiny satisfied sly smile, still half-lidded. A broad cream blueprint in foreground shows a simple small wheeled carrying robot schematic, gears and arrows without any lettering. A small monitor at right displays a robot silhouette and a large green check mark approving the plan. A few gears, bolts and a copper wire spool, not dense clutter. Workshop lamp overhead, an open window to distant cranes and stacked scrap under coral sunset. The protagonist remains the blue-haired humanoid girl; robots on the blueprint are mechanical coworkers, never the protagonist.",
+      "raw": "output/imagegen/opening-ai09-v1/sources/04-build-colleagues.png",
+      "output": "apps/web/src/assets/stories/opening-ai09-v1/04-build-colleagues.png"
+    },
+    {
+      "page": 5,
+      "inputs": [
+        {
+          "role": "approved processed style and character",
+          "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+        },
+        {
+          "role": "high-resolution character detail reference",
+          "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+        }
+      ],
+      "prompt": "OUTPUT CANVAS: an almost-SQUARE illustration, aspect ratio 16:15, approximately 1296x1216 pixels. Do NOT output a panoramic landscape. 'Wide shot' below means the camera is pulled back inside this almost-square canvas, NOT a wide aspect ratio.\nUse case: illustration-story. Completely REDRAW opening game panel 5, 16:15 composition, intended final grid 384x360. Input images give ONLY the approved blue-haired 09 character and SFC pixel art style. Do NOT reuse their frontal character pose or camera.\nCRITICAL CAMERA: a quiet WIDE SHOT from BEHIND the girl, over her LEFT BACK SHOULDER, looking OUT from the recycling workshop toward a golden sunset over the sea. The girl is in the left foreground shown in REAR THREE-QUARTER view; back of blue bob hair and gray hood dominate her visible head/upper body, face turned AWAY looking at the sunset. NO frontal face, NO eye contact, NO posing for a photograph. Almost no face is visible, at most the far cheek edge. Full figure seen naturally from behind at about half image height. A clear new cinematic angle compared to the frontal desk references.\nNarrative: her serious plan to clock out. She stands relaxed, one hand loosely touching the back of an EMPTY reclining chair positioned nearer the CENTER foreground, gazing past it at sunset sea to the right. Other arm hangs with sleeve over hand. Navy pleated skirt, opaque dark tights, practical gray ankle boots, light gray loose uniform hoodie, short tousled blue bob with pink hairclip glimpsed on side. Humanlike android, same silhouette and outfit as references. Back of hoodie has NO text or invented graphics. Existing chest \"09\" patch is simply out of view, do not move it to the back.\nRecycling emblem and sleepy-cat pictogram sign is propped beside the left workshop doorway, NOT held toward viewer. Two tied garbage bags and small salvage crates near door. Waiting-handover terminal on left wall shows coworker silhouettes and hourglass using icons only. Empty chair with folded muted teal blanket and mug on a low crate; leave broad calm negative space around the inviting chair and sea. A few distant cargo ships and crane silhouettes, simplified side scrap piles, warm sunlight on floor. Cozy wistful languid mood; the view should feel like we are quietly sharing her wish to rest.\nClean SFC/SNES 16-bit Japanese adventure-game pixel illustration, deliberate chunky pixel clusters and stepped outlines, broad flat cel-shaded shapes, muted coral/gold sunset and cool navy/gray. No noise, rust flecks, paper texture, dithering, gradients, blur, dense black hatching. No text, speech balloons, comic panels, border or watermark. No extra people. Main change: unmistakable BACK CAMERA, rear-facing girl, empty chair and sunset.",
+      "raw": "output/imagegen/opening-ai09-v1/sources/05-plan-to-clock-out.png",
+      "output": "apps/web/src/assets/stories/opening-ai09-v1/05-plan-to-clock-out.png"
+    }
+  ],
+  "layout_reference": {
+    "path": "output/imagegen/opening-ai09-v1/sources/03-profile-layout-reference.png",
+    "inputs": [
+      {
+        "role": "approved processed style and character",
+        "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png"
+      },
+      {
+        "role": "high-resolution character detail reference",
+        "path": "output/imagegen/opening-ai09-v1/sources/02-promoted-factory-chief.png"
+      }
+    ],
+    "prompt": "Use case: illustration-story. Completely REDRAW opening game panel 3, 16:15 composition, intended final grid 384x360. The two reference images show the approved art STYLE and CHARACTER DESIGN ONLY. Do NOT copy their frontal camera, face orientation, chair pose or layout.\nCRITICAL CAMERA: a strict 90-degree SIDE VIEW of the blue-haired android girl, viewed from her LEFT SIDE, sitting at a desk facing RIGHT toward a recruitment terminal. Her head must show a real PROFILE, with ONLY ONE eye visible, a projecting nose silhouette and one ear interface. She must NOT face the viewer; no three-quarter frontal face. Her gaze is directed to the screen. Sideways silhouette of her bob and bangs. Camera slightly above desk level, looking across the office toward its side wall. Character occupies LEFT half, terminal on RIGHT half, distinctly different staging from approved frontal image.\nNarrative: no applicants. Terminal at right displays only a person icon above a big \"0\". 09 leans back lazily with one long sleeve resting on desk and her cheek sinking into that hand; other hand near keyboard. One empty office chair and a blank recruitment sheet farther back. Narrow high window behind desk gives a small view of a cargo ship unloading scrap against coral sunset; the OFFICE and side-view character are dominant, not a vast scrapyard panorama. A sleepy-face mug and modest papers, broad clean surfaces.\nCharacter identity: young adult feminine embodied AI, short tousled blue bob, two pink hairclips if visible, half-lidded blue-violet eye, sleepy mild deadpan, humanlike face/hands, subtle circular mechanical ear interface and wrist joint. Loose light gray hoodie uniform over white shirt with navy bow, navy skirt and opaque dark tights; \"09\" chest badge naturally foreshortened on side of torso. No television head, screen face, pincers or antenna.\nClean SFC/SNES 16-bit game story pixel illustration, coherent stepped contours, readable large shapes, broad flat cel-shading, warm muted sunset versus cool navy. Preserve face readability in PROFILE. No grain, rust speckles, paper texture, dithering, blurry edges, gradients or black hatching. No letters/text except \"09\" and \"0\". No captions, panels, border or watermark. The main requested change is unmistakably SIDE CAMERA and PROFILE CHARACTER."
+  }
+}

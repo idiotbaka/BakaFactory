@@ -19,7 +19,7 @@ describe("story playback", () => {
           "performance",
         ],
       });
-      const paragraphs = ["你好，BAKA-01。", "现在，先从这十二包垃圾开始。"],
+      const paragraphs = ["早安，09 号。", "唔，先从这十二包垃圾开始吧。"],
         text = paragraphs.join("\n");
       const { rerender, unmount } = render(
         <StoryText

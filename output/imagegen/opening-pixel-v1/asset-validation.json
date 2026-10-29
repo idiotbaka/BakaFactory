@@ -1,0 +1,19 @@
+{
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/opening-pixel-v1/01-galactic-contract.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2456638,
+      "sha256": "1c9a87874d9cc57d1d71b9d3c342651ebb42fde27ef4b3311b1e6586981c5fba"
+    },
+    {
+      "path": "apps/web/src/assets/stories/opening-pixel-v1/02-promoted-factory-chief.png",
+      "width": 1671,
+      "height": 941,
+      "bytes": 2393964,
+      "sha256": "33e36008739ce984c0d53ae5f78d5f37829e420feff5fa8fa7e5930a26cd4109"
+    }
+  ],
+  "totalBytes": 4850602
+}

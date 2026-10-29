@@ -1,0 +1,72 @@
+{
+  "shared_skin_palette": [
+    [204, 160, 154],
+    [228, 200, 192],
+    [228, 206, 199],
+    [230, 205, 198],
+    [231, 212, 200],
+    [240, 222, 212]
+  ],
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/opening-ai09-v1/01-galactic-contract.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 64,
+      "protected_skin_pixels": 0,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 129776,
+      "sha256": "74a8b54a8356e4b60e2e20320db041767d58f0e637064dbe96ede20170b1e527"
+    },
+    {
+      "path": "apps/web/src/assets/stories/opening-ai09-v1/02-promoted-factory-chief.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1296, 1214],
+      "source_crop_box": [0, 0, 1296, 1214],
+      "colors": 70,
+      "protected_skin_pixels": 2044,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 157926,
+      "sha256": "851b462fbe00f81939cd4d6bc1368aa1b7371305d818d43ad54c60ede57afa8d"
+    },
+    {
+      "path": "apps/web/src/assets/stories/opening-ai09-v1/03-zero-applicants.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1312, 1199],
+      "source_crop_box": [16, 0, 1295, 1199],
+      "colors": 70,
+      "protected_skin_pixels": 1617,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 129656,
+      "sha256": "570280cd65446473e8b8853aa332bccd343e2171ecc0709d56d397584ad6ccf5"
+    },
+    {
+      "path": "apps/web/src/assets/stories/opening-ai09-v1/04-build-colleagues.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "protected_skin_pixels": 2825,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 180429,
+      "sha256": "135c6ebaf351c49d2f3e071c257be5c772224f3cba3cc122422318f8c01df7e6"
+    },
+    {
+      "path": "apps/web/src/assets/stories/opening-ai09-v1/05-plan-to-clock-out.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 69,
+      "protected_skin_pixels": 89,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 152449,
+      "sha256": "8b57d69fd854ccb1f553401520deda824cd347293acbcd204fff958f128b7a34"
+    }
+  ]
+}

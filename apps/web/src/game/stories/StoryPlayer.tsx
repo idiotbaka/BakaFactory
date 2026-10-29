@@ -70,11 +70,11 @@ function StorySlide({
   return (
     <>
       <img
-        className="story-illustration"
+        className={`story-illustration${page.pixelArt ? " story-illustration-pixel" : ""}`}
         src={page.image}
         alt={page.alt}
-        width={1672}
-        height={941}
+        width={page.pixelArt ? 384 : 1672}
+        height={page.pixelArt ? 360 : 941}
         decoding="async"
         onError={() => setFailed(true)}
       />

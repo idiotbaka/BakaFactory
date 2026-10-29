@@ -460,7 +460,7 @@ describe("local factory workspace", () => {
         questID: "p2_shaft_work",
         storyID: p2ShaftStoryID,
         title: "P2 前期：机械动力，应力过载",
-        first: "夹爪全力以赴",
+        first: "袖子挽起来",
         last: "力大砖飞",
       },
       {

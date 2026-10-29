@@ -47,7 +47,9 @@ describe("chapter claim triggers and authored P1 story", () => {
       "不掉 SAN 值的梦中情「帕鲁」",
       "离岗交接？先等同事长出脑子再说",
     ]);
-    expect(story.pages[4].paragraphs[4]).toBe("但至少今天，运煤的活有人包了。");
+    expect(story.pages[4].paragraphs[4]).toBe(
+      "但至少今天，运煤的活有人包了。你轻轻摸了摸它的车斗：「辛苦啦，小同事。」",
+    );
   });
   it("unlocks the shaft chapter on its reward, without replaying historical or viewed claims", () => {
     const claims = ["p2_shaft_work"];
@@ -72,14 +74,14 @@ describe("chapter claim triggers and authored P1 story", () => {
     ).toBe(true);
     expect(new Set(story.pages.map((p) => p.image)).size).toBe(5);
     expect(story.pages.map((p) => p.title)).toEqual([
-      "夹爪全力以赴，机器纹丝不动",
+      "袖子挽起来，机器还是不动",
       "一台炉子带全村",
       "传说中的应力过载……就这？",
       "偷看了一眼未来的动力图鉴",
       "力大砖飞，先转起来再说",
     ]);
     expect(story.pages[4].paragraphs[4]).toBe(
-      "你顶着狂抖的天线竖起夹爪：管它烧炭灌油还是发电，能让机器替我干活就是好能源！",
+      "你按住被震乱的蓝色刘海，慢吞吞竖起拇指：「能让机器自己干活，就是好能源……唔，离下班又近了一点。」",
     );
   });
   it("queues the hatch chapter only on a fresh reward and retains its five approved pages", () => {
@@ -101,7 +103,7 @@ describe("chapter claim triggers and authored P1 story", () => {
       story.pages.every((p) => p.paragraphs.length === 5 && p.alt && p.image),
     ).toBe(true);
     expect(story.pages[4].paragraphs[4]).toBe(
-      "系统批注：「此处接收工业成品。厂长尚未完成加工。」",
+      "系统批注：「此处接收工业成品。厂长尚未完成加工。」……唔，连下班都要排工序呀。",
     );
   });
   it("unlocks only on the exact reward claim and queues no repeat or viewed events", () => {
