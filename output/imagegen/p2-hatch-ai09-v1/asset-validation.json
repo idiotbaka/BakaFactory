@@ -1,0 +1,177 @@
+{
+  "pipeline": "opening-ai09-v1/process.py (unchanged)",
+  "shared_skin_palette": [
+    [204, 160, 154],
+    [228, 200, 192],
+    [228, 206, 199],
+    [230, 205, 198],
+    [231, 212, 200],
+    [240, 222, 212]
+  ],
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p2-hatch-ai09-v1/01-crowded-doors.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [247, 204, 267, 226],
+        [299, 166, 320, 184]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 227,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 116203,
+      "sha256": "dcc185d4f64745f53289737e115af004911bdea7bdcae8fbcd6c50f1aef06acd"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-hatch-ai09-v1/02-charcoal-vip.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [100, 66, 141, 117],
+        [95, 103, 116, 127],
+        [101, 164, 131, 194],
+        [140, 172, 151, 198]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 1187,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 119707,
+      "sha256": "eb337b40fa8ca9d1910ba3f5a7050c4a01bbcc2d1eb5ad3ebe379f0d353e60cc"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-hatch-ai09-v1/03-rush-hour-again.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [142, 80, 160, 108],
+        [138, 100, 148, 115],
+        [162, 183, 180, 201],
+        [72, 194, 85, 207]
+      ],
+      "skin_outlines": null,
+      "protected_skin_pixels": 382,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 97842,
+      "sha256": "045909f74eef4ca367eac2874d9b90d624b0ba38fa7fa3d27a19f12a2f7bcef4"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-hatch-ai09-v1/04-extra-mouths.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1214],
+      "source_crop_box": [0, 0, 1295, 1214],
+      "colors": 70,
+      "skin_regions": [
+        [124, 128, 142, 170],
+        [105, 154, 142, 182],
+        [230, 279, 275, 323]
+      ],
+      "skin_outlines": [
+        [
+          [127, 131],
+          [135, 139],
+          [136, 150],
+          [131, 160],
+          [123, 169],
+          [119, 175],
+          [116, 175],
+          [120, 162],
+          [124, 151]
+        ],
+        [
+          [102, 171],
+          [113, 174],
+          [119, 179],
+          [119, 183],
+          [110, 181],
+          [103, 177]
+        ],
+        [
+          [230, 301],
+          [236, 293],
+          [245, 285],
+          [251, 283],
+          [259, 285],
+          [265, 288],
+          [266, 292],
+          [271, 295],
+          [272, 301],
+          [275, 305],
+          [272, 310],
+          [263, 316],
+          [253, 321],
+          [245, 318],
+          [238, 313]
+        ]
+      ],
+      "protected_skin_pixels": 1044,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 113814,
+      "sha256": "ed8c2d46c52b5884c544c1c49b6d58ed59810a489c979562538bfc4afd293962"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-hatch-ai09-v1/05-clock-out-rejected.png",
+      "width": 384,
+      "height": 360,
+      "source_size": [1295, 1215],
+      "source_crop_box": [0, 0, 1295, 1215],
+      "colors": 70,
+      "skin_regions": [
+        [131, 79, 164, 122],
+        [113, 116, 132, 146],
+        [266, 122, 309, 155],
+        [92, 249, 119, 288]
+      ],
+      "skin_outlines": [
+        [
+          [266, 140],
+          [277, 135],
+          [285, 130],
+          [293, 127],
+          [308, 127],
+          [310, 131],
+          [297, 137],
+          [302, 140],
+          [302, 144],
+          [298, 147],
+          [299, 149],
+          [292, 152],
+          [282, 154],
+          [270, 151]
+        ],
+        [
+          [131, 79],
+          [164, 79],
+          [164, 122],
+          [131, 122]
+        ],
+        [
+          [113, 116],
+          [132, 116],
+          [132, 146],
+          [113, 146]
+        ],
+        [
+          [92, 249],
+          [119, 249],
+          [119, 288],
+          [92, 288]
+        ]
+      ],
+      "protected_skin_pixels": 1825,
+      "non_skin_pixels_unchanged": true,
+      "bytes": 133573,
+      "sha256": "f19274485af9c6f683c863a4de82755434d4f174356b7fcc49a37d1c2422cbe5"
+    }
+  ]
+}
