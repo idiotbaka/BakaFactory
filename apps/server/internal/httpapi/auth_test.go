@@ -36,13 +36,13 @@ func newAuthFixture(t *testing.T, secure bool) authFixture {
 	if err := database.Migrate(context.Background(), db); err != nil {
 		t.Fatal(err)
 	}
-	service := application.NewAuthService(repository.NewAccounts(db), 7*24*time.Hour)
+	service := application.NewAuthService(repository.NewAccounts(db), 30*24*time.Hour)
 	definitions, err := catalog.Load()
 	if err != nil {
 		t.Fatal(err)
 	}
 	saves := application.NewSaveService(repository.NewSaves(db), service, definitions)
-	h, err := New(application.NewHealthService(repository.NewHealth(db), "test", "test"), slog.New(slog.NewJSONHandler(io.Discard, nil)), "", AuthOptions{Service: service, Secure: secure, TTL: 7 * 24 * time.Hour, Origins: []string{testOrigin}, Saves: saves})
+	h, err := New(application.NewHealthService(repository.NewHealth(db), "test", "test"), slog.New(slog.NewJSONHandler(io.Discard, nil)), "", AuthOptions{Service: service, Secure: secure, TTL: 30 * 24 * time.Hour, Origins: []string{testOrigin}, Saves: saves})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestAccountLifecycleAndProfilePersistence(t *testing.T) {
 	w := f.request("POST", "/api/v1/auth/register", credentials("Builder_01", "correct-password"), nil)
 	u := userFrom(t, w, 201)
 	cookie := w.Result().Cookies()[0]
-	if !cookie.HttpOnly || cookie.Secure || cookie.SameSite != http.SameSiteLaxMode || cookie.Path != "/" || cookie.MaxAge != 604800 || cookie.Domain != "" {
+	if !cookie.HttpOnly || cookie.Secure || cookie.SameSite != http.SameSiteLaxMode || cookie.Path != "/" || cookie.MaxAge != 2592000 || cookie.Domain != "" {
 		t.Fatalf("unsafe cookie: %+v", cookie)
 	}
 	if u.Username != "builder_01" || u.CreatedAt == "" || u.LastLoginAt == "" {
@@ -174,6 +174,76 @@ func TestSessionRotationIsolationAndExpiry(t *testing.T) {
 	}
 	if f.request("GET", "/api/v1/me", "", nil).Code != 401 {
 		t.Fatal("guest accepted")
+	}
+}
+
+func TestPageVisitRenewsCookieAndDatabaseButNotExpiredOrRevokedLogin(t *testing.T) {
+	for _, secure := range []bool{false, true} {
+		t.Run(fmt.Sprintf("secure=%t", secure), func(t *testing.T) {
+			f := newAuthFixture(t, secure)
+			registered := f.request("POST", "/api/v1/auth/register", credentials("return_user", "correct-password"), nil)
+			user := userFrom(t, registered, 201)
+			cookie := registered.Result().Cookies()[0]
+			beforeHeartbeat := f.request("POST", "/api/v1/game/heartbeat", `{"session_id":""}`, cookie)
+			if beforeHeartbeat.Code != 200 {
+				t.Fatal(beforeHeartbeat.Body)
+			}
+			var handshake struct {
+				SessionID string `json:"session_id"`
+			}
+			if err := json.Unmarshal(beforeHeartbeat.Body.Bytes(), &handshake); err != nil || handshake.SessionID == "" {
+				t.Fatalf("missing game-session identity: %v", err)
+			}
+			// Emulate a returning visitor whose old login is close to expiry.
+			oldExpiry := time.Now().Add(time.Hour).Unix()
+			if _, err := f.db.Exec("UPDATE sessions SET expires_at=? WHERE user_id=?", oldExpiry, user.ID); err != nil {
+				t.Fatal(err)
+			}
+			started := time.Now().Unix()
+			visit := f.request("GET", "/api/v1/me", "", cookie)
+			if current := userFrom(t, visit, 200); current != user {
+				t.Fatal("page visit changed account metadata")
+			}
+			cookies := visit.Result().Cookies()
+			if len(cookies) != 1 {
+				t.Fatal("return visit must renew the browser cookie")
+			}
+			renewed := cookies[0]
+			if renewed.Name != cookie.Name || renewed.Value != cookie.Value || renewed.MaxAge != 2592000 || !renewed.HttpOnly || renewed.Secure != secure || renewed.Path != "/" || renewed.Domain != "" || renewed.SameSite != http.SameSiteLaxMode {
+				t.Fatal("renewal changed the token or lost cookie protections")
+			}
+			var expires int64
+			if err := f.db.QueryRow("SELECT expires_at FROM sessions WHERE user_id=?", user.ID).Scan(&expires); err != nil {
+				t.Fatal(err)
+			}
+			if expires != renewed.Expires.Unix() || expires < started+2592000 || expires > time.Now().Unix()+2592000 || expires <= oldExpiry {
+				t.Fatal("browser and database must share the renewed 30-day expiry")
+			}
+			body, _ := json.Marshal(map[string]string{"session_id": handshake.SessionID})
+			if w := f.request("POST", "/api/v1/game/heartbeat", string(body), renewed); w.Code != 200 {
+				t.Fatal("renewal invalidated an ongoing game's session binding")
+			}
+			if _, err := f.db.Exec("UPDATE sessions SET expires_at=? WHERE user_id=?", time.Now().Unix(), user.ID); err != nil {
+				t.Fatal(err)
+			}
+			assertRejected := func(label string, token *http.Cookie) {
+				t.Helper()
+				w := f.request("GET", "/api/v1/me", "", token)
+				if w.Code != 401 || len(w.Result().Cookies()) != 0 {
+					t.Fatalf("%s must fail without replacing or clearing a newer cookie: %d", label, w.Code)
+				}
+			}
+			assertRejected("expired session", renewed)
+			login := f.request("POST", "/api/v1/auth/login", credentials("return_user", "correct-password"), nil)
+			userFrom(t, login, 200)
+			assertRejected("revoked session", renewed)
+			assertRejected("guest", nil)
+			current := login.Result().Cookies()[0]
+			if w := f.request("POST", "/api/v1/auth/logout", "", current); w.Code != 204 {
+				t.Fatal("logout failed")
+			}
+			assertRejected("logged-out session", current)
+		})
 	}
 }
 func TestAuthInputAndOriginProtection(t *testing.T) {

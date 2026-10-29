@@ -129,12 +129,13 @@ func (a *API) authRoutes(mux *http.ServeMux) {
 		w.WriteHeader(204)
 	})
 	route("/api/v1/me", "GET", func(w http.ResponseWriter, r *http.Request) {
-		user, err := a.auth.Current(r.Context(), a.token(r))
+		result, err := a.auth.Renew(r.Context(), a.token(r))
 		if err != nil {
 			a.authError(w, r, err)
 			return
 		}
-		writeJSON(w, 200, map[string]any{"user": user})
+		a.setCookie(w, result.Token, result.ExpiresAt)
+		writeJSON(w, 200, map[string]any{"user": result.User})
 	})
 	route("/api/v1/me/profile", "PATCH", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {

@@ -22,6 +22,7 @@ type AccountRepository interface {
 	Create(context.Context, domain.Account, domain.Session, string) error
 	Login(context.Context, domain.User, domain.Session, string) error
 	Current(context.Context, string, int64) (domain.User, error)
+	Renew(context.Context, string, int64, int64) (domain.User, int64, error)
 	UpdateProfile(context.Context, string, int64, string) (domain.User, error)
 	Logout(context.Context, string) error
 }
@@ -115,6 +116,20 @@ func (s *AuthService) Current(ctx context.Context, token string) (domain.User, e
 		return domain.User{}, domain.ErrUnauthenticated
 	}
 	return s.repository.Current(ctx, tokenHash(token), s.now().Unix())
+}
+
+// Renew keeps the current token and game-session identity. Expired or revoked
+// sessions must never be recreated by a page refresh.
+func (s *AuthService) Renew(ctx context.Context, token string) (Authentication, error) {
+	if len(token) != 43 {
+		return Authentication{}, domain.ErrUnauthenticated
+	}
+	now := s.now().UTC()
+	user, expires, err := s.repository.Renew(ctx, tokenHash(token), now.Unix(), now.Add(s.ttl).Unix())
+	if err != nil {
+		return Authentication{}, err
+	}
+	return Authentication{User: user, Token: token, ExpiresAt: time.Unix(expires, 0).UTC()}, nil
 }
 func (s *AuthService) UpdateProfile(ctx context.Context, token, name string) (domain.User, error) {
 	name = strings.TrimSpace(name)

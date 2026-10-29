@@ -19,7 +19,9 @@
 
 Argon2id 使用 19 MiB、2 次迭代、1 lane，16 字节随机盐与 32 字节输出，保存完整 PHC 编码。参数依据 [OWASP Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)，实现使用 [Go 官方 Argon2 包](https://pkg.go.dev/golang.org/x/crypto/argon2)。校验使用常量时间比较，只解析当前受支持且有资源上界的参数，拒绝畸形 hash。不存在账号也进行同成本 dummy hash 校验，统一返回“用户名或密码不正确”。密码不会写日志、API 响应或浏览器存储。
 
-Session 是 32 字节随机 token，浏览器通过 HttpOnly Cookie 持有，数据库只保存其 SHA-256；这里 SHA-256 用于高熵随机 token，不用于用户密码。默认 168h 绝对过期，不滑动续期。注册 / 登录生成新 token 并撤销请求 Cookie 对应的旧 token，减少 Session fixation；同账号其他设备的 Session 在同一登录事务中全部撤销，只保留最新登录。登出删除数据库记录和 Cookie，旧 token 即使被重新发送也无效。
+Session 是 32 字节随机 token，浏览器通过 HttpOnly Cookie 持有，数据库只保存其 SHA-256；这里 SHA-256 用于高熵随机 token，不用于用户密码。注册 / 登录默认记住 30 天（`SESSION_TTL=720h`，允许显式配置 1～720 小时）。每次打开或刷新网页，现有 `GET /api/v1/me` 登录恢复请求会将有效会话与 Cookie 续至本次访问后 30 天；显式配置其他 TTL 时使用对应时长。数据库验证与续期在同一事务内完成，仅更新 `expires_at`，不改变 token、游戏绑定标识、会话创建时间或最后密码登录时间，并避免较早请求缩短已延长的有效期。仍有效的旧 7 天会话会在下次访问时自动采用新时长，已过期会话必须重新登录。日常游戏心跳只核验登录和在线许可，不反复续签或写数据库；连续开着同一页面超过 30 天且未刷新仍会到期。
+
+注册 / 登录生成新 token 并撤销请求 Cookie 对应的旧 token，减少 Session fixation；同账号其他设备的 Session 在同一登录事务中全部撤销，只保留最新登录。登出删除数据库记录和 Cookie，旧 token 即使被重新发送也无效。过期、被新登录撤销、已退出或不存在的会话均不能借续签恢复；续签失败不设置或清除 Cookie。
 
 Cookie：Path=/、无 Domain、HttpOnly、SameSite=Lax、Max-Age、Expires；production 再加 Secure，名称使用 `__Host-bakafactory_session`。local/test 名称为 `bakafactory_session`，兼容本机 HTTP。production 账号验收需要 HTTPS 反向代理。前端不使用 localStorage / sessionStorage 保存凭据。
 
@@ -41,7 +43,7 @@ API 类型来自 OpenAPI；协议修改后运行 `npm run generate:api`。注册
 
 ## 验收与限制
 
-完整检查为 `npm run check`。自动测试验证密码随机盐、错误密码、Session 轮换 / 撤销 / 过期、浏览器隔离、Profile 权限、来源与 body 校验、重复用户名和限流。真实 HTTP 冒烟从临时空库注册、保存中文昵称、重启服务后用原 Session 读取、登出后拒绝旧 Cookie、重新登录恢复昵称。production 冒烟显式携带 Cookie 来验证 HTTP 接口与 Secure 标志；浏览器通过 production Cookie 登录仍需 HTTPS。
+完整检查为 `npm run check`。自动测试验证密码随机盐、错误密码、Session 轮换 / 撤销 / 过期、浏览器隔离、Profile 权限、来源与 body 校验、重复用户名和限流。续签回归覆盖默认 30 天、显式 TTL、旧 7 天会话采用新时长、多次访问续期、过期边界、倒序续签不缩短有效期、失效会话不复活、Cookie 与数据库一致及原游戏绑定可继续使用；使用内存数据库与可控时钟，无需修改真实账号或等待 30 天。可在仓库根目录运行 `node scripts/go.mjs test ./internal/config ./internal/application ./internal/repository ./internal/httpapi`。真实 HTTP 冒烟从临时空库注册、保存中文昵称、重启服务后用原 Session 读取、登出后拒绝旧 Cookie、重新登录恢复昵称。production 冒烟显式携带 Cookie 来验证 HTTP 接口与 Secure 标志；浏览器通过 production Cookie 登录仍需 HTTPS。
 
 已知边界：限流为单进程内存状态，重启后重置；代理部署所有请求会共享代理 IP 的限制，公网发布前应按可信代理与用户规模完善限流。没有找回密码和撤销全部设备功能。多个已打开页面的资料不会自动推送，刷新或操作后再读取。SQLite 当前仍为单实例方案。
 

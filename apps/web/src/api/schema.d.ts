@@ -116,7 +116,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Current authenticated profile */
+        /** Read the current profile and renew a valid login session */
         get: operations["currentUser"];
         put?: never;
         post?: never;
@@ -906,7 +906,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Current user */
+            /** @description Current user; the existing session and HttpOnly Cookie are renewed for SESSION_TTL (30 days by default). Expired or revoked sessions return 401 without setting a cookie. */
             200: {
                 headers: {
                     [name: string]: unknown;

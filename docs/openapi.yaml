@@ -134,11 +134,11 @@ paths:
   /api/v1/me:
     get:
       operationId: currentUser
-      summary: Current authenticated profile
+      summary: Read the current profile and renew a valid login session
       security: [{ cookieSession: [] }]
       responses:
         "200":
-          description: Current user
+          description: Current user; the existing session and HttpOnly Cookie are renewed for SESSION_TTL (30 days by default). Expired or revoked sessions return 401 without setting a cookie.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UserResponse" }

@@ -1,5 +1,14 @@
 # 用户启动与验收
 
+## 登录保留 30 天与访问续签（待用户执行）
+
+1. 用户重启 `npm run dev` 以加载新的 Go 后端，确认未显式设置旧的 `SESSION_TTL=168h`；默认值与环境变量样例现为 `720h`。已有会话只要仍有效即可直接刷新采用新期限，已过期则先登录一次，无需清档。
+2. 在浏览器开发者工具的 Network 中查看登录 / 注册响应：Cookie 应含 `Max-Age=2592000`，Expires 约为当前时间后 30 天，保持 HttpOnly、SameSite=Lax、Path=/；production 另含 Secure。
+3. 刷新 / 重新打开网页，检查 `GET /api/v1/me` 成功返回并重新下发相同名称、相同 token 的 Cookie，Expires 向本次访问后 30 天延长。账号资料、工厂进度保持，进入工厂后心跳与云备份仍正常；无需公开或复制 Cookie 内容。
+4. 退出登录后刷新应返回未登录。另一浏览器登录同账号后，原页面心跳或刷新应要求重新登录；原会话的 401 响应不得下发或清除 Cookie，也不能借刷新恢复。有效期边界由内存库及可控时钟的自动用例覆盖，不在真实 SQLite 或系统时钟上构造过期数据。
+
+定向回归：`node scripts/go.mjs test ./internal/config ./internal/application ./internal/repository ./internal/httpapi`。本轮自动测试与浏览器检查待用户执行，实际静态验证状态见 [进度](progress.md)。
+
 ## 机器人吞吐通行与像素行进图（待用户执行）
 
 由用户运行 `npm run dev` 并刷新进入游戏，无需迁移或清档；定向自动测试命令和参数表见 [机器人重构](robot-upgrade.md)。

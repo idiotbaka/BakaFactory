@@ -67,6 +67,33 @@ func (r *Accounts) Current(ctx context.Context, hash string, now int64) (domain.
 	}
 	return user, err
 }
+
+func (r *Accounts) Renew(ctx context.Context, hash string, now, expires int64) (domain.User, int64, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return domain.User{}, 0, err
+	}
+	defer tx.Rollback()
+	var owner string
+	// Validate and extend in one statement so login/logout revocation cannot be
+	// undone. MAX also prevents out-of-order refreshes from shortening the lease.
+	err = tx.QueryRowContext(ctx, `UPDATE sessions SET expires_at=MAX(expires_at,?) WHERE token_hash=? AND expires_at>? RETURNING user_id,expires_at`, expires, hash, now).Scan(&owner, &expires)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.User{}, 0, domain.ErrUnauthenticated
+	}
+	if err != nil {
+		return domain.User{}, 0, err
+	}
+	var user domain.User
+	err = tx.QueryRowContext(ctx, `SELECT id,username,display_name,created_at,last_login_at FROM users WHERE id=?`, owner).Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.LastLoginAt)
+	if err != nil {
+		return domain.User{}, 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return domain.User{}, 0, err
+	}
+	return user, expires, nil
+}
 func (r *Accounts) UpdateProfile(ctx context.Context, hash string, now int64, name string) (domain.User, error) {
 	var user domain.User
 	err := r.db.QueryRowContext(ctx, `UPDATE users SET display_name=? WHERE id=(SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?) RETURNING id,username,display_name,created_at,last_login_at`, name, hash, now).Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.LastLoginAt)

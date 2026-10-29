@@ -47,7 +47,7 @@ func LoadFrom(lookup func(string) (string, bool)) (Config, error) {
 		return c, fmt.Errorf("invalid LOG_LEVEL: %w", err)
 	}
 	var err error
-	c.SessionTTL, err = time.ParseDuration(get("SESSION_TTL", "168h"))
+	c.SessionTTL, err = time.ParseDuration(get("SESSION_TTL", "720h"))
 	if err != nil || c.SessionTTL < time.Hour || c.SessionTTL > 30*24*time.Hour {
 		return c, fmt.Errorf("SESSION_TTL must be between 1h and 720h")
 	}
