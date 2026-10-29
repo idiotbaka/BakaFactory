@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-v1/01-welcome-headless-colleague.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2922715,
+      "sha256": "5c126e72d0d092edebbc3926b2b27ec90160f5979d18dc776239eea1a1a8009b"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-v1/02-thirty-turn-wake-up.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2889309,
+      "sha256": "03430a5f254042baa0b90d1099163b81571161f1b3f54a9a2a9b4f71d659287b"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-v1/03-patient-charcoal-waiter.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3048336,
+      "sha256": "7c931ee80ae42769781ac0cbaad0eeac156c68f3a404d573d6dc6bc4c1fec911"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-v1/04-perfect-attendance.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 4814754,
+      "sha256": "5f2212ecda3a2b842ea66b895402b015c851c6f3d9338f00c42c416dbf18e815"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-clockwork-v1/05-handover-rejected.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3058502,
+      "sha256": "824fba807d2f5d11802089f16620cb4d0588bf48f7572329d748dd7f1d022f07"
+    }
+  ],
+  "totalBytes": 16733616
+}

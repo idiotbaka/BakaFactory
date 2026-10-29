@@ -27,7 +27,12 @@ import {
 import type { WorkerCommand, WorkerEvent } from "./workerProtocol";
 import { catalog, buildingDefinitions, itemID } from "./catalog";
 import { worldFrame } from "./worldFrame";
-import { openingStoryID, p1StoryID, p2ShaftStoryID } from "../stories/progress";
+import {
+  openingStoryID,
+  p1StoryID,
+  p2ShaftStoryID,
+  p2ClockworkStoryID,
+} from "../stories/progress";
 vi.mock("./storage", () => ({ readLocal: vi.fn(), writeLocal: vi.fn() }));
 vi.mock("../../api/client", () => ({
   ApiError: class ApiError extends Error {
@@ -316,6 +321,7 @@ describe("local persistence and cloud lifecycle", () => {
   it.each([
     ["p1_free_hands", p1StoryID],
     ["p2_shaft_work", p2ShaftStoryID],
+    ["p2_clockwork_colleague", p2ClockworkStoryID],
   ] as const)(
     "persists a pending chapter with the real %s claim, reloads and commits viewing atomically",
     async (questID, storyID) => {
@@ -328,9 +334,9 @@ describe("local persistence and cloud lifecycle", () => {
         "p1_smelter",
         "p1_assembler",
         "p1_free_hands",
-        ...(questID === "p2_shaft_work" ? [questID] : []),
+        ...(questID !== "p1_free_hands" ? [questID] : []),
       ];
-      if (questID === "p2_shaft_work")
+      if (questID !== "p1_free_hands")
         root = actWorld(root, { type: "claim_quest", id: "p1_free_hands" });
       saved = {
         owner: user.id,
@@ -423,6 +429,7 @@ describe("local persistence and cloud lifecycle", () => {
   it.each([
     ["p1_free_hands", p1StoryID],
     ["p2_shaft_work", p2ShaftStoryID],
+    ["p2_clockwork_colleague", p2ClockworkStoryID],
   ] as const)(
     "does not invent chapters from historical or cloud %s claims and prunes withdrawn unlocks",
     async (questID, storyID) => {
@@ -437,8 +444,11 @@ describe("local persistence and cloud lifecycle", () => {
         "p1_free_hands",
       ];
       root = actWorld(root, { type: "claim_quest", id: "p1_free_hands" });
-      if (questID === "p2_shaft_work") {
-        root.simulation.industry!.quests!.factory_events = { shaft_craft: 1 };
+      if (questID !== "p1_free_hands") {
+        root.simulation.industry!.quests!.factory_events = {
+          [questID === "p2_shaft_work" ? "shaft_craft" : "clockwork_transport"]:
+            1,
+        };
         root = actWorld(root, { type: "claim_quest", id: questID });
       }
       saved = {

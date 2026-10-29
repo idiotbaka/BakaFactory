@@ -3,16 +3,19 @@ export const storyIDs = [
   "p1_factory_feast",
   "p2_crowded_hatch",
   "p2_shaft_overload",
+  "p2_clockwork_colleague",
 ] as const;
 export type StoryID = (typeof storyIDs)[number];
 export const openingStoryID = "opening_clock_out" satisfies StoryID;
 export const p1StoryID = "p1_factory_feast" satisfies StoryID;
 export const p2HatchStoryID = "p2_crowded_hatch" satisfies StoryID;
 export const p2ShaftStoryID = "p2_shaft_overload" satisfies StoryID;
+export const p2ClockworkStoryID = "p2_clockwork_colleague" satisfies StoryID;
 const questRequirements: Partial<Record<StoryID, string>> = {
   [p1StoryID]: "p1_free_hands",
   [p2HatchStoryID]: "p2_crowded_hatch",
   [p2ShaftStoryID]: "p2_shaft_work",
+  [p2ClockworkStoryID]: "p2_clockwork_colleague",
 };
 
 export function unlockedStoryIDs(claimed: readonly string[] = []) {

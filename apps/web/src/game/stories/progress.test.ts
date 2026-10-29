@@ -7,10 +7,48 @@ import {
   p1StoryID,
   p2HatchStoryID,
   p2ShaftStoryID,
+  p2ClockworkStoryID,
 } from "./progress";
 import { storyDefinitions } from "./definitions";
 
 describe("chapter claim triggers and authored P1 story", () => {
+  it("queues the clockwork colleague only on its first reward and leaves historical claims replayable", () => {
+    const quest = "p2_clockwork_colleague";
+    expect(unlockedStoryIDs()).not.toContain(p2ClockworkStoryID);
+    expect(unlockedStoryIDs(["p2_shaft_work"])).not.toContain(
+      p2ClockworkStoryID,
+    );
+    expect(newlyClaimedStories([], [quest])).toEqual([p2ClockworkStoryID]);
+    expect(newlyClaimedStories([quest], [quest])).toEqual([]);
+    expect(newlyClaimedStories([], [quest], [p2ClockworkStoryID])).toEqual([]);
+    expect(unlockedStoryIDs([quest])).toContain(p2ClockworkStoryID);
+    expect(retainPendingStories([p2ClockworkStoryID], [], [quest])).toEqual([
+      p2ClockworkStoryID,
+    ]);
+    expect(
+      retainPendingStories([p2ClockworkStoryID], [p2ClockworkStoryID], [quest]),
+    ).toEqual([]);
+    expect(retainPendingStories([p2ClockworkStoryID], [], [])).toEqual([]);
+    expect(newlyClaimedStories([], [quest, "p2_shaft_work"])).toEqual([
+      p2ShaftStoryID,
+      p2ClockworkStoryID,
+    ]);
+    const story = storyDefinitions[p2ClockworkStoryID];
+    expect(story.title).toBe("P2 中期：第一位会走路的帕鲁同事");
+    expect(story.pages).toHaveLength(5);
+    expect(
+      story.pages.every((p) => p.paragraphs.length === 5 && p.alt && p.image),
+    ).toBe(true);
+    expect(new Set(story.pages.map((p) => p.image)).size).toBe(5);
+    expect(story.pages.map((p) => p.title)).toEqual([
+      "隆重欢迎新同事……等等，它的头呢？",
+      "叫醒服务：按住车屁股拧三十圈",
+      "堵车不路怒，天选运煤工",
+      "不掉 SAN 值的梦中情「帕鲁」",
+      "离岗交接？先等同事长出脑子再说",
+    ]);
+    expect(story.pages[4].paragraphs[4]).toBe("但至少今天，运煤的活有人包了。");
+  });
   it("unlocks the shaft chapter on its reward, without replaying historical or viewed claims", () => {
     const claims = ["p2_shaft_work"];
     expect(unlockedStoryIDs()).not.toContain(p2ShaftStoryID);

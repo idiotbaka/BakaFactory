@@ -7,7 +7,12 @@ import { createLocalFactory, type LocalFactory } from "./local/state";
 import type { GameRuntime } from "./local/runtime";
 import { catalog, itemID } from "./local/catalog";
 import { createWorld, districtSummary } from "./local/world";
-import { openingStoryID, p1StoryID, p2ShaftStoryID } from "./stories/progress";
+import {
+  openingStoryID,
+  p1StoryID,
+  p2ShaftStoryID,
+  p2ClockworkStoryID,
+} from "./stories/progress";
 import { openGameSelect } from "../test/gameSelect";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
@@ -449,15 +454,33 @@ describe("local factory workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "关闭剧情" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   }, 15_000);
-  it.each([false, true])(
-    "opens the shaft chapter from pending or historical replay (pending=%s)",
-    async (pending) => {
-      const title = "P2 前期：机械动力，应力过载";
+  it.each(
+    [
+      {
+        questID: "p2_shaft_work",
+        storyID: p2ShaftStoryID,
+        title: "P2 前期：机械动力，应力过载",
+        first: "夹爪全力以赴",
+        last: "力大砖飞",
+      },
+      {
+        questID: "p2_clockwork_colleague",
+        storyID: p2ClockworkStoryID,
+        title: "P2 中期：第一位会走路的帕鲁同事",
+        first: "隆重欢迎新同事",
+        last: "离岗交接",
+      },
+    ].flatMap((chapter) =>
+      [false, true].map((pending) => ({ ...chapter, pending })),
+    ),
+  )(
+    "opens $questID from pending or historical replay (pending=$pending)",
+    async ({ pending, questID, storyID, title, first, last }) => {
       prepare(true, {
-        pendingStories: pending ? [p2ShaftStoryID] : [],
+        pendingStories: pending ? [storyID] : [],
         setup: (f) => {
-          f.simulation.industry!.quests!.completed = ["p2_shaft_work"];
-          f.simulation.industry!.quests!.claimed = ["p2_shaft_work"];
+          f.simulation.industry!.quests!.completed = [questID];
+          f.simulation.industry!.quests!.claimed = [questID];
         },
       });
       render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
@@ -469,7 +492,7 @@ describe("local factory workspace", () => {
       const dialog = screen.getByRole("dialog", { name: title });
       expect(
         within(dialog).getByRole("heading", { name: /1 \/ 5/ }),
-      ).toHaveTextContent("夹爪全力以赴");
+      ).toHaveTextContent(first);
       expect(
         within(dialog).queryByRole("button", { name: "关闭剧情" }) !== null,
       ).toBe(!pending);
@@ -477,16 +500,16 @@ describe("local factory workspace", () => {
         fireEvent.click(within(dialog).getByRole("button", { name: "下一页" }));
       expect(
         within(dialog).getByRole("heading", { name: /5 \/ 5/ }),
-      ).toHaveTextContent("力大砖飞");
+      ).toHaveTextContent(last);
       await act(async () => {
         fireEvent.click(within(dialog).getByRole("button", { name: "完成" }));
       });
       expect(dialog).not.toBeInTheDocument();
-      expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(p2ShaftStoryID);
+      expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(storyID);
       fireEvent.click(screen.getByText("重放剧情"));
       fireEvent.click(screen.getByRole("button", { name: title }));
       expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toHaveTextContent(
-        "夹爪全力以赴",
+        first,
       );
       fireEvent.keyDown(window, { key: "Escape" });
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
