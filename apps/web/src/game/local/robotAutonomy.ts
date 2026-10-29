@@ -167,14 +167,12 @@ export function dispatchRobots(root: LocalFactory) {
   const reserve = (bot: Robot) => {
     const t = bot.task;
     if (!t) return;
-    const target = key(t.target.factory_id, t.target.building_id, t.item);
+    const item = t.item || bot.cargo?.item;
+    if (!item) return;
+    const target = key(t.target.factory_id, t.target.building_id, item);
     demand.set(target, (demand.get(target) ?? 0) + t.count - t.delivered);
     if (t.phase === "pickup") {
-      const source = sourceKey(
-        t.source.factory_id,
-        t.source.building_id,
-        t.item,
-      );
+      const source = sourceKey(t.source.factory_id, t.source.building_id, item);
       pledges.set(
         source,
         (pledges.get(source) ?? 0) + t.count - (bot.cargo?.count ?? 0),

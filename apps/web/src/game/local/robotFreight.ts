@@ -26,6 +26,7 @@ import {
   warehouseOutputCount,
 } from "./transportConfig";
 import { acceptsFluid } from "./fluidConfig";
+import { freightEndpointSupported } from "./robotEndpoints";
 import { fuelValues } from "./fuel";
 import {
   cellKey,
@@ -169,7 +170,7 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
       !validEndpoint(root, r, t.target) ||
       (t.source.factory_id === t.target.factory_id &&
         t.source.building_id === t.target.building_id) ||
-      !canCarry(d, t.item) ||
+      (t.item !== "" && !canCarry(d, t.item)) ||
       !int(t.count, d.capacity) ||
       t.count < 1 ||
       typeof t.repeat !== "boolean" ||
@@ -177,7 +178,7 @@ export function validFreight(root: LocalFactory, r: Robot, d: Spec) {
       !["pickup", "deliver"].includes(t.phase) ||
       !int(t.delivered, t.count) ||
       (r.cargo?.count ?? 0) + t.delivered > t.count ||
-      (r.cargo && r.cargo.item !== t.item) ||
+      (r.cargo && t.item !== "" && r.cargo.item !== t.item) ||
       (t.phase === "pickup" && t.delivered !== 0) ||
       (t.phase === "deliver" && !r.cargo)
     )
@@ -215,10 +216,14 @@ function beginReturn(r: Robot, reason: NonNullable<Robot["returning"]>) {
   r.work_progress = 0;
   if (reason !== "energy") delete r.task;
 }
-function tripCost(root: LocalFactory, r: Robot, t: Task) {
-  const source = freightJourney(root, r, t.source, t.item, true),
-    target =
-      source && freightJourney(root, source.end, t.target, t.item, false);
+function tripCost(
+  root: LocalFactory,
+  r: Robot,
+  t: Task,
+  item = r.cargo?.item ?? (t.item || chooseFreightItem(root, r).item),
+) {
+  const source = freightJourney(root, r, t.source, item, true),
+    target = source && freightJourney(root, source.end, t.target, item, false);
   return source && target
     ? Math.max(
         source.cost + target.cost + returnCost(root, r, target.end, true),
@@ -247,8 +252,11 @@ export function freightJourney(
           return (
             enabled(b) &&
             (loading
-              ? port.mode === "output" && port.filter === item
-              : port.mode === "input" && (!port.filter || port.filter === item))
+              ? port.mode === "output" &&
+                !!port.filter &&
+                (!item || port.filter === item)
+              : port.mode === "input" &&
+                (!item || !port.filter || port.filter === item))
           );
         }
       : undefined;
@@ -290,16 +298,11 @@ export function applyFreightAction(root: LocalFactory, action: FreightAction) {
     throw new Error("运输物品、载重、端点或厂区授权无效");
   const source = endpointBuilding(root, action.source),
     target = endpointBuilding(root, action.target);
-  const supported = (type: string) =>
-    type === "bus" ||
-    isChest(type) ||
-    isFluidNode(type) ||
-    buildingDefinitions.get(type)?.category === "machine";
   if (
     !source ||
     !target ||
-    !supported(source.building_type) ||
-    !supported(target.building_type)
+    !freightEndpointSupported(source.building_type) ||
+    !freightEndpointSupported(target.building_type)
   )
     throw new Error("请选择实际机器、WH、箱子或流体容器");
   const cost = tripCost(root, r, r.task);
@@ -320,12 +323,12 @@ function exchange(
   loading: boolean,
   wanted: number,
   budgets: Map<string, number>,
+  item = r.cargo?.item ?? r.task!.item,
 ) {
   const f = worldFactories(root).find((f) => f.id === e.factory_id)!,
     b = endpointBuilding(root, e)!;
   const d = buildingDefinitions.get(b.building_type)!,
-    m = f.simulation.buildings[b.id],
-    item = r.task!.item;
+    m = f.simulation.buildings[b.id];
   let n = Math.max(0, wanted),
     kind: "warehouse" | "input" | "output" | "fuel" | "fluid";
   let budgetKey = "";
@@ -447,6 +450,85 @@ function exchange(
   };
 }
 
+// An unfiltered task chooses one real item per trip. The cargo is its binding
+// until it is completely delivered, including after save/reload or a blockage.
+// Probe only; stock/energy changes remain in the normal exchange commit.
+function freightSourceItems(root: LocalFactory, r: Robot): string[] {
+  const b = endpointBuilding(root, r.task!.source);
+  const f = worldFactories(root).find(
+    (f) => f.id === r.task!.source.factory_id,
+  );
+  if (!b || !f) return [];
+  const m = f.simulation.buildings[b.id];
+  return (
+    b.building_type === "bus"
+      ? [
+          ...new Set(
+            [0, 90, 180, 270]
+              .map((rotation) => face(b, rotation))
+              .filter(
+                (p) =>
+                  p.mode === "output" &&
+                  p.filter &&
+                  root.simulation.warehouse[p.filter] > 0,
+              )
+              .map((p) => p.filter!),
+          ),
+        ]
+      : isFluidNode(b.building_type)
+        ? m.fluid?.count
+          ? [m.fluid.item]
+          : []
+        : m.output.filter((s) => s.count > 0).map((s) => s.item)
+  ).filter((item) => canCarry(specFor(r), item));
+}
+function chooseFreightItem(
+  root: LocalFactory,
+  r: Robot,
+): { item: string; status: string } {
+  if (r.cargo) return { item: r.cargo.item, status: "loading" };
+  const t = r.task!;
+  if (t.item) return { item: t.item, status: "loading" };
+  const candidates = freightSourceItems(root, r);
+  if (!candidates.length) return { item: "", status: "source_empty" };
+  const warehouseSource =
+    endpointBuilding(root, t.source)?.building_type === "bus";
+  const warehouseTarget =
+    endpointBuilding(root, t.target)?.building_type === "bus";
+  // Item-independent paths for ordinary endpoints are shared by all candidates.
+  const commonSource =
+    !warehouseSource && freightJourney(root, r, t.source, "", true);
+  const commonTarget =
+    commonSource &&
+    !warehouseTarget &&
+    freightJourney(root, commonSource.end, t.target, "", false);
+  const offset = (r.completed_tasks ?? 0) % (candidates.length || 1);
+  let full = false;
+  for (const item of [
+    ...candidates.slice(offset),
+    ...candidates.slice(0, offset),
+  ]) {
+    const source =
+      commonSource || freightJourney(root, r, t.source, item, true);
+    const target =
+      commonTarget ||
+      (source && freightJourney(root, source.end, t.target, item, false));
+    if (!target) continue;
+    const probe = exchange(
+      root,
+      { ...r, ...target.end },
+      t.target,
+      false,
+      t.count,
+      new Map(),
+      item,
+    );
+    if (probe.n > 0) return { item, status: "loading" };
+    if (probe.status === "blocked") full = true;
+  }
+  return { item: "", status: full ? "blocked" : "rejected" };
+}
+
 export function robotDestination(
   root: LocalFactory,
   r: Robot,
@@ -467,6 +549,7 @@ export function robotJourney(
   root: LocalFactory,
   r: Robot,
   occupied?: Set<string>,
+  item?: string,
 ) {
   const endpoint = robotDestination(root, r);
   if (!endpoint) return;
@@ -478,7 +561,9 @@ export function robotJourney(
           root,
           r,
           endpoint,
-          r.task!.item,
+          item ??
+            r.cargo?.item ??
+            (r.task!.item || chooseFreightItem(root, r).item),
           r.task!.phase === "pickup",
           occupied,
         );
@@ -572,6 +657,13 @@ export function stepFreight(root: LocalFactory) {
       r.status = "waiting_charge";
       continue;
     }
+    const selection =
+      r.task && !r.task.item && !r.cargo
+        ? chooseFreightItem(root, r)
+        : undefined;
+    const freightItem = r.task
+      ? (r.cargo?.item ?? (r.task.item || selection!.item))
+      : undefined;
     if (!r.returning && r.task?.phase === "pickup" && !r.cargo) {
       if (
         at(r, home, r.home_factory_id) &&
@@ -581,7 +673,7 @@ export function stepFreight(root: LocalFactory) {
         r.status = "waiting_charge";
         continue;
       }
-      const needed = tripCost(root, r, r.task);
+      const needed = tripCost(root, r, r.task, freightItem);
       if (!Number.isFinite(needed)) {
         r.status = "no_path";
         continue;
@@ -594,10 +686,12 @@ export function stepFreight(root: LocalFactory) {
     }
     const endpoint = robotDestination(root, r)!;
     occupied.delete(cellKey(r));
-    const plan = robotJourney(root, r, occupied);
+    const plan = robotJourney(root, r, occupied, freightItem);
     occupied.add(cellKey(r));
     if (!plan) {
-      r.status = robotJourney(root, r) ? "congested" : "no_path";
+      r.status = robotJourney(root, r, undefined, freightItem)
+        ? "congested"
+        : "no_path";
       continue;
     }
     if (plan.route.length) {
@@ -702,7 +796,12 @@ export function stepFreight(root: LocalFactory) {
       continue;
     }
     const t = r.task!,
-      loading = t.phase === "pickup";
+      loading = t.phase === "pickup",
+      item = freightItem!;
+    if (!item) {
+      r.status = selection?.status ?? "source_empty";
+      continue;
+    }
     const transfer = exchange(
       root,
       r,
@@ -710,6 +809,7 @@ export function stepFreight(root: LocalFactory) {
       loading,
       loading ? t.count - (r.cargo?.count ?? 0) : r.cargo!.count,
       budgets,
+      item,
     );
     if (!transfer.n) {
       if (loading && r.cargo) {
@@ -734,7 +834,7 @@ export function stepFreight(root: LocalFactory) {
     }
     transfer.commit!();
     if (loading) {
-      r.cargo = { item: t.item, count: (r.cargo?.count ?? 0) + transfer.n };
+      r.cargo = { item, count: (r.cargo?.count ?? 0) + transfer.n };
       if (r.cargo.count >= t.count) {
         t.phase = "deliver";
         r.work_progress = 0;

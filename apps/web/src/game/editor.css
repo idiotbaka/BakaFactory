@@ -790,6 +790,39 @@
   outline: 1px solid var(--cyan);
   outline-offset: -2px;
 }
+.robot-map-label {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  transform-origin: top center;
+  pointer-events: none;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #fff;
+  -webkit-text-stroke: 2px var(--factory-floor-color, #0e1425);
+  paint-order: stroke fill;
+  white-space: nowrap;
+}
+.robot-map-status {
+  color: var(--muted);
+}
+.map-tile.robot-picked-source {
+  box-shadow: inset 0 0 0 2px var(--pink);
+}
+.map-tile.robot-pick-valid {
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+.map-tile.robot-pick-invalid {
+  box-shadow: inset 0 0 0 2px var(--danger);
+}
+.robot-pick-hint {
+  width: 280px;
+}
 
 .catalog-entry-wrap {
   position: relative;

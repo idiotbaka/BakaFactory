@@ -36,6 +36,7 @@ import PowerRegionLayer from "./PowerRegionLayer";
 import ConveyorItemsLayer from "./ConveyorItemsLayer";
 import UndergroundVisual from "./UndergroundVisual";
 import RobotLayer from "./RobotLayer";
+import type { RobotEndpointSelection } from "./robotTaskDraft";
 import {
   undergroundType,
   isUnderground,
@@ -80,6 +81,7 @@ type Props = {
   onPickBuilding?: (building: BuildingInstance) => boolean;
   onChange: (factory: FactoryDetail, selectedID: string | null) => void;
   onError: (error: unknown) => void;
+  endpointSelection?: RobotEndpointSelection;
 };
 export type RobotFocus = {
   factory_id: string;
@@ -175,6 +177,7 @@ export default function FactoryEditor(props: Props) {
   const [undergroundContext, setUndergroundContext] = useState({
     factoryID: props.factory.id,
     type: props.placementType,
+    picking: false,
   });
   const { factory, catalog, selectedID, placementType } = props;
   const placementDefinition = catalog.buildings.find(
@@ -189,9 +192,11 @@ export default function FactoryEditor(props: Props) {
       ? undergroundPeer(selected, factory.buildings)
       : undefined;
   const placingUnderground = placementType === undergroundType;
+  const pickingEndpoint = !!props.endpointSelection;
   if (
     undergroundContext.factoryID !== factory.id ||
-    undergroundContext.type !== placementType
+    undergroundContext.type !== placementType ||
+    undergroundContext.picking !== pickingEndpoint
   ) {
     if (undergroundContext.factoryID !== factory.id) {
       setIOFactory(null);
@@ -199,9 +204,21 @@ export default function FactoryEditor(props: Props) {
       setMenu(null);
       setCellSelection(null);
     }
-    if (undergroundContext.factoryID !== factory.id || placementType)
+    if (pickingEndpoint) {
+      setMenu(null);
+      setCellSelection(null);
+    }
+    if (
+      undergroundContext.factoryID !== factory.id ||
+      placementType ||
+      pickingEndpoint
+    )
       setDeleteMode(false);
-    setUndergroundContext({ factoryID: factory.id, type: placementType });
+    setUndergroundContext({
+      factoryID: factory.id,
+      type: placementType,
+      picking: pickingEndpoint,
+    });
     setUndergroundEntry(null);
     setBatchIDs([]);
   }
@@ -332,6 +349,7 @@ export default function FactoryEditor(props: Props) {
   ) {
     if (
       event.button !== 0 ||
+      latest.current.endpointSelection ||
       latest.current.placementType ||
       deleteModeRef.current ||
       (definition.fixed && instance.building_type !== "bus") ||
@@ -377,6 +395,10 @@ export default function FactoryEditor(props: Props) {
     }, 50);
   }
   function beginPan(event: ReactPointerEvent<HTMLDivElement>) {
+    if (latest.current.endpointSelection && event.button !== 0) {
+      event.preventDefault();
+      return;
+    }
     if (event.button === 1) {
       event.preventDefault();
       pickBuilding({
@@ -612,6 +634,7 @@ export default function FactoryEditor(props: Props) {
     }));
   }
   function rotateSelected() {
+    if (latest.current.endpointSelection) return;
     if (batchRef.current.length) return;
     const f = latest.current.factory,
       b = f.buildings.find((b) => b.id === latest.current.selectedID);
@@ -633,6 +656,7 @@ export default function FactoryEditor(props: Props) {
     );
   }
   function remove(id = latest.current.selectedID) {
+    if (latest.current.endpointSelection) return;
     if (batchRef.current.length && !lock.current) {
       const ids = [...batchRef.current];
       void commit(
@@ -666,6 +690,7 @@ export default function FactoryEditor(props: Props) {
     cancel();
   }
   function deleteShortcut() {
+    if (latest.current.endpointSelection) return;
     if (
       lock.current ||
       drag.current ||
@@ -704,6 +729,7 @@ export default function FactoryEditor(props: Props) {
   }
   function pickBuilding(at = pointer) {
     if (
+      latest.current.endpointSelection ||
       !at?.cell ||
       lock.current ||
       drag.current ||
@@ -730,6 +756,13 @@ export default function FactoryEditor(props: Props) {
   }
   function clickCell(cell: Cell, instance?: BuildingInstance) {
     if (consumeClick() || lock.current) return;
+    const picker = latest.current.endpointSelection;
+    if (picker) {
+      const issue = picker.issue(instance);
+      if (issue) props.onError(new Error(issue));
+      else if (instance) picker.onPick(instance);
+      return;
+    }
     setMenu(null);
     if (deleteModeRef.current) {
       if (instance) {
@@ -843,6 +876,7 @@ export default function FactoryEditor(props: Props) {
   function openMenu(event: React.MouseEvent, instance: BuildingInstance) {
     event.preventDefault();
     event.stopPropagation();
+    if (latest.current.endpointSelection) return;
     if (deleteModeRef.current) {
       exitDeletion();
       blockContext();
@@ -863,6 +897,7 @@ export default function FactoryEditor(props: Props) {
     });
   }
   function reloadFactory() {
+    if (latest.current.endpointSelection) return;
     const { factory: f, selectedID: id } = latest.current;
     void commit(
       () => latest.current.commands.getFactory(f.id, AbortSignal.timeout(8000)),
@@ -901,6 +936,13 @@ export default function FactoryEditor(props: Props) {
       pickBuilding,
     };
   });
+  useLayoutEffect(() => {
+    if (!pickingEndpoint) return;
+    // Release native pointer captures/timers when a new selection tool starts.
+    actions.current.cancel();
+    suppressClick.current = false;
+    viewport.current?.focus({ preventScroll: true });
+  }, [pickingEndpoint]);
   useLayoutEffect(() => {
     actions.current.syncViewport();
     if (props.visible === false) actions.current.cancel();
@@ -1024,6 +1066,7 @@ export default function FactoryEditor(props: Props) {
       )
         return;
       if (event.key === "Escape") {
+        latest.current.endpointSelection?.onCancel();
         deleteModeRef.current = false;
         setDeleteMode(false);
         setUndergroundEntry(null);
@@ -1034,6 +1077,8 @@ export default function FactoryEditor(props: Props) {
         setPointer(null);
         latest.current.onExitPlacement();
         event.preventDefault();
+      } else if (latest.current.endpointSelection) {
+        return;
       } else if (event.key.toLowerCase() === "e") {
         event.preventDefault();
         actions.current.pickBuilding();
@@ -1220,6 +1265,10 @@ export default function FactoryEditor(props: Props) {
     () => occupancy(factory.buildings),
     [factory.buildings],
   );
+  const hoveredEndpoint = pointer?.cell
+    ? buildings.get(`${pointer.cell.x},${pointer.cell.y}`)
+    : undefined;
+  const endpointIssue = props.endpointSelection?.issue(hoveredEndpoint);
   const buildingDefinitions = useMemo(
     () => new Map(catalog.buildings.map((d) => [d.id, d])),
     [catalog.buildings],
@@ -1261,6 +1310,10 @@ export default function FactoryEditor(props: Props) {
       <div className="editor-controls" aria-label="建筑编辑工具">
         <button
           onClick={() => {
+            if (props.endpointSelection) {
+              props.endpointSelection.onCancel();
+              return;
+            }
             exitDeletion();
             setMenu(null);
             props.onExitPlacement();
@@ -1270,12 +1323,13 @@ export default function FactoryEditor(props: Props) {
           }}
           disabled={saving}
         >
-          选择 / 取消
+          {pickingEndpoint ? "取消选取位置" : "选择 / 取消"}
         </button>
         <button
           onClick={placementDefinition ? rotatePlacement : rotateSelected}
           disabled={
             saving ||
+            pickingEndpoint ||
             deleteMode ||
             batchIDs.length > 0 ||
             (!placementDefinition &&
@@ -1291,6 +1345,7 @@ export default function FactoryEditor(props: Props) {
           aria-pressed={deleteMode}
           disabled={
             saving ||
+            pickingEndpoint ||
             (!deleteMode &&
               !batchIDs.length &&
               !!selected &&
@@ -1299,20 +1354,22 @@ export default function FactoryEditor(props: Props) {
             Boolean(selectionBox)
           }
         >
-          {deleteMode
-            ? "退出删除模式"
-            : batchIDs.length
-              ? `删除选中 ${batchIDs.length} 个建筑`
-              : selected && isUnderground(selected)
-                ? "回收整对"
-                : selected
-                  ? "删除建筑"
-                  : "连续删除"}{" "}
+          {pickingEndpoint
+            ? "选取运输位置 · 先来源，后目标 · Esc 取消"
+            : deleteMode
+              ? "退出删除模式"
+              : batchIDs.length
+                ? `删除选中 ${batchIDs.length} 个建筑`
+                : selected && isUnderground(selected)
+                  ? "回收整对"
+                  : selected
+                    ? "删除建筑"
+                    : "连续删除"}{" "}
           <kbd>D / Del</kbd>
         </button>
         <button
           onClick={reloadFactory}
-          disabled={saving || Boolean(dragPreview)}
+          disabled={saving || pickingEndpoint || Boolean(dragPreview)}
         >
           重绘布局
         </button>
@@ -1369,7 +1426,16 @@ export default function FactoryEditor(props: Props) {
                 ? props.districts
                 : [{ id: factory.id, name: factory.name }]
               ).map((district) => (
-                <option key={district.id} value={district.id}>
+                <option
+                  key={district.id}
+                  value={district.id}
+                  disabled={
+                    !!props.endpointSelection &&
+                    !props.endpointSelection.allowedFactories.includes(
+                      district.id,
+                    )
+                  }
+                >
                   {district.name}
                 </option>
               ))}
@@ -1448,6 +1514,7 @@ export default function FactoryEditor(props: Props) {
         onPointerLeave={() => setPointer(null)}
         onContextMenu={(event) => {
           event.preventDefault();
+          if (props.endpointSelection) return;
           if (deleteModeRef.current) {
             exitDeletion();
             blockContext();
@@ -1577,6 +1644,7 @@ export default function FactoryEditor(props: Props) {
               selectedID={props.selectedRobotID}
               paused={props.paused}
               visible={props.visible}
+              zoom={camera.zoom}
             />
             {Array.from(
               { length: factory.width * factory.height },
@@ -1606,7 +1674,7 @@ export default function FactoryEditor(props: Props) {
                 return (
                   <div
                     key={`${x},${y}`}
-                    className={`map-tile ${instance && (instance.id === deletionTarget?.id || instance.id === deletionPeer?.id) ? (targetDeletionIssue ? "delete-protected" : "delete-target") : ""} ${instance && batchIDs.includes(instance.id) ? "batch-selected" : ""} ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
+                    className={`map-tile ${instance && props.endpointSelection?.source?.factory_id === factory.id && props.endpointSelection.source.building_id === instance.id ? "robot-picked-source" : ""} ${pickingEndpoint && hoveredEndpoint?.id === instance?.id && pointer?.cell?.x === x && pointer.cell.y === y ? (endpointIssue ? "robot-pick-invalid" : "robot-pick-valid") : ""} ${instance && (instance.id === deletionTarget?.id || instance.id === deletionPeer?.id) ? (targetDeletionIssue ? "delete-protected" : "delete-target") : ""} ${instance && batchIDs.includes(instance.id) ? "batch-selected" : ""} ${y === Math.floor(factory.height / 2) ? "waste-edge" : ""} ${x === 0 || y === 0 ? "center-line" : ""} ${instance ? "occupied" : ""} ${highlight ? "selected-building" : ""} ${target ? (issue ? "drop-invalid" : "drop-valid") : ""} ${!preview && pointer?.cell?.x === x && pointer?.cell?.y === y ? "hover-tile" : ""} ${cellSelection?.x === x && cellSelection?.y === y ? "selected-cell" : ""}`}
                     title={`(${x}, ${y})${y === Math.floor(factory.height / 2) ? " · 垃圾堆" : ""}${d ? ` · ${d.name}` : ""}`}
                     data-x={x}
                     data-y={y}
@@ -1642,7 +1710,8 @@ export default function FactoryEditor(props: Props) {
                     {robots.has(`${x},${y}`) &&
                       !instance &&
                       props.onSelectRobot &&
-                      !placementDefinition && (
+                      !placementDefinition &&
+                      !pickingEndpoint && (
                         <button
                           type="button"
                           className="robot-hit-target"
@@ -1823,21 +1892,25 @@ export default function FactoryEditor(props: Props) {
       </div>
       <div className="map-statusbar">
         <span>
-          {deleteMode
-            ? (targetDeletionIssue ??
-              (deletionTarget
-                ? `${isUnderground(deletionTarget) ? "点击回收整对地下出入口" : "点击删除建筑"} (${deletionTarget.x},${deletionTarget.y})`
-                : "左键点击建筑回收 · 空格和机器人不会删除"))
-            : preview
-              ? (issue ??
-                (directionTarget
-                  ? `修正方向 (${directionTarget.x}, ${directionTarget.y}) · ${preview.rotation}° · 不消耗道具`
-                  : `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`))
-              : pointer?.cell
-                ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
-                : warehouse
-                  ? `■ 工厂仓库 (${warehouse.x},${warehouse.y}) · 长按移动`
-                  : "■ 工厂地图"}
+          {pickingEndpoint
+            ? props.endpointSelection?.step === "source"
+              ? "请选择取货位置"
+              : "请选择交货位置"
+            : deleteMode
+              ? (targetDeletionIssue ??
+                (deletionTarget
+                  ? `${isUnderground(deletionTarget) ? "点击回收整对地下出入口" : "点击删除建筑"} (${deletionTarget.x},${deletionTarget.y})`
+                  : "左键点击建筑回收 · 空格和机器人不会删除"))
+              : preview
+                ? (issue ??
+                  (directionTarget
+                    ? `修正方向 (${directionTarget.x}, ${directionTarget.y}) · ${preview.rotation}° · 不消耗道具`
+                    : `放置于 (${preview.cell?.x}, ${preview.cell?.y}) · ${preview.rotation}°`))
+                : pointer?.cell
+                  ? `坐标 (${pointer.cell.x}, ${pointer.cell.y})`
+                  : warehouse
+                    ? `■ 工厂仓库 (${warehouse.x},${warehouse.y}) · 长按移动`
+                    : "■ 工厂地图"}
         </span>
         <span>
           {factory.buildings.length} 个建筑实例 /{" "}
@@ -1846,15 +1919,53 @@ export default function FactoryEditor(props: Props) {
         <span role="status">
           {saving
             ? "正在保存…"
-            : deleteMode
-              ? "连续删除 · 右键 / Esc 退出"
-              : placementDefinition
-                ? "连续放置 · Esc 退出"
-                : dragPreview
-                  ? "移动预览 · Esc 取消"
-                  : "布局已保存在本机"}
+            : pickingEndpoint
+              ? "运输选点 · Esc 取消"
+              : deleteMode
+                ? "连续删除 · 右键 / Esc 退出"
+                : placementDefinition
+                  ? "连续放置 · Esc 退出"
+                  : dragPreview
+                    ? "移动预览 · Esc 取消"
+                    : "布局已保存在本机"}
         </span>
       </div>
+      {props.endpointSelection &&
+        pointer &&
+        props.visible !== false &&
+        createPortal(
+          <div
+            className={`drag-ghost robot-pick-hint ${endpointIssue ? "invalid" : "valid"}`}
+            role="status"
+            style={{
+              left: Math.max(
+                8,
+                Math.min(pointer.clientX + 16, window.innerWidth - 300),
+              ),
+              top: Math.max(
+                8,
+                Math.min(pointer.clientY + 16, window.innerHeight - 138),
+              ),
+            }}
+          >
+            <span className="drag-ghost-details">
+              <span>
+                {props.endpointSelection.step === "source"
+                  ? "1 / 2 · 点击取货位置"
+                  : "2 / 2 · 点击交货位置"}
+              </span>
+              {props.endpointSelection.source && (
+                <span>来源：{props.endpointSelection.source.label}</span>
+              )}
+              <span>
+                {endpointIssue ??
+                  `${buildingDefinitions.get(hoveredEndpoint!.building_type)?.name} · 点击选取`}
+              </span>
+              <span>Esc 取消 · 已授权厂区可切换</span>
+            </span>
+          </div>,
+          document.body,
+        )}
       {preview &&
         createPortal(
           <div

@@ -59,6 +59,7 @@ describe("robot onboarding and task controls", () => {
         act={act}
       />,
     );
+    fireEvent.click(screen.getByRole("tab", { name: "管理" }));
     const search = screen.getByLabelText("查找机器人");
     for (const query of ["fatiaobanyunche", "ftbyc", "banyun", "cart"]) {
       fireEvent.change(search, { target: { value: query } });
@@ -91,9 +92,12 @@ describe("robot onboarding and task controls", () => {
     expect(
       screen.getByRole("region", { name: "机器人上手指南" }),
     ).toHaveTextContent("初级搬运站");
+    expect(screen.queryByLabelText("部署机器人类型")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "部署" }));
     const deployment = openGameSelect(screen.getByLabelText("部署机器人类型"));
     expect(deployment.getAllByRole("option")).toHaveLength(1);
     fireEvent.keyDown(screen.getByLabelText("搜索物品"), { key: "Escape" });
+    fireEvent.click(screen.getByRole("tab", { name: "管理" }));
     expect(screen.queryByLabelText("取货厂区")).not.toBeInTheDocument();
     expect(screen.queryByText("作业记录与训练")).not.toBeInTheDocument();
     expect(screen.queryByText("蓝图施工 · 安装设备")).not.toBeInTheDocument();
@@ -116,6 +120,7 @@ describe("robot onboarding and task controls", () => {
         type: "robot_task",
         id: "cart",
         count: 4,
+        item: "",
         source: { factory_id: root.id, building_id: "box" },
         target: { factory_id: root.id, building_id: root.buildings[0].id },
       }),
@@ -134,9 +139,11 @@ describe("robot onboarding and task controls", () => {
         act={act}
       />,
     );
+    fireEvent.click(screen.getByRole("tab", { name: "部署" }));
     expect(
       screen.getByRole("button", { name: "部署 1 台机器人" }),
     ).toBeDisabled();
+    fireEvent.click(screen.getByRole("tab", { name: "管理" }));
     expect(screen.getByRole("button", { name: "安排运输任务" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "暂停机器人" })).toBeDisabled();
     expect(screen.getByLabelText("查找机器人")).toBeEnabled();

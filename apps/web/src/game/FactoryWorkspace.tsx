@@ -46,6 +46,15 @@ import { useLocalGame } from "./local/useLocalGame";
 import { catalog as localCatalog } from "./local/state";
 import IndustryViews, { type IndustryView } from "./IndustryViews";
 import RobotInspector from "./RobotInspector";
+import type { RobotSection } from "./RobotPanel";
+import {
+  newRobotTaskDraft,
+  type RobotTaskDraft,
+  type RobotEndpointPicker,
+  type RobotTaskDraftControls,
+} from "./robotTaskDraft";
+import { robotBusy } from "./local/robotLifecycle";
+import { freightEndpointSupported } from "./local/robotEndpoints";
 import type { Robot } from "./local/robotRoutes";
 import type { RobotFocus } from "./FactoryEditor";
 import type { IndustryAction } from "./local/industry";
@@ -110,6 +119,12 @@ export default function FactoryWorkspace({
   const [industryView, setIndustryView] = useState<IndustryView>("factory");
   const [selectedRobotID, setSelectedRobotID] = useState<string | null>(null);
   const [robotFocus, setRobotFocus] = useState<RobotFocus>();
+  const [robotSection, setRobotSection] = useState<RobotSection>("overview");
+  const [robotTaskDrafts, setRobotTaskDrafts] = useState<
+    Record<string, RobotTaskDraft>
+  >({});
+  const [endpointPicker, setEndpointPicker] =
+    useState<RobotEndpointPicker | null>(null);
   const [replayStory, setReplayStory] = useState<StoryID | null>(null);
   const unlockedStories = unlockedStoryIDs(
     game.factory?.simulation.industry?.quests?.claimed,
@@ -153,6 +168,19 @@ export default function FactoryWorkspace({
   const activeFactoryID =
     workspace.kind === "ready" ? workspace.factory?.id : undefined;
   const stage = game.factory?.simulation.industry?.stage ?? 1;
+  const pickingRobot =
+    endpointPicker &&
+    game.factory?.robots?.find((r) => r.id === endpointPicker.robotID);
+  if (
+    endpointPicker &&
+    (game.paused ||
+      !pickingRobot ||
+      robotBusy(pickingRobot) ||
+      industryView !== "factory" ||
+      selectedRobotID !== pickingRobot.id ||
+      placementType)
+  )
+    setEndpointPicker(null);
   const phaseFor = (category: typeof tab) =>
     Math.min(catalogPhases[category] ?? stage, category === "item" ? 6 : stage);
   useLayoutEffect(() => {
@@ -223,6 +251,7 @@ export default function FactoryWorkspace({
         setImmersive((value) => !value);
         return;
       }
+      if (endpointPicker) return;
       if (!/^[1-6]$/.test(event.key)) return;
       const definition = paletteCatalog.buildings.filter((d) =>
         isPlaceableBuilding(d, stage),
@@ -245,7 +274,7 @@ export default function FactoryWorkspace({
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [activeFactoryID, paletteCatalog, stage, placementType]);
+  }, [activeFactoryID, paletteCatalog, stage, placementType, endpointPicker]);
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || workspace.kind !== "ready" || activeStoryID) return;
@@ -286,6 +315,7 @@ export default function FactoryWorkspace({
     }
   }
   function pickBuilding(instance: BuildingInstance) {
+    if (endpointPicker) return false;
     const definition = paletteCatalog?.buildings.find(
       (d) => d.id === instance.building_type,
     );
@@ -349,16 +379,69 @@ export default function FactoryWorkspace({
           action.type === "select_district" ||
           action.type === "expand_district"
         ) {
-          setSelectedRobotID(null);
+          if (!endpointPicker || action.type !== "select_district")
+            setSelectedRobotID(null);
           setRobotFocus(undefined);
         }
       })
       .catch(editorError);
   }
   function selectRobot(id: string) {
+    if (endpointPicker && endpointPicker.robotID !== id)
+      setEndpointPicker(null);
     setSelectedRobotID(id);
     setSelectedInstanceID(null);
     setPlacementType(null);
+  }
+  function startEndpointPicker(id: string) {
+    const robot = game.factory?.robots?.find((r) => r.id === id);
+    if (!robot || game.paused || robotBusy(robot)) return;
+    selectRobot(id);
+    setImmersive(false);
+    setIndustryView("factory");
+    setError("");
+    setEndpointPicker({ robotID: id });
+  }
+  function endpointIssue(building?: BuildingInstance): string | null {
+    const robot = game.factory?.robots?.find(
+      (r) => r.id === endpointPicker?.robotID,
+    );
+    if (!robot || game.paused || robotBusy(robot))
+      return "机器人当前无法安排运输";
+    if (!robot.allowed_zones.includes(game.factory!.id))
+      return "请先在管理页授权此厂区";
+    if (!building || !freightEndpointSupported(building.building_type))
+      return "请选择机器、WH、料箱或流体储罐";
+    if (
+      endpointPicker?.source?.factory_id === building.factory_id &&
+      endpointPicker.source.building_id === building.id
+    )
+      return "交货位置不能与取货位置相同";
+    return null;
+  }
+  function pickRobotEndpoint(building: BuildingInstance) {
+    if (!endpointPicker || endpointIssue(building)) return;
+    const picked = {
+      factory_id: building.factory_id,
+      building_id: building.id,
+      label: `${localCatalog.buildings.find((d) => d.id === building.building_type)?.name ?? building.building_type} (${building.x},${building.y})`,
+    };
+    if (!endpointPicker.source)
+      setEndpointPicker({ ...endpointPicker, source: picked });
+    else {
+      const { robotID, source } = endpointPicker;
+      setRobotTaskDrafts((drafts) => ({
+        ...drafts,
+        [robotID]: {
+          ...(drafts[robotID] ?? newRobotTaskDraft(source.factory_id)),
+          sourceZone: source.factory_id,
+          source,
+          targetZone: picked.factory_id,
+          target: picked,
+        },
+      }));
+      setEndpointPicker(null);
+    }
   }
   async function locateRobot(robot: Robot) {
     selectRobot(robot.id);
@@ -429,6 +512,18 @@ export default function FactoryWorkspace({
       b.building_type === selection.id,
   );
   const selectedRobot = factory?.robots?.find((r) => r.id === selectedRobotID);
+  const draftRobotID = selectedRobot?.id ?? factory?.robots?.[0]?.id;
+  const robotTaskControls: RobotTaskDraftControls = {
+    taskDraft: draftRobotID
+      ? (robotTaskDrafts[draftRobotID] ?? newRobotTaskDraft(factory!.id))
+      : undefined,
+    onTaskDraftChange: (draft) => {
+      if (draftRobotID)
+        setRobotTaskDrafts((drafts) => ({ ...drafts, [draftRobotID]: draft }));
+    },
+    onPickEndpoints: startEndpointPicker,
+    pickingEndpoints: !!endpointPicker,
+  };
   const lookupItem = (id: string) =>
     catalog.items.find((item) => item.id === id);
   const ingredients = (values: Record<string, number>) => (
@@ -825,6 +920,9 @@ export default function FactoryWorkspace({
                 selectedRobotID={selectedRobotID}
                 onSelectRobot={selectRobot}
                 onLocateRobot={(r) => void locateRobot(r)}
+                robotTaskControls={robotTaskControls}
+                robotSection={robotSection}
+                onRobotSectionChange={setRobotSection}
               >
                 <FactoryEditor
                   visible={industryView === "factory"}
@@ -850,6 +948,21 @@ export default function FactoryWorkspace({
                     world({ type: "select_district", id })
                   }
                   districtSwitchDisabled={game.paused}
+                  endpointSelection={
+                    endpointPicker
+                      ? {
+                          step: endpointPicker.source ? "target" : "source",
+                          source: endpointPicker.source,
+                          allowedFactories:
+                            factory.robots?.find(
+                              (r) => r.id === endpointPicker.robotID,
+                            )?.allowed_zones ?? [],
+                          issue: endpointIssue,
+                          onPick: pickRobotEndpoint,
+                          onCancel: () => setEndpointPicker(null),
+                        }
+                      : undefined
+                  }
                 />
               </IndustryViews>
             )}
@@ -876,12 +989,18 @@ export default function FactoryWorkspace({
               <RobotInspector
                 robot={selectedRobot}
                 factory={factory}
+                catalog={catalog}
                 districts={game.districts ?? []}
                 route={robotRoute}
                 paused={game.paused}
                 act={world}
                 onLocate={() => void locateRobot(selectedRobot)}
-                onManage={() => setIndustryView("robots")}
+                onManage={() => {
+                  setEndpointPicker(null);
+                  setRobotSection("manage");
+                  setIndustryView("robots");
+                }}
+                {...robotTaskControls}
               />
             ) : (
               definition && (

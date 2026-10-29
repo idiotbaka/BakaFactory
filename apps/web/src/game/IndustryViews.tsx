@@ -22,6 +22,8 @@ import { createCatalogSearch } from "./catalogSearch";
 import { PowerOverview } from "./PowerPanel";
 import WorldPanel from "./WorldPanel";
 import RobotPanel from "./RobotPanel";
+import type { RobotSection } from "./RobotPanel";
+import type { RobotTaskDraftControls } from "./robotTaskDraft";
 import DeveloperToolsPanel from "./DeveloperToolsPanel";
 import QuestPanel from "./QuestPanel";
 import { ItemInfoProvider, ItemName } from "./ItemInfo";
@@ -60,6 +62,9 @@ export default function IndustryViews({
   selectedRobotID,
   onSelectRobot,
   onLocateRobot,
+  robotTaskControls,
+  robotSection,
+  onRobotSectionChange,
   observation,
   onLocateBuilding,
   onOrder,
@@ -79,6 +84,9 @@ export default function IndustryViews({
   selectedRobotID?: string | null;
   onSelectRobot?: (id: string) => void;
   onLocateRobot?: React.ComponentProps<typeof RobotPanel>["onLocateRobot"];
+  robotTaskControls?: RobotTaskDraftControls;
+  robotSection?: RobotSection;
+  onRobotSectionChange?: (section: RobotSection) => void;
   observation?: Observation;
   onLocateBuilding?: (id: string) => void;
   onOrder?: PlaceWorkshopOrder;
@@ -310,6 +318,9 @@ export default function IndustryViews({
                 selectedRobotID={selectedRobotID}
                 onSelectRobot={onSelectRobot}
                 onLocateRobot={onLocateRobot}
+                {...robotTaskControls}
+                section={robotSection}
+                onSectionChange={onRobotSectionChange}
               />
             ) : view === "world" && world ? (
               <WorldPanel

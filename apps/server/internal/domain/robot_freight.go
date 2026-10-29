@@ -122,10 +122,10 @@ func validRobotFreight(r RobotState, d RobotDefinition, factories map[string]Fac
 		if d.Role != "carrier" && d.Role != "smart" {
 			return false
 		}
-		if !identifier(t.ID) || !validEnd(t.Source) || !validEnd(t.Target) || t.Source == t.Target || !carry(t.Item) || t.Count < 1 || t.Count > d.Capacity || t.Channel != "auto" && t.Channel != "input" && t.Channel != "fuel" || t.Phase != "pickup" && t.Phase != "deliver" || t.Delivered < 0 || t.Delivered > t.Count || t.Phase == "pickup" && t.Delivered != 0 || t.Phase == "deliver" && r.Cargo == nil {
+		if !identifier(t.ID) || !validEnd(t.Source) || !validEnd(t.Target) || t.Source == t.Target || t.Item != "" && !carry(t.Item) || t.Count < 1 || t.Count > d.Capacity || t.Channel != "auto" && t.Channel != "input" && t.Channel != "fuel" || t.Phase != "pickup" && t.Phase != "deliver" || t.Delivered < 0 || t.Delivered > t.Count || t.Phase == "pickup" && t.Delivered != 0 || t.Phase == "deliver" && r.Cargo == nil {
 			return false
 		}
-		if r.Cargo != nil && (r.Cargo.Item != t.Item || r.Cargo.Count+int64(t.Delivered) > int64(t.Count)) {
+		if r.Cargo != nil && (t.Item != "" && r.Cargo.Item != t.Item || r.Cargo.Count+int64(t.Delivered) > int64(t.Count)) {
 			return false
 		}
 	} else if r.Cargo != nil && r.Returning == "" && r.Construction == nil {

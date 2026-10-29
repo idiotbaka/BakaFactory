@@ -807,7 +807,11 @@ components:
         id: { type: string, minLength: 1, maxLength: 128 }
         source: { $ref: "#/components/schemas/RobotEndpoint" }
         target: { $ref: "#/components/schemas/RobotEndpoint" }
-        item: { type: string }
+        item:
+          {
+            type: string,
+            description: Empty string means any compatible item. Each trip carries one actual item recorded in cargo; a nonempty value filters that exact item.,
+          }
         count: { type: integer, minimum: 1, maximum: 100 }
         channel: { type: string, enum: [auto, input, fuel] }
         repeat: { type: boolean }

@@ -148,6 +148,145 @@ function total(root: LocalFactory, item = iron) {
 }
 
 describe("physical robot freight", () => {
+  it("cycles unfiltered multi-item trips without mixing cargo and preserves every item across reloads", () => {
+    const copper = itemID("铜条");
+    let root = setup();
+    root.simulation.buildings.source.output = [
+      { item: iron, count: 4 },
+      { item: copper, count: 3 },
+    ];
+    root = assign(root, "", 2, root.id, "source", "target", true);
+    for (let i = 0; i < 180; i++) {
+      root = stepTick(root);
+      expect(total(root, iron)).toBe(4);
+      expect(total(root, copper)).toBe(3);
+      if (root.robots![0].cargo) {
+        expect([iron, copper]).toContain(root.robots![0].cargo!.item);
+        expect(root.robots![0].cargo!.count).toBeLessThanOrEqual(2);
+        root = validateSave(toSave(root), user.id);
+        expect(root.robots![0].task!.item).toBe("");
+      }
+    }
+    expect(root.simulation.buildings.source.output).toEqual([]);
+    expect(root.simulation.buildings.target.output).toEqual(
+      expect.arrayContaining([
+        { item: iron, count: 4 },
+        { item: copper, count: 3 },
+      ]),
+    );
+    expect(root.robots![0].task?.repeat).toBe(true);
+    expect(root.robots![0].status).toBe("source_empty");
+  });
+
+  it("skips incompatible or full target material and keeps an actual load bound when capacity changes", () => {
+    const copper = itemID("铜条");
+    let root = setup();
+    root.simulation.buildings.source.output.push({ item: copper, count: 3 });
+    root.simulation.buildings.target.output = [{ item: iron, count: 100 }];
+    root = assign(root, "", 3);
+    root = until(root, (f) => !!f.robots![0].cargo);
+    expect(root.robots![0].cargo).toEqual({ item: copper, count: 3 });
+    root.simulation.buildings.target.output.push({ item: copper, count: 100 });
+    root = until(root, (f) => f.robots![0].status === "blocked");
+    root = validateSave(toSave(root), user.id);
+    const before = total(root, copper),
+      energy = root.robots![0].energy_kj;
+    root = stepTick(root);
+    expect(root.robots![0].cargo).toEqual({ item: copper, count: 3 });
+    expect(root.robots![0].energy_kj).toBe(energy);
+    expect(total(root, copper)).toBe(before);
+    root.simulation.buildings.target.output = [{ item: iron, count: 100 }];
+    root = until(root, (f) => f.robots![0].completed_tasks === 1);
+    expect(root.simulation.buildings.source.output).toEqual([
+      { item: iron, count: 4 },
+    ]);
+    expect(root.simulation.buildings.target.output).toContainEqual({
+      item: copper,
+      count: 3,
+    });
+  });
+
+  it("does not take unsupported fluid into solid carriers or extract machine input with any-item tasks", () => {
+    let root = setup();
+    root = editWorld(root, { kind: "delete", id: "source" });
+    root = place(root, "source", "m03", 7, 0);
+    root.simulation.buildings.source.input = [{ item: iron, count: 2 }];
+    root = assign(root, "", 2);
+    root = until(root, (f) => f.robots![0].status === "source_empty");
+    expect(root.simulation.buildings.source.input).toEqual([
+      { item: iron, count: 2 },
+    ]);
+    expect(root.robots![0].cargo).toBeUndefined();
+    root = setup();
+    root = editWorld(root, { kind: "delete", id: "source" });
+    root = place(root, "source", "tank", 7, 0);
+    root.simulation.buildings.source.fluid = { item: fluid, count: 10 };
+    root = assign(root, "", 2);
+    root = until(root, (f) => f.robots![0].status === "source_empty");
+    expect(root.simulation.buildings.source.fluid?.count).toBe(10);
+    expect(root.robots![0].cargo).toBeUndefined();
+  });
+
+  it("transports one compatible tank fluid with any-item mode and retains hydraulic capacity", () => {
+    let root = setup(hydraulic);
+    for (const id of ["source", "target"])
+      root = editWorld(root, { kind: "delete", id });
+    root = place(root, "source", "tank", 7, 0);
+    root = place(root, "target", "tank", 7, 4);
+    root.simulation.buildings.source.fluid = { item: fluid, count: 25 };
+    root = assign(root, "", 20);
+    root = until(root, (f) => f.robots![0].completed_tasks === 1);
+    expect(root.simulation.buildings.target.fluid).toEqual({
+      item: fluid,
+      count: 20,
+    });
+    expect(root.simulation.buildings.source.fluid).toEqual({
+      item: fluid,
+      count: 5,
+    });
+    expect(total(root, fluid)).toBe(25);
+  });
+
+  it("honors WH item filters and the paid per-face output limit in any-item mode", () => {
+    let root = setup();
+    const bus = root.buildings[0];
+    bus.configuration.face_180 = {
+      mode: "output",
+      filter: iron,
+      output_count: 1,
+    };
+    root.simulation.warehouse[iron] = 4;
+    const copper = itemID("铜条");
+    root.simulation.warehouse[copper] = 5;
+    root = assign(root, "", 4, root.id, bus.id);
+    for (let i = 0; i < 160 && !root.robots![0].completed_tasks; i++) {
+      const before = root.simulation.warehouse[iron];
+      root = stepTick(root);
+      expect(before - root.simulation.warehouse[iron]).toBeLessThanOrEqual(1);
+      expect(root.simulation.warehouse[copper]).toBe(5);
+      expect(total(root, iron)).toBe(8);
+    }
+    expect(root.simulation.buildings.target.output).toEqual([
+      { item: iron, count: 4 },
+    ]);
+  });
+
+  it.each(["pipe", "return_pipe", "pressure_valve", "valve", "pump", "m18"])(
+    "rejects new %s freight endpoints atomically",
+    (type) => {
+      let root = setup(hydraulic);
+      root = place(root, "invalid-endpoint", type, -5, 4);
+      const before = structuredClone(root);
+      expect(() =>
+        assign(root, "", 1, root.id, "invalid-endpoint", "target"),
+      ).toThrow(/请选择/);
+      expect(() =>
+        assign(root, "", 1, root.id, "source", "invalid-endpoint"),
+      ).toThrow(/请选择/);
+      expect(root).toEqual(before);
+    },
+  );
+
   it("waits for the first full charge but does not restart that gate when passing the station later", () => {
     let root = setup();
     const bus = root.buildings[0];

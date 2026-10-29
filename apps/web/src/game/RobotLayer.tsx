@@ -12,6 +12,7 @@ import { RobotVisuals } from "./robotVisuals";
 import { robotSpriteURL } from "./robotSprites";
 import { useSimulationFrame, useSimulationStepMs } from "./SimulationAnimation";
 import { TILE_SIZE } from "./editorGeometry";
+import { robotMapNames, robotMapStatus } from "./robotPresentation";
 
 export default memo(function RobotLayer({
   factory,
@@ -19,12 +20,14 @@ export default memo(function RobotLayer({
   selectedID,
   paused = false,
   visible = true,
+  zoom = 1.25,
 }: {
   factory: FactoryDetail;
   routes: readonly RobotRoute[];
   selectedID?: string | null;
   paused?: boolean;
   visible?: boolean;
+  zoom?: number;
 }) {
   const [visuals] = useState(() => new RobotVisuals());
   const elements = useRef(new Map<string, HTMLSpanElement>());
@@ -130,6 +133,17 @@ export default memo(function RobotLayer({
               alt=""
               draggable={false}
             />
+            {zoom >= 1.2 && (
+              <span
+                className="robot-map-label"
+                style={{ transform: `translateX(-50%) scale(${1 / zoom})` }}
+              >
+                <span>{robotMapNames[robot.item] ?? "机器人"}</span>
+                <span className="robot-map-status">
+                  {robotMapStatus(robot, paused)}
+                </span>
+              </span>
+            )}
           </span>
         ))}
       </div>

@@ -351,6 +351,108 @@
 .robot-inspector code {
   overflow-wrap: anywhere;
 }
+.robot-inspector,
+.robot-inspector .inspector-hero h3,
+.robot-inspector small,
+.robot-inspector .robot-route-form input {
+  font-size: 12px;
+}
+.robot-inspector > .robot-route-form {
+  margin: 0 14px 8px;
+}
+.robot-inspector > .machine-actions {
+  padding-inline: 14px;
+}
+.robot-subtabs {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--panel);
+}
+.robot-panel > [role="tabpanel"] {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+.robot-inspector-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 14px 8px;
+  padding: 12px;
+  background: #0b1324;
+  border: 1px solid var(--line);
+  border-top-color: #46eff255;
+}
+.robot-inspector-card p,
+.robot-inspector-card h4 {
+  margin: 0;
+  line-height: 1.8;
+}
+.robot-inspector-card h4 {
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 400;
+}
+.robot-inspector-card small,
+.robot-inspector-card p {
+  color: var(--muted);
+}
+.robot-inspector-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--cyan);
+}
+.robot-energy-label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+}
+.robot-energy-label meter {
+  width: 100%;
+  height: 12px;
+  accent-color: var(--cyan);
+}
+.robot-cargo-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.robot-inspector .definition-properties dd {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.robot-route-form,
+.robot-route-form label,
+.robot-endpoint-fields {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.robot-route-form {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+}
+.robot-inspector .robot-form-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.robot-inspector .robot-route-form input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+}
+.robot-route-form .robot-repeat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .robot-panel fieldset {
   margin: 0;
   padding: 10px;
@@ -610,11 +712,13 @@
   align-items: flex-start;
   gap: 8px;
 }
-.robot-panel input[type="checkbox"] {
+.robot-panel input[type="checkbox"],
+.robot-inspector input[type="checkbox"] {
   flex: none;
   width: 18px;
   height: 18px;
   margin: 0;
+  padding: 0;
   accent-color: var(--cyan);
 }
 .robot-panel button {
@@ -1338,7 +1442,8 @@
   width: 100%;
   font-size: 12px;
 }
-.logistics-settings button {
+.logistics-settings button,
+.robot-inspector button {
   border: 1px solid var(--line);
   color: var(--text);
   background: #151c2e;

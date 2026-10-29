@@ -20,6 +20,7 @@ import {
 } from "./local/world";
 import { previewRobotRoute } from "./local/robotNavigation";
 import type { GameRuntime } from "./local/runtime";
+import { openGameSelect } from "../test/gameSelect";
 
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
@@ -70,8 +71,12 @@ function fixture(transit = false) {
   }
   return root;
 }
-function prepare(transit = false, paused = false) {
-  const initial = fixture(transit);
+function prepare(
+  transit = false,
+  paused = false,
+  configure?: (root: ReturnType<typeof fixture>) => ReturnType<typeof fixture>,
+) {
+  const initial = configure ? configure(fixture(transit)) : fixture(transit);
   vi.mocked(useLocalGame).mockImplementation(function useMockGame() {
     const [root, setRoot] = useState(initial);
     world.mockImplementation(async (action: WorldAction) => {
@@ -138,6 +143,150 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 describe("robot map and management integration", () => {
+  function withEndpoints(root: ReturnType<typeof fixture>) {
+    for (const [id, type, x, y] of [
+      ["pickup-box", "chest", 6, 3],
+      ["delivery-box", "chest", -4, 3],
+      ["pipe-test", "pipe", -3, 3],
+    ] as const) {
+      root.simulation.warehouse[buildingDefinitions.get(type)!.item!] = 1;
+      root = editWorld(root, {
+        kind: "place",
+        id,
+        building_type: type,
+        placement: { x, y, rotation: 0 },
+      });
+    }
+    return root;
+  }
+  it("shows compact moving labels and picks two supported endpoints without editing the map or losing draft values on Escape", async () => {
+    const initial = prepare(false, false, withEndpoints);
+    const { container } = render(
+      <FactoryWorkspace user={user} onSessionExpired={vi.fn()} />,
+    );
+    expect(
+      container.querySelector(
+        '[data-robot-visual="ui-robot"] .robot-map-label',
+      ),
+    ).toHaveTextContent("智能机");
+    fireEvent.click(
+      screen.getByRole("button", { name: "选择机器人 ui-robot (5,0)" }),
+    );
+    const inspector = within(
+      screen.getByRole("region", { name: "机器人检视" }),
+    );
+    fireEvent.change(inspector.getByLabelText("机器人运输数量"), {
+      target: { value: "7" },
+    });
+    fireEvent.click(
+      inspector.getByRole("button", { name: "选取取货和交货位置" }),
+    );
+    const map = screen.getByLabelText("工厂地图，可滚轮缩放和拖动空格平移");
+    fireEvent.pointerMove(map, { clientX: 350, clientY: 350 });
+    expect(screen.getByText("1 / 2 · 点击取货位置")).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: /流体管道 .*\(-3,3\)/ }),
+    );
+    expect(screen.getByText("1 / 2 · 点击取货位置")).toBeInTheDocument();
+    const source = screen.getByRole("button", { name: /料箱 .*\(6,3\)/ });
+    fireEvent.pointerDown(source, { button: 0, pointerId: 1 });
+    fireEvent.click(source);
+    expect(screen.getByText("2 / 2 · 点击交货位置")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByText("2 / 2 · 点击交货位置")).not.toBeInTheDocument();
+    expect(inspector.getByLabelText("机器人运输数量")).toHaveValue(7);
+    expect(world).not.toHaveBeenCalled();
+    expect(edit).not.toHaveBeenCalled();
+    fireEvent.click(
+      inspector.getByRole("button", { name: "选取取货和交货位置" }),
+    );
+    fireEvent.click(source);
+    fireEvent.click(screen.getByRole("button", { name: /料箱 .*\(-4,3\)/ }));
+    expect(inspector.getByLabelText("取货位置")).toHaveTextContent("(6,3)");
+    expect(inspector.getByLabelText("交货位置")).toHaveTextContent("(-4,3)");
+    expect(inspector.getByLabelText("机器人运输数量")).toHaveValue(7);
+    expect(world).not.toHaveBeenCalled();
+    fireEvent.click(inspector.getByRole("button", { name: "安排运输任务" }));
+    await waitFor(() =>
+      expect(world).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "robot_task",
+          id: "ui-robot",
+          item: "",
+          count: 7,
+          source: { factory_id: initial.id, building_id: "pickup-box" },
+          target: { factory_id: initial.id, building_id: "delivery-box" },
+        }),
+      ),
+    );
+    expect(edit).not.toHaveBeenCalled();
+  });
+
+  it("preserves the inspector and source while switching to an authorized factory to pick a remote machine", async () => {
+    const initial = prepare(false, false, (root) => {
+      root = withEndpoints(root);
+      const remote = root.districts![0];
+      root.robots![0].allowed_zones.push(remote.id);
+      root.simulation.warehouse[buildingDefinitions.get("chest")!.item!] = 1;
+      root = actWorld(root, { type: "select_district", id: remote.id });
+      root = editWorld(root, {
+        kind: "place",
+        id: "remote-box",
+        building_type: "chest",
+        placement: { x: 7, y: 4, rotation: 0 },
+      });
+      return actWorld(root, { type: "select_district", id: root.id });
+    });
+    render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "选择机器人 ui-robot (5,0)" }),
+    );
+    const inspector = within(
+      screen.getByRole("region", { name: "机器人检视" }),
+    );
+    fireEvent.change(inspector.getByLabelText("机器人运输数量"), {
+      target: { value: "3" },
+    });
+    fireEvent.click(
+      inspector.getByRole("button", { name: "选取取货和交货位置" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /料箱 .*\(6,3\)/ }));
+    const choices = openGameSelect(screen.getByLabelText("快捷切换厂区"));
+    expect(
+      choices.getByRole("option", { name: initial.districts![1].name }),
+    ).toHaveAttribute("aria-disabled", "true");
+    fireEvent.click(
+      choices.getByRole("option", { name: initial.districts![0].name }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: initial.districts![0].name }),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("region", { name: "机器人检视" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /料箱 .*\(7,4\)/ }));
+    expect(inspector.getByLabelText("取货位置")).toHaveTextContent("(6,3)");
+    expect(inspector.getByLabelText("交货位置")).toHaveTextContent("(7,4)");
+    expect(inspector.getByLabelText("机器人运输数量")).toHaveValue(3);
+    fireEvent.click(inspector.getByRole("button", { name: "安排运输任务" }));
+    await waitFor(() =>
+      expect(world).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "robot_task",
+          count: 3,
+          source: { factory_id: initial.id, building_id: "pickup-box" },
+          target: {
+            factory_id: initial.districts![0].id,
+            building_id: "remote-box",
+          },
+        }),
+      ),
+    );
+    expect(edit).not.toHaveBeenCalled();
+  });
+
   it("selects a robot on the map without placing or dragging a building and keeps selection in management", () => {
     prepare();
     render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
@@ -190,6 +339,7 @@ describe("robot map and management integration", () => {
         { name: "机器人" },
       ),
     );
+    fireEvent.click(screen.getByRole("tab", { name: "管理" }));
     fireEvent.click(
       screen.getByText("补能优先级与厂区授权", { selector: "summary" }),
     );

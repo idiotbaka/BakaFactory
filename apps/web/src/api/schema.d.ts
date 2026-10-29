@@ -539,6 +539,7 @@ export interface components {
             id: string;
             source: components["schemas"]["RobotEndpoint"];
             target: components["schemas"]["RobotEndpoint"];
+            /** @description Empty string means any compatible item. Each trip carries one actual item recorded in cargo; a nonempty value filters that exact item. */
             item: string;
             count: number;
             /** @enum {string} */
