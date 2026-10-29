@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-v1/01-claws-at-full-power.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3004005,
+      "sha256": "87997616b4dafdf3cf78b797c1c124714321424507865f3313d6f83bd6c96532"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-v1/02-one-furnace-for-all.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3579533,
+      "sha256": "3b7c48eb9246b03bb87439ad3f928a290617841834b844f05bcec15f22b349d3"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-v1/03-overload-slow-motion.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3043009,
+      "sha256": "cff9b2380cc7038d55c652a2ec5cf95f059f58365f1daec34b4e05e64410966f"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-v1/04-future-energy-atlas.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 4902081,
+      "sha256": "b00ed015773b8a019c21e5678eff28b85ffd8d40046a08c2434cd425d9d33e3f"
+    },
+    {
+      "path": "apps/web/src/assets/stories/p2-shaft-v1/05-more-furnaces-more-power.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3264935,
+      "sha256": "b4c6802346be8b813c258fdc6bf149e0a58913a60218dd5f5e66e28014734fd2"
+    }
+  ],
+  "totalBytes": 17793563
+}

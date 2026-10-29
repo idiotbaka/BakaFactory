@@ -10,6 +10,7 @@ import tastingMenu from "../../assets/stories/p1-feast-v1/04-factory-tasting-men
 import factoryHungry from "../../assets/stories/p1-feast-v1/05-factory-is-hungry.png";
 import { openingStoryID, p1StoryID, storyIDs, type StoryID } from "./progress";
 import { p2CrowdedHatch } from "./p2CrowdedHatch";
+import { p2ShaftOverload } from "./p2ShaftOverload";
 
 export type StoryPage = {
   title: string;
@@ -20,6 +21,7 @@ export type StoryPage = {
 export type Story = { id: StoryID; title: string; pages: StoryPage[] };
 export const storyDefinitions: Record<StoryID, Story> = {
   p2_crowded_hatch: p2CrowdedHatch,
+  p2_shaft_overload: p2ShaftOverload,
   [p1StoryID]: {
     id: p1StoryID,
     title: "P1：工厂开饭了",

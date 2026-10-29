@@ -7,7 +7,7 @@ import { createLocalFactory, type LocalFactory } from "./local/state";
 import type { GameRuntime } from "./local/runtime";
 import { catalog, itemID } from "./local/catalog";
 import { createWorld, districtSummary } from "./local/world";
-import { openingStoryID, p1StoryID } from "./stories/progress";
+import { openingStoryID, p1StoryID, p2ShaftStoryID } from "./stories/progress";
 import { openGameSelect } from "../test/gameSelect";
 vi.mock("./local/useLocalGame", () => ({ useLocalGame: vi.fn() }));
 const user = {
@@ -449,6 +449,50 @@ describe("local factory workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "关闭剧情" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   }, 15_000);
+  it.each([false, true])(
+    "opens the shaft chapter from pending or historical replay (pending=%s)",
+    async (pending) => {
+      const title = "P2 前期：机械动力，应力过载";
+      prepare(true, {
+        pendingStories: pending ? [p2ShaftStoryID] : [],
+        setup: (f) => {
+          f.simulation.industry!.quests!.completed = ["p2_shaft_work"];
+          f.simulation.industry!.quests!.claimed = ["p2_shaft_work"];
+        },
+      });
+      render(<FactoryWorkspace user={user} onSessionExpired={vi.fn()} />);
+      if (!pending) {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText("重放剧情"));
+        fireEvent.click(screen.getByRole("button", { name: title }));
+      }
+      const dialog = screen.getByRole("dialog", { name: title });
+      expect(
+        within(dialog).getByRole("heading", { name: /1 \/ 5/ }),
+      ).toHaveTextContent("夹爪全力以赴");
+      expect(
+        within(dialog).queryByRole("button", { name: "关闭剧情" }) !== null,
+      ).toBe(!pending);
+      for (let i = 0; i < 4; i++)
+        fireEvent.click(within(dialog).getByRole("button", { name: "下一页" }));
+      expect(
+        within(dialog).getByRole("heading", { name: /5 \/ 5/ }),
+      ).toHaveTextContent("力大砖飞");
+      await act(async () => {
+        fireEvent.click(within(dialog).getByRole("button", { name: "完成" }));
+      });
+      expect(dialog).not.toBeInTheDocument();
+      expect(markStoryViewed).toHaveBeenCalledExactlyOnceWith(p2ShaftStoryID);
+      fireEvent.click(screen.getByText("重放剧情"));
+      fireEvent.click(screen.getByRole("button", { name: title }));
+      expect(screen.getByRole("heading", { name: /1 \/ 5/ })).toHaveTextContent(
+        "夹爪全力以赴",
+      );
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    },
+    15_000,
+  );
   it("keeps P1 replay locked until a real claim and avoids forcing historical or conflicted progress", () => {
     prepare(true, {
       setup: (f) => {
